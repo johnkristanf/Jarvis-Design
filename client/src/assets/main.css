@@ -1,5 +1,9 @@
-body{
+@import "tailwindcss";
+@import 'flowbite';
+
+body {
   padding: 0;
   margin: 0;
   font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+  background-image: linear-gradient(to bottom right, black 0%, gray 50%, white 100%);
 }
