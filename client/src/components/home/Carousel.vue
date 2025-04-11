@@ -5,9 +5,14 @@
 
     <!-- Carousel wrapper -->
     <div class="relative w-full h-full overflow-hidden">
-        <div class="hidden duration-700 ease-in-out w-full" data-carousel-item>
+        <!-- <div class="hidden duration-700 ease-in-out w-full" data-carousel-item>
             <img src="/jarvis-logo.jpg" class="w-full max-h-full ">
+        </div> -->
+
+        <div class="hidden duration-700 ease-in-out w-full" data-carousel-item>
+            <img src="/fun-run-promote.jpg" class="w-full max-h-full ">
         </div>
+
         <div class="hidden duration-700 ease-in-out w-full" data-carousel-item>
             <img src="/fun-run-2.jpg" class="w-full max-h-full ">
         </div>
