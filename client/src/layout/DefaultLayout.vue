@@ -5,15 +5,15 @@
 </script>
 
 <template>
-    <div >
-        <header>
-            <NavBar />
-        </header>
+        <div >
+            <header>
+                <NavBar />
+            </header>
 
-        <main class="content">
-            <RouterView />
-        </main>
-        
-        <Footer />
-    </div>
+            <main class="content">
+                <RouterView />
+            </main>
+            
+            <Footer />
+        </div>
 </template>

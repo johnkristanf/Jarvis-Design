@@ -1,6 +1,5 @@
 <script setup lang="ts">
-  import Carousel from '@/components/home/Carousel.vue';
-  import CustomerReview from '@/components/home/CustomerReview.vue';
+  import Designs from '@/components/home/Designs.vue';
   import Introduction from '@/components/home/Introduction.vue';
 </script>
 
@@ -8,30 +7,20 @@
   <main class="pb-[8rem]">
 
     <!-- BUSINESS INTRODUCTION -->
-    <div class="h-[80vh] ">
+    <div class="h-[90vh] ">
       <Introduction />
     </div>
 
     
     <!-- BUSINESS ANNOUNCEMENTS -->
-    <div class="h-[80vh] p-3">
-
-      <div class="flex flex-col text-white gap-1 mb-5">
-        <h1 class="text-5xl">
-          Announcements
-        </h1>
-
-        <p class="opacity-80 text-xl">PM us now for orders. We have big discounts and freebies!</p>
-      </div>
-      
-      <Carousel />
-
+    <div class="h-[80vh] ">
+      <Designs />
     </div>
 
 
     <!-- BUSINESS CUSTOMER REVIEWS -->
 
-    <div class="h-[80vh] p-3 mt-[12rem] ">
+    <!-- <div class="h-[80vh] p-3 mt-[12rem] ">
 
       <div class="flex flex-col text-white gap-1 ">
         <h1 class="text-5xl">
@@ -43,7 +32,7 @@
 
       <CustomerReview />
 
-    </div>
+    </div> -->
 
   </main>
 </template>

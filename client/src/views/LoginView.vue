@@ -1,45 +1,118 @@
-<script lang="ts" setup></script>
+<script lang="ts" setup>
+  import { login } from '@/api/post/login';
+import Loader from '@/components/Loader.vue';
+  import type { UserData } from '@/types/user';
+  import { useMutation } from '@tanstack/vue-query';
+  import { useForm, useField } from 'vee-validate';
+  import { ref } from 'vue';
+  import { useRouter } from 'vue-router';
+  import * as yup from 'yup';
+
+
+  const isLoadingMutation = ref(false);
+  const router = useRouter()
+
+  const validationSchema = yup.object({
+    username: yup.string().required('Username is required'),
+    password: yup.string().required('Password is required')
+  });
+
+  // Use vee-validate's useForm hook
+  const { handleSubmit, isSubmitting } = useForm({
+    validationSchema,
+  });
+
+  const { value: username, errorMessage: usernameError } = useField('username');
+  const { value: password, errorMessage: passwordError } = useField('password');
+
+
+  const mutation = useMutation({
+      mutationFn: login,
+      onSuccess: (response) => {
+        isLoadingMutation.value = false; 
+        router.replace('/')
+        console.log("login response: ", response);
+      },
+
+      onError: (error) => {
+         isLoadingMutation.value = false; 
+         console.error("Error Logging In:", error);
+      },
+
+      onMutate: () => {
+        isLoadingMutation.value = true; 
+       },
+  });
+
+
+  const onSubmit = handleSubmit(async (values) => {
+    console.log('Form submitted with:', values);
+
+    const userData: UserData = {
+      username: values.username,
+      password: values.password,
+    }
+    
+    mutation.mutate(userData);
+
+  });
+
+
+</script>
 
 <template>
-    <!--
-      This example requires updating your template:
-  
-      ```
-      <html class="h-full bg-white">
-      <body class="h-full">
-      ```
-    -->
-    <div class="flex flex-col mt-10 px-6 lg:px-8 h-[90vh] ">
-      <div class="sm:mx-auto sm:w-full sm:max-w-sm">
-        <img class="mx-auto w-[20%]" src="/jarvis-logo-circle.png" alt="Your Company" />
-        <h2 class="mt-3 text-center text-2xl/9 font-bold tracking-tight text-white">Login your account</h2>
-      </div>
-  
-      <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-sm">
-        <form class="space-y-6" action="#" method="POST">
-
-            <div>
-                <label for="email" class="block text-sm/6 font-medium text-white">Username</label>
-                <div class="mt-2">
-                <input type="email" name="email" id="email"required class="font-medium block w-full rounded-md bg-white px-3 py-1.5 text-base text-black outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-none sm:text-sm/6" />
-                </div>
-            </div>
-  
-            <div>
-                <div class="flex items-center justify-between">
-                    <label for="password" class="block text-sm/6 font-medium text-white">Password</label>
-                </div>
-                    <div class="mt-2">
-                    <input type="password" name="password" id="password" autocomplete="current-password" required class="font-medium block w-full rounded-md bg-white px-3 py-1.5 text-base text-black outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-none sm:text-sm/6" />
-                </div>
-            </div>
-  
-          <div>
-            <button type="submit" class="flex w-full justify-center rounded-md bg-black px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:opacity-75 hover:cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-none">Sign in</button>
-          </div>
-        </form>
-  
-      </div>
+  <div class="flex flex-col pt-10 px-6 lg:px-8 h-[80vh] bg-white">
+    <div class="sm:mx-auto sm:w-full sm:max-w-sm ">
+      <img class="mx-auto w-[20%]" src="/jarvis-logo-circle.png" alt="Your Company" />
+      <h2 class="mt-3 text-center text-2xl/9 font-bold tracking-tight ">Login your account</h2>
     </div>
-  </template>
-  
+
+    <div class="mt-8  sm:mx-auto sm:w-full sm:max-w-sm ">
+      <form class="space-y-6" @submit="onSubmit" method="POST">
+
+        <div>
+          <label for="username" class="block text-sm/6 font-medium ">Username</label>
+          <div class="mt-2">
+            <input
+              type="text"
+              id="username"
+              v-model="username"
+              class="font-medium block w-full rounded-md bg-white px-3 py-1.5 text-base text-black outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-none sm:text-sm/6"
+            />
+          </div>
+          <p v-if="usernameError" class="mt-1 text-red-500 text-sm">{{ usernameError }}</p>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between">
+            <label for="password" class="block text-sm/6 font-medium ">Password</label>
+          </div>
+          <div class="mt-2">
+            <input
+              type="password"
+              id="password"
+              v-model="password"
+              autocomplete="current-password"
+              class="font-medium block w-full rounded-md bg-white px-3 py-1.5 text-base text-black outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-none sm:text-sm/6"
+            />
+          </div>
+          <p v-if="passwordError" class="mt-1 text-red-500 text-sm">{{ passwordError }}</p>
+        </div>
+
+        <div>
+          <button
+            type="submit"
+            :disabled="isSubmitting"
+            class="flex w-full justify-center rounded-md bg-black px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:opacity-75 hover:cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-none"
+          >
+            Login
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div v-if="isLoadingMutation">
+    <Loader msg="Logging In..."/>
+  </div>
+</template>
