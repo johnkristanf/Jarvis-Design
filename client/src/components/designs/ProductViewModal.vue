@@ -1,27 +1,35 @@
 <script lang="ts" setup>
-    import { ref, computed } from 'vue';
-    import { Dialog, DialogPanel, RadioGroup, RadioGroupOption, TransitionChild, TransitionRoot } from '@headlessui/vue';
-    import { XMarkIcon } from '@heroicons/vue/24/outline';
-    import type { Product } from '@/types/product';
+  import { ref, computed } from 'vue';
+  import { Dialog, DialogPanel, TransitionChild, TransitionRoot, RadioGroup, RadioGroupOption} from '@headlessui/vue';
+  import { XMarkIcon } from '@heroicons/vue/20/solid';
+  import type { Designs } from '@/types/design'
+  import { Select } from 'primevue';
 
-   
-    const props = defineProps<{
-        product: Product;
-        isOpen: boolean;
-        onClose: () => void;
-    }>();
+  const props = defineProps<{
+    design: Designs;
+    isOpen: boolean;
+    onClose: () => void;
+  }>();
 
-    // Emit the close event
-    const emit = defineEmits(['close']);
+  const emit = defineEmits(['close']);
 
-    // Use the prop values directly
-    const open = computed(() => props.isOpen);
-    const selectedColor = ref(props.product.colors[0]);
-    const selectedSize = ref(props.product.sizes[2]);
+  const open = computed(() => props.isOpen);
+  const selectedColor = ref(props.design.colors[0]);
+  const selectedSize = ref(props.design.sizes[2]);
 
-    const handleClose = () => {
-        emit('close');
-    };
+  const handleClose = () => {
+    emit('close');
+  };
+
+
+  const handleSubmitOrder = () => {
+    console.log("Selected Color Name: ", selectedColor.value.name);
+    console.log("Selected Size on Submit: ", selectedSize.value);
+    // ... your order submission logic
+  };
+
+  console.log("Initial selectedColor: ", selectedColor.value);
+  console.log("Initial selectedSize: ", selectedSize.value);
 </script>
 
 <template>
@@ -42,53 +50,79 @@
                 </button>
 
                 <div class="flex justify-between w-full">
-                  <img :src="props.product.imageSrc"  class="aspect-2/3 w-1/2 rounded-lg bg-gray-100 object-cover sm:col-span-4 lg:col-span-5" />
+                  <img :src="props.design.imageSrc" class="aspect-2/3 w-1/2 rounded-lg bg-gray-100 object-cover sm:col-span-4 lg:col-span-5" />
                   <div class="sm:col-span-8 lg:col-span-7">
-                    <h2 class="text-2xl font-bold text-gray-900 sm:pr-12">{{ props.product.name }}</h2>
+                    <h2 class="text-2xl font-bold text-gray-900 sm:pr-12">{{ props.design.name }}</h2>
 
                     <section aria-labelledby="information-heading" class="mt-2">
-                      <h3 id="information-heading" class="sr-only">Product information</h3>
-                      <p class="text-2xl text-gray-900">{{ props.product.price }}</p>
+                      <h3 id="information-heading" class="sr-only">Design Information</h3>
+                      <p class="text-2xl text-gray-900">{{ props.design.price }}</p>
                     </section>
 
                     <section aria-labelledby="options-heading" class="mt-10">
-                      <h3 id="options-heading" class="sr-only">Product options</h3>
+                      <h3 id="options-heading" class="sr-only">design options</h3>
 
-                      <form>
+                      <form @submit.prevent="handleSubmitOrder">
                         <fieldset aria-label="Choose a color">
-                          <legend class="text-sm font-medium text-gray-900">Color</legend>
-
-                          <RadioGroup v-model="selectedColor" class="mt-4 flex items-center gap-x-3">
-                            <RadioGroupOption as="template" v-for="color in props.product.colors" :key="color.name" :value="color" :aria-label="color.name" v-slot="{ active, checked }">
-                              <div :class="[color.selectedClass, active && checked ? 'ring-3 ring-offset-1' : '', !active && checked ? 'ring-2' : '', 'relative -m-0.5 flex cursor-pointer items-center justify-center rounded-full p-0.5 focus:outline-hidden']">
-                                <span aria-hidden="true" :class="[color.class, 'size-8 rounded-full border border-black/10']" />
-                              </div>
-                            </RadioGroupOption>
-                          </RadioGroup>
+                            <legend class="text-sm font-medium text-gray-900 mb-3">Select Color</legend>
+                            <Select
+                                v-model="selectedColor"
+                                :options="props.design.colors"
+                                optionLabel="name"
+                                placeholder="Select a Color"
+                                checkmark
+                                :highlightOnSelect="false"
+                                class="w-full md:w-56 no-focus-outline"
+                            />
                         </fieldset>
 
                         <fieldset class="mt-10" aria-label="Choose a size">
                           <div class="flex items-center justify-between">
                             <div class="text-sm font-medium text-gray-900">Size</div>
-                            <a href="#" class="text-sm font-medium text-indigo-600 hover:text-indigo-500">Size guide</a>
                           </div>
 
-                            <RadioGroup v-model="selectedSize" class="mt-4 grid grid-cols-4 gap-4">
-                                <RadioGroupOption as="template" v-for="size in props.product.sizes" :key="size.name" :value="size" :disabled="!size.inStock" v-slot="{ active, checked }">
-                                <div :class="[size.inStock ? 'cursor-pointer bg-white text-gray-900 shadow-xs' : 'cursor-not-allowed bg-gray-50 text-gray-200', active ? 'ring-2 ring-indigo-500' : '', 'group relative flex items-center justify-center rounded-md border px-4 py-3 text-sm font-medium uppercase hover:bg-gray-50 focus:outline-hidden sm:flex-1']">
-                                    <span>{{ size.name }}</span>
-                                    <span v-if="size.inStock" :class="[active ? 'border' : 'border-2', checked ? 'border-indigo-500' : 'border-transparent', 'pointer-events-none absolute -inset-px rounded-md']" aria-hidden="true" />
-                                    <span v-else aria-hidden="true" class="pointer-events-none absolute -inset-px rounded-md border-2 border-gray-200">
-                                    <svg class="absolute inset-0 size-full stroke-2 text-gray-200" viewBox="0 0 100 100" preserveAspectRatio="none" stroke="currentColor">
-                                        <line x1="0" y1="100" x2="100" y2="0" vector-effect="non-scaling-stroke" />
-                                    </svg>
-                                    </span>
-                                </div>
-                                </RadioGroupOption>
-                            </RadioGroup>
+                          <RadioGroup v-model="selectedSize" class="mt-4 grid grid-cols-4 gap-4">
+                            <RadioGroupOption
+                              as="template"
+                              v-for="size in props.design.sizes"
+                              :key="size.name"
+                              :value="size"
+                              :disabled="!size.inStock"
+                              v-slot="{ active, checked }"
+                            >
+                              <div
+                                :class="[
+                                  size.inStock ? 'cursor-pointer bg-white text-gray-900 shadow-xs' : 'cursor-not-allowed bg-gray-50 text-gray-200',
+                                  active ? 'ring-2 ring-indigo-500' : '',
+                                  'group relative flex items-center justify-center rounded-md border px-4 py-3 text-sm font-medium uppercase hover:bg-gray-50 focus:outline-hidden sm:flex-1',
+                                ]"
+                              >
+                                <span>{{ size.name }}</span>
+                                <span
+                                  v-if="size.inStock"
+                                  :class="[
+                                    active ? 'border' : 'border-2',
+                                    checked ? 'border-indigo-500' : 'border-transparent',
+                                    'pointer-events-none absolute -inset-px rounded-md',
+                                  ]"
+                                  aria-hidden="true"
+                                />
+                                <span v-else aria-hidden="true" class="pointer-events-none absolute -inset-px rounded-md border-2 border-gray-200">
+                                  <svg class="absolute inset-0 size-full stroke-2 text-gray-200" viewBox="0 0 100 100" preserveAspectRatio="none" stroke="currentColor">
+                                    <line x1="0" y1="100" x2="100" y2="0" vector-effect="non-scaling-stroke" />
+                                  </svg>
+                                </span>
+                              </div>
+                            </RadioGroupOption>
+                          </RadioGroup>
                         </fieldset>
 
-                        <button type="submit" class="mt-6 flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden">Add to bag</button>
+                        <button
+                          type="submit"
+                          class="mt-6 flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden"
+                        >
+                          Add to bag
+                        </button>
                       </form>
                     </section>
                   </div>
@@ -101,3 +135,4 @@
     </Dialog>
   </TransitionRoot>
 </template>
+
