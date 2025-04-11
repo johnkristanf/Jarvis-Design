@@ -1,5 +1,5 @@
 <template>
-  <div class="design">
-    <h1>This is an design page</h1>
-  </div>
+  <main class="pb-[8rem]">
+    <h1>DESINGSSS VIEWWWW</h1>
+  </main>
 </template>
