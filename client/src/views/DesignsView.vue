@@ -4,14 +4,14 @@
     import ProductViewModal from '@/components/designs/ProductViewModal.vue';
     import Loader from '@/components/Loader.vue';
     import type { DesignGenerate, Designs } from '@/types/design';
-    import { ArrowRightIcon, ArrowUpOnSquareIcon } from '@heroicons/vue/20/solid';
+    import { ArrowLeftIcon, ArrowRightIcon, ArrowUpOnSquareIcon } from '@heroicons/vue/20/solid';
     import { useMutation, useQuery } from '@tanstack/vue-query';
     import { Select } from 'primevue';
     import { useField, useForm } from 'vee-validate';
     import { onMounted, ref } from 'vue';
     import { useToast } from 'primevue/usetoast';
-import UploadDesignModal from '@/components/designs/UploadDesignModal.vue';
-import UploadedDesignsTable from '@/components/designs/UploadedDesignsTable.vue';
+    import UploadDesignModal from '@/components/designs/UploadDesignModal.vue';
+    import UploadedDesignsTable from '@/components/designs/UploadedDesignsTable.vue';
 
 
     const aiAPIURL = import.meta.env.VITE_AI_API_URL;
@@ -25,6 +25,8 @@ import UploadedDesignsTable from '@/components/designs/UploadedDesignsTable.vue'
     const imageUrls = ref([]);
     const isLoadingMutation = ref(false);
     const loaderMsg = ref<string>('');
+
+    const showUploadedDesignsTableRef = ref<boolean>(false);
 
 
     const renderAllDesigns = async () => {
@@ -94,10 +96,6 @@ import UploadedDesignsTable from '@/components/designs/UploadedDesignsTable.vue'
 
     const handleOpenUploadModal = () => openUploadDesignModal.value = true;
 
-
-
-
-
     onMounted(() => {
         renderAllDesigns();
     });
@@ -152,20 +150,28 @@ import UploadedDesignsTable from '@/components/designs/UploadedDesignsTable.vue'
         <div class="mt-6">
 
             <div class="mt-12 w-full flex justify-end">
-                <h1 class="text-gray-600 hover:cursor-pointer hover:opacity-75 flex items-center">
+                <h1 v-if="!showUploadedDesignsTableRef" class="text-gray-600 hover:cursor-pointer hover:opacity-75 flex items-center" @click="showUploadedDesignsTableRef = true">
                     View Uploaded Designs
                     <ArrowRightIcon class="size-6"/>
+                </h1>
+
+                <h1 v-else class="text-gray-600 hover:cursor-pointer hover:opacity-75 flex items-center" @click="showUploadedDesignsTableRef = false">
+                    <ArrowLeftIcon class="size-6"/>
+                    View Made Designs
                 </h1>
             </div>
 
 
             <!-- UPLOADED DESIGNS -->
-            <UploadedDesignsTable />
+
+            <div class="w-full" v-if="showUploadedDesignsTableRef">
+                <UploadedDesignsTable />
+            </div>
 
 
             <!-- PRE-MADE DESIGNS -->
 
-            <div v-if="designs && imageUrls.length == 0" class=" flex flex-wrap items-center gap-12">
+            <div v-if="!showUploadedDesignsTableRef && designs && imageUrls.length == 0" class=" flex flex-wrap items-center gap-12">
                 <div
                     v-for="design in designs"
                     :key="design.id"
@@ -194,7 +200,7 @@ import UploadedDesignsTable from '@/components/designs/UploadedDesignsTable.vue'
 
 
             <!-- AI GENERATED IMAGES -->
-            <div v-else-if="imageUrls && imageUrls.length > 0"  class="mt-12 flex justify-center flex-wrap items-center gap-12">
+            <div v-else-if="!showUploadedDesignsTableRef && imageUrls && imageUrls.length > 0"  class="mt-12 flex justify-center flex-wrap items-center gap-12">
                 <div v-for="(imageUrl, index) in imageUrls" :key="'generated-' + index" class="group relative">
                 
                 <img

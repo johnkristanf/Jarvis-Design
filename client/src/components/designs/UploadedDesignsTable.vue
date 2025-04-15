@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { DataTable, Button, Column } from 'primevue';
+import { DataTable, Column, Tag } from 'primevue';
 import { ref } from 'vue';
 
 const products = ref([
@@ -65,7 +65,7 @@ const getSeverity = (product) => {
             
             <Column header="Status">
                 <template #body="slotProps">
-                    <Tag :value="slotProps.data.inventoryStatus" :severity="getSeverity(slotProps.data)" />
+                    <Tag :value="slotProps.data.status" :severity="getSeverity(slotProps.data)" />
                 </template>
             </Column>
 

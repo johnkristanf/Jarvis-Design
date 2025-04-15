@@ -14,6 +14,8 @@ Route::get('/get/all/sizes', [DesignsController::class, 'getAllSizes']);
 Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::get('/user/data', [UserController::class, 'user']);
+
+    Route::get('/get/uploaded/design', [DesignsController::class, 'getUploadedDesign']);
     Route::post('/upload/preferred/design', [DesignsController::class, 'uploadPreferredDesign']);
 
     Route::post('/paymongo/webhook', [PaymentController::class, 'handleWebhook']);
