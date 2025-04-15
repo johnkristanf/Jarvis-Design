@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\PreferredDesign;
 use App\Services\DesignsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -102,5 +103,18 @@ class DesignsController extends Controller
                 'msg'   => 'Error occured in uploading preferred design'
             ], 500);
         }
+    }
+
+    public function getUploadedDesign()
+    {
+        $uploadedDesigns = PreferredDesign::all();
+        Log::info("Uploaded Designs: ", [
+            'designs' => $uploadedDesigns
+        ]);
+
+        return response()->json([
+            'uploadedDesigns' => $uploadedDesigns
+        ], 200);
+   
     }
 }
