@@ -1,38 +1,29 @@
 <script setup lang="ts">
+  import CustomerReview from '@/components/home/CustomerReview.vue';
   import Designs from '@/components/home/Designs.vue';
   import Introduction from '@/components/home/Introduction.vue';
 </script>
 
 <template>
-  <main class="pb-[8rem]">
+  <main>
 
     <!-- BUSINESS INTRODUCTION -->
-    <div class="h-[90vh] ">
+    <div class="h-full">
       <Introduction />
     </div>
 
     
     <!-- BUSINESS ANNOUNCEMENTS -->
-    <div class="h-[80vh] ">
+    <div class="h-full border-t-1 border-gray-300">
       <Designs />
     </div>
 
 
     <!-- BUSINESS CUSTOMER REVIEWS -->
 
-    <!-- <div class="h-[80vh] p-3 mt-[12rem] ">
-
-      <div class="flex flex-col text-white gap-1 ">
-        <h1 class="text-5xl">
-          Customer Reviews
-        </h1>
-
-        <p class="opacity-75 text-xl">Genuine feedback from individuals who have experienced the quality and customization offered by Jarvis Designs.</p>
-      </div>
-
+    <div class="h-full border-t-1 border-gray-300">
       <CustomerReview />
-
-    </div> -->
+    </div>
 
   </main>
 </template>

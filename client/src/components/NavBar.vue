@@ -1,43 +1,41 @@
 <script lang="ts" setup>
-    import { fetchUserData } from '@/api/get/user-data';
-    import { logoutUser } from '@/api/post/logout';
-    import type { UserData } from '@/types/user';
     import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
     import { UserIcon } from '@heroicons/vue/20/solid';
     import { BellIcon } from '@heroicons/vue/24/outline'
     import { onMounted, ref } from 'vue';
     import { useRoute, useRouter } from 'vue-router';
-import Loader from './Loader.vue';
+    import Loader from './Loader.vue';
+    import { useAuthStore } from '@/stores/user';
+import { fetchUserData } from '@/api/get/user-data';
 
     const route = useRoute();
-    const router = useRouter();
-    
-    const user = ref<UserData | undefined>(undefined);
+    const authStore = useAuthStore();
     const isLoading = ref(true); 
-    const isLoggingOut = ref(false); 
 
 
     const navigation = [
-        { name: 'Home', to: '/home', current: true },
-        { name: 'Designs', to: '/designs', current: false },
-        { name: 'FAQ', to: '/faq', current: false },
+        { name: 'Home', to: '/home' },
+        { name: 'Designs', to: '/designs'},
+        { name: 'Orders', to: '/orders'},
+        { name: 'FAQ', to: '/faq'},
     ]
 
     const userNavigation = [
         { name: 'Your Profile', href: '#' },
         { name: 'Settings', href: '#' },
-        { name: 'Sign Out', onclick: async () => { 
-            isLoggingOut.value = true;
-            try {
-                await logoutUser(); 
-                user.value = undefined;
-                router.push('/');
-            } catch (error) {
-                console.error("Logout failed:", error);
-            } finally {
-                isLoggingOut.value = false; // Ensure loader is hidden
-            }
-        } },
+        { name: 'Sign Out', onclick: async () => {
+
+            // console.log("authStore.isAuthenticated before logout", authStore.isLogginedIn);
+            // console.log("authStore.currentUser before logout", authStore.currentUser);
+
+            await authStore.logout();
+
+            // console.log("authStore.isAuthenticated after logout", authStore.isLogginedIn);
+            // console.log("authStore.currentUser after logout", authStore.currentUser);
+
+            window.location.href = '/';
+            
+        }},
     ]
 
     const authNavigation = [
@@ -46,11 +44,15 @@ import Loader from './Loader.vue';
     ]
 
     const userDataFetch = async () => {
+
         isLoading.value = true; 
+
         try {
             const fetchedUserData = await fetchUserData();
-            console.log("userData: ", fetchedUserData);
-            user.value = fetchedUserData;
+            authStore.setUser(fetchedUserData)
+            authStore.setAuthenticated(true);
+            
+            
         } catch (error) {
             console.error("Error fetching user data:", error);
         } finally {
@@ -60,8 +62,9 @@ import Loader from './Loader.vue';
 
     onMounted(() => {
         userDataFetch();
-    })
+    });
 
+    
 </script>
 
 <template>
@@ -80,7 +83,7 @@ import Loader from './Loader.vue';
                         <div class="hidden md:block">
                             <div class="ml-6 flex items-baseline space-x-4">
                                 <router-link
-                                    v-for="item in navigation"
+                                    v-for="item in navigation.filter(nav => nav.name !== 'Orders' || authStore.currentUser)"
                                     :key="item.name"
                                     :to="item.to"
                                     :class="[
@@ -96,7 +99,7 @@ import Loader from './Loader.vue';
 
                         <div class="hidden md:block">
                             <div class="ml-4 flex items-center md:ml-6">
-                                <template v-if="!user && !isLoading">
+                                <template v-if="!authStore.currentUser && !isLoading">
                                     <div class="flex items-center gap-3 mr-3">
                                         <router-link
                                             v-for="nav in authNavigation"
@@ -112,13 +115,13 @@ import Loader from './Loader.vue';
                                     </div>
                                 </template>
 
-                                <button v-if="user" type="button" class="relative rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800 focus:outline-hidden">
+                                <button v-if="authStore.currentUser" type="button" class="relative rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800 focus:outline-hidden">
                                     <span class="absolute -inset-1.5" />
                                     <span class="sr-only">View notifications</span>
                                     <BellIcon class="size-6" aria-hidden="true" />
                                 </button>
 
-                                <Menu as="div" class="relative ml-3" v-if="user">
+                                <Menu as="div" class="relative ml-3" v-if="authStore.currentUser">
                                     <div>
                                         <MenuButton class="relative flex items-center rounded-full bg-gray-800 text-sm focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800 focus:outline-hidden">
                                             <span class="absolute" />
@@ -130,7 +133,7 @@ import Loader from './Loader.vue';
                                     <transition enter-active-class="transition ease-out duration-100" enter-from-class="transform opacity-0 scale-95" enter-to-class="transform opacity-100 scale-100" leave-active-class="transition ease-in duration-75" leave-from-class="transform opacity-100 scale-100" leave-to-class="transform opacity-0 scale-95">
                                         <MenuItems class="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black/5 focus:outline-hidden">
                                             <MenuItem v-for="item in userNavigation" :key="item.name" v-slot="{ active }" @click="item.onclick">
-                                                <a :href="item.href" :class="[active ? 'bg-gray-100 outline-hidden' : '', 'block px-4 py-2 text-sm text-gray-700']">{{ item.name }} </a>
+                                                <a :href="item.href" :class="[active ? 'bg-gray-100 outline-hidden' : '', 'block px-4 py-2 text-sm text-gray-700 hover:cursor-pointer']">{{ item.name }} </a>
                                             </MenuItem>
                                         </MenuItems>
                                     </transition>
@@ -146,14 +149,14 @@ import Loader from './Loader.vue';
             </div>
 
             <DisclosurePanel class="md:hidden">
-                <template v-if="user">
+                <template v-if="authStore.currentUser">
                     <div class="border-t border-gray-700 pt-4 pb-3">
                         <div class="flex items-center px-5">
                             <div class="shrink-0">
                                 <UserIcon class="size-8 text-white" aria-hidden="true"/>
                             </div>
                             <div class="ml-3">
-                                <div class="text-base/5 font-medium text-white">{{ user.name }}</div>
+                                <div class="text-base/5 font-medium text-white">{{ authStore.currentUser.name }}</div>
                                 </div>
 
                             <button type="button" class="relative ml-auto shrink-0 rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800 focus:outline-hidden">
@@ -189,13 +192,13 @@ import Loader from './Loader.vue';
                     >{{ item.name }}</DisclosureButton>
 
                     <DisclosureButton
-                        v-if="!user && !isLoading"
+                        v-if="!authStore.currentUser"
                         v-for="nav in authNavigation"
                         :key="nav.to"
                         as="router-link"
                         :to="nav.to"
                         :class="[
-                            'block rounded-md px-3 py-2 text-base font-medium text-gray-400 hover:bg-gray-700 hover:text-white mt-1',
+                            'block rounded-md px-3 py-2 text-base font-medium text-gray-400 hover:bg-gray-700 hover:cursor-pointer hover:text-white mt-1',
                             route.path === nav.to ? 'bg-white text-black' : '',
                         ]"
                     >{{ nav.name }}</DisclosureButton>
@@ -211,7 +214,7 @@ import Loader from './Loader.vue';
 
     </div>
 
-    <div v-if="isLoggingOut">
+    <div v-if="authStore.LoggingOut">
         <Loader msg="Logging Out..."/>
     </div>
 </template>

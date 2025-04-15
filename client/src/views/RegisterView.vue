@@ -16,7 +16,7 @@ import { ref } from 'vue';
 
   const isLoadingMutation = ref(false);
 
-  const { handleSubmit, isSubmitting } = useForm({
+  const { handleSubmit, isSubmitting, handleReset } = useForm({
     validationSchema,
   });
 
@@ -29,8 +29,8 @@ import { ref } from 'vue';
       mutationFn: register,
       onSuccess: (response) => {
         isLoadingMutation.value = false; 
-        
         console.log("register response: ", response);
+        handleReset()
       },
 
       onError: (error) => {

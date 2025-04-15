@@ -1,7 +1,8 @@
 <script lang="ts" setup>
   import { login } from '@/api/post/login';
 import Loader from '@/components/Loader.vue';
-  import type { UserData } from '@/types/user';
+import { useAuthStore } from '@/stores/user';
+  import type { AuthenticatedUserData, LoginCredentials } from '@/types/user';
   import { useMutation } from '@tanstack/vue-query';
   import { useForm, useField } from 'vee-validate';
   import { ref } from 'vue';
@@ -10,7 +11,6 @@ import Loader from '@/components/Loader.vue';
 
 
   const isLoadingMutation = ref(false);
-  const router = useRouter()
 
   const validationSchema = yup.object({
     username: yup.string().required('Username is required'),
@@ -30,8 +30,13 @@ import Loader from '@/components/Loader.vue';
       mutationFn: login,
       onSuccess: (response) => {
         isLoadingMutation.value = false; 
-        router.replace('/')
-        console.log("login response: ", response);
+        // const authenticatedUser: AuthenticatedUserData = {
+        //   id: response.id,
+        //   name: response.name,
+        //   username: response.username,
+        // }
+        
+        window.location.href = '/';
       },
 
       onError: (error) => {
@@ -46,9 +51,8 @@ import Loader from '@/components/Loader.vue';
 
 
   const onSubmit = handleSubmit(async (values) => {
-    console.log('Form submitted with:', values);
 
-    const userData: UserData = {
+    const userData: LoginCredentials = {
       username: values.username,
       password: values.password,
     }

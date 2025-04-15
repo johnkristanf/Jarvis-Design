@@ -40,7 +40,7 @@
 
 <template>
     <div class="relative overflow-hidden bg-white">
-      <div class="sm:pt-24 sm:pb-40 lg:pt-48 lg:pb-48">
+      <div class="sm:pt-24 sm:pb-40 lg:pt-48 lg:pb-[15rem]">
         <div class="relative mx-auto max-w-7xl px-4 sm:static sm:px-6 lg:px-8">
           <div class="sm:max-w-lg">
             <h1 class="text-6xl font-bold tracking-tight text-gray-900 sm:text-4xl">JARVIS DESIGNS</h1>
