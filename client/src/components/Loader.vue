@@ -2,7 +2,7 @@
     import { ProgressSpinner } from 'primevue';
 
     const props = defineProps<{
-        msg: String
+        msg: string
     }>();
 
 </script>

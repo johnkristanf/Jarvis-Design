@@ -1,111 +1,84 @@
 <script lang="ts" setup>
-    import { generateImageDesign } from '@/api/post/generate';
+    import { getAllDesigns } from '@/api/get/designs';
+    import { generateImageDesign, uploadPreferredDesign } from '@/api/post/generate';
     import ProductViewModal from '@/components/designs/ProductViewModal.vue';
-import Loader from '@/components/Loader.vue';
+    import Loader from '@/components/Loader.vue';
     import type { DesignGenerate, Designs } from '@/types/design';
-    import { useMutation } from '@tanstack/vue-query';
+    import { ArrowRightIcon, ArrowUpOnSquareIcon } from '@heroicons/vue/20/solid';
+    import { useMutation, useQuery } from '@tanstack/vue-query';
     import { Select } from 'primevue';
     import { useField, useForm } from 'vee-validate';
-    import { ref } from 'vue';
+    import { onMounted, ref } from 'vue';
+    import { useToast } from 'primevue/usetoast';
+import UploadDesignModal from '@/components/designs/UploadDesignModal.vue';
+import UploadedDesignsTable from '@/components/designs/UploadedDesignsTable.vue';
 
 
-    const designs: Designs[] = [
-        {
-            id: 1,
-            name: 'Basic Tee 6-Pack ',
-            price: '$192',
-            imageSrc: 'https://tailwindcss.com/plus-assets/img/ecommerce-images/product-quick-preview-02-detail.jpg',
-            
-            colors: [
-                { name: 'White' },
-                { name: 'Gray'  },
-                { name: 'Black' },
-            ],
+    const aiAPIURL = import.meta.env.VITE_AI_API_URL;
+    const designs = ref();
 
-            sizes: [
-                { name: 'XXS', inStock: true },
-                { name: 'XS', inStock: true },
-                { name: 'S', inStock: true },
-                { name: 'M', inStock: true },
-                { name: 'L', inStock: true },
-                { name: 'XL', inStock: true },
-                { name: 'XXL', inStock: true },
-                { name: 'XXXL', inStock: false },
-            ],
-        },
-
-
-        {
-            id: 2,
-            name: 'Basic Tee 6-Pack ',
-            price: '$192',
-            imageSrc: 'https://tailwindcss.com/plus-assets/img/ecommerce-images/product-quick-preview-02-detail.jpg',
-            
-            colors: [
-                { name: 'White' },
-                { name: 'Gray'  },
-                { name: 'Black' },
-            ],
-
-            sizes: [
-                { name: 'XXS', inStock: true },
-                { name: 'XS', inStock: true },
-                { name: 'S', inStock: true },
-                { name: 'M', inStock: true },
-                { name: 'L', inStock: true },
-                { name: 'XL', inStock: true },
-                { name: 'XXL', inStock: true },
-                { name: 'XXXL', inStock: false },
-            ],
-        }
-
-    ]
-
-    
+       
     const selectedDesign = ref<Designs>(); 
-    const openModal = ref(false);
+    const openDesignModal = ref(false);
+    const openUploadDesignModal = ref(false);
+
     const imageUrls = ref([]);
     const isLoadingMutation = ref(false);
+    const loaderMsg = ref<string>('');
 
-    const handleSelectDesign = (product: Designs) => {
-        openModal.value = true
-        selectedDesign.value = product; 
 
-        console.log("ref product (initial): ", selectedDesign.value);
+    const renderAllDesigns = async () => {
+        isLoadingMutation.value = true; 
+        loaderMsg.value = "Loading Designs...";
 
+        const res = await getAllDesigns();
+
+        designs.value = res
+        isLoadingMutation.value = false; 
+    }
+
+    const handleSelectDesign = (design: Designs) => {
+        openDesignModal.value = true
+        selectedDesign.value = design; 
     };
 
-    const { handleSubmit } = useForm();
+    const { handleSubmit, handleReset } = useForm();
 
-    const mutation = useMutation({
+    const generateImageMutation = useMutation({
         mutationFn: generateImageDesign,
         onSuccess: (response) => {
             isLoadingMutation.value = false;
             console.log("response: ", response)
 
             if(response && response.data.image_urls){
-                imageUrls.value = response.data.image_urls
+                imageUrls.value = response.data.image_urls;
+                handleReset();
             }
         },
 
         onError: (error) => {
-            isLoadingMutation.value = false; 
-            console.error("Error generating image:", error);
-        },
+            isLoadingMutation.value = false; 
+            console.error("Error generating image:", error);
+        },
 
-        onMutate: () => {
-            isLoadingMutation.value = true; 
-        },
+        onMutate: () => {
+            loaderMsg.value = "Generating Images..."
+            isLoadingMutation.value = true; 
+        },
     });
 
 
     const preferences = ref([
         {name: 'realistic'},
         {name: 'cartoon'},
+        {name: 'anime'},
+        {name: 'painting'},
+        {name: 'sketch'},
     ])
 
     const { value: prompt, } = useField('prompt');
     const { value: style_preference, } = useField('style_preference');
+
 
     const onImageGenerate = handleSubmit(values => {
         const designGengerateData: DesignGenerate = {
@@ -115,14 +88,20 @@ import Loader from '@/components/Loader.vue';
 
         console.log("isSubmitting: ", isLoadingMutation.value);
 
-        mutation.mutate(designGengerateData)
+        generateImageMutation.mutate(designGengerateData)
         
     });
 
-    const aiAPIURL = import.meta.env.VITE_AI_API_URL;
-    console.log("imageUrls: ", imageUrls.value.length);
-    
-    
+    const handleOpenUploadModal = () => openUploadDesignModal.value = true;
+
+
+
+
+
+    onMounted(() => {
+        renderAllDesigns();
+    });
+
 
 </script>
 
@@ -134,7 +113,17 @@ import Loader from '@/components/Loader.vue';
             <h2 class="text-2xl font-bold tracking-tight text-gray-900">Explore our designs</h2>
 
 
-            <div class="card flex justify-center">
+            <div class="card flex justify-center gap-3">
+
+                <button
+                    @click="handleOpenUploadModal"
+                    class="flex items-center justify-center gap-1 font-medium bg-gray-900 p-3 text-white w-[40%] rounded-md text-base focus:outline-none hover:bg-gray-700 cursor-pointer sm:text-sm/6"
+                    >
+                    <ArrowUpOnSquareIcon class="size-5"/>
+                    Upload Design
+                </button>
+                
+                
                 <form @submit.prevent="onImageGenerate" class="flex gap-2 w-full sm:w-56">
                     <div class="flex gap-1">
                         <input
@@ -158,10 +147,25 @@ import Loader from '@/components/Loader.vue';
                 </form>
             </div>
         </div>
+        
   
         <div class="mt-6">
 
-            <div v-if="designs && imageUrls.length == 0" class="mt-12 flex flex-wrap items-center gap-12">
+            <div class="mt-12 w-full flex justify-end">
+                <h1 class="text-gray-600 hover:cursor-pointer hover:opacity-75 flex items-center">
+                    View Uploaded Designs
+                    <ArrowRightIcon class="size-6"/>
+                </h1>
+            </div>
+
+
+            <!-- UPLOADED DESIGNS -->
+            <UploadedDesignsTable />
+
+
+            <!-- PRE-MADE DESIGNS -->
+
+            <div v-if="designs && imageUrls.length == 0" class=" flex flex-wrap items-center gap-12">
                 <div
                     v-for="design in designs"
                     :key="design.id"
@@ -169,7 +173,7 @@ import Loader from '@/components/Loader.vue';
                     @click="handleSelectDesign(design)"
                 >
                     <img
-                        :src="design.imageSrc"
+                        :src="design.image_path"
                         class="aspect-square w-full rounded-md bg-gray-200 object-cover group-hover:opacity-75 lg:aspect-auto lg:h-80"
                     />
 
@@ -183,12 +187,13 @@ import Loader from '@/components/Loader.vue';
                             </h3>
                         </div>
 
-                        <p class="text-sm font-medium text-gray-900">{{ design.price }}</p>
+                        <p class="text-sm font-medium text-gray-900">₱ {{ design.price }}</p>
                     </div>
                 </div>
             </div>
 
 
+            <!-- AI GENERATED IMAGES -->
             <div v-else-if="imageUrls && imageUrls.length > 0"  class="mt-12 flex justify-center flex-wrap items-center gap-12">
                 <div v-for="(imageUrl, index) in imageUrls" :key="'generated-' + index" class="group relative">
                 
@@ -210,7 +215,7 @@ import Loader from '@/components/Loader.vue';
                 </div>
             </div>
 
-            <div v-else>
+            <div v-if="!designs && !imageUrls" >
                 <p>No designs or generated images available.</p>
             </div>
 
@@ -219,14 +224,20 @@ import Loader from '@/components/Loader.vue';
     </div>
 
     <div v-if="isLoadingMutation">
-        <Loader msg="Generating Images..."/>
+        <Loader :msg="loaderMsg"/>
     </div>
 
     <ProductViewModal
         v-if="selectedDesign"
         :design="selectedDesign"
-        :isOpen="openModal"
-        @close="openModal = false"
+        :isOpen="openDesignModal"
+        @close="openDesignModal = false"
+    />
+
+    <UploadDesignModal
+        v-if="openUploadDesignModal"
+        :isOpen="openUploadDesignModal"
+        @close="openUploadDesignModal = false"
     />
 
 </template>

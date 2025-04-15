@@ -2,11 +2,21 @@
 export interface Designs {
     id: number
     name: string;
-    price: string;
-    imageSrc: string;
-    colors: { name: string; }[];
-    sizes: { name: string; inStock: boolean }[];
+    price: number;
+    image_path: string;
+    
 }
+
+export interface Colors {
+    id: number
+    name: string;
+}
+
+export interface Sizes {
+    id: number
+    name: string;
+}
+
 
 
 export type DesignGenerate = {
