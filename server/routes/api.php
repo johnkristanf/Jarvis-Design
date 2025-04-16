@@ -15,8 +15,11 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::get('/user/data', [UserController::class, 'user']);
 
-    Route::get('/get/uploaded/design', [DesignsController::class, 'getUploadedDesign']);
+    Route::get('/uploaded/designs', [DesignsController::class, 'getUploadedDesigns']);
     Route::post('/upload/preferred/design', [DesignsController::class, 'uploadPreferredDesign']);
+
+    Route::put('/update/uploaded/design', [DesignsController::class, 'updateUploadedDesigns']);
+    
 
     Route::post('/paymongo/webhook', [PaymentController::class, 'handleWebhook']);
     Route::post('/paymongo/create-qr-source', [PaymentController::class, 'createQrPhSource']);

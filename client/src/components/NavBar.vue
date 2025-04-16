@@ -5,12 +5,11 @@
     import { onMounted, ref } from 'vue';
     import { useRoute, useRouter } from 'vue-router';
     import Loader from './Loader.vue';
-    import { useAuthStore } from '@/stores/user';
-import { fetchUserData } from '@/api/get/user-data';
+    import { fetchUserData } from '@/api/get/user-data';
+    import { useFetchAuthenticatedUser } from '@/composables/useFetchAuthenticatedUser';
 
     const route = useRoute();
-    const authStore = useAuthStore();
-    const isLoading = ref(true); 
+    const { authStore, isLoading } = useFetchAuthenticatedUser();
 
 
     const navigation = [
@@ -42,27 +41,6 @@ import { fetchUserData } from '@/api/get/user-data';
         { name: 'Login', to: '/auth/login' },
         { name: 'Register', to: '/auth/register' },
     ]
-
-    const userDataFetch = async () => {
-
-        isLoading.value = true; 
-
-        try {
-            const fetchedUserData = await fetchUserData();
-            authStore.setUser(fetchedUserData)
-            authStore.setAuthenticated(true);
-            
-            
-        } catch (error) {
-            console.error("Error fetching user data:", error);
-        } finally {
-            isLoading.value = false; 
-        }
-    }
-
-    onMounted(() => {
-        userDataFetch();
-    });
 
     
 </script>
