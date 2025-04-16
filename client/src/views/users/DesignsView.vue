@@ -1,7 +1,7 @@
 <script lang="ts" setup>
     import { getAllDesigns } from '@/api/get/designs';
     import { generateImageDesign, uploadPreferredDesign } from '@/api/post/generate';
-    import ProductViewModal from '@/components/designs/ProductViewModal.vue';
+    import ProductViewModal from '@/components/designs/DesignViewModal.vue';
     import Loader from '@/components/Loader.vue';
     import type { DesignGenerate, Designs } from '@/types/design';
     import { ArrowLeftIcon, ArrowRightIcon, ArrowUpOnSquareIcon } from '@heroicons/vue/20/solid';

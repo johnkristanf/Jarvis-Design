@@ -6,6 +6,8 @@
     import { ref } from 'vue';
     import Loader from '../Loader.vue';
     import { useProductAttributes } from '@/composables/useProductAttribute';
+    
+    import ListSelectBox from '../ListSelectBox.vue';
 
     const props = defineProps<{
         isOpen: boolean;
@@ -109,7 +111,7 @@
       <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
         <div class="flex min-h-full items-stretch justify-center text-center md:items-center md:px-2 lg:px-4">
           <TransitionChild as="template" enter="ease-out duration-300" enter-from="opacity-0 translate-y-4 md:translate-y-0 md:scale-95" enter-to="opacity-100 translate-y-0 md:scale-100" leave="ease-in duration-200" leave-from="opacity-100 translate-y-0 md:scale-100" leave-to="opacity-0 translate-y-4 md:translate-y-0 md:scale-95">
-            <DialogPanel class="flex w-full transform text-left text-base transition md:my-8 md:max-w-2xl md:px-4 lg:max-w-4xl">
+            <DialogPanel class="flex w-[60%] transform text-left text-base transition md:my-8 md:max-w-2xl md:px-4 lg:max-w-4xl">
                 
               <div class="relative flex w-full items-center overflow-hidden mb-16 bg-white px-4 pt-14 pb-8 shadow-2xl sm:px-6 sm:pt-8 md:p-6 lg:p-8">
                 <button type="button" class="absolute top-4 right-4 text-gray-400 hover:text-gray-500 sm:top-8 sm:right-6 md:top-6 md:right-6 lg:top-8 lg:right-8" @click="handleCloseModal">
@@ -118,14 +120,14 @@
                 </button>
 
                 <div class="flex justify-between w-full">
-                  <div class="sm:col-span-8 lg:col-span-7">
+                  <div class="w-full sm:col-span-8 lg:col-span-7">
                     <h2 class="text-2xl font-bold text-gray-900 sm:pr-12">Choose the attribute of your desired design</h2>
 
         
-                    <section aria-labelledby="options-heading" class="mt-10">
+                    <section aria-labelledby="options-heading" class="mt-10 w-full">
                       <h3 id="options-heading" class="sr-only">design options</h3>
 
-                      <form @submit.prevent="handleUploadDesign">
+                      <form @submit.prevent="handleUploadDesign" class=" w-full">
 
                         <!-- COLORS -->
 
@@ -134,26 +136,17 @@
                             <div class="text-md">Color</div>
                           </div>
 
-                          <RadioGroup v-model="selectedColor" class="mt-4 grid grid-cols-4 gap-4">
-                            <RadioGroupOption
-                              as="template"
-                              v-for="color in colors"
-                              :key="color.name"
-                              :value="color"
-                              v-slot="{ active, checked }"
-                            >
-                                <div
-                                    :class="[
-                                    
-                                    active ? 'ring-2 ring-indigo-500' : '',
-                                    'group hover:cursor-pointer relative flex items-center justify-center rounded-md border px-4 py-3 text-sm font-medium uppercase hover:bg-gray-50 focus:outline-hidden sm:flex-1',
-                                    ]"
-                                >
-                                <span>{{ color.name }}</span>
+                          <!-- DESIGN STATUS SELECT ELEMENT -->
+                          <div class="mt-5 w-full">
+                            <ListSelectBox
+                              v-model="selectedColor"
+                              :options="colors"
+                              displayKey="name"
+                            />
+                          </div>
+                          
 
-                              </div>
-                            </RadioGroupOption>
-                          </RadioGroup>
+                          <!-- END OF DESIGN STATUS SELECT ELEMENT -->
 
                         </fieldset>
 
