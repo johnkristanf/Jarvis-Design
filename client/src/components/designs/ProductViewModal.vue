@@ -125,10 +125,10 @@ import { useProductAttributes } from '@/composables/useProductAttribute';
 
                         <fieldset v-if="colors && !loadingColors" class="mt-10" aria-label="Choose a size">
                           <div class="flex items-center justify-between">
-                            <div class="text-sm font-medium text-gray-900">Size</div>
+                            <div class="text-md ">Color</div>
                           </div>
 
-                          <RadioGroup v-model="selectedSize" class="mt-4 grid grid-cols-4 gap-4">
+                          <RadioGroup v-model="selectedColor" class="mt-4 grid grid-cols-4 gap-4">
                             <RadioGroupOption
                               as="template"
                               v-for="size in colors"
@@ -162,7 +162,7 @@ import { useProductAttributes } from '@/composables/useProductAttribute';
 
                         <fieldset v-if="sizes && !loadingSizes" class="mt-10" aria-label="Choose a size">
                           <div class="flex items-center justify-between">
-                            <div class="text-sm font-medium text-gray-900">Size</div>
+                            <div class="text-md">Size</div>
                           </div>
 
                           <RadioGroup v-model="selectedSize" class="mt-4 grid grid-cols-4 gap-4">

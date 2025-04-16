@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\PreferredDesign;
 use App\Services\DesignsService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -47,13 +48,18 @@ class DesignsController extends Controller
         try {
 
             $uploadedFileData = $request->file('file');
+            $colorId = $request->input('color');
+            $sizeId = $request->input('size');
+
+
             $extractedFileName = $uploadedFileData->getClientOriginalName();
 
             $s3Key = "uploads/" . basename($extractedFileName);
             $file = file_get_contents($uploadedFileData->getPathname());
 
             Log::info("File Data: ", [
-                'uploadedFileData' => $uploadedFileData,
+                'sizeId' => $sizeId,
+                'colorId' => $colorId,
                 'extractedFileName' => $extractedFileName,
             ]);
 
@@ -80,7 +86,7 @@ class DesignsController extends Controller
 
 
             // THE AS IS CODE:
-                $preferredDesignID = $this->designsService->savePreferredDesign($s3Key);
+                $preferredDesignID = $this->designsService->savePreferredDesign($s3Key, $colorId, $sizeId);
                 
                 return response()->json([
                     'success' => true,
@@ -105,16 +111,39 @@ class DesignsController extends Controller
         }
     }
 
-    public function getUploadedDesign()
+    public function getUploadedDesigns()
     {
-        $uploadedDesigns = PreferredDesign::all();
-        Log::info("Uploaded Designs: ", [
-            'designs' => $uploadedDesigns
+       
+        $results = $this->designsService->allPreferredDesigns();
+        return response()->json($results, 200);
+   
+    }
+
+    public function updateUploadedDesigns(Request $request)
+    {
+        $validated = $request->validate([
+            'status' => 'required|string', 
+            'price' => 'required|numeric',
+            'design_id' => 'required|integer|exists:designs,id',
         ]);
 
+        $status = $validated['status'];
+        $price = $validated['price'];
+        $designID = $validated['design_id'];
+
+        Log::info("Design Uploaded Data: ", [
+            'status' => $status,
+            'price' => $price,
+            'designID' => $designID,
+        ]);
+
+        $updatedUploadedDesignID = $this->designsService->updateUploadedDesign($designID, $status, $price);
+
         return response()->json([
-            'uploadedDesigns' => $uploadedDesigns
-        ], 200);
-   
+            'message' => 'Design updated successfully',
+            'design_od' => $updatedUploadedDesignID
+        ]);
+
+
     }
 }

@@ -10,6 +10,7 @@ use Illuminate\Database\QueryException; // Example: Specific database exception
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Exception; // For catching general exceptions if needed
+use Illuminate\Support\Facades\DB;
 
 class DesignsService
 {
@@ -51,16 +52,81 @@ class DesignsService
     }
 
 
-    public function savePreferredDesign(string $path): int
+    public function savePreferredDesign(string $path, $colorID, $sizeID): int
     {
         try {
             
             $preferredDesignID = PreferredDesign::create([
                 'path' => $path,
+                'color_id' => $colorID,
+                'size_id' => $sizeID,
                 'user_id' => Auth::user()->id
             ])->id;
 
             return $preferredDesignID;
+
+        } catch (QueryException $e) {
+            Log::error('Error saving preferred design: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
+            return -1;
+
+        } catch (Exception $e) {
+            Log::error('An unexpected error occurred while saving preferred design: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
+            return -1;
+
+        }
+    }
+
+
+    public function allPreferredDesigns()
+    {
+        try {
+            $results = DB::table('preferred_designs')
+                ->join('colors', 'preferred_designs.color_id', '=', 'colors.id')
+                ->join('sizes', 'preferred_designs.size_id', '=', 'sizes.id')
+                ->select(
+                    'preferred_designs.id',
+                    'preferred_designs.path',
+                    'preferred_designs.price',
+                    'preferred_designs.status',
+                    'preferred_designs.user_id',
+                    'colors.name as color_name',
+                    'sizes.name as size_name',  
+                    'preferred_designs.created_at'
+                )
+                ->get();
+    
+            return $results;
+    
+        } catch (QueryException $e) {
+            Log::error("Database Query Failed: " . $e->getMessage());
+    
+            return response()->json([
+                'error' => 'Failed to retrieve preferred designs.',
+                'message' => $e->getMessage(), 
+            ], 500); 
+
+        } catch (\Exception $e) {
+            Log::error("An unexpected error occurred: " . $e->getMessage());
+    
+            return response()->json([
+                'error' => 'An unexpected error occurred.',
+                'message' => $e->getMessage(), 
+            ], 500);
+        }
+    }
+
+    public function updateUploadedDesign($designID, $status, $price): int
+    {
+        try {
+            
+            $design = PreferredDesign::find($designID);
+
+            $design->status = $status;
+            $design->price = $price;
+            $design->save();
+
+            return $design->id;
+
 
         } catch (QueryException $e) {
             Log::error('Error saving preferred design: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
