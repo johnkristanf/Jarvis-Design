@@ -24,14 +24,7 @@
         { name: 'Settings', href: '#' },
         { name: 'Sign Out', onclick: async () => {
 
-            // console.log("authStore.isAuthenticated before logout", authStore.isLogginedIn);
-            // console.log("authStore.currentUser before logout", authStore.currentUser);
-
             await authStore.logout();
-
-            // console.log("authStore.isAuthenticated after logout", authStore.isLogginedIn);
-            // console.log("authStore.currentUser after logout", authStore.currentUser);
-
             window.location.href = '/';
             
         }},
@@ -110,6 +103,11 @@
 
                                     <transition enter-active-class="transition ease-out duration-100" enter-from-class="transform opacity-0 scale-95" enter-to-class="transform opacity-100 scale-100" leave-active-class="transition ease-in duration-75" leave-from-class="transform opacity-100 scale-100" leave-to-class="transform opacity-0 scale-95">
                                         <MenuItems class="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black/5 focus:outline-hidden">
+                                            <div class="flex flex-col font-medium mb-3 border-b border-gray-300 p-3">
+                                                <h1>{{ authStore.currentUser.name }}</h1>
+                                                <p class="text-gray-400">{{ authStore.currentUser.username }}</p>
+                                            </div>
+                                            
                                             <MenuItem v-for="item in userNavigation" :key="item.name" v-slot="{ active }" @click="item.onclick">
                                                 <a :href="item.href" :class="[active ? 'bg-gray-100 outline-hidden' : '', 'block px-4 py-2 text-sm text-gray-700 hover:cursor-pointer']">{{ item.name }} </a>
                                             </MenuItem>

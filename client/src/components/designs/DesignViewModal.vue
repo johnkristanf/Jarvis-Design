@@ -1,16 +1,25 @@
 <script lang="ts" setup>
-import { ref, computed, onMounted } from 'vue';
-import { Dialog, DialogPanel, TransitionChild, TransitionRoot, RadioGroup, RadioGroupOption} from '@headlessui/vue';
-import { XMarkIcon } from '@heroicons/vue/20/solid';
-import { type Colors, type Designs, type Sizes } from '@/types/design'
-import { Select, ProgressSpinner } from 'primevue';
-import { getAllColors, getAllSizes } from '@/api/get/designs';
+  import { ref, computed } from 'vue';
+  import { Dialog, DialogPanel, TransitionChild, TransitionRoot, RadioGroup, RadioGroupOption} from '@headlessui/vue';
+  import { XMarkIcon } from '@heroicons/vue/20/solid';
+  import { type Designs } from '@/types/design'
+  import { ProgressSpinner } from 'primevue';
 
-import PaymentModal from './PaymentModal.vue';
-import { type PreferredDesignAttribute, type ProceedPaymentData } from '@/types/payment';
-import FailureMessageDialog from '../FailureMessageDialog.vue';
-import { useAuthStore } from '@/stores/user';
-import { useProductAttributes } from '@/composables/useProductAttribute';
+  import PaymentModal from './PaymentModal.vue';
+  import { type PreferredDesignAttribute, type ProceedPaymentData } from '@/types/payment';
+  import FailureMessageDialog from '../FailureMessageDialog.vue';
+  import { useAuthStore } from '@/stores/user';
+  import { useProductAttributes } from '@/composables/useProductAttribute';
+
+  import {
+    Listbox,
+    ListboxButton,
+    ListboxOptions,
+    ListboxOption,
+  } from '@headlessui/vue'
+
+  import { CheckIcon, ChevronUpDownIcon } from '@heroicons/vue/20/solid'
+import ListSelectBox from '../ListSelectBox.vue';
 
 
   const props = defineProps<{
@@ -123,31 +132,23 @@ import { useProductAttributes } from '@/composables/useProductAttribute';
 
                         <!-- COLORS -->
 
-                        <fieldset v-if="colors && !loadingColors" class="mt-10" aria-label="Choose a size">
+                        <fieldset v-if="colors && !loadingColors" class="mt-10" aria-label="Choose a color">
                           <div class="flex items-center justify-between">
                             <div class="text-md ">Color</div>
                           </div>
 
-                          <RadioGroup v-model="selectedColor" class="mt-4 grid grid-cols-4 gap-4">
-                            <RadioGroupOption
-                              as="template"
-                              v-for="size in colors"
-                              :key="size.name"
-                              :value="size"
-                              v-slot="{ active, checked }"
-                            >
-                              <div
-                                :class="[
-                                  
-                                  active ? 'ring-2 ring-indigo-500' : '',
-                                  'group hover:cursor-pointer relative flex items-center justify-center rounded-md border px-4 py-3 text-sm font-medium uppercase hover:bg-gray-50 focus:outline-hidden sm:flex-1',
-                                ]"
-                              >
-                                <span>{{ size.name }}</span>
+                          <!-- DESIGN STATUS SELECT ELEMENT -->
 
-                              </div>
-                            </RadioGroupOption>
-                          </RadioGroup>
+                          <div class="mt-4 w-full">
+                            <ListSelectBox
+                              v-model="selectedColor"
+                              :options="colors"
+                              displayKey="name"
+                            />
+                            
+                          </div>
+
+                          <!-- END OF DESIGN STATUS SELECT ELEMENT -->
 
                         </fieldset>
 
