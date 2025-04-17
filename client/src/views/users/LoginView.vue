@@ -1,7 +1,6 @@
 <script lang="ts" setup>
   import { login } from '@/api/post/login';
-import Loader from '@/components/Loader.vue';
-import { useAuthStore } from '@/stores/user';
+  import Loader from '@/components/Loader.vue';
   import { UserRole, type AuthenticatedUserData, type LoginCredentials } from '@/types/user';
   import { useMutation } from '@tanstack/vue-query';
   import { useForm, useField } from 'vee-validate';

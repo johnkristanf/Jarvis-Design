@@ -1,4 +1,3 @@
-import { DesignStatus, OrderStatus } from "@/types/design";
 
 export const formatCurrency = (value: string) => {
     const numericValue = parseFloat(value);

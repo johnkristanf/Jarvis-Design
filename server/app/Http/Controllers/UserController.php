@@ -46,34 +46,33 @@ class UserController extends Controller
             'username' => ['required'],
             'password' => ['required'],
         ]);
- 
+
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
 
             $authenticatedUser = Auth::user();
             $authenticatedUser = User::where('id', $authenticatedUser->id)
-                        ->select('id', 'name', 'username', 'role_id') 
-                        ->with(['role' => function ($query) {
-                            $query->select('id', 'name'); 
-                        }])
-                        ->first();
+                ->select('id', 'name', 'username', 'role_id')
+                ->with(['role' => function ($query) {
+                    $query->select('id', 'name');
+                }])
+                ->first();
 
             return response()->json($authenticatedUser, 200);
         }
- 
-        return response()->json(['msg' => 'Invalid Username or Password'], 401);
 
+        return response()->json(['msg' => 'Invalid Username or Password'], 401);
     }
 
     public function user()
     {
         $authenticatedUser = Auth::user();
         $authenticatedUser = User::where('id', $authenticatedUser->id)
-                        ->select('id', 'name', 'username', 'role_id') 
-                        ->with(['role' => function ($query) {
-                            $query->select('id', 'name'); 
-                        }])
-                        ->first();
+            ->select('id', 'name', 'username', 'role_id')
+            ->with(['role' => function ($query) {
+                $query->select('id', 'name');
+            }])
+            ->first();
 
         return response()->json($authenticatedUser, 200);
     }
@@ -86,6 +85,5 @@ class UserController extends Controller
         $request->session()->regenerateToken();
 
         return response()->noContent(204);
-
     }
 }

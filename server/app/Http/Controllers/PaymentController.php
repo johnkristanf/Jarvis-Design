@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Service\PaymentService;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class PaymentController extends Controller
@@ -25,6 +26,12 @@ class PaymentController extends Controller
             'event' => $event['data']
         ]);
 
+        // Log::info('Meta Data: ', [
+        //     'metadata' => $event['data']['attributes']['metadata']
+        // ]);
+
+      
+
         Log::info('Proccess Types: ', [
             'type' => $event['data']['attributes']['type']
         ]);
@@ -38,6 +45,9 @@ class PaymentController extends Controller
         
 
         if ($eventType === 'payment.paid') {
+
+            // HANDLE HERE THE GENERATION OF ORDER ID BASED ON THE FRONT END VUE SA FORMAT: ORD-12..xxxx
+
             $payment = $event['data'];
             $paymentAttributes = $payment['attributes'];
 
@@ -77,12 +87,20 @@ class PaymentController extends Controller
     public function createQrPhSource(Request $request)
     {
         try {
-                $designPrice = $request->input('price'); 
+                $designID = $request->input('design_id'); 
+                $totalPrice = $request->input('total_price'); 
+                $orderType = $request->input('order_type'); 
+
+                $quantity = $request->input('quantity'); 
+                $color = $request->input('color'); 
+                $size = $request->input('size'); 
+
                 $secretKey = config('services.paymongo.secret_key');
                 $authHeader = "Basic " . base64_encode($secretKey . ":");
 
 
-                $paymentIntentID = $this->paymentService->requestPaymentIntent($designPrice, $authHeader);
+                // ADD META DATA IN THE requestPaymentIntent SERVICE TO ADD THE (COLORS, SIZES, ETC...)
+                $paymentIntentID = $this->paymentService->requestPaymentIntent($designID, $totalPrice, $orderType, $quantity, $color, $size, $authHeader);
 
                 $paymentMethodID = $this->paymentService->requestPaymentMethod($authHeader);
 
@@ -118,4 +136,36 @@ class PaymentController extends Controller
                 return response()->json(['error' => 'Failed to generate QR Code. An unexpected error occurred.'], 500);
             }
     }
+
+
+    public function triggerCurlRequest()
+    {
+        $response = Http::withHeaders([
+            'accept' => 'application/json',
+            'authorization' => 'Basic c2tfdGVzdF84Szc0NWYzek5ONEhUbXNZc1pBQUdrWjc6',
+            'content-type' => 'application/json',
+
+        ])->post('https://api.paymongo.com/v1/sources', [
+            'data' => [
+                'attributes' => [
+                    'amount' => 10000,
+                    'redirect' => [
+                        'success' => 'http://localhost:3000/payment/success',
+                        'failed' => 'http://localhost:3000/payment/failed',
+                    ],
+                    'type' => 'gcash',
+                    'currency' => 'PHP',
+                    'metadata' => [
+                        'product_id' => "123",
+                        'user' => 'Kristan',
+                        'hell_miccc_hello_test'=> 'hello miccc testtinggg...'
+                    ],
+                ],
+            ],
+        ]);
+
+        // Log or return the response
+        return response()->json($response->json());
+    }
+
 }

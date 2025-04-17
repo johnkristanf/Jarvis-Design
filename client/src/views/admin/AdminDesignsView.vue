@@ -1,13 +1,13 @@
 <script lang="ts" setup>
 import UpdateUploadedDesignsModal from '@/components/designs/UpdateUploadedDesignsModal.vue';
 import UploadedDesignsTable from '@/components/designs/UploadedDesignsTable.vue';
-import type { PreferredDesign } from '@/types/design';
+import type { UploadedDesign } from '@/types/design';
 import { ref } from 'vue';
 
 const isUpdateModalOpen = ref<boolean>(false);
-const selectedDesign = ref<PreferredDesign | null>(null);
+const selectedDesign = ref<UploadedDesign | null>(null);
 
-const openUpdateModal = (design: PreferredDesign) => {
+const openUpdateModal = (design: UploadedDesign) => {
   selectedDesign.value = design;
   isUpdateModalOpen.value = true;
 };

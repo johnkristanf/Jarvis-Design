@@ -3,14 +3,11 @@
 import { getAllUploadedDesigns } from '@/api/get/designs';
 import { formatCurrency  } from '@/helper/designs';
 import { useAuthStore } from '@/stores/user';
-import { UserRole } from '@/types/user';
-import { computed, onMounted, ref, watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { useQuery } from '@tanstack/vue-query';
 import type { DesignAttribute, ProceedPaymentData } from '@/types/payment';
 
 import { initFlowbite } from 'flowbite'
-import { ArrowRightIcon, WalletIcon } from '@heroicons/vue/20/solid';
-import { Button, Drawer } from 'primevue';
 import { OrderStatus } from '@/types/order';
 
 

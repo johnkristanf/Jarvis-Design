@@ -13,6 +13,7 @@ import type { DesignAttribute, ProceedPaymentData } from '@/types/payment';
 
 import { initFlowbite } from 'flowbite'
 import { InformationCircleIcon } from '@heroicons/vue/20/solid';
+import { OrderTypes } from '@/types/order';
 
 
 
@@ -28,6 +29,7 @@ const authStore = useAuthStore();
 const openPaymentModal = ref<boolean>(false);
 
 const designAttributeData = ref<DesignAttribute>({ 
+    design_id: -1,
     color: -1, 
     size: -1,
     quantity: 1
@@ -73,8 +75,10 @@ console.log("uploaded designs data: ", data.value);
 const handleOpenPaymentModal = (design: UploadedDesign) => {
     if(design){
         openPaymentModal.value = true;
+
         paymentData.value.name = `Uploaded Design ${design.id}`;
         paymentData.value.price = design.price;
+        designAttributeData.value.design_id = design.id;
 
         designAttributeData.value.quantity = design.quantity;
         designAttributeData.value.color = design.color.id;
@@ -221,13 +225,14 @@ onMounted(() => {
 
         <!-- LOADER -->
         <div v-if="isLoading">
-            <Loader msg="Loading Customer Uploaded Designs..."/>
+            <Loader msg="Loading Uploaded Designs..."/>
         </div>
 
 
         <!-- PAYMENT MODAL -->
         <PaymentModal 
             v-if="designAttributeData && paymentData && openPaymentModal"
+            :orderType="OrderTypes.UPLOADED"
             :paymentData="paymentData"
             :attributeData="designAttributeData"
             :isOpen="openPaymentModal"
