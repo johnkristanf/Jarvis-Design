@@ -6,11 +6,14 @@ use App\Models\Colors;
 use App\Models\Designs;
 use App\Models\PreferredDesign;
 use App\Models\Sizes;
+use App\Models\UploadedDesign;
+use Carbon\Carbon;
 use Illuminate\Database\QueryException; // Example: Specific database exception
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Exception; // For catching general exceptions if needed
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class DesignsService
 {
@@ -52,12 +55,13 @@ class DesignsService
     }
 
 
-    public function savePreferredDesign(string $path, $colorID, $sizeID): int
+    public function saveUploadedDesign(string $path, $quantity, $colorID, $sizeID): int
     {
         try {
             
-            $preferredDesignID = PreferredDesign::create([
+            $preferredDesignID = UploadedDesign::create([
                 'path' => $path,
+                'quantity' => $quantity,
                 'color_id' => $colorID,
                 'size_id' => $sizeID,
                 'user_id' => Auth::user()->id
@@ -77,23 +81,40 @@ class DesignsService
     }
 
 
-    public function allPreferredDesigns()
+    public function allUploadedDesigns()
     {
         try {
-            $results = DB::table('preferred_designs')
-                ->join('colors', 'preferred_designs.color_id', '=', 'colors.id')
-                ->join('sizes', 'preferred_designs.size_id', '=', 'sizes.id')
-                ->select(
-                    'preferred_designs.id',
-                    'preferred_designs.path',
-                    'preferred_designs.price',
-                    'preferred_designs.status',
-                    'preferred_designs.user_id',
-                    'colors.name as color_name',
-                    'sizes.name as size_name',  
-                    'preferred_designs.created_at'
-                )
-                ->get();
+            $query = UploadedDesign::with([
+                'color:id,name',
+                'size:id,name'
+            ])
+            ->select(
+                'id',
+                'path',
+                'price',
+                'quantity',
+                'status',
+                'size_id',
+                'color_id',
+                'user_id',
+                'created_at'
+            );
+
+            $query->when(!Auth::user()->isAdmin(), function ($q) {
+                $q->where('user_id', Auth::id());
+            });
+    
+            $results = $query->get();
+
+
+            // Generate a temporary URL for each design
+            $results->transform(function ($item) {
+                $item->temp_url = Storage::disk('s3')->temporaryUrl(
+                    $item->path,
+                    Carbon::now()->addMinutes(10)
+                );
+                return $item;
+            });
     
             return $results;
     
@@ -119,7 +140,7 @@ class DesignsService
     {
         try {
             
-            $design = PreferredDesign::find($designID);
+            $design = UploadedDesign::find($designID);
 
             $design->status = $status;
             $design->price = $price;

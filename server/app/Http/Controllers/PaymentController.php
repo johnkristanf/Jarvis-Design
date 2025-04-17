@@ -21,7 +21,6 @@ class PaymentController extends Controller
     {
         $event = $request->all();
 
-
         Log::info('Event Data: ', [
             'event' => $event['data']
         ]);
@@ -30,7 +29,15 @@ class PaymentController extends Controller
             'type' => $event['data']['attributes']['type']
         ]);
 
-        if ($event['data']['attributes']['type'] === 'payment.paid') {
+        $eventType = $event['data']['attributes']['type'];
+
+        if($eventType === 'source.chargeable'){
+            Log::info("SHESSHH NI GANAAA PARRR");
+        }
+
+        
+
+        if ($eventType === 'payment.paid') {
             $payment = $event['data'];
             $paymentAttributes = $payment['attributes'];
 
@@ -57,24 +64,25 @@ class PaymentController extends Controller
                 //     $order->update(['payment_status' => 'paid', 'paymongo_payment_id' => $paymentId, 'total_amount_cents' => $amount]);
                 // }
 
-                return response('Webhook received and processed', 200);
+                return response()->json(['status' => 'ok'], 200);
+
             }
         }
         // Handle other webhook events if needed (e.g., payment.failed)
 
-        return response('Webhook received', 200);
+        return response()->json(['status' => 'ok'], 200);
     }
 
 
     public function createQrPhSource(Request $request)
     {
         try {
-                $amount = $request->input('amount'); 
+                $designPrice = $request->input('price'); 
                 $secretKey = config('services.paymongo.secret_key');
                 $authHeader = "Basic " . base64_encode($secretKey . ":");
 
 
-                $paymentIntentID = $this->paymentService->requestPaymentIntent($amount, $authHeader);
+                $paymentIntentID = $this->paymentService->requestPaymentIntent($designPrice, $authHeader);
 
                 $paymentMethodID = $this->paymentService->requestPaymentMethod($authHeader);
 

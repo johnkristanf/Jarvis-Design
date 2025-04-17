@@ -104,8 +104,8 @@
                                     <transition enter-active-class="transition ease-out duration-100" enter-from-class="transform opacity-0 scale-95" enter-to-class="transform opacity-100 scale-100" leave-active-class="transition ease-in duration-75" leave-from-class="transform opacity-100 scale-100" leave-to-class="transform opacity-0 scale-95">
                                         <MenuItems class="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black/5 focus:outline-hidden">
                                             <div class="flex flex-col font-medium mb-3 border-b border-gray-300 p-3">
-                                                <h1>{{ authStore.currentUser.name }}</h1>
-                                                <p class="text-gray-400">{{ authStore.currentUser.username }}</p>
+                                                <h1 class="truncate">{{ authStore.currentUser.name }}</h1>
+                                                <p class="text-gray-400 truncate">{{ authStore.currentUser.username }}</p>
                                             </div>
                                             
                                             <MenuItem v-for="item in userNavigation" :key="item.name" v-slot="{ active }" @click="item.onclick">

@@ -1,7 +1,7 @@
 <script lang="ts" setup>
-    import { uploadPreferredDesign } from '@/api/post/generate';
+    import { uploadDesign } from '@/api/post/generate';
     import { Dialog, DialogPanel, TransitionChild, TransitionRoot, RadioGroup, RadioGroupOption } from '@headlessui/vue';
-    import { useMutation } from '@tanstack/vue-query';
+    import { useMutation, useQueryClient } from '@tanstack/vue-query';
     import { FileUpload, ProgressSpinner, useToast } from 'primevue';
     import { ref } from 'vue';
     import Loader from '../Loader.vue';
@@ -20,16 +20,20 @@
 
     const toast = useToast();
     const loaderMsg = ref<string>('');
+    const quantity = ref<number>(0);
 
     const isLoadingMutation = ref<boolean>(false);
+    const queryClient = useQueryClient();
 
   
     const uploadPreferredDesignMutation = useMutation({
-        mutationFn: uploadPreferredDesign,
+        mutationFn: uploadDesign,
         onSuccess: (response) => {
             isLoadingMutation.value = false;
             console.log("response uploadPreferredDesignMutation: ", response)
             toast.add({ severity: 'success', summary: 'Success Message', detail: 'Message Content', life: 3000 });
+
+            queryClient.invalidateQueries({ queryKey: ['uploaded-designs'] })
             handleCloseModal();
         },
 
@@ -82,6 +86,7 @@
     const handleUploadDesign = () => {
         console.log("selectedColor: ", selectedColor.value);
         console.log("selectedSize: ", selectedSize.value);
+        console.log("quantity: ", quantity.value);
         
         if (!selectedFile.value) {
             toast.add({ severity: 'error', summary: 'Error', detail: 'Please select a file first', life: 3000 });
@@ -90,6 +95,7 @@
         
         formData.append('color', selectedColor.value.id.toString());
         formData.append('size', selectedSize.value.id.toString());
+        formData.append('quantity', quantity.value.toString());
 
         console.log("file: ", formData.get('file'));
         
@@ -128,6 +134,24 @@
                       <h3 id="options-heading" class="sr-only">design options</h3>
 
                       <form @submit.prevent="handleUploadDesign" class=" w-full">
+
+                        <!-- QUANTITY -->
+                         
+                        <fieldset class="mt-10 w-full" aria-label="Select quantity">
+                          <div class="flex items-center justify-between">
+                            <div class="text-md">Quantity</div>
+                          </div>
+
+                          <div class="mt-4 w-full">
+                            <input
+                              type="number"
+                              min="1"
+                              v-model="quantity"
+                              class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                            />
+                          </div>
+                        </fieldset>
+
 
                         <!-- COLORS -->
 

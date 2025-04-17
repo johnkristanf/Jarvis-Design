@@ -18,6 +18,8 @@ class DatabaseSeeder extends Seeder
             AdminSeeder::class,
             ColorsSeeder::class,
             SizesSeeder::class,
+            OrderTypeSeeder::class,
+            OrderStatusSeeder::class,
 
             // FOR TESTING USE CASE ONLY: 
             // MaterialsSeeder::class,

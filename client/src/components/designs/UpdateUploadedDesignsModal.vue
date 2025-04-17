@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { DesignStatus, type PreferredDesign } from '@/types/design';
+  import { DesignStatus, type UploadedDesign } from '@/types/design';
   import { ref } from 'vue'
 
   import {
@@ -10,14 +10,6 @@
     DialogTitle,
   } from '@headlessui/vue';
 
-  import {
-    Listbox,
-    ListboxButton,
-    ListboxOptions,
-    ListboxOption,
-  } from '@headlessui/vue'
-
-  import { CheckIcon, ChevronUpDownIcon } from '@heroicons/vue/20/solid'
   import { useMutation, useQueryClient } from '@tanstack/vue-query';
   import { updateUploadedDesign } from '@/api/put/design';
   import Loader from '../Loader.vue';
@@ -26,13 +18,14 @@ import ListSelectBox from '../ListSelectBox.vue';
 
   const props = defineProps<{
     isOpen: boolean;
-    design: PreferredDesign
+    design: UploadedDesign
   }>();
 
   const emit = defineEmits(['close']);
   const handleClose = () => emit('close');
   const price = ref(props.design.price);
   const isUpdatingDesigns = ref<boolean>(false);
+
 
   const statuses = ref([
     { name: DesignStatus.PENDING },
@@ -52,7 +45,6 @@ import ListSelectBox from '../ListSelectBox.vue';
   const mutation = useMutation({
     mutationFn: updateUploadedDesign,
     onSuccess: () => {
-      // IMPLEMENT THE USEQUERY LATER AFTER UPDATE
       queryClient.invalidateQueries({ queryKey: ['uploaded-designs'] });
       handleClose();
       isUpdatingDesigns.value = false;
@@ -111,11 +103,11 @@ import ListSelectBox from '../ListSelectBox.vue';
               leave-to="opacity-0 scale-95"
             >
               <DialogPanel
-                class="w-full h-[18.5rem] max-w-md transform overflow-hidden bg-white p-6 text-left align-middle shadow-xl transition-all"
+                class="w-full h-[20rem] max-w-md transform overflow-hidden bg-white p-6 text-left align-middle shadow-xl transition-all"
               >
                 <DialogTitle
                   as="h3"
-                  class="text-lg  leading-6 text-gray-900"
+                  class="text-lg leading-6 text-gray-900"
                 >
                   Update Customer Uploaded Design
                 </DialogTitle>
@@ -124,9 +116,10 @@ import ListSelectBox from '../ListSelectBox.vue';
 
                 <form @submit.prevent="handleSubmit" class="max-w-sm mx-auto">
 
+                  
                     <!-- DESIGN STATUS SELECT ELEMENT -->
 
-                    <div class="mt-4 w-full">
+                    <div class="mt-8 w-full">
 
                       <h1 class="font-medium">Pricing Status:</h1>
 
@@ -139,7 +132,7 @@ import ListSelectBox from '../ListSelectBox.vue';
 
                     <!-- END OF DESIGN STATUS SELECT ELEMENT -->
 
-                    <div class="mt-5">
+                    <div class="mt-8">
                       <label for="price" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Price (₱):</label>
                       <input
                         type="text"

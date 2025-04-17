@@ -11,10 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('preferred_designs', function (Blueprint $table) {
+        Schema::create('uploaded_designs', function (Blueprint $table) {
             $table->id();
             $table->string('path');
             $table->decimal('price', 15, 2)->default(0);
+            $table->unsignedInteger('quantity')->default(0);
+            
             $table->enum('status', ['pending', 'acknowledge', 'tagged'])->default('pending');
 
             $table->foreignId('color_id')->constrained('colors')->onDelete('cascade');

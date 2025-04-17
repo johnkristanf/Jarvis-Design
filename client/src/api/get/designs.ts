@@ -1,4 +1,4 @@
-import type { PreferredDesign } from "@/types/design";
+import type { UploadedDesign } from "@/types/design";
 import { apiService } from "../axios";
 import type { AxiosResponse } from "axios";
 
@@ -19,8 +19,8 @@ export async function getAllSizes(): Promise<any> {
 }
 
 
-export async function getAllUploadedDesigns(): Promise<PreferredDesign[]> {
-  const respData = await apiService.get<PreferredDesign[]>('/api/uploaded/designs');
+export async function getAllUploadedDesigns(): Promise<UploadedDesign[]> {
+  const respData = await apiService.get<UploadedDesign[]>('/api/uploaded/designs');
   console.log("getAllUploadedDesigns: ", respData);
   
   return respData; 

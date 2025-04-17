@@ -6,20 +6,13 @@
   import { ProgressSpinner } from 'primevue';
 
   import PaymentModal from './PaymentModal.vue';
-  import { type PreferredDesignAttribute, type ProceedPaymentData } from '@/types/payment';
+  import { type DesignAttribute, type ProceedPaymentData } from '@/types/payment';
   import FailureMessageDialog from '../FailureMessageDialog.vue';
   import { useAuthStore } from '@/stores/user';
   import { useProductAttributes } from '@/composables/useProductAttribute';
 
-  import {
-    Listbox,
-    ListboxButton,
-    ListboxOptions,
-    ListboxOption,
-  } from '@headlessui/vue'
 
-  import { CheckIcon, ChevronUpDownIcon } from '@heroicons/vue/20/solid'
-import ListSelectBox from '../ListSelectBox.vue';
+  import ListSelectBox from '../ListSelectBox.vue';
 
 
   const props = defineProps<{
@@ -39,17 +32,19 @@ import ListSelectBox from '../ListSelectBox.vue';
   const { colors, sizes, loadingColors, loadingSizes } = useProductAttributes();
 
   const paymentData = ref<ProceedPaymentData>({
-    amount: props.design.price,
+    price: props.design.price,
     name: props.design.name
   });
 
-  const designAttributeData = ref<PreferredDesignAttribute>({ 
+  const designAttributeData = ref<DesignAttribute>({ 
     color: -1, 
-    size: -1 
+    size: -1,
+    quantity: 1
   });
 
   const openPaymentModal = ref<boolean>(false);
   const openFailureModal = ref<boolean>(false);
+
   const failureModalMessageRef = ref<string>('');
   const failureUnauthenticated = ref<boolean>(false);
 
@@ -58,13 +53,16 @@ import ListSelectBox from '../ListSelectBox.vue';
 
   const selectedColor = ref(colors.value && colors.value[0]);
   const selectedSize = ref(sizes.value && sizes.value[2]);
+  const quantity = ref<number>(0);
 
 
   const handleProceedPayment = () => {
 
+    // HANDLE PAYMENT CANNOT PROCEED IF NOT LOGGED IN
+    
     if(!authStore.currentUser && !authStore.isLogginedIn){
       openFailureModal.value = true;
-      failureModalMessageRef.value = "Please Login First to Proceed to Payment";
+      failureModalMessageRef.value = "Please Login First to Proceed to Order";
       failureUnauthenticated.value = true;
 
       return;
@@ -79,6 +77,7 @@ import ListSelectBox from '../ListSelectBox.vue';
       openPaymentModal.value = true;
       designAttributeData.value.color = selectedColor.value.id;
       designAttributeData.value.size = selectedSize.value.id;
+      designAttributeData.value.quantity = quantity.value;
 
       console.log(" openPaymentModal: ", openPaymentModal.value);
       console.log(" paymentData: ", paymentData.value);
@@ -87,7 +86,7 @@ import ListSelectBox from '../ListSelectBox.vue';
     } else {
       openFailureModal.value = true;
       failureUnauthenticated.value = false;
-      failureModalMessageRef.value = "Please Select a Color and Size to Proceed Payment";
+      failureModalMessageRef.value = "Please Select a Color and Size to Proceed Order";
     }
 
   };
@@ -129,6 +128,24 @@ import ListSelectBox from '../ListSelectBox.vue';
                       <h3 id="options-heading" class="sr-only">design options</h3>
 
                       <form @submit.prevent="handleProceedPayment">
+
+                        <!-- QUANTITY -->
+
+                        <fieldset class="mt-10 w-full" aria-label="Select quantity">
+                          <div class="flex items-center justify-between">
+                            <div class="text-md">Quantity</div>
+                          </div>
+
+                          <div class="mt-4 w-full">
+                            <input
+                              type="number"
+                              min="1"
+                              v-model="quantity"
+                              class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                            />
+                          </div>
+                        </fieldset>
+
 
                         <!-- COLORS -->
 
@@ -219,7 +236,7 @@ import ListSelectBox from '../ListSelectBox.vue';
                           type="submit"
                           class="mt-6 flex w-full items-center justify-center rounded-md border border-transparent bg-gray-900 px-8 py-3 text-base font-medium text-white hover:opacity-75 hover:cursor-pointer"
                         >
-                          Proceed to Payment
+                          Place Order
                         </button>
                       </form>
                     </section>
@@ -243,7 +260,7 @@ import ListSelectBox from '../ListSelectBox.vue';
 
   <FailureMessageDialog 
     v-if="openFailureModal"
-    title="Proceed Payment Failure"
+    title="Place Order Failure"
     :message="failureModalMessageRef"
     :isUnauthenticated="failureUnauthenticated"
     :isOpen="openFailureModal"
