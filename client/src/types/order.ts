@@ -6,3 +6,11 @@ export const OrderStatus = {
     DELIVERY: 'delivery',
     COMPLETED: 'completed',
 } as const;
+
+
+export type OrderTypes = 'uploaded' | 'pre-made' ;
+
+export const OrderTypes = {
+    UPLOADED: 'uploaded',
+    PRE_MADE: 'pre-made',
+} as const;

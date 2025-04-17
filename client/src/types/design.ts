@@ -39,7 +39,7 @@ export type DesignGenerate = {
 export interface UploadedDesign {
     id: number;
     path: string; 
-    temp_url: string; 
+    temp_url?: string; 
     price: number; 
     quantity: number; 
 

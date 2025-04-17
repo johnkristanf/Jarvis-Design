@@ -11,6 +11,9 @@ Route::get('/get/all/colors', [DesignsController::class, 'getAllColors']);
 Route::get('/get/all/sizes', [DesignsController::class, 'getAllSizes']);
 
 
+Route::get('/trigger-curl', [PaymentController::class, 'triggerCurlRequest']);
+
+
 Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::get('/user/data', [UserController::class, 'user']);

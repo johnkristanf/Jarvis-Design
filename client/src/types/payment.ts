@@ -4,6 +4,7 @@ export type ProceedPaymentData = {
 }
 
 export type DesignAttribute = {
+    design_id: number,
     color: number,
     size:  number,
     quantity: number

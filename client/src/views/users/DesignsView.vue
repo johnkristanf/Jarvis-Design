@@ -1,6 +1,6 @@
 <script lang="ts" setup>
     import { getAllDesigns } from '@/api/get/designs';
-    import ProductViewModal from '@/components/designs/PreviewDesignModal.vue';
+    import PreviewDesignModal from '@/components/designs/PreviewDesignModal.vue';
     import Loader from '@/components/Loader.vue';
     import type { Designs } from '@/types/design';
     import { ArrowLeftIcon, ArrowRightIcon, DocumentArrowUpIcon, WrenchScrewdriverIcon } from '@heroicons/vue/20/solid';
@@ -87,7 +87,7 @@
   
         <div class="mt-6">
 
-            <div class="mt-12 w-full flex justify-end">
+            <div class="mt-12 mb-5 w-full flex justify-end">
                 <h1 v-if="!showUploadedDesignsTableRef" class="text-gray-600 hover:cursor-pointer hover:opacity-75 flex items-center" @click="showUploadedDesignsTableRef = true">
                     View Uploaded Designs
                     <ArrowRightIcon class="size-6"/>
@@ -151,7 +151,7 @@
         <Loader :msg="loaderMsg"/>
     </div>
 
-    <ProductViewModal
+    <PreviewDesignModal
         v-if="selectedDesign"
         :design="selectedDesign"
         :isOpen="openDesignModal"

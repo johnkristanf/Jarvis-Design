@@ -9,12 +9,14 @@ import { createRouter, createWebHistory } from 'vue-router'
 import AdminDesignsView from '@/views/admin/AdminDesignsView.vue'
 import AdminDashboardView from '@/views/admin/AdminDashboardView.vue'
 import OrdersView from '@/views/users/OrdersView.vue'
+import FAQView from '../views/users/FAQView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
 
-    // USER ROUTE
+
+    // CUSTOMER ROUTE
     {
       path: '/',
       component: DefaultLayout,
@@ -38,6 +40,11 @@ const router = createRouter({
         {
           path: 'orders',
           component: OrdersView
+        },
+
+        {
+          path: 'faq',
+          component: FAQView
         },
 
 

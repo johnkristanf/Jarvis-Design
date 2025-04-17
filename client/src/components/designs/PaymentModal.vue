@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 
 import { generateQrCode } from '@/api/post/payment';
+import type { OrderTypes } from '@/types/order';
 import { type ProceedPaymentResponseData, type DesignAttribute, type ProceedPaymentData } from '@/types/payment';
 import {
   TransitionRoot,
@@ -13,9 +14,10 @@ import { ProgressSpinner } from 'primevue';
 import { onMounted, ref } from 'vue';
 
 const props = defineProps<{
-    paymentData: ProceedPaymentData;
-    attributeData: DesignAttribute;
-    isOpen: boolean;
+  orderType: OrderTypes,
+  paymentData: ProceedPaymentData;
+  attributeData: DesignAttribute;
+  isOpen: boolean;
 }>();
 
 
@@ -32,9 +34,22 @@ const handleClose = () => emit('close');
 
 
 const handleGeneratePaymentQrCode = async () => {
-  const totalPrice = props.attributeData.quantity * props.paymentData.price;
 
-  const response = await generateQrCode(totalPrice);
+  const designID = props.attributeData.design_id;
+  const totalPrice = props.attributeData.quantity * props.paymentData.price;
+  const orderType = props.orderType;
+  
+  const quantity = props.attributeData.quantity;
+  const color = props.attributeData.color;
+  const size = props.attributeData.size;
+
+  console.log("totalPrice: ", totalPrice);
+  console.log("orderType: ", orderType);
+  console.log("quantity: ", quantity);
+  console.log("color: ", color);
+  console.log("size: ", size);
+  
+  const response = await generateQrCode(designID, totalPrice, orderType, quantity, color, size);
   console.log("response qrcode: ", response);
 
   if(response && paymentResponseRef.value){

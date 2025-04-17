@@ -11,6 +11,8 @@
   import { useAuthStore } from '@/stores/user';
   import { useProductAttributes } from '@/composables/useProductAttribute';
 
+  import { OrderTypes } from '@/types/order';
+
 
   import ListSelectBox from '../ListSelectBox.vue';
 
@@ -37,6 +39,7 @@
   });
 
   const designAttributeData = ref<DesignAttribute>({ 
+    design_id: -1,
     color: -1, 
     size: -1,
     quantity: 1
@@ -75,6 +78,11 @@
       handleCloseModal();
 
       openPaymentModal.value = true;
+
+      paymentData.value.name = props.design.name;
+      paymentData.value.price = props.design.price;
+      designAttributeData.value.design_id = props.design.id;
+      
       designAttributeData.value.color = selectedColor.value.id;
       designAttributeData.value.size = selectedSize.value.id;
       designAttributeData.value.quantity = quantity.value;
@@ -252,6 +260,7 @@
 
   <PaymentModal 
     v-if="designAttributeData && paymentData && openPaymentModal"
+    :orderType="OrderTypes.PRE_MADE"
     :paymentData="paymentData"
     :attributeData="designAttributeData"
     :isOpen="openPaymentModal"
