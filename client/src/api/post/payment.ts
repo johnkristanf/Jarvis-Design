@@ -2,19 +2,12 @@ import type { ProceedPaymentData, ProceedPaymentResponseData } from "@/types/pay
 import { apiService } from "../axios";
 import type { AxiosResponse } from "axios";
 
-export const generateQrCode = async (amount: number): Promise<ProceedPaymentResponseData | undefined> =>  {
-    try {
+export const generateQrCode = async (amount: number): Promise<ProceedPaymentResponseData> =>  {
+    const convertedPesosToCents = amount * 100;
 
-        const convertedPesosToCents = amount * 100;
+    const respData = await apiService.post<ProceedPaymentResponseData>('/api/paymongo/create-qr-source', {
+        price: convertedPesosToCents,
+    });
 
-        const response: ProceedPaymentResponseData = await apiService.post('/api/paymongo/create-qr-source', {
-            amount: convertedPesosToCents,
-        });
-
-        return response;
-      
-    } catch (error) {
-      console.error('Error generating QR code:', error);
-    }
-
+    return respData;
 }

@@ -7,6 +7,9 @@ export const DesignStatus = {
 } as const;
 
 
+
+
+
 export interface Designs {
     id: number
     name: string;
@@ -33,12 +36,16 @@ export type DesignGenerate = {
 }
 
 
-export interface PreferredDesign {
+export interface UploadedDesign {
     id: number;
     path: string; 
+    temp_url: string; 
     price: number; 
-    size_name: string;
-    color_name: string;
+    quantity: number; 
+
+    size: Sizes;
+    color: Colors;
+
     status: 'pending' | 'acknowledge' | 'tagged' | string; 
     user_id: number;
     created_at: string;

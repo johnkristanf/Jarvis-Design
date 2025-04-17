@@ -8,6 +8,7 @@ import RegisterView from '@/views/users/RegisterView.vue'
 import { createRouter, createWebHistory } from 'vue-router'
 import AdminDesignsView from '@/views/admin/AdminDesignsView.vue'
 import AdminDashboardView from '@/views/admin/AdminDashboardView.vue'
+import OrdersView from '@/views/users/OrdersView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -32,6 +33,11 @@ const router = createRouter({
         {
           path: 'designs',
           component: DesignsView
+        },
+
+        {
+          path: 'orders',
+          component: OrdersView
         },
 
 

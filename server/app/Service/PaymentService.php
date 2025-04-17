@@ -20,21 +20,19 @@ class PaymentService
     }
 
 
-    public function requestPaymentIntent($amount, string $authHeader)
+    public function requestPaymentIntent($designPrice, string $authHeader)
     {
         try {
             $paymentMethodsAllowed = ["qrph", "card", "dob", "paymaya", "billease", "gcash", "grab_pay"];
                 $captureType = "automatic";
                 $currency = 'PHP';
-
-
                
 
                 $intentRequest = $this->client->request('POST', 'https://api.paymongo.com/v1/payment_intents', [
                     'body' => json_encode([
                         'data' => [
                             'attributes' => [
-                                'amount' => $amount, 
+                                'amount' => $designPrice, 
                                 'payment_method_allowed' => $paymentMethodsAllowed,
                                 'payment_method_options' => [
                                     'card' => [
@@ -53,8 +51,7 @@ class PaymentService
                         'content-type' => 'application/json',
                     ],
 
-                    // MUST BE SET TO TRUE IF PRODUCTION FOR SECURITY PURPOSE
-                    'verify' => false
+                    
                 ]);
 
                 $intentResponseData = json_decode($intentRequest->getBody());
@@ -121,8 +118,7 @@ class PaymentService
                     'authorization' => $authHeader,
                 ],
 
-                // MUST BE SET TO TRUE IF PRODUCTION FOR SECURITY PURPOSE
-                'verify' => false
+                
 
             ]);
 
@@ -175,8 +171,7 @@ class PaymentService
                     'content-type' => 'application/json',
                 ],
 
-                // MUST BE SET TO TRUE IF PRODUCTION FOR SECURITY PURPOSE
-                'verify' => false
+                
 
             ]);
 

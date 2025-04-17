@@ -1,4 +1,4 @@
-import { DesignStatus } from "@/types/design";
+import { DesignStatus, OrderStatus } from "@/types/design";
 
 export const formatCurrency = (value: string) => {
     const numericValue = parseFloat(value);
@@ -23,18 +23,3 @@ export const formatDate = (value: string) => {
     }
 };
 
-export const getStatusTag = (status: string) => {
-    
-    switch (status) {
-        case DesignStatus.TAGGED:
-            return 'success';
-
-        case DesignStatus.ACKNOWLEDGE:
-            return 'warn';
-
-        case DesignStatus.PENDING:
-            return 'info';
-        default:
-            return undefined;
-    }
-};

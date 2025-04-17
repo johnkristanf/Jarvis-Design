@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class PreferredDesign extends Model
+class UploadedDesign extends Model
 {
     protected $guarded = [ 'id' ];
 
