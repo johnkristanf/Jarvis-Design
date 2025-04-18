@@ -1,6 +1,5 @@
 @import "tailwindcss";
-@import 'flowbite';
-
+@import "flowbite";
 
 body {
   padding: 0;
@@ -11,4 +10,14 @@ body {
   font-family: "Special Gothic Condensed One", sans-serif;
   font-weight: 600;
   font-style: normal;
+}
+
+@layer components {
+  .fixed-full {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+  }
 }

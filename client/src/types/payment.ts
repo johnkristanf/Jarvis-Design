@@ -1,11 +1,13 @@
 export type ProceedPaymentData = {
-    amount: number,
+    price: number,
     name: string
 }
 
-export type PreferredDesignAttribute = {
+export type DesignAttribute = {
+    design_id: number,
     color: number,
-    size:  number
+    size:  number,
+    quantity: number
 }
 
 

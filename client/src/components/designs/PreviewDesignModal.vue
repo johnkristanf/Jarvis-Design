@@ -1,16 +1,20 @@
 <script lang="ts" setup>
-import { ref, computed, onMounted } from 'vue';
-import { Dialog, DialogPanel, TransitionChild, TransitionRoot, RadioGroup, RadioGroupOption} from '@headlessui/vue';
-import { XMarkIcon } from '@heroicons/vue/20/solid';
-import { type Colors, type Designs, type Sizes } from '@/types/design'
-import { Select, ProgressSpinner } from 'primevue';
-import { getAllColors, getAllSizes } from '@/api/get/designs';
+  import { ref, computed } from 'vue';
+  import { Dialog, DialogPanel, TransitionChild, TransitionRoot, RadioGroup, RadioGroupOption} from '@headlessui/vue';
+  import { XMarkIcon } from '@heroicons/vue/20/solid';
+  import { type Designs } from '@/types/design'
+  import { ProgressSpinner } from 'primevue';
 
-import PaymentModal from './PaymentModal.vue';
-import { type PreferredDesignAttribute, type ProceedPaymentData } from '@/types/payment';
-import FailureMessageDialog from '../FailureMessageDialog.vue';
-import { useAuthStore } from '@/stores/user';
-import { useProductAttributes } from '@/composables/useProductAttribute';
+  import PaymentModal from './PaymentModal.vue';
+  import { type DesignAttribute, type ProceedPaymentData } from '@/types/payment';
+  import FailureMessageDialog from '../FailureMessageDialog.vue';
+  import { useAuthStore } from '@/stores/user';
+  import { useProductAttributes } from '@/composables/useProductAttribute';
+
+  import { OrderTypes } from '@/types/order';
+
+
+  import ListSelectBox from '../ListSelectBox.vue';
 
 
   const props = defineProps<{
@@ -30,17 +34,20 @@ import { useProductAttributes } from '@/composables/useProductAttribute';
   const { colors, sizes, loadingColors, loadingSizes } = useProductAttributes();
 
   const paymentData = ref<ProceedPaymentData>({
-    amount: props.design.price,
+    price: props.design.price,
     name: props.design.name
   });
 
-  const designAttributeData = ref<PreferredDesignAttribute>({ 
+  const designAttributeData = ref<DesignAttribute>({ 
+    design_id: -1,
     color: -1, 
-    size: -1 
+    size: -1,
+    quantity: 1
   });
 
   const openPaymentModal = ref<boolean>(false);
   const openFailureModal = ref<boolean>(false);
+
   const failureModalMessageRef = ref<string>('');
   const failureUnauthenticated = ref<boolean>(false);
 
@@ -49,13 +56,16 @@ import { useProductAttributes } from '@/composables/useProductAttribute';
 
   const selectedColor = ref(colors.value && colors.value[0]);
   const selectedSize = ref(sizes.value && sizes.value[2]);
+  const quantity = ref<number>(0);
 
 
   const handleProceedPayment = () => {
 
+    // HANDLE PAYMENT CANNOT PROCEED IF NOT LOGGED IN
+    
     if(!authStore.currentUser && !authStore.isLogginedIn){
       openFailureModal.value = true;
-      failureModalMessageRef.value = "Please Login First to Proceed to Payment";
+      failureModalMessageRef.value = "Please Login First to Proceed to Order";
       failureUnauthenticated.value = true;
 
       return;
@@ -68,8 +78,14 @@ import { useProductAttributes } from '@/composables/useProductAttribute';
       handleCloseModal();
 
       openPaymentModal.value = true;
+
+      paymentData.value.name = props.design.name;
+      paymentData.value.price = props.design.price;
+      designAttributeData.value.design_id = props.design.id;
+      
       designAttributeData.value.color = selectedColor.value.id;
       designAttributeData.value.size = selectedSize.value.id;
+      designAttributeData.value.quantity = quantity.value;
 
       console.log(" openPaymentModal: ", openPaymentModal.value);
       console.log(" paymentData: ", paymentData.value);
@@ -78,7 +94,7 @@ import { useProductAttributes } from '@/composables/useProductAttribute';
     } else {
       openFailureModal.value = true;
       failureUnauthenticated.value = false;
-      failureModalMessageRef.value = "Please Select a Color and Size to Proceed Payment";
+      failureModalMessageRef.value = "Please Select a Color and Size to Proceed Order";
     }
 
   };
@@ -121,33 +137,43 @@ import { useProductAttributes } from '@/composables/useProductAttribute';
 
                       <form @submit.prevent="handleProceedPayment">
 
-                        <!-- COLORS -->
+                        <!-- QUANTITY -->
 
-                        <fieldset v-if="colors && !loadingColors" class="mt-10" aria-label="Choose a size">
+                        <fieldset class="mt-10 w-full" aria-label="Select quantity">
                           <div class="flex items-center justify-between">
-                            <div class="text-sm font-medium text-gray-900">Size</div>
+                            <div class="text-md">Quantity</div>
                           </div>
 
-                          <RadioGroup v-model="selectedSize" class="mt-4 grid grid-cols-4 gap-4">
-                            <RadioGroupOption
-                              as="template"
-                              v-for="size in colors"
-                              :key="size.name"
-                              :value="size"
-                              v-slot="{ active, checked }"
-                            >
-                              <div
-                                :class="[
-                                  
-                                  active ? 'ring-2 ring-indigo-500' : '',
-                                  'group hover:cursor-pointer relative flex items-center justify-center rounded-md border px-4 py-3 text-sm font-medium uppercase hover:bg-gray-50 focus:outline-hidden sm:flex-1',
-                                ]"
-                              >
-                                <span>{{ size.name }}</span>
+                          <div class="mt-4 w-full">
+                            <input
+                              type="number"
+                              min="1"
+                              v-model="quantity"
+                              class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                            />
+                          </div>
+                        </fieldset>
 
-                              </div>
-                            </RadioGroupOption>
-                          </RadioGroup>
+
+                        <!-- COLORS -->
+
+                        <fieldset v-if="colors && !loadingColors" class="mt-10" aria-label="Choose a color">
+                          <div class="flex items-center justify-between">
+                            <div class="text-md ">Color</div>
+                          </div>
+
+                          <!-- DESIGN STATUS SELECT ELEMENT -->
+
+                          <div class="mt-4 w-full">
+                            <ListSelectBox
+                              v-model="selectedColor"
+                              :options="colors"
+                              displayKey="name"
+                            />
+                            
+                          </div>
+
+                          <!-- END OF DESIGN STATUS SELECT ELEMENT -->
 
                         </fieldset>
 
@@ -162,7 +188,7 @@ import { useProductAttributes } from '@/composables/useProductAttribute';
 
                         <fieldset v-if="sizes && !loadingSizes" class="mt-10" aria-label="Choose a size">
                           <div class="flex items-center justify-between">
-                            <div class="text-sm font-medium text-gray-900">Size</div>
+                            <div class="text-md">Size</div>
                           </div>
 
                           <RadioGroup v-model="selectedSize" class="mt-4 grid grid-cols-4 gap-4">
@@ -218,7 +244,7 @@ import { useProductAttributes } from '@/composables/useProductAttribute';
                           type="submit"
                           class="mt-6 flex w-full items-center justify-center rounded-md border border-transparent bg-gray-900 px-8 py-3 text-base font-medium text-white hover:opacity-75 hover:cursor-pointer"
                         >
-                          Proceed to Payment
+                          Place Order
                         </button>
                       </form>
                     </section>
@@ -234,6 +260,7 @@ import { useProductAttributes } from '@/composables/useProductAttribute';
 
   <PaymentModal 
     v-if="designAttributeData && paymentData && openPaymentModal"
+    :orderType="OrderTypes.PRE_MADE"
     :paymentData="paymentData"
     :attributeData="designAttributeData"
     :isOpen="openPaymentModal"
@@ -242,7 +269,7 @@ import { useProductAttributes } from '@/composables/useProductAttribute';
 
   <FailureMessageDialog 
     v-if="openFailureModal"
-    title="Proceed Payment Failure"
+    title="Place Order Failure"
     :message="failureModalMessageRef"
     :isUnauthenticated="failureUnauthenticated"
     :isOpen="openFailureModal"

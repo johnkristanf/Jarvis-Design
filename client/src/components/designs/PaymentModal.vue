@@ -1,7 +1,8 @@
 <script lang="ts" setup>
 
 import { generateQrCode } from '@/api/post/payment';
-import { type ProceedPaymentResponseData, type PreferredDesignAttribute, type ProceedPaymentData } from '@/types/payment';
+import type { OrderTypes } from '@/types/order';
+import { type ProceedPaymentResponseData, type DesignAttribute, type ProceedPaymentData } from '@/types/payment';
 import {
   TransitionRoot,
   TransitionChild,
@@ -13,18 +14,18 @@ import { ProgressSpinner } from 'primevue';
 import { onMounted, ref } from 'vue';
 
 const props = defineProps<{
-    paymentData: ProceedPaymentData;
-    attributeData: PreferredDesignAttribute;
-    isOpen: boolean;
-    onClose: () => void;
+  orderType: OrderTypes,
+  paymentData: ProceedPaymentData;
+  attributeData: DesignAttribute;
+  isOpen: boolean;
 }>();
 
 
 const paymentResponseRef = ref<ProceedPaymentResponseData>({
-    code_id: '',
-    amount: -1,
-    business_name: '',
-    qrcode_img_src: ''
+  code_id: '',
+  amount: -1,
+  business_name: '',
+  qrcode_img_src: ''
 });
 
 
@@ -33,12 +34,27 @@ const handleClose = () => emit('close');
 
 
 const handleGeneratePaymentQrCode = async () => {
-    const response = await generateQrCode(props.paymentData.amount);
-    console.log("response qrcode: ", response);
 
-    if(response && paymentResponseRef.value){
-        paymentResponseRef.value = response
-    }
+  const designID = props.attributeData.design_id;
+  const totalPrice = props.attributeData.quantity * props.paymentData.price;
+  const orderType = props.orderType;
+  
+  const quantity = props.attributeData.quantity;
+  const color = props.attributeData.color;
+  const size = props.attributeData.size;
+
+  console.log("totalPrice: ", totalPrice);
+  console.log("orderType: ", orderType);
+  console.log("quantity: ", quantity);
+  console.log("color: ", color);
+  console.log("size: ", size);
+  
+  const response = await generateQrCode(designID, totalPrice, orderType, quantity, color, size);
+  console.log("response qrcode: ", response);
+
+  if(response && paymentResponseRef.value){
+    paymentResponseRef.value = response
+  }
 }
 
 onMounted(() => {
@@ -88,7 +104,10 @@ onMounted(() => {
 
                 <div class="mt-2">
                     <p class="text-sm text-gray-500">Item Name: {{ paymentData.name }}</p>
-                    <p class="text-sm text-gray-500">Price: {{ paymentData.amount }}</p>
+                    <p class="text-sm text-gray-500">Quantity: {{ attributeData.quantity }}</p>
+                    <p class="text-sm text-gray-500">
+                      Total Price: ₱{{ new Intl.NumberFormat('en-PH', { minimumFractionDigits: 2 }).format(attributeData.quantity * paymentData.price) }}
+                    </p>
                 </div>
 
 

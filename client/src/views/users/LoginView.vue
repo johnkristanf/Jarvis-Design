@@ -1,12 +1,10 @@
 <script lang="ts" setup>
   import { login } from '@/api/post/login';
-import Loader from '@/components/Loader.vue';
-import { useAuthStore } from '@/stores/user';
-  import type { AuthenticatedUserData, LoginCredentials } from '@/types/user';
+  import Loader from '@/components/Loader.vue';
+  import { UserRole, type AuthenticatedUserData, type LoginCredentials } from '@/types/user';
   import { useMutation } from '@tanstack/vue-query';
   import { useForm, useField } from 'vee-validate';
   import { ref } from 'vue';
-  import { useRouter } from 'vue-router';
   import * as yup from 'yup';
 
 
@@ -30,23 +28,29 @@ import { useAuthStore } from '@/stores/user';
       mutationFn: login,
       onSuccess: (response) => {
         isLoadingMutation.value = false; 
-        // const authenticatedUser: AuthenticatedUserData = {
-        //   id: response.id,
-        //   name: response.name,
-        //   username: response.username,
-        // }
+        console.log("response login: ", response);
         
-        window.location.href = '/';
+        const authenticatedUser: AuthenticatedUserData = {
+          id: response.id,
+          name: response.name,
+          username: response.username,
+          role_id: response.role_id,
+          role: response.role
+        }
+
+        if(authenticatedUser.role.name == UserRole.USER)  window.location.href = '/';
+        if(authenticatedUser.role.name == UserRole.ADMIN)  window.location.href = '/admin/dashboard';
+        
       },
 
       onError: (error) => {
-         isLoadingMutation.value = false; 
-         console.error("Error Logging In:", error);
-      },
+        isLoadingMutation.value = false; 
+        console.error("Error Logging In:", error);
+      },
 
-      onMutate: () => {
-        isLoadingMutation.value = true; 
-       },
+      onMutate: () => {
+        isLoadingMutation.value = true; 
+      },
   });
 
 

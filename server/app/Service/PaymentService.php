@@ -20,21 +20,28 @@ class PaymentService
     }
 
 
-    public function requestPaymentIntent($amount, string $authHeader)
+    public function requestPaymentIntent($designID, $totalPrice, $order_type, $quantity, $color, $size, $authHeader)
     {
         try {
-            $paymentMethodsAllowed = ["qrph", "card", "dob", "paymaya", "billease", "gcash", "grab_pay"];
+                $paymentMethodsAllowed = ["qrph", "card", "dob", "paymaya", "billease", "gcash", "grab_pay"];
                 $captureType = "automatic";
                 $currency = 'PHP';
 
-
+                Log::info("Payment Intent Meta Data: ", [
+                    'designID' => $designID,
+                    'totalPrice' => $totalPrice,
+                    'order_type' => $order_type,
+                    'quantity' => $quantity,
+                    'color' => $color,
+                    'size' => $size,
+                ]);
                
 
                 $intentRequest = $this->client->request('POST', 'https://api.paymongo.com/v1/payment_intents', [
                     'body' => json_encode([
                         'data' => [
                             'attributes' => [
-                                'amount' => $amount, 
+                                'amount' => $totalPrice, 
                                 'payment_method_allowed' => $paymentMethodsAllowed,
                                 'payment_method_options' => [
                                     'card' => [
@@ -43,6 +50,18 @@ class PaymentService
                                 ],
                                 'currency' => $currency,
                                 'capture_type' => $captureType,
+                                'metadata' => [
+
+                                    // order_type IS USE FOR CONDITIONING WHERE TO SELECT A DESIGN
+                                    // WETHER ON uploaded_designs or designs table
+                                    'design_id' => (string) $designID,
+                                    'total_price' => (string) $totalPrice, 
+                                    'order_type' => (string) $order_type,
+                                    'quantity' => (string) $quantity,
+                                    'color' => (string) $color,
+                                    'size' => (string) $size,
+                                
+                                ],
                             ],
                         ],
                     ]),
@@ -52,9 +71,7 @@ class PaymentService
                         'authorization' => $authHeader,
                         'content-type' => 'application/json',
                     ],
-
-                    // MUST BE SET TO TRUE IF PRODUCTION FOR SECURITY PURPOSE
-                    'verify' => false
+                    
                 ]);
 
                 $intentResponseData = json_decode($intentRequest->getBody());
@@ -121,8 +138,7 @@ class PaymentService
                     'authorization' => $authHeader,
                 ],
 
-                // MUST BE SET TO TRUE IF PRODUCTION FOR SECURITY PURPOSE
-                'verify' => false
+                
 
             ]);
 
@@ -175,8 +191,7 @@ class PaymentService
                     'content-type' => 'application/json',
                 ],
 
-                // MUST BE SET TO TRUE IF PRODUCTION FOR SECURITY PURPOSE
-                'verify' => false
+                
 
             ]);
 

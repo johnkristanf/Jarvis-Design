@@ -1,15 +1,22 @@
-import DefaultLayout from '@/layout/DefaultLayout.vue'
-import DesignsView from '@/views/DesignsView.vue'
-import HomeView from '@/views/HomeView.vue'
-import LoginView from '@/views/LoginView.vue'
+import AdminLayout from '@/layout/AdminLayout.vue'
+import DefaultLayout from '@/layout/UserLayout.vue'
+import DesignsView from '@/views/users/DesignsView.vue'
+import HomeView from '@/views/users/HomeView.vue'
+import LoginView from '@/views/users/LoginView.vue'
 import NotFoundView from '@/views/NotFoundView.vue'
-import RegisterView from '@/views/RegisterView.vue'
+import RegisterView from '@/views/users/RegisterView.vue'
 import { createRouter, createWebHistory } from 'vue-router'
+import AdminDesignsView from '@/views/admin/AdminDesignsView.vue'
+import AdminDashboardView from '@/views/admin/AdminDashboardView.vue'
+import OrdersView from '@/views/users/OrdersView.vue'
+import FAQView from '../views/users/FAQView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
 
+
+    // CUSTOMER ROUTE
     {
       path: '/',
       component: DefaultLayout,
@@ -30,6 +37,16 @@ const router = createRouter({
           component: DesignsView
         },
 
+        {
+          path: 'orders',
+          component: OrdersView
+        },
+
+        {
+          path: 'faq',
+          component: FAQView
+        },
+
 
         {
           path: 'auth/login',
@@ -40,6 +57,29 @@ const router = createRouter({
           path: 'auth/register',
           component: RegisterView
         },
+      ]
+    },
+
+
+
+    // ADMIN ROUTE
+
+
+    {
+      path: '/admin',
+      component: AdminLayout,
+      children: [
+
+        {
+          path: 'dashboard',
+          component: AdminDashboardView
+        },
+
+        {
+          path: 'designs',
+          component: AdminDesignsView
+        },
+
       ]
     },
 

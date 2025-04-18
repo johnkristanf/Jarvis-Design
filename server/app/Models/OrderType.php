@@ -5,15 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
-class Roles extends Model
+class OrderType extends Model
 {
     protected $fillable = [
         'name'
     ];
 
-    public function user(): HasOne
-    {
-        return $this->hasOne(User::class, 'role_id');
-    }
-   
+
+    // ORDER CLASS HERE
+    // public function orders(): HasOne 
+    // {
+    //     return $this->hasOne();
+    // }
 }

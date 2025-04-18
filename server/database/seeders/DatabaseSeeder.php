@@ -15,11 +15,16 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             RolesSeeder::class,
+            AdminSeeder::class,
             ColorsSeeder::class,
             SizesSeeder::class,
-            MaterialsSeeder::class,
-            DesignsSeeder::class,
-            DesignsMaterialsSeeder::class
+            OrderTypeSeeder::class,
+            OrderStatusSeeder::class,
+
+            // FOR TESTING USE CASE ONLY: 
+            // MaterialsSeeder::class,
+            // DesignsSeeder::class,
+            // DesignsMaterialsSeeder::class,
         ]);
     }
 }

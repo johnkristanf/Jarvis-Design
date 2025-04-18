@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use App\Services\UserService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -45,31 +46,44 @@ class UserController extends Controller
             'username' => ['required'],
             'password' => ['required'],
         ]);
- 
+
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
-            return response()->json(Auth::user(), 200);
-        }
- 
-        return response()->json(['msg' => 'Invalid Username or Password'], 401);
 
+            $authenticatedUser = Auth::user();
+            $authenticatedUser = User::where('id', $authenticatedUser->id)
+                ->select('id', 'name', 'username', 'role_id')
+                ->with(['role' => function ($query) {
+                    $query->select('id', 'name');
+                }])
+                ->first();
+
+            return response()->json($authenticatedUser, 200);
+        }
+
+        return response()->json(['msg' => 'Invalid Username or Password'], 401);
     }
 
     public function user()
     {
         $authenticatedUser = Auth::user();
+        $authenticatedUser = User::where('id', $authenticatedUser->id)
+            ->select('id', 'name', 'username', 'role_id')
+            ->with(['role' => function ($query) {
+                $query->select('id', 'name');
+            }])
+            ->first();
+
         return response()->json($authenticatedUser, 200);
     }
 
 
     public function logout(Request $request)
     {
-        Log::info("LOG AWWTTTTT");
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
         return response()->noContent(204);
-
     }
 }
