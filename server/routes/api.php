@@ -22,10 +22,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/upload/design', [DesignsController::class, 'uploadDesign']);
 
     Route::put('/update/uploaded/design', [DesignsController::class, 'updateUploadedDesigns']);
-    
 
     Route::post('/paymongo/create-qr-source', [PaymentController::class, 'createQrPhSource']);
-
+    
 });
 
 

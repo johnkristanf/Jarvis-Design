@@ -1,11 +1,11 @@
 <script lang="ts" setup>
   import { register } from '@/api/post/register';
-import Loader from '@/components/Loader.vue';
-import type { UserData } from '@/types/user';
-import { useMutation } from '@tanstack/vue-query';
-import { useToast } from 'primevue';
-import { useForm, useField } from 'vee-validate';
-import { ref } from 'vue';
+  import Loader from '@/components/Loader.vue';
+  import type { RegistrationCredentials } from '@/types/user';
+  import { useMutation } from '@tanstack/vue-query';
+  import { Toast, useToast } from 'primevue';
+  import { useForm, useField } from 'vee-validate';
+  import { ref } from 'vue';
   import * as yup from 'yup';
 
   const validationSchema = yup.object({
@@ -15,6 +15,8 @@ import { ref } from 'vue';
   });
 
   const isLoadingMutation = ref(false);
+  const toast = useToast();
+
 
   const { handleSubmit, isSubmitting, handleReset } = useForm({
     validationSchema,
@@ -30,7 +32,14 @@ import { ref } from 'vue';
       onSuccess: (response) => {
         isLoadingMutation.value = false; 
         console.log("register response: ", response);
-        handleReset()
+        handleReset();
+
+        toast.add({
+            severity: 'success',
+            summary: 'Registration Success!',
+            detail: 'Account Registered your may now proceed to login',
+            life: 3000,
+        });
       },
 
       onError: (error) => {
@@ -47,7 +56,7 @@ import { ref } from 'vue';
   const onSubmit = handleSubmit(async (values) => {
     console.log('Form submitted with:', values);
 
-    const userData: UserData = {
+    const userData: RegistrationCredentials = {
       name: values.name,
       username: values.username,
       password: values.password,
@@ -127,4 +136,6 @@ import { ref } from 'vue';
   <div v-if="isLoadingMutation">
     <Loader msg="Registering Account..."/>
   </div>
+
+  <Toast />  
 </template>
