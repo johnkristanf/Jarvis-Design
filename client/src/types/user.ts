@@ -6,10 +6,18 @@ export const UserRole = {
     USER: 'user',
 } as const;
 
+
 export type LoginCredentials = {
     username: string,
     password?: string
 }
+
+export type RegistrationCredentials = {
+    name: string,
+    username: string,
+    password?: string
+}
+
 
 type Role = {
     id: number,

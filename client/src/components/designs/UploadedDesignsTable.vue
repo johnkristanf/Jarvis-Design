@@ -213,7 +213,7 @@ onMounted(() => {
                     
                     <!-- Empty state message -->
                     <tr v-if="data && data.length === 0 && !isLoading">
-                        <td colspan="7" class="px-6 py-4 text-center">
+                        <td colspan="12" class="px-6 py-4 text-center">
                             No designs found.
                         </td>
                     </tr>
