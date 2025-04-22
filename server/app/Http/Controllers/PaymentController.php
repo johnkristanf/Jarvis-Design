@@ -89,6 +89,7 @@ class PaymentController extends Controller
         try {
                 $designID = $request->input('design_id'); 
                 $totalPrice = $request->input('total_price'); 
+                $orderOption = $request->input('order_option'); 
                 $orderType = $request->input('order_type'); 
 
                 $quantity = $request->input('quantity'); 
@@ -100,7 +101,7 @@ class PaymentController extends Controller
 
 
                 // ADD META DATA IN THE requestPaymentIntent SERVICE TO ADD THE (COLORS, SIZES, ETC...)
-                $paymentIntentID = $this->paymentService->requestPaymentIntent($designID, $totalPrice, $orderType, $quantity, $color, $size, $authHeader);
+                $paymentIntentID = $this->paymentService->requestPaymentIntent($designID, $totalPrice, $orderOption, $orderType, $quantity, $color, $size, $authHeader);
 
                 $paymentMethodID = $this->paymentService->requestPaymentMethod($authHeader);
 
@@ -138,7 +139,7 @@ class PaymentController extends Controller
     }
 
 
-    public function triggerCurlRequest()
+    public function triggerCreateTestPaymongoResource()
     {
         $response = Http::withHeaders([
             'accept' => 'application/json',
@@ -168,4 +169,62 @@ class PaymentController extends Controller
         return response()->json($response->json());
     }
 
+    public function getAllOrders()
+    {
+        $orders = $this->paymentService->allOrders();
+        return response()->json($orders, 200);
+    }
+
+
+    public function getAllOrderStatus()
+    {
+        $orders = $this->paymentService->allOrderStatus();
+        return response()->json($orders, 200);
+    }
+
+    public function updateOrderStatus(Request $request)
+    {
+        $validated = $request->validate([
+            'order_id' => 'required|numeric', 
+            'status_id' => 'required|numeric',
+        ]);
+
+        $updatedOrderID = $this->paymentService->updateStatus($validated['order_id'], $validated['status_id']);
+
+        return response()->json([
+            'msg' => 'Order Status Updated Successfully',
+            'orderID' => $updatedOrderID
+        ], 200);
+    }
+    
+
+    public function getAllOrderNotifications()
+    {
+        $orderNotifications = $this->paymentService->allOrdersNotifications();
+        return response()->json($orderNotifications, 200);
+    }
+
+
+    public function updateNotificationAsRead(Request $request)
+    {
+        $validated = $request->validate([
+            'notification_id' => 'required|numeric', 
+        ]);
+
+        $updatedNotificationID = $this->paymentService->updateNotification($validated['notification_id']);
+
+        return response()->json([
+            'msg' => 'Notification Read Update Successfully',
+            'notifID' => $updatedNotificationID
+        ], 200);
+    }
+
+    public function updateNotificationAsReadAll()
+    {
+        $this->paymentService->updateAllNotificationsAsRead();
+
+        return response()->json([
+            'msg' => 'Notification Read All Successfully',
+        ], 200);
+    }
 }

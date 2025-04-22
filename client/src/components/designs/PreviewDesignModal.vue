@@ -11,7 +11,7 @@
   import { useAuthStore } from '@/stores/user';
   import { useProductAttributes } from '@/composables/useProductAttribute';
 
-  import { OrderTypes } from '@/types/order';
+  import { OrderOptions, OrderTypes } from '@/types/order';
 
 
   import ListSelectBox from '../ListSelectBox.vue';
@@ -34,6 +34,7 @@
   const { colors, sizes, loadingColors, loadingSizes } = useProductAttributes();
 
   const paymentData = ref<ProceedPaymentData>({
+    order_option: '',
     price: props.design.price,
     name: props.design.name
   });
@@ -44,6 +45,11 @@
     size: -1,
     quantity: 1
   });
+
+  const orderOptions = ref([
+    { id: 1, name: OrderOptions.DELIVERY },
+    { id: 2, name: OrderOptions.PICK_UP }
+  ]);
 
   const openPaymentModal = ref<boolean>(false);
   const openFailureModal = ref<boolean>(false);
@@ -56,6 +62,7 @@
 
   const selectedColor = ref(colors.value && colors.value[0]);
   const selectedSize = ref(sizes.value && sizes.value[2]);
+  const selectedOrderType = ref(orderOptions.value[0]);
   const quantity = ref<number>(0);
 
 
@@ -79,6 +86,7 @@
 
       openPaymentModal.value = true;
 
+      paymentData.value.order_option = selectedOrderType.value.name;
       paymentData.value.name = props.design.name;
       paymentData.value.price = props.design.price;
       designAttributeData.value.design_id = props.design.id;
@@ -155,6 +163,29 @@
                         </fieldset>
 
 
+                        <!-- ORDER TYPES -->
+
+                        <fieldset v-if="orderOptions" class="mt-10" aria-label="Choose a color">
+                          <div class="flex items-center justify-between">
+                            <div class="text-md ">Order Options</div>
+                          </div>
+
+                          <!-- DESIGN STATUS SELECT ELEMENT -->
+
+                          <div class="mt-4 w-full">
+                            <ListSelectBox
+                              v-model="selectedOrderType"
+                              :options="orderOptions"
+                              displayKey="name"
+                            />
+                            
+                          </div>
+
+                          <!-- END OF DESIGN STATUS SELECT ELEMENT -->
+
+                        </fieldset>
+
+
                         <!-- COLORS -->
 
                         <fieldset v-if="colors && !loadingColors" class="mt-10" aria-label="Choose a color">
@@ -201,33 +232,12 @@
                             >
                               <div
                                 :class="[
-                                  // <!-- THIS COMMENT IS FOR THE NOT AVAILABLE STOCK STYLING (DONT REMOVE) -->
-                                  // size.inStock ? 'cursor-pointer bg-white text-gray-900 shadow-xs' : 'cursor-not-allowed bg-gray-50 text-gray-200',
                                   
                                   active ? 'ring-2 ring-indigo-500' : '',
                                   'group relative flex items-center justify-center rounded-md border px-4 py-3 text-sm font-medium uppercase hover:bg-gray-50 focus:outline-hidden sm:flex-1',
                                 ]"
                               >
                                 <span>{{ size.name }}</span>
-
-
-                                <!-- THIS COMMENT IS FOR THE NOT AVAILABLE STOCK STYLING (DONT REMOVE) -->
-
-                                <!-- <span
-                                  v-if="size.inStock"
-                                  :class="[
-                                    active ? 'border' : 'border-2',
-                                    checked ? 'border-indigo-500' : 'border-transparent',
-                                    'pointer-events-none absolute -inset-px rounded-md',
-                                  ]"
-                                  aria-hidden="true"
-                                /> -->
-
-                                <!-- <span v-else aria-hidden="true" class="pointer-events-none absolute -inset-px rounded-md border-2 border-gray-200">
-                                  <svg class="absolute inset-0 size-full stroke-2 text-gray-200" viewBox="0 0 100 100" preserveAspectRatio="none" stroke="currentColor">
-                                    <line x1="0" y1="100" x2="100" y2="0" vector-effect="non-scaling-stroke" />
-                                  </svg>
-                                </span> -->
 
                               </div>
                             </RadioGroupOption>

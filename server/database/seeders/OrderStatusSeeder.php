@@ -15,7 +15,7 @@ class OrderStatusSeeder extends Seeder
     {
         $orderStatus = [
             ['name' => 'in_progress'],
-            ['name' => 'pickup'],
+            ['name' => 'pick_up'],
             ['name' => 'delivery'],
             ['name' => 'completed'],
         ];

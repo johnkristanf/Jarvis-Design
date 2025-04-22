@@ -1,4 +1,12 @@
 
+import dayjs from 'dayjs'
+import relativeTime from 'dayjs/plugin/relativeTime'
+import 'dayjs/locale/en' 
+
+
+dayjs.extend(relativeTime)
+dayjs.locale('en')
+
 export const formatCurrency = (value: string) => {
     const numericValue = parseFloat(value);
     return numericValue.toLocaleString('en-US', { style: 'currency', currency: 'PHP' });
@@ -22,3 +30,7 @@ export const formatDate = (value: string) => {
     }
 };
 
+
+export const formateNotificationTimeAgo = (date: string | Date) => {
+  return dayjs(date).fromNow()
+}

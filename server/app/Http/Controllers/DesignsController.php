@@ -40,7 +40,6 @@ class DesignsController extends Controller
     }
 
 
-
     public function uploadDesign(Request $request)
     {
 
@@ -51,6 +50,7 @@ class DesignsController extends Controller
             ]);
 
             $uploadedFileData = $request->file('file');
+            $orderOption = $request->input('order_option');
             $colorId = $request->input('color');
             $sizeId = $request->input('size');
             $quantity = $request->input('quantity');
@@ -70,7 +70,7 @@ class DesignsController extends Controller
             ]);
             
             if ($isUploaded) {
-                $preferredDesignID = $this->designsService->saveUploadedDesign($s3Key, $quantity, $colorId, $sizeId);
+                $preferredDesignID = $this->designsService->saveUploadedDesign($s3Key, $orderOption, $quantity, $colorId, $sizeId);
                 
                 return response()->json([
                     'success' => true,

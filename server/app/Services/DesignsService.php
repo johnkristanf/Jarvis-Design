@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Colors;
 use App\Models\Designs;
+use App\Models\OrderType;
 use App\Models\PreferredDesign;
 use App\Models\Sizes;
 use App\Models\UploadedDesign;
@@ -55,17 +56,20 @@ class DesignsService
     }
 
 
-    public function saveUploadedDesign(string $path, $quantity, $colorID, $sizeID): int
+
+    public function saveUploadedDesign(string $path, $orderOption, $quantity, $colorID, $sizeID): int
     {
         try {
             
             $preferredDesignID = UploadedDesign::create([
                 'path' => $path,
+                'order_option' => $orderOption,
                 'quantity' => $quantity,
                 'color_id' => $colorID,
                 'size_id' => $sizeID,
                 'user_id' => Auth::user()->id
             ])->id;
+
 
             return $preferredDesignID;
 
@@ -104,7 +108,8 @@ class DesignsService
                 $q->where('user_id', Auth::id());
             });
     
-            $results = $query->get();
+            $results = $query->orderBy('created_at', 'desc')->get();
+
 
 
             // Generate a temporary URL for each design

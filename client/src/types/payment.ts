@@ -1,4 +1,5 @@
 export type ProceedPaymentData = {
+    order_option: string,
     price: number,
     name: string
 }

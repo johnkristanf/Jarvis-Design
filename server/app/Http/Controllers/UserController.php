@@ -33,10 +33,16 @@ class UserController extends Controller
 
         $createdUserID = $this->userService->registerUser($validatedData);
 
+        if(!$createdUserID !== -1){
+            return response()->json([
+                'msg' => 'Account Created Successfully',
+                'accountID' => $createdUserID
+            ], 201);
+        }
+
         return response()->json([
-            'msg' => 'Account Created Successfully',
-            'accountID' => $createdUserID
-        ], 201);
+            'msg' => 'Failed to Create Account',
+        ], 500);
     }
 
 

@@ -9,7 +9,9 @@ const { authStore, isLoading } = useFetchAuthenticatedUser();
 
 const sideLinks = ref([
   { name: "Dashboard", to: "/admin/dashboard" },
+  { name: "Orders", to: "/admin/orders" },
   { name: "Designs", to: "/admin/designs" },
+  { name: "Materials", to: "/admin/materials" },
 ])
 
 </script>
@@ -74,10 +76,10 @@ const sideLinks = ref([
 </nav>
 
 <aside id="logo-sidebar" class="fixed top-0 left-0 mt-12 z-40 w-64 h-screen transition-transform -translate-x-full border-r border-gray-200 sm:translate-x-0 dark:bg-gray-800 dark:border-gray-700" aria-label="Sidebar">
-   <div class="h-full p-5 overflow-y-auto bg-gray-900 dark:bg-gray-800">
+   <div class="h-full overflow-y-auto bg-gray-900 dark:bg-gray-800 pt-2">
         <ul class="space-y-2 font-medium">
             <li v-for="link in sideLinks">
-                <RouterLink :to="link.to" class="flex items-center p-2 text-white mb-3 rounded-lg dark:text-black hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 group">
+                <RouterLink :to="link.to" class="flex items-center p-2 text-white mb-3 dark:text-black hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 group">
 
                   <!-- CHANGE THIS TO SPECIFIC ICON -->
                   <svg class="w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-black" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 22 21">
