@@ -17,7 +17,7 @@ class DesignsSeeder extends Seeder
 
         // THINK OF THIS SEQUENCE CREATION PROCCESS AS IF THIS IS THE REAL INSERTION
 
-        Designs::create([
+        Designs::firstOrCreate([
             'name' => 'Test Jersey 1',
             'price' => 700,
             'quantity' => 100,

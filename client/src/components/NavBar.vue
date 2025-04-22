@@ -1,13 +1,21 @@
 <script lang="ts" setup>
     import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
-    import { UserIcon } from '@heroicons/vue/20/solid'
+    import { BellAlertIcon, CheckIcon, ShoppingCartIcon, UserIcon } from '@heroicons/vue/20/solid'
     import { BellIcon } from '@heroicons/vue/24/outline'
     import { useRoute, useRouter } from 'vue-router'
     import Loader from './Loader.vue'
     import { useFetchAuthenticatedUser } from '@/composables/useFetchAuthenticatedUser'
+    import { ref } from 'vue'
+    import { Drawer } from 'primevue'
+    import { OrderStatus } from '@/types/order'
+    import { useMutation, useQuery } from '@tanstack/vue-query'
+    import { getAllOrderNotifications } from '@/api/get/orders'
+    import { formateNotificationTimeAgo } from '@/helper/designs'
+    import { updateNotificationAsRead, updateNotificationAsReadAll } from '@/api/put/notifications'
 
     const route = useRoute()
     const { authStore, isLoading } = useFetchAuthenticatedUser()
+    const isMarkingAsRead = ref<boolean>(false);
 
     const navigation = [
         { name: 'Home', to: '/home' },
@@ -32,6 +40,55 @@
         { name: 'Login', to: '/auth/login' },
         { name: 'Register', to: '/auth/register' }
     ]
+
+    const visibleRight = ref<boolean>(false);
+
+    const notificationsQuery = useQuery({
+        queryKey: ['order_notifications'],
+        queryFn: getAllOrderNotifications,
+        enabled: true, 
+    });
+
+
+    const notifReadByIDMutation = useMutation({
+        mutationFn: updateNotificationAsRead,
+        onSuccess: async () => {
+            notificationsQuery.refetch();
+            isMarkingAsRead.value = false;
+        },
+
+        onError: (error) => {
+            console.error('Mutation error:', error);
+        },
+
+    });
+
+
+    const notifReadAllMutation = useMutation({
+        mutationFn: updateNotificationAsReadAll,
+        onSuccess: async () => {
+            notificationsQuery.refetch();
+            isMarkingAsRead.value = false;
+        },
+
+        onError: (error) => {
+            console.error('Mutation error:', error);
+        },
+
+    });
+
+    const handleReadNotification = (notification_id: number) => {
+        console.log("notification_id: ", notification_id);
+        isMarkingAsRead.value = true
+        notifReadByIDMutation.mutate(notification_id);
+    }
+
+    const handleMarkAllAsRead = () =>{
+        isMarkingAsRead.value = true
+        notifReadAllMutation.mutate()
+    } 
+
+
 </script>
 
 <template>
@@ -40,10 +97,10 @@
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="flex h-16 items-center">
                     <div class="flex items-center justify-between w-full">
-                        <h1 class="text-white text-3xl hover:cursor-pointer hover:opacity-75">
+                        <a href='/' class="text-white text-3xl hover:cursor-pointer hover:opacity-75">
                             Jarvis
                             <span class="text-gray-700">Designs</span>
-                        </h1>
+                        </a>
 
                         <!-- MENU FOR SMALL SIZE -->
                         <div class="flex md:hidden">
@@ -91,13 +148,72 @@
                                     </div>
                                 </template>
 
+                                 <!-- DRAWER CONTAINER -->
+                                <div v-if="visibleRight" class="absolute card flex justify-center">
+                                    <Drawer v-model:visible="visibleRight"  position="right" class="bg-white !w-full md:!w-80 lg:!w-[30rem]">
+                                        <template #header>
+
+                                            <div class="w-full flex items-center justify-between">
+                                                <div class="flex items-center gap-2">
+                                                    <BellAlertIcon class="size-5"/>
+                                                    <span class="font-bold">Notifications</span>
+                                                </div>
+
+                                                <h1 @click="handleMarkAllAsRead" class="flex gap-1 text-[12px] pr-3 hover:opacity-75 hover:cursor-pointer">
+                                                    <CheckIcon class="size-4" />
+                                                    Mark All as Read
+                                                </h1>
+                                            </div>
+                                            
+                                        </template>
+
+                                        <div class="flex flex-col gap-1">
+                                            <h1>Today</h1>
+
+                                            <div 
+                                                v-for="notif in notificationsQuery.data.value"
+                                                @click="handleReadNotification(notif.id)"
+                                                :class="[
+                                                    'flex items-center gap-3 p-3 ',
+                                                    !notif.is_read ? 'bg-gray-200 hover:cursor-pointer hover:bg-gray-300' : 'bg-white',
+                                                ]"
+                                            >
+                                                <img class="w-10 h-10 rounded-full" src="https://flowbite.com/docs/images/people/profile-picture-5.jpg" alt="user photo">
+
+                                                <div class="flex flex-col text-sm gap-1">
+                                                    <h1>Order ID: {{ notif.order_id }}</h1>
+
+                                                    <span>
+                                                        Status: 
+                                                       
+                                                        <span :class="{
+                                                            'text-yellow-800 ': notif.status === OrderStatus.IN_PROGRESS,
+                                                            'text-sky-800 ': notif.status === OrderStatus.DELIVERY,
+                                                            'text-indigo-800 ': notif.status === OrderStatus.PICKUP,
+                                                            'text-green-800 ': notif.status === OrderStatus.COMPLETED,
+                                                        }">
+                                                            {{ notif.status.toUpperCase() }}
+                                                        </span>
+
+                                                    </span>
+
+                                                    <p class="text-[10px]">{{ formateNotificationTimeAgo(notif.created_at) }}</p>
+                                                </div>
+                                                
+                                            </div>
+
+                                        </div>
+
+                                    </Drawer>
+                                </div>
+
                                 <button
                                     v-if="authStore.currentUser"
-                                    type="button"
+                                    @click="visibleRight = true"
                                     class="relative rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800 focus:outline-hidden"
                                 >
                                     <span class="absolute -inset-1.5" />
-                                    <s pan class="sr-only">View notifications</s>
+                                    <span class="sr-only">View notifications</span>
                                     <BellIcon class="size-6" aria-hidden="true" />
                                 </button>
 
@@ -146,7 +262,7 @@
                                     </transition>
                                 </Menu>
                                 <div v-else-if="isLoading">
-                                    <span class="text-gray-400">Loading user...</span>
+                                    <span class="text-gray-400">Loading...</span>
                                 </div>
                             </div>
                         </div>
@@ -237,5 +353,9 @@
 
     <div v-if="authStore.LoggingOut">
         <Loader msg="Logging Out..." />
+    </div>
+
+    <div v-if="isMarkingAsRead">
+        <Loader msg="Marking as Read..." />
     </div>
 </template>

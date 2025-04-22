@@ -22,9 +22,12 @@ class DatabaseSeeder extends Seeder
             OrderStatusSeeder::class,
 
             // FOR TESTING USE CASE ONLY: 
-            // MaterialsSeeder::class,
-            // DesignsSeeder::class,
-            // DesignsMaterialsSeeder::class,
+            MaterialsSeeder::class,
+            DesignsSeeder::class,
+            DesignsMaterialsSeeder::class,
+
+            OrdersSeeder::class,
+
         ]);
     }
 }

@@ -6,6 +6,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasRelationships;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -48,7 +50,7 @@ class User extends Authenticatable
         ];
     }
 
-    public function role()
+    public function role(): BelongsTo
     {
         return $this->belongsTo(Roles::class, 'role_id');
     }
@@ -62,6 +64,11 @@ class User extends Authenticatable
     public function isAdmin(): bool
     {
         return $this->hasRole('admin');
+    }
+
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Orders::class, 'user_id');
     }
 
 }

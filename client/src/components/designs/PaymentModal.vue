@@ -37,6 +37,7 @@ const handleGeneratePaymentQrCode = async () => {
 
   const designID = props.attributeData.design_id;
   const totalPrice = props.attributeData.quantity * props.paymentData.price;
+  const orderOption = props.paymentData.order_option;
   const orderType = props.orderType;
   
   const quantity = props.attributeData.quantity;
@@ -49,7 +50,7 @@ const handleGeneratePaymentQrCode = async () => {
   console.log("color: ", color);
   console.log("size: ", size);
   
-  const response = await generateQrCode(designID, totalPrice, orderType, quantity, color, size);
+  const response = await generateQrCode(designID, totalPrice, orderOption, orderType, quantity, color, size);
   console.log("response qrcode: ", response);
 
   if(response && paymentResponseRef.value){

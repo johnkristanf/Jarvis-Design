@@ -4,8 +4,7 @@ import { getAllUploadedDesigns } from '@/api/get/designs';
 import { formatCurrency, formatDate } from '@/helper/designs';
 import { useAuthStore } from '@/stores/user';
 import { DesignStatus, type UploadedDesign } from '@/types/design';
-import { UserRole } from '@/types/user';
-import { computed, onMounted, ref, watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import Loader from '../Loader.vue';
 import { useQuery } from '@tanstack/vue-query';
 import PaymentModal from './PaymentModal.vue';
@@ -14,6 +13,7 @@ import type { DesignAttribute, ProceedPaymentData } from '@/types/payment';
 import { initFlowbite } from 'flowbite'
 import { InformationCircleIcon } from '@heroicons/vue/20/solid';
 import { OrderTypes } from '@/types/order';
+import { useAuthorization } from '@/composables/useAuthorization';
 
 
 
@@ -36,22 +36,13 @@ const designAttributeData = ref<DesignAttribute>({
 });
 
 const paymentData = ref<ProceedPaymentData>({
+    order_option: '',
     price: -1,
     name: ''
 });
 
 
-
-const isAdminActions = computed(() => {
-  const role = authStore.currentUser?.role?.name;
-  return !!role && role === UserRole.ADMIN;
-});
-
-const isUserActions = computed(() => {
-  const role = authStore.currentUser?.role?.name;
-  return !!role && role === UserRole.USER;
-});
-
+const { isAdmin, isUser } = useAuthorization();
 
 const { data, isLoading, refetch } = useQuery({
   queryKey: ['uploaded-designs'],
@@ -190,17 +181,17 @@ onMounted(() => {
 
                         <td class="px-6 py-4">
                             <button 
-                                v-if="isAdminActions"
+                                v-if="isAdmin"
                                 @click="handleOpenUpdateModal(design)" 
-                                class="bg-blue-600 text-white rounded-md p-2 hover:opacity-75 hover:cursor-pointer"
+                                class="text-blue-600 rounded-md p-2 hover:opacity-75 hover:cursor-pointer hover:underline font-medium"
                             >
                                 Update
                             </button>
 
                             <button 
-                                v-else-if="isUserActions && design.status == DesignStatus.TAGGED"
+                                v-else-if="isUser && design.status == DesignStatus.TAGGED"
                                 @click="handleOpenPaymentModal(design)" 
-                                class="bg-blue-600 text-white rounded-md p-2 hover:opacity-75 hover:cursor-pointer"
+                                class="text-blue-600 text-white rounded-md p-2 hover:opacity-75 hover:cursor-pointer"
                             >
                                 Place Order
                             </button>

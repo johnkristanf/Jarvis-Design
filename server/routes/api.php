@@ -11,7 +11,7 @@ Route::get('/get/all/colors', [DesignsController::class, 'getAllColors']);
 Route::get('/get/all/sizes', [DesignsController::class, 'getAllSizes']);
 
 
-Route::get('/trigger-curl', [PaymentController::class, 'triggerCurlRequest']);
+Route::get('/trigger-curl', [PaymentController::class, 'triggerCreateTestPaymongoResource']);
 
 
 Route::middleware(['auth:sanctum'])->group(function () {
@@ -22,9 +22,18 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/upload/design', [DesignsController::class, 'uploadDesign']);
 
     Route::put('/update/uploaded/design', [DesignsController::class, 'updateUploadedDesigns']);
-
     Route::post('/paymongo/create-qr-source', [PaymentController::class, 'createQrPhSource']);
     
+
+    Route::get('/get/orders', [PaymentController::class, 'getAllOrders']);
+    Route::get('/get/order/status', [PaymentController::class, 'getAllOrderStatus']);
+    Route::put('/update/order/status', [PaymentController::class, 'updateOrderStatus']);
+
+    Route::get('/get/order/notifications', [PaymentController::class, 'getAllOrderNotifications']);
+    
+    Route::put('/notification/read', [PaymentController::class, 'updateNotificationAsRead']);
+    Route::put('/all/notification/read', [PaymentController::class, 'updateNotificationAsReadAll']);
+
 });
 
 

@@ -10,6 +10,8 @@ import AdminDesignsView from '@/views/admin/AdminDesignsView.vue'
 import AdminDashboardView from '@/views/admin/AdminDashboardView.vue'
 import OrdersView from '@/views/users/OrdersView.vue'
 import FAQView from '../views/users/FAQView.vue'
+import AdminOrdersView from '@/views/admin/AdminOrdersView.vue'
+import AdminMatertialsView from '@/views/admin/AdminMatertialsView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -78,6 +80,17 @@ const router = createRouter({
         {
           path: 'designs',
           component: AdminDesignsView
+        },
+
+        
+        {
+          path: 'orders',
+          component: AdminOrdersView
+        },
+
+        {
+          path: 'materials',
+          component: AdminMatertialsView
         },
 
       ]

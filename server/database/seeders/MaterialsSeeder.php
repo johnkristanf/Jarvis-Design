@@ -15,8 +15,8 @@ class MaterialsSeeder extends Seeder
     public function run(): void
     {
 
-        Materials::create(['name' => 'Cotton', 'quantity' => 1000]);
-        Materials::create(['name' => 'Polyester', 'quantity' => 500]);
+        Materials::firstOrCreate(['name' => 'Cotton', 'quantity' => 1000]);
+        Materials::firstOrCreate(['name' => 'Polyester', 'quantity' => 500]);
         
     }
 }
