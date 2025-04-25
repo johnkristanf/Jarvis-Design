@@ -1,6 +1,5 @@
 <script lang="ts" setup>
-import MaterialsTable from '@/components/matertials/MaterialsTable.vue';
-
+    import MaterialsTable from '@/components/matertials/MaterialsTable.vue'
 </script>
 
 <template>

@@ -1,23 +1,27 @@
-@import "tailwindcss";
-@import "flowbite";
+@import 'tailwindcss';
+@import 'flowbite';
+
 
 body {
-  padding: 0;
-  margin: 0;
-  /* background-image: linear-gradient(to bottom right, black 0%, gray 100%, white 100%); */
+    padding: 0;
+    margin: 0;
+    /* background-image: linear-gradient(to bottom right, black 0%, gray 100%, white 100%); */
 
-
-  font-family: "Special Gothic Condensed One", sans-serif;
-  font-weight: 600;
-  font-style: normal;
+    font-family: 'Special Gothic Condensed One', sans-serif;
+    font-weight: 600;
+    font-style: normal;
 }
 
 @layer components {
-  .fixed-full {
-    position: fixed;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-  }
+    .fixed-full {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+    }
+}
+
+.p-tooltip{
+    z-index: 9999999;
 }

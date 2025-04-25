@@ -14,91 +14,80 @@ import AdminOrdersView from '@/views/admin/AdminOrdersView.vue'
 import AdminMatertialsView from '@/views/admin/AdminMatertialsView.vue'
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
-  routes: [
-
-
-    // CUSTOMER ROUTE
-    {
-      path: '/',
-      component: DefaultLayout,
-      children: [
-
+    history: createWebHistory(import.meta.env.BASE_URL),
+    routes: [
+        // CUSTOMER ROUTE
         {
-          path: '',
-          redirect: '/home'
+            path: '/',
+            component: DefaultLayout,
+            children: [
+                {
+                    path: '',
+                    redirect: '/home',
+                },
+
+                {
+                    path: 'home',
+                    component: HomeView,
+                },
+
+                {
+                    path: 'designs',
+                    component: DesignsView,
+                },
+
+                {
+                    path: 'orders',
+                    component: OrdersView,
+                },
+
+                {
+                    path: 'faq',
+                    component: FAQView,
+                },
+
+                {
+                    path: 'auth/login',
+                    component: LoginView,
+                },
+
+                {
+                    path: 'auth/register',
+                    component: RegisterView,
+                },
+            ],
         },
 
-        {
-          path: 'home',
-          component: HomeView
-        },
+        // ADMIN ROUTE
 
         {
-          path: 'designs',
-          component: DesignsView
+            path: '/admin',
+            component: AdminLayout,
+            children: [
+                {
+                    path: 'dashboard',
+                    component: AdminDashboardView,
+                },
+
+                {
+                    path: 'designs',
+                    component: AdminDesignsView,
+                },
+
+                {
+                    path: 'orders',
+                    component: AdminOrdersView,
+                },
+
+                {
+                    path: 'materials',
+                    component: AdminMatertialsView,
+                },
+            ],
         },
 
-        {
-          path: 'orders',
-          component: OrdersView
-        },
-
-        {
-          path: 'faq',
-          component: FAQView
-        },
-
-
-        {
-          path: 'auth/login',
-          component: LoginView
-        },
-
-        {
-          path: 'auth/register',
-          component: RegisterView
-        },
-      ]
-    },
-
-
-
-    // ADMIN ROUTE
-
-
-    {
-      path: '/admin',
-      component: AdminLayout,
-      children: [
-
-        {
-          path: 'dashboard',
-          component: AdminDashboardView
-        },
-
-        {
-          path: 'designs',
-          component: AdminDesignsView
-        },
-
-        
-        {
-          path: 'orders',
-          component: AdminOrdersView
-        },
-
-        {
-          path: 'materials',
-          component: AdminMatertialsView
-        },
-
-      ]
-    },
-
-    { path: '/:pathMatch(.*)*', name: 'NotFound', component: NotFoundView },
-
-  ],
+        { path: '/:pathMatch(.*)*', name: 'NotFound', component: NotFoundView },
+    ],
 })
 
 export default router

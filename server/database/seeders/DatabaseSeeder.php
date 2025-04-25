@@ -20,13 +20,15 @@ class DatabaseSeeder extends Seeder
             SizesSeeder::class,
             OrderTypeSeeder::class,
             OrderStatusSeeder::class,
+            MaterialsCategorySeeder::class,
+            DesignCategorySeeder::class
 
             // FOR TESTING USE CASE ONLY: 
-            MaterialsSeeder::class,
-            DesignsSeeder::class,
-            DesignsMaterialsSeeder::class,
+            // MaterialsSeeder::class,
+            // DesignsSeeder::class,
+            // DesignsMaterialsSeeder::class,
 
-            OrdersSeeder::class,
+            // OrdersSeeder::class,
 
         ]);
     }

@@ -1,43 +1,36 @@
-import { fetchUserData } from "@/api/get/user-data";
-import { useAuthStore } from "@/stores/user";
-import { onMounted, ref } from "vue";
-
+import { fetchUserData } from '@/api/get/user-data'
+import { useAuthStore } from '@/stores/user'
+import { onMounted, ref } from 'vue'
 
 export const useFetchAuthenticatedUser = () => {
-    const isLoading = ref(true);
-    const authStore = useAuthStore();
-    
+    const isLoading = ref(true)
+    const authStore = useAuthStore()
+
     const userDataFetch = async () => {
+        isLoading.value = true
 
-        isLoading.value = true; 
-    
         try {
-            const fetchedUserData = await fetchUserData();
+            const fetchedUserData = await fetchUserData()
             authStore.setUser(fetchedUserData)
-            authStore.setAuthenticated(true);
-            
+            authStore.setAuthenticated(true)
         } catch (error: any) {
-            console.error("Error fetching user data:", error);
+            console.error('Error fetching user data:', error)
 
-            if(error.statusCode == 401){
+            if (error.statusCode == 401) {
                 // YOU CAN ADD HERE A STATE RENDERING A MODAL THAT SAYS THE SESSION HAS EXPIRED YOU ARE LOGGED OUT
                 // window.location.href = '/'
             }
-
         } finally {
-            isLoading.value = false; 
+            isLoading.value = false
         }
     }
-    
-    onMounted(() => {
-        userDataFetch();
-    });
 
+    onMounted(() => {
+        userDataFetch()
+    })
 
     return {
         authStore,
-        isLoading
+        isLoading,
     }
-
 }
-

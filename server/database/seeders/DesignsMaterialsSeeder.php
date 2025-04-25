@@ -19,29 +19,29 @@ class DesignsMaterialsSeeder extends Seeder
         // (COULD BE MULTIPLE MATERIALS IS USED IN THAT DESIGN)
 
 
-        $selectedDesignID = 1;
+        // $selectedDesignID = 1;
 
-        $selectedMaterials = [
-            [
-                'material_id' => 1,
-                'quantity_used' => 20,
-            ],
+        // $selectedMaterials = [
+        //     [
+        //         'material_id' => 1,
+        //         'quantity_used' => 20,
+        //     ],
 
-            [
-                'material_id' => 2,
-                'quantity_used' => 15,
-            ]
-        ];
+        //     [
+        //         'material_id' => 2,
+        //         'quantity_used' => 15,
+        //     ]
+        // ];
 
-        foreach ($selectedMaterials as $materialData) {
-            DB::table('designs_materials')->insert([
-                'design_id' => $selectedDesignID,
-                'material_id' => $materialData['material_id'],
-                'quantity_used' => $materialData['quantity_used'], 
-                'created_at' => now(),
-                'updated_at' => now()
-            ]);
-        }
+        // foreach ($selectedMaterials as $materialData) {
+        //     DB::table('designs_materials')->insert([
+        //         'design_id' => $selectedDesignID,
+        //         'material_id' => $materialData['material_id'],
+        //         'quantity_used' => $materialData['quantity_used'], 
+        //         'created_at' => now(),
+        //         'updated_at' => now()
+        //     ]);
+        // }
 
 
 

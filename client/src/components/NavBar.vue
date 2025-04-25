@@ -1,5 +1,13 @@
 <script lang="ts" setup>
-    import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
+    import {
+        Disclosure,
+        DisclosureButton,
+        DisclosurePanel,
+        Menu,
+        MenuButton,
+        MenuItem,
+        MenuItems,
+    } from '@headlessui/vue'
     import { BellAlertIcon, CheckIcon, ShoppingCartIcon, UserIcon } from '@heroicons/vue/20/solid'
     import { BellIcon } from '@heroicons/vue/24/outline'
     import { useRoute, useRouter } from 'vue-router'
@@ -15,13 +23,13 @@
 
     const route = useRoute()
     const { authStore, isLoading } = useFetchAuthenticatedUser()
-    const isMarkingAsRead = ref<boolean>(false);
+    const isMarkingAsRead = ref<boolean>(false)
 
     const navigation = [
         { name: 'Home', to: '/home' },
         { name: 'Designs', to: '/designs' },
         { name: 'Orders', to: '/orders' },
-        { name: 'FAQ', to: '/faq' }
+        { name: 'FAQ', to: '/faq' },
     ]
 
     const userNavigation = [
@@ -32,63 +40,57 @@
             onclick: async () => {
                 await authStore.logout()
                 window.location.href = '/'
-            }
-        }
+            },
+        },
     ]
 
     const authNavigation = [
         { name: 'Login', to: '/auth/login' },
-        { name: 'Register', to: '/auth/register' }
+        { name: 'Register', to: '/auth/register' },
     ]
 
-    const visibleRight = ref<boolean>(false);
+    const visibleRight = ref<boolean>(false)
 
     const notificationsQuery = useQuery({
         queryKey: ['order_notifications'],
         queryFn: getAllOrderNotifications,
-        enabled: true, 
-    });
-
+        enabled: true,
+    })
 
     const notifReadByIDMutation = useMutation({
         mutationFn: updateNotificationAsRead,
         onSuccess: async () => {
-            notificationsQuery.refetch();
-            isMarkingAsRead.value = false;
+            notificationsQuery.refetch()
+            isMarkingAsRead.value = false
         },
 
         onError: (error) => {
-            console.error('Mutation error:', error);
+            console.error('Mutation error:', error)
         },
-
-    });
-
+    })
 
     const notifReadAllMutation = useMutation({
         mutationFn: updateNotificationAsReadAll,
         onSuccess: async () => {
-            notificationsQuery.refetch();
-            isMarkingAsRead.value = false;
+            notificationsQuery.refetch()
+            isMarkingAsRead.value = false
         },
 
         onError: (error) => {
-            console.error('Mutation error:', error);
+            console.error('Mutation error:', error)
         },
-
-    });
+    })
 
     const handleReadNotification = (notification_id: number) => {
-        console.log("notification_id: ", notification_id);
+        console.log('notification_id: ', notification_id)
         isMarkingAsRead.value = true
-        notifReadByIDMutation.mutate(notification_id);
+        notifReadByIDMutation.mutate(notification_id)
     }
 
-    const handleMarkAllAsRead = () =>{
+    const handleMarkAllAsRead = () => {
         isMarkingAsRead.value = true
         notifReadAllMutation.mutate()
-    } 
-
-
+    }
 </script>
 
 <template>
@@ -97,7 +99,10 @@
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="flex h-16 items-center">
                     <div class="flex items-center justify-between w-full">
-                        <a href='/' class="text-white text-3xl hover:cursor-pointer hover:opacity-75">
+                        <a
+                            href="/"
+                            class="text-white text-3xl hover:cursor-pointer hover:opacity-75"
+                        >
                             Jarvis
                             <span class="text-gray-700">Designs</span>
                         </a>
@@ -108,13 +113,37 @@
                                 class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
                             >
                                 <span class="sr-only">Open main menu</span>
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true" :class="[open ? 'hidden' : 'block', 'h-6 w-6']">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                    aria-hidden="true"
+                                    :class="[open ? 'hidden' : 'block', 'h-6 w-6']"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M4 6h16M4 12h16M4 18h16"
+                                    />
                                 </svg>
 
                                 <!-- Menu open icon (X icon) -->
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true" :class="[open ? 'block' : 'hidden', 'h-6 w-6']">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                    aria-hidden="true"
+                                    :class="[open ? 'block' : 'hidden', 'h-6 w-6']"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M6 18L18 6M6 6l12 12"
+                                    />
                                 </svg>
                             </DisclosureButton>
                         </div>
@@ -122,10 +151,15 @@
                         <div class="hidden md:block">
                             <div class="ml-6 flex items-baseline space-x-4">
                                 <router-link
-                                    v-for="item in navigation.filter((nav) => nav.name !== 'Orders' || authStore.currentUser)"
+                                    v-for="item in navigation.filter(
+                                        (nav) => nav.name !== 'Orders' || authStore.currentUser,
+                                    )"
                                     :key="item.name"
                                     :to="item.to"
-                                    :class="['px-3 py-2 text-white hover:border-b-2', route.path === item.to ? 'border-b-2' : '']"
+                                    :class="[
+                                        'px-3 py-2 text-white hover:border-b-2',
+                                        route.path === item.to ? 'border-b-2' : '',
+                                    ]"
                                     :aria-current="route.path === item.to ? 'page' : undefined"
                                 >
                                     {{ item.name }}
@@ -141,69 +175,95 @@
                                             v-for="nav in authNavigation"
                                             :to="nav.to"
                                             key="nav.to"
-                                            :class="['px-3 py-2 text-white hover:border-b-2 ', route.path === nav.to ? 'border-b-2' : '']"
+                                            :class="[
+                                                'px-3 py-2 text-white hover:border-b-2 ',
+                                                route.path === nav.to ? 'border-b-2' : '',
+                                            ]"
                                         >
                                             {{ nav.name }}
                                         </router-link>
                                     </div>
                                 </template>
 
-                                 <!-- DRAWER CONTAINER -->
+                                <!-- DRAWER CONTAINER -->
                                 <div v-if="visibleRight" class="absolute card flex justify-center">
-                                    <Drawer v-model:visible="visibleRight"  position="right" class="bg-white !w-full md:!w-80 lg:!w-[30rem]">
+                                    <Drawer
+                                        v-model:visible="visibleRight"
+                                        position="right"
+                                        class="bg-white !w-full md:!w-80 lg:!w-[30rem]"
+                                    >
                                         <template #header>
-
                                             <div class="w-full flex items-center justify-between">
                                                 <div class="flex items-center gap-2">
-                                                    <BellAlertIcon class="size-5"/>
+                                                    <BellAlertIcon class="size-5" />
                                                     <span class="font-bold">Notifications</span>
                                                 </div>
 
-                                                <h1 @click="handleMarkAllAsRead" class="flex gap-1 text-[12px] pr-3 hover:opacity-75 hover:cursor-pointer">
+                                                <h1
+                                                    @click="handleMarkAllAsRead"
+                                                    class="flex gap-1 text-[12px] pr-3 hover:opacity-75 hover:cursor-pointer"
+                                                >
                                                     <CheckIcon class="size-4" />
                                                     Mark All as Read
                                                 </h1>
                                             </div>
-                                            
                                         </template>
 
                                         <div class="flex flex-col gap-1">
                                             <h1>Today</h1>
 
-                                            <div 
+                                            <div
                                                 v-for="notif in notificationsQuery.data.value"
                                                 @click="handleReadNotification(notif.id)"
                                                 :class="[
                                                     'flex items-center gap-3 p-3 ',
-                                                    !notif.is_read ? 'bg-gray-200 hover:cursor-pointer hover:bg-gray-300' : 'bg-white',
+                                                    !notif.is_read
+                                                        ? 'bg-gray-200 hover:cursor-pointer hover:bg-gray-300'
+                                                        : 'bg-white',
                                                 ]"
                                             >
-                                                <img class="w-10 h-10 rounded-full" src="https://flowbite.com/docs/images/people/profile-picture-5.jpg" alt="user photo">
+                                                <img
+                                                    class="w-10 h-10 rounded-full"
+                                                    src="https://flowbite.com/docs/images/people/profile-picture-5.jpg"
+                                                    alt="user photo"
+                                                />
 
                                                 <div class="flex flex-col text-sm gap-1">
                                                     <h1>Order ID: {{ notif.order_id }}</h1>
 
                                                     <span>
-                                                        Status: 
-                                                       
-                                                        <span :class="{
-                                                            'text-yellow-800 ': notif.status === OrderStatus.IN_PROGRESS,
-                                                            'text-sky-800 ': notif.status === OrderStatus.DELIVERY,
-                                                            'text-indigo-800 ': notif.status === OrderStatus.PICKUP,
-                                                            'text-green-800 ': notif.status === OrderStatus.COMPLETED,
-                                                        }">
+                                                        Status:
+
+                                                        <span
+                                                            :class="{
+                                                                'text-yellow-800 ':
+                                                                    notif.status ===
+                                                                    OrderStatus.IN_PROGRESS,
+                                                                'text-sky-800 ':
+                                                                    notif.status ===
+                                                                    OrderStatus.DELIVERY,
+                                                                'text-indigo-800 ':
+                                                                    notif.status ===
+                                                                    OrderStatus.PICKUP,
+                                                                'text-green-800 ':
+                                                                    notif.status ===
+                                                                    OrderStatus.COMPLETED,
+                                                            }"
+                                                        >
                                                             {{ notif.status.toUpperCase() }}
                                                         </span>
-
                                                     </span>
 
-                                                    <p class="text-[10px]">{{ formateNotificationTimeAgo(notif.created_at) }}</p>
+                                                    <p class="text-[10px]">
+                                                        {{
+                                                            formateNotificationTimeAgo(
+                                                                notif.created_at,
+                                                            )
+                                                        }}
+                                                    </p>
                                                 </div>
-                                                
                                             </div>
-
                                         </div>
-
                                     </Drawer>
                                 </div>
 
@@ -223,7 +283,10 @@
                                             class="relative flex items-center rounded-full bg-gray-800 text-sm focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800 focus:outline-hidden"
                                         >
                                             <span class="sr-only">Open user menu</span>
-                                            <UserIcon class="size-8 text-white" aria-hidden="true" />
+                                            <UserIcon
+                                                class="size-8 text-white"
+                                                aria-hidden="true"
+                                            />
                                         </MenuButton>
                                     </div>
 
@@ -235,8 +298,12 @@
                                         leave-from-class="transform opacity-100 scale-100"
                                         leave-to-class="transform opacity-0 scale-95"
                                     >
-                                        <MenuItems class="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black/5 focus:outline-hidden">
-                                            <div class="flex flex-col font-medium mb-3 border-b border-gray-300 p-3">
+                                        <MenuItems
+                                            class="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black/5 focus:outline-hidden"
+                                        >
+                                            <div
+                                                class="flex flex-col font-medium mb-3 border-b border-gray-300 p-3"
+                                            >
                                                 <h1 class="truncate">
                                                     {{ authStore.currentUser.name }}
                                                 </h1>
@@ -245,7 +312,11 @@
                                                 </p>
                                             </div>
 
-                                            <MenuItem v-for="item in userNavigation" :key="item.name" v-slot="{ active }">
+                                            <MenuItem
+                                                v-for="item in userNavigation"
+                                                :key="item.name"
+                                                v-slot="{ active }"
+                                            >
                                                 <a
                                                     :href="item.href"
                                                     @click="
@@ -253,7 +324,10 @@
                                                             item.onclick?.()
                                                         }
                                                     "
-                                                    :class="[active ? 'bg-gray-100 outline-hidden' : '', 'block px-4 py-2 text-sm text-gray-700 hover:cursor-pointer']"
+                                                    :class="[
+                                                        active ? 'bg-gray-100 outline-hidden' : '',
+                                                        'block px-4 py-2 text-sm text-gray-700 hover:cursor-pointer',
+                                                    ]"
                                                 >
                                                     {{ item.name }}
                                                 </a>
@@ -325,7 +399,10 @@
                         :key="item.name"
                         :to="item.to"
                         @click="close"
-                        :class="['block rounded-md px-3 py-2 text-base font-medium text-gray-400 hover:bg-gray-700 hover:text-white', route.path === item.to ? 'bg-white text-black' : '']"
+                        :class="[
+                            'block rounded-md px-3 py-2 text-base font-medium text-gray-400 hover:bg-gray-700 hover:text-white',
+                            route.path === item.to ? 'bg-white text-black' : '',
+                        ]"
                         :aria-current="route.path === item.to ? 'page' : undefined"
                     >
                         {{ item.name }}
@@ -339,13 +416,15 @@
                         @click="close"
                         :class="[
                             'block rounded-md px-3 py-2 text-base font-medium text-gray-400 hover:bg-gray-700 hover:cursor-pointer hover:text-white mt-1',
-                            route.path === nav.to ? 'bg-white text-black' : ''
+                            route.path === nav.to ? 'bg-white text-black' : '',
                         ]"
                     >
                         {{ nav.name }}
                     </router-link>
 
-                    <div v-else-if="isLoading" class="px-2 py-2 text-gray-400">Loading authentication links...</div>
+                    <div v-else-if="isLoading" class="px-2 py-2 text-gray-400">
+                        Loading authentication links...
+                    </div>
                 </div>
             </DisclosurePanel>
         </Disclosure>

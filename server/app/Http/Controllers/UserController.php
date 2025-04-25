@@ -90,6 +90,6 @@ class UserController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return response()->noContent(204);
+        return response()->json([ 'success' => true ]);
     }
 }

@@ -17,6 +17,7 @@ return new class extends Migration
             $table->decimal('price', 15, 2);
             $table->unsignedInteger('quantity')->default(0);
             $table->string('image_path');
+            $table->string('category_id')->constrained('design_categories')->onDelete('cascade');
             $table->timestamps();
         });
     }
