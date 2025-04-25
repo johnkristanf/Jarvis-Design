@@ -1,22 +1,28 @@
 <script lang="ts" setup>
     import { uploadDesign } from '@/api/post/generate'
-    import { Dialog, DialogPanel, TransitionChild, TransitionRoot, RadioGroup, RadioGroupOption } from '@headlessui/vue'
+    import {
+        Dialog,
+        DialogPanel,
+        TransitionChild,
+        TransitionRoot,
+        RadioGroup,
+        RadioGroupOption,
+    } from '@headlessui/vue'
     import { useMutation, useQueryClient } from '@tanstack/vue-query'
     import { ProgressSpinner } from 'primevue'
-    import { useToast } from 'primevue/usetoast';
+    import { useToast } from 'primevue/usetoast'
 
-    import Toast from 'primevue/toast';
+    import Toast from 'primevue/toast'
 
     import { ref } from 'vue'
-    import Loader from '../Loader.vue'
     import { useProductAttributes } from '@/composables/useProductAttribute'
 
     import ListSelectBox from '../ListSelectBox.vue'
     import { OrderOptions } from '@/types/order'
-
+    import Loader from '../Loader.vue'
 
     // COMPONENT PROPS
-    const props = defineProps<{
+    defineProps<{
         isOpen: boolean
         onClose: () => void
     }>()
@@ -25,34 +31,38 @@
     const emit = defineEmits(['close'])
     const handleCloseModal = () => emit('close')
 
-
     // LOADER TOAST VARIABLES
     const toast = useToast()
+    const isUploading = ref<boolean>(false)
+
     const loaderMsg = ref<string>('')
     const quantity = ref<number>(0)
 
     const queryClient = useQueryClient()
 
-
     // SELECTION OF ORDER OPTIONS
     const orderOptions = ref([
         { id: 1, name: OrderOptions.DELIVERY },
-        { id: 2, name: OrderOptions.PICK_UP }
+        { id: 2, name: OrderOptions.PICK_UP },
     ])
 
     const uploadPreferredDesignMutation = useMutation({
         mutationFn: uploadDesign,
         onSuccess: (response) => {
+            isUploading.value = false;
             console.log('response uploadPreferredDesignMutation: ', response)
             toast.add({
                 severity: 'success',
                 summary: 'Design Uploaded Successfully',
                 detail: 'Please wait for 1-2 bussiness days before your design get tagged',
-                life: 3000
+                life: 3000,
             })
 
             queryClient.invalidateQueries({ queryKey: ['uploaded-designs'] })
-            handleCloseModal()
+            
+            setTimeout(() => {
+                handleCloseModal()
+            }, 3500)
         },
 
         onError: (error) => {
@@ -60,8 +70,9 @@
         },
 
         onMutate: () => {
+            isUploading.value = true
             loaderMsg.value = 'Uploading Preferred Image...'
-        }
+        },
     })
 
     const formData = new FormData()
@@ -108,7 +119,12 @@
         console.log('quantity: ', quantity.value)
 
         if (!selectedFile.value) {
-            toast.add({ severity: 'error', summary: 'Error', detail: 'Please select a file first', life: 3000 })
+            toast.add({
+                severity: 'error',
+                summary: 'Error',
+                detail: 'Please select a file first',
+                life: 3000,
+            })
             return
         }
 
@@ -129,12 +145,22 @@
 <template>
     <TransitionRoot as="template" :show="isOpen">
         <Dialog class="relative z-10" @close="handleCloseModal">
-            <TransitionChild as="template" enter="ease-out duration-300" enter-from="opacity-0" enter-to="opacity-100" leave="ease-in duration-200" leave-from="opacity-100" leave-to="opacity-0">
+            <TransitionChild
+                as="template"
+                enter="ease-out duration-300"
+                enter-from="opacity-0"
+                enter-to="opacity-100"
+                leave="ease-in duration-200"
+                leave-from="opacity-100"
+                leave-to="opacity-0"
+            >
                 <div class="fixed inset-0 bg-gray-500/75 transition-opacity" />
             </TransitionChild>
 
             <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
-                <div class="flex min-h-full items-stretch justify-center text-center md:items-center md:px-2 lg:px-4">
+                <div
+                    class="flex min-h-full items-stretch justify-center text-center md:items-center md:px-2 lg:px-4"
+                >
                     <TransitionChild
                         as="template"
                         enter="ease-out duration-300"
@@ -144,8 +170,12 @@
                         leave-from="opacity-100 translate-y-0 md:scale-100"
                         leave-to="opacity-0 translate-y-4 md:translate-y-0 md:scale-95"
                     >
-                        <DialogPanel class="flex w-[60%] transform text-left text-base transition md:my-8 md:max-w-2xl md:px-4 lg:max-w-4xl">
-                            <div class="relative flex w-full items-center overflow-hidden mb-16 bg-white px-4 pt-14 pb-8 shadow-2xl sm:px-6 sm:pt-8 md:p-6 lg:p-8">
+                        <DialogPanel
+                            class="flex w-[60%] transform text-left text-base transition md:my-8 md:max-w-2xl md:px-4 lg:max-w-4xl"
+                        >
+                            <div
+                                class="relative flex w-full items-center overflow-hidden mb-16 bg-white px-4 pt-14 pb-8 shadow-2xl sm:px-6 sm:pt-8 md:p-6 lg:p-8"
+                            >
                                 <button
                                     type="button"
                                     class="absolute top-4 right-4 text-gray-400 hover:text-gray-500 sm:top-8 sm:right-6 md:top-6 md:right-6 lg:top-8 lg:right-8"
@@ -157,15 +187,28 @@
 
                                 <div class="flex justify-between w-full">
                                     <div class="w-full sm:col-span-8 lg:col-span-7">
-                                        <h2 class="text-2xl font-bold text-gray-900 sm:pr-12">Choose the attribute of your desired design</h2>
+                                        <h2 class="text-2xl font-bold text-gray-900 sm:pr-12">
+                                            Choose the attribute of your desired design
+                                        </h2>
 
-                                        <section aria-labelledby="options-heading" class="mt-10 w-full">
-                                            <h3 id="options-heading" class="sr-only">design options</h3>
+                                        <section
+                                            aria-labelledby="options-heading"
+                                            class="mt-10 w-full"
+                                        >
+                                            <h3 id="options-heading" class="sr-only">
+                                                design options
+                                            </h3>
 
-                                            <form @submit.prevent="handleUploadDesign" class="w-full">
+                                            <form
+                                                @submit.prevent="handleUploadDesign"
+                                                class="w-full"
+                                            >
                                                 <!-- QUANTITY -->
 
-                                                <fieldset class="mt-10 w-full" aria-label="Select quantity">
+                                                <fieldset
+                                                    class="mt-10 w-full"
+                                                    aria-label="Select quantity"
+                                                >
                                                     <div class="flex items-center justify-between">
                                                         <div class="text-md">Quantity</div>
                                                     </div>
@@ -182,7 +225,11 @@
 
                                                 <!-- ORDER TYPES -->
 
-                                                <fieldset v-if="orderOptions" class="mt-10" aria-label="Choose a color">
+                                                <fieldset
+                                                    v-if="orderOptions"
+                                                    class="mt-10"
+                                                    aria-label="Choose a color"
+                                                >
                                                     <div class="flex items-center justify-between">
                                                         <div class="text-md">Order Options</div>
                                                     </div>
@@ -190,7 +237,11 @@
                                                     <!-- DESIGN STATUS SELECT ELEMENT -->
 
                                                     <div class="mt-4 w-full">
-                                                        <ListSelectBox v-model="selectedOrderOptions" :options="orderOptions" displayKey="name" />
+                                                        <ListSelectBox
+                                                            v-model="selectedOrderOptions"
+                                                            :options="orderOptions"
+                                                            displayKey="name"
+                                                        />
                                                     </div>
 
                                                     <!-- END OF DESIGN STATUS SELECT ELEMENT -->
@@ -198,37 +249,65 @@
 
                                                 <!-- COLORS -->
 
-                                                <fieldset v-if="colors && !loadingColors" class="mt-10" aria-label="Choose a size">
+                                                <fieldset
+                                                    v-if="colors && !loadingColors"
+                                                    class="mt-10"
+                                                    aria-label="Choose a size"
+                                                >
                                                     <div class="flex items-center justify-between">
                                                         <div class="text-md">Color</div>
                                                     </div>
 
                                                     <!-- DESIGN STATUS SELECT ELEMENT -->
                                                     <div class="mt-5 w-full">
-                                                        <ListSelectBox v-model="selectedColor" :options="colors" displayKey="name" />
+                                                        <ListSelectBox
+                                                            v-model="selectedColor"
+                                                            :options="colors"
+                                                            displayKey="name"
+                                                        />
                                                     </div>
 
                                                     <!-- END OF DESIGN STATUS SELECT ELEMENT -->
                                                 </fieldset>
 
-                                                <div class="w-full flex items-center" v-if="loadingColors">
+                                                <div
+                                                    class="w-full flex items-center"
+                                                    v-if="loadingColors"
+                                                >
                                                     <h1>Loading Colors...</h1>
-                                                    <ProgressSpinner :pt="{ root: { style: { width: '40px' } } }" />
+                                                    <ProgressSpinner
+                                                        :pt="{ root: { style: { width: '40px' } } }"
+                                                    />
                                                 </div>
 
                                                 <!-- SIZES -->
 
-                                                <fieldset v-if="sizes && !loadingSizes" class="mt-10" aria-label="Choose a size">
+                                                <fieldset
+                                                    v-if="sizes && !loadingSizes"
+                                                    class="mt-10"
+                                                    aria-label="Choose a size"
+                                                >
                                                     <div class="flex items-center justify-between">
                                                         <div class="text-md">Size</div>
                                                     </div>
 
-                                                    <RadioGroup v-model="selectedSize" class="mt-4 grid grid-cols-4 gap-4">
-                                                        <RadioGroupOption as="template" v-for="size in sizes" :key="size.name" :value="size" v-slot="{ active, checked }">
+                                                    <RadioGroup
+                                                        v-model="selectedSize"
+                                                        class="mt-4 grid grid-cols-4 gap-4"
+                                                    >
+                                                        <RadioGroupOption
+                                                            as="template"
+                                                            v-for="size in sizes"
+                                                            :key="size.name"
+                                                            :value="size"
+                                                            v-slot="{ active, checked }"
+                                                        >
                                                             <div
                                                                 :class="[
-                                                                    active ? 'ring-2 ring-indigo-500' : '',
-                                                                    'group relative hover:cursor-pointer flex items-center justify-center rounded-md border px-4 py-3 text-sm font-medium uppercase hover:bg-gray-50 focus:outline-hidden sm:flex-1'
+                                                                    active
+                                                                        ? 'ring-2 ring-indigo-500'
+                                                                        : '',
+                                                                    'group relative hover:cursor-pointer flex items-center justify-center rounded-md border px-4 py-3 text-sm font-medium uppercase hover:bg-gray-50 focus:outline-hidden sm:flex-1',
                                                                 ]"
                                                             >
                                                                 <span>{{ size.name }}</span>
@@ -237,9 +316,14 @@
                                                     </RadioGroup>
                                                 </fieldset>
 
-                                                <div class="w-full flex items-center" v-if="loadingSizes">
+                                                <div
+                                                    class="w-full flex items-center"
+                                                    v-if="loadingSizes"
+                                                >
                                                     <h1>Loading Sizes...</h1>
-                                                    <ProgressSpinner :pt="{ root: { style: { width: '40px' } } }" />
+                                                    <ProgressSpinner
+                                                        :pt="{ root: { style: { width: '40px' } } }"
+                                                    />
                                                 </div>
 
                                                 <!-- UPLOAD INPUT -->
@@ -249,9 +333,20 @@
                                                         <p>File Upload</p>
                                                     </div>
 
-                                                    <div v-if="!imagePreview" class="mt-4 border-2 border-dashed border-gray-300 rounded-md p-6 flex flex-col items-center justify-center">
-                                                        <div class="flex items-center justify-center">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <div
+                                                        v-if="!imagePreview"
+                                                        class="mt-4 border-2 border-dashed border-gray-300 rounded-md p-6 flex flex-col items-center justify-center"
+                                                    >
+                                                        <div
+                                                            class="flex items-center justify-center"
+                                                        >
+                                                            <svg
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                class="w-12 h-12 text-gray-400"
+                                                                fill="none"
+                                                                viewBox="0 0 24 24"
+                                                                stroke="currentColor"
+                                                            >
                                                                 <path
                                                                     stroke-linecap="round"
                                                                     stroke-linejoin="round"
@@ -262,11 +357,22 @@
                                                         </div>
 
                                                         <div class="mt-4 text-center">
-                                                            <p class="text-sm text-gray-600">Drag and drop files to here to upload</p>
-                                                            <p class="text-xs text-gray-500 mt-1">or</p>
+                                                            <p class="text-sm text-gray-600">
+                                                                Drag and drop files to here to
+                                                                upload
+                                                            </p>
+                                                            <p class="text-xs text-gray-500 mt-1">
+                                                                or
+                                                            </p>
                                                         </div>
 
-                                                        <input ref="fileInput" type="file" accept="image/*" class="hidden" @change="handleFileChange" />
+                                                        <input
+                                                            ref="fileInput"
+                                                            type="file"
+                                                            accept="image/*"
+                                                            class="hidden"
+                                                            @change="handleFileChange"
+                                                        />
 
                                                         <button
                                                             type="button"
@@ -278,10 +384,19 @@
                                                     </div>
 
                                                     <!-- Image Preview Section -->
-                                                    <div v-else class="mt-4 border-2 border-gray-300 rounded-md p-4">
+                                                    <div
+                                                        v-else
+                                                        class="mt-4 border-2 border-gray-300 rounded-md p-4"
+                                                    >
                                                         <div class="flex flex-col items-center">
-                                                            <img :src="imagePreview" alt="Design preview" class="max-h-48 object-contain rounded-md" />
-                                                            <div class="mt-3 flex items-center justify-center">
+                                                            <img
+                                                                :src="imagePreview"
+                                                                alt="Design preview"
+                                                                class="max-h-48 object-contain rounded-md"
+                                                            />
+                                                            <div
+                                                                class="mt-3 flex items-center justify-center"
+                                                            >
                                                                 <button
                                                                     type="button"
                                                                     class="text-sm text-indigo-600 hover:text-indigo-500"
@@ -317,8 +432,8 @@
         </Dialog>
     </TransitionRoot>
 
-    <div v-if="uploadPreferredDesignMutation.isPending">
-        <Loader :msg="loaderMsg" />
+    <div v-if="isUploading">
+        <Loader msg="Uploading Design..." />
     </div>
 
     <Toast />

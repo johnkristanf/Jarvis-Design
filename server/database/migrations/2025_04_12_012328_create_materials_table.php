@@ -14,7 +14,10 @@ return new class extends Migration
         Schema::create('materials', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('unit');
             $table->unsignedInteger('quantity')->default(0);
+            $table->unsignedInteger('reorder_level')->default(0);
+            $table->foreignId('category_id')->constrained('materials_category')->onDelete('cascade');
             $table->timestamps();
         });
     }

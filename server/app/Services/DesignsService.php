@@ -22,7 +22,17 @@ class DesignsService
     {
         try {
             $designs = Designs::select('id', 'name', 'price', 'quantity', 'image_path')->get();
+            
+            $designs->transform(function ($design) {
+                $design->image_path = Storage::disk('s3')->temporaryUrl(
+                    $design->image_path,
+                    now()->addMinutes(60) // You can adjust the expiry time
+                );
+                return $design;
+            });
+
             return $designs;
+            
         } catch (QueryException $e) {
             Log::error('Error fetching all designs: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
         } catch (Exception $e) {
@@ -60,7 +70,7 @@ class DesignsService
     public function saveUploadedDesign(string $path, $orderOption, $quantity, $colorID, $sizeID): int
     {
         try {
-            
+
             $preferredDesignID = UploadedDesign::create([
                 'path' => $path,
                 'order_option' => $orderOption,
@@ -72,15 +82,12 @@ class DesignsService
 
 
             return $preferredDesignID;
-
         } catch (QueryException $e) {
             Log::error('Error saving preferred design: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
             return -1;
-
         } catch (Exception $e) {
             Log::error('An unexpected error occurred while saving preferred design: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
             return -1;
-
         }
     }
 
@@ -92,22 +99,22 @@ class DesignsService
                 'color:id,name',
                 'size:id,name'
             ])
-            ->select(
-                'id',
-                'path',
-                'price',
-                'quantity',
-                'status',
-                'size_id',
-                'color_id',
-                'user_id',
-                'created_at'
-            );
+                ->select(
+                    'id',
+                    'path',
+                    'price',
+                    'quantity',
+                    'status',
+                    'size_id',
+                    'color_id',
+                    'user_id',
+                    'created_at'
+                );
 
             $query->when(!Auth::user()->isAdmin(), function ($q) {
                 $q->where('user_id', Auth::id());
             });
-    
+
             $results = $query->orderBy('created_at', 'desc')->get();
 
 
@@ -120,23 +127,21 @@ class DesignsService
                 );
                 return $item;
             });
-    
+
             return $results;
-    
         } catch (QueryException $e) {
             Log::error("Database Query Failed: " . $e->getMessage());
-    
+
             return response()->json([
                 'error' => 'Failed to retrieve preferred designs.',
-                'message' => $e->getMessage(), 
-            ], 500); 
-
+                'message' => $e->getMessage(),
+            ], 500);
         } catch (\Exception $e) {
             Log::error("An unexpected error occurred: " . $e->getMessage());
-    
+
             return response()->json([
                 'error' => 'An unexpected error occurred.',
-                'message' => $e->getMessage(), 
+                'message' => $e->getMessage(),
             ], 500);
         }
     }
@@ -144,7 +149,7 @@ class DesignsService
     public function updateUploadedDesign($designID, $status, $price): int
     {
         try {
-            
+
             $design = UploadedDesign::find($designID);
 
             $design->status = $status;
@@ -152,16 +157,12 @@ class DesignsService
             $design->save();
 
             return $design->id;
-
-
         } catch (QueryException $e) {
             Log::error('Error saving preferred design: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
             return -1;
-
         } catch (Exception $e) {
             Log::error('An unexpected error occurred while saving preferred design: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
             return -1;
-
         }
     }
 }

@@ -1,11 +1,11 @@
-import type { DesignGenerate } from "@/types/design";
-import axios, { type AxiosResponse } from "axios";
-import { apiService } from "../axios";
+import type { DesignGenerate } from '@/types/design'
+import axios, { type AxiosResponse } from 'axios'
+import { apiService } from '../axios'
 
 export async function generateImageDesign(data: DesignGenerate): Promise<AxiosResponse> {
-   return axios.post(`${import.meta.env.VITE_AI_API_URL}/generate/design`, data);
+    return axios.post(`${import.meta.env.VITE_AI_API_URL}/generate/design`, data)
 }
 
 export async function uploadDesign(formData: FormData): Promise<AxiosResponse> {
-   return await apiService.post('/api/upload/design', formData);
+    return await apiService.post('/api/upload/design', formData)
 }

@@ -208,8 +208,8 @@ class PaymentService
                 'response' => $attachPaymentIntentResponseData
             ]);
 
-
             return $attachPaymentIntentResponseData;
+            
         } catch (RequestException $e) {
             Log::error("Error attaching payment intent (RequestException):", [
                 'message' => $e->getMessage(),
