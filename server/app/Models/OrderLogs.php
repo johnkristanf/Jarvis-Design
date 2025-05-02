@@ -5,17 +5,18 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Orders extends Model
+class OrderLogs extends Model
 {
     protected $guarded = ['id'];
 
-    public function user(): BelongsTo
+    public function users(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function order_status(): BelongsTo
+
+    public function orders(): BelongsTo
     {
-        return $this->belongsTo(OrderStatus::class, 'status_id');     
+        return $this->belongsTo(Orders::class, 'order_id');
     }
 }

@@ -7,6 +7,8 @@ export const OrderStatus = {
     COMPLETED: 'completed',
 } as const
 
+
+
 export type OrderTypes = 'uploaded' | 'pre-made'
 
 export const OrderTypes = {
@@ -14,12 +16,16 @@ export const OrderTypes = {
     PRE_MADE: 'pre-made',
 } as const
 
+
+
 export type OrderOptions = 'delivery' | 'pick_up'
 
 export const OrderOptions = {
     DELIVERY: 'delivery',
     PICK_UP: 'pick_up',
 } as const
+
+
 
 export type Orders = {
     id: number
@@ -34,15 +40,18 @@ export type Orders = {
     temp_url: string
 }
 
+
 export type OrderStatusType = {
     id: number
     name: string
 }
 
+
 export type UpdateStatusType = {
     order_id: number
     status_id: number
 }
+
 
 export type Notifications = {
     id: number
@@ -51,3 +60,24 @@ export type Notifications = {
     status: OrderStatus
     created_at: string
 }
+
+
+export type OrderLogs = {
+    id: number;
+    material_name: string;
+    order_id: number;
+    orders: {
+      id: number;
+      order_id: string;
+    };
+    total_quantity_used: number;
+    unit: string;
+    created_at: string;
+    updated_at: string;
+    user_id: number;
+    users: {
+      id: number;
+      name: string;
+    };
+  };
+  

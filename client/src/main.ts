@@ -12,6 +12,10 @@ import Aura from '@primevue/themes/aura'
 import { RouterLink, RouterView } from 'vue-router'
 import { VueQueryPlugin } from '@tanstack/vue-query'
 
+// import 'primevue/resources/themes/lara-light-blue/theme.css'; // theme
+// import 'primevue/resources/primevue.min.css'; // core CSS
+// import 'primeicons/primeicons.css'; // icons
+
 const app = createApp(App)
 const pinia = createPinia()
 

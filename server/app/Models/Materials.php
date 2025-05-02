@@ -12,12 +12,20 @@ class Materials extends Model
 
     public function designs()
     {
-        return $this->belongsToMany(
-            Designs::class,            // Related model
-            'designs_materials',         // Pivot table name
-            'design_id',                 // This model's FK in pivot table
-            'material_id'                // Related model's FK in pivot table
+        return $this->morphedByMany(
+            Designs::class,
+            'designable',
+            'designables_materials',
         )
+            ->withPivot('quantity_used')
+            ->withTimestamps();
+    }
+
+
+
+    public function uploadedDesigns()
+    {
+        return $this->morphedByMany(UploadedDesign::class, 'designable', 'designables_materials')
             ->withPivot('quantity_used')
             ->withTimestamps();
     }

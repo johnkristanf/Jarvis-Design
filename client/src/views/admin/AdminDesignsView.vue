@@ -18,6 +18,8 @@
     const selectedDesign = ref<UploadedDesign>()
 
     const openUpdateModal = (design: UploadedDesign) => {
+        console.log("selected design: ", design);
+        
         selectedDesign.value = design
         refToggles.show_update_design_modal = true
     }

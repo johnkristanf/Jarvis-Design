@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\DesignCategory;
 use App\Models\Designs;
 use App\Models\PreferredDesign;
+use App\Models\UploadedDesign;
+use App\OrderType;
 use App\Services\DesignsService;
 use Aws\S3\S3Client;
 use Illuminate\Http\Request;
@@ -25,9 +27,6 @@ class DesignsController extends Controller
     public function getPreMadeDesigns($sort, $categories = '')
     {
         $categoriesArray = $categories ? explode(',', $categories) : [];
-        Log::info('Sort:', [$sort]);
-        Log::info('Categories:', $categoriesArray);
-
         $query = Designs::query();
 
         // Apply category filter
@@ -48,7 +47,16 @@ class DesignsController extends Controller
                 break;
         }
 
-        return response()->json($query->get());
+        $designs = $query->get()->transform(function ($design) {
+            $design->image_path = Storage::disk('s3')->temporaryUrl(
+                $design->image_path,
+                now()->addMinutes(60) // You can adjust the expiry time
+            );
+
+            return $design;
+        });
+
+        return response()->json($designs);
     }
 
 
@@ -200,33 +208,55 @@ class DesignsController extends Controller
     {
         $validated = $request->validate([
             'design_id' => 'required|integer|exists:designs,id',
+            'designType' => 'required|string',
             'material_quantity_arr' => 'required|array',
             'material_quantity_arr.*.material_id' => 'required|integer|exists:materials,id',
             'material_quantity_arr.*.quantity_used' => 'required|numeric|min:1',
         ]);
 
-        $designId = $validated['design_id'];
+        $designType = $validated['designType'];
+        $designID = $validated['design_id'];
         $materials = $validated['material_quantity_arr'];
+
+        Log::info("Design Data: ", [
+            'designType' => $designType,
+            'designID' => $designID,
+            'materials' => $materials,
+        ]);
+
+        // switch (strtolower($designType)) {
+        //     case 'pre-made':
+        //         $design = Designs::with('materials')->find($designID);
+        //         break;
+        //     case 'uploaded':
+        //         $design = UploadedDesign::with('materials')->find($designID);
+        //         break;
+        //     default:
+        //         $design = null;
+        // }
+
+
+        $design = match($designType) {
+            OrderType::PRE_MADE->value => Designs::with('materials')->find($designID),
+            OrderType::UPLOADED->value => UploadedDesign::with('materials')->find($designID),
+            default => null
+        };
+
+        if (!$design) {
+            Log::error("Error in finding design related tables");
+        }
+
+        Log::info("Selected Design: ", [
+            'design' => $design
+        ]);
+
 
         foreach ($materials as $material) {
             $materialId = $material['material_id'];
             $quantityUsed = $material['quantity_used'];
 
             // Save the relationship — adjust model names if needed
-            DB::table('designs_materials')
-                ->updateOrInsert(
-                    [
-                        'design_id' => $designId,
-                        'material_id' => $materialId,
-                        'created_at' => now(),
-                        'updated_at' => now()
-                    ],
-
-                    [
-                        'quantity_used' => $quantityUsed
-                    ]
-
-                );
+            $design->materials()->attach($materialId, ['quantity_used' => $quantityUsed]);
         }
 
         return response()->json(['message' => 'Materials attached successfully.']);

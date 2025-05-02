@@ -23,16 +23,26 @@ async function handleRequest<T>(promise: Promise<AxiosResponse<T>>): Promise<T> 
         let apiError: ApiError
 
         if (axios.isAxiosError(error)) {
+            const status = error.response?.status
+
             apiError = {
                 message:
                     error.response?.data?.message ||
                     error.message ||
                     'An unexpected error occurred.',
-                statusCode: error.response?.status,
+                statusCode: status,
             }
+
+            // IF AUTHENTICATED ERROR HAPPENS POP UP A MODAL SAYS YOU ARE LOGGED OUT DUE TO INACTIVITY
+            
+            // if (status === 401 || status === 404) {
+            //     console.warn('Redirecting due to auth/404 error')
+            //     window.location.href = '/'
+            // }
 
             // You might want to log the full error object in a non-production environment
             console.error('API Error (Axios):', error)
+
         } else if (error instanceof Error) {
             apiError = {
                 message: error.message || 'An unexpected error occurred.',

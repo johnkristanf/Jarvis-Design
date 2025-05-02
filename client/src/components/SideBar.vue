@@ -2,11 +2,10 @@
     import { useFetchAuthenticatedUser } from '@/composables/useFetchAuthenticatedUser'
     import { ref } from 'vue'
     import { RouterLink } from 'vue-router'
-    import AdminIcon from '../assets/img/admin-icon.png'
-    import { apiService } from '@/api/axios';
-import Loader from './Loader.vue';
+    import { apiService } from '@/api/axios'
+    import Loader from './Loader.vue'
 
-    const isLoggingOut = ref<boolean>(false);
+    const isLoggingOut = ref<boolean>(false)
 
     // LOAD THE REAL USER IN THE NAVBAR LATER ON
     const { authStore, isLoading } = useFetchAuthenticatedUser()
@@ -57,7 +56,7 @@ import Loader from './Loader.vue';
     ])
 
     const handleSignOut = async () => {
-        isLoggingOut.value = true;
+        isLoggingOut.value = true
         const respData = await apiService.post<{ success: boolean }>('logout', {})
 
         if (respData.success) {
@@ -202,6 +201,6 @@ import Loader from './Loader.vue';
     </aside>
 
     <div v-if="isLoggingOut">
-        <Loader msg="Logging Out..."/>
+        <Loader msg="Logging Out..." />
     </div>
 </template>

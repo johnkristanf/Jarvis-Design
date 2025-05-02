@@ -5,6 +5,7 @@
     import Loader from '../Loader.vue'
     import AttachMaterialsModal from './AttachMaterialsModal.vue'
     import { reactive, ref } from 'vue'
+import { OrderTypes } from '@/types/order'
 
     const modals = reactive({
         show_attach_materials: false,
@@ -84,6 +85,7 @@
         <AttachMaterialsModal
             v-if="modals.show_attach_materials && selectedDesignID"
             :selectedDesignID="selectedDesignID"
+            :designType="OrderTypes.PRE_MADE"
             @close="modals.show_attach_materials = false"
         />
 

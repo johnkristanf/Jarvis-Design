@@ -62,14 +62,20 @@
 <template>
     <!-- THIS WILL DISPLAY GRIDS FOR EACH GRAPHS AND CHARTS FOR DASHBOARD SPECIFIC LAYOUT -->
 
-    <!-- EACH INSIDE COMPONENT HAS EACH GRID -->
-    <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1  md:grid-cols-2 gap-4 mb-4">
-        <div class="w-[500px] h-[300px] bg-gray-100 rounded-md p-3">
-            <Bar id="my-chart-id" :options="chartOptions" :data="chartData" />
-        </div>
+    <div class="w-full p-4 rounded-md bg-gray-100 border-1 border-gray-400">
+        <h1 class="text-2xl">Dashboard</h1>
+        <p class="text-sm text-gray-400 mt-1 mb-7">
+            Gives an overview of key metrics, recent activities, and system summaries at a glance.
+        </p>
 
-        <div class="w-[500px] h-[300px] bg-gray-100 rounded-md p-3">
-            <Line :data="chartData" :options="chartOptions" />
+        <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-4 mb-4 ">
+            <div class="w-[500px] h-[300px] rounded-md p-3">
+                <Bar id="my-chart-id" :options="chartOptions" :data="chartData" />
+            </div>
+
+            <div class="w-[500px] h-[300px] rounded-md p-3">
+                <Line :data="chartData" :options="chartOptions" />
+            </div>
         </div>
     </div>
 </template>

@@ -50,11 +50,13 @@ class MaterialsController extends Controller
     public function getGroupedMaterials()
     {
         $materials = Materials::with('category') // Assuming each Material belongs to a Category
-        ->get()
-        ->groupBy(function ($item) {
-            return $item->category->name; // Group by category name
-        });
+            ->get()
+            ->groupBy(function ($item) {
+                return $item->category->name; // Group by category name
+            });
 
+
+        // IT WILL RETURN AN OBJECT THAT HAS KEY CATEGORY NAME AND VALUE IS AN ARRAY MATERIALS  
         return response()->json($materials);
     }
 }

@@ -7,7 +7,7 @@
     import UploadedDesignsTable from '@/components/designs/UploadedDesignsTable.vue'
     import { useAuthStore } from '@/stores/user'
     import FIlterDesign from '@/components/designs/FIlterDesign.vue'
-    import StartDesignFilter from '@/components/designs/DesignOptions.vue'
+    import DesignOptions from '@/components/designs/DesignOptions.vue'
     import { useQuery } from '@tanstack/vue-query'
     import { apiService } from '@/api/axios'
     import PreMadeDesignCard from '@/components/designs/PreMadeDesign.vue'
@@ -34,7 +34,7 @@
                     <!-- FILTERS -->
                     <FIlterDesign />
 
-                    <StartDesignFilter />
+                    <DesignOptions />
                 </div>
             </div>
 

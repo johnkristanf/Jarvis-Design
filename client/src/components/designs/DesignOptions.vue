@@ -23,6 +23,7 @@
     <Popover class="relative">
         <PopoverButton
             class="flex items-center w-48 gap-2 px-4 py-2 rounded-md text-sm hover:cursor-pointer hover:opacity-75"
+            v-if="authStore.currentUser && authStore.isAuthenticated"
         >
             Design Options
             <ChevronDownIcon class="w-5 h-5" />

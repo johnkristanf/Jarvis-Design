@@ -160,7 +160,7 @@
                         type="submit"
                         class="bg-gray-900 px-4 py-2 rounded text-white hover:opacity-75 hover:cursor-pointer"
                     >
-                        Upload
+                        Add Design
                     </button>
                 </div>
             </form>

@@ -10,13 +10,14 @@ class Designs extends Model
 {
     protected $guarded = ['id'];
 
-    public function designs_materials(): BelongsToMany
+    public function materials()
     {
-        return $this->belongsToMany(
-            Materials::class,            // Related model
-            'designs_materials',         // Pivot table name
-            'design_id',                 // This model's FK in pivot table
-            'material_id'                // Related model's FK in pivot table
+        return $this->morphToMany(
+            Materials::class,           // related model
+            'designable',               // morph name (used in designable_type and designable_id)
+            'designables_materials',   // pivot table
+            'designable_id',           // foreign key on pivot pointing to this model
+            'material_id'              // foreign key on pivot pointing to Materials
         )
             ->withPivot('quantity_used')
             ->withTimestamps();
