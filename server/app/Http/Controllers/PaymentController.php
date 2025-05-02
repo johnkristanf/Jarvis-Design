@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\PaymentSucessful;
 use App\Models\Designs;
+use App\Models\OrderLogs;
 use App\Models\Orders;
 use App\Models\OrderType as ModelsOrderType;
 use App\Models\UploadedDesign;
@@ -257,15 +259,15 @@ class PaymentController extends Controller
     public function testOrder(Request $request)
     {
 
+        // ALL THIS STATIC DATA MUST BE REPLACE BY THE PAYMONGO WEBHOOK METADATA
+
         $orderId = 'ORD-' . now()->timestamp . '-' . str_pad(rand(0, 9999), 4, '0', STR_PAD_LEFT);
 
-        $order_type = OrderType::PRE_MADE;
-        $orderTypeID = ModelsOrderType::select('id')
-            ->where('name', '=', $order_type)
-            ->first();
+        $orderType = 'pre-made';
+        $orderTypeID = ModelsOrderType::where('name', '=', $orderType)->value('id');
 
-        $designID = 3;
-       
+        $designID = 1;
+
 
         $totalPrice = 70000;
         $orderOption = 'delivery';
@@ -279,37 +281,21 @@ class PaymentController extends Controller
         // THE FECTHING OF DESIGN WHETHER IN UPLOADED OR PRE MADE DESIGN IS 
         // BASED ON ORDER TYPE "uploaded" OR "pre-made"
 
-        // $design = match ($order_type) {
-        //     OrderType::PRE_MADE => Designs::find($designID),
-        //     OrderType::UPLOADED => UploadedDesign::find($designID),
-        //     default => null,
-        // };
-        
+        $preMade = OrderType::PRE_MADE;
+        $uploaded = OrderType::UPLOADED;
 
-        // if (!$design) {
-        //     Log::error('Error in finding design', ['error' => 'Design not found'], 404);
-        // }
+        $design = match ($orderType) {
+            $preMade->value => Designs::with('materials')->find($designID),
+            $uploaded->value => UploadedDesign::with('materials')->find($designID),
+            default => null,
+        };
 
-        // AUTOMATED DEDUCTION HERE USING THE fetched designs:
-        $design = Designs::with('designs_materials')->find($designID);
-        foreach ($design->designs_materials as $material) {
-            $usedQty = $material->pivot->quantity_used;
-            $totalDeduction = $quantity * $usedQty;
-        
-            Log::info('Material: ' . $material->name);
-            Log::info('Used per unit: ' . $usedQty);
-            Log::info('Total Deduct: ' . $totalDeduction);
-        
-            // Now update the material's quantity
-            $material->quantity = max(0, $material->quantity - $totalDeduction);
-            $material->save();
+
+        if (!$design) {
+            Log::error('Error in finding design', ['error' => 'Design not found'], 404);
         }
 
 
-        // HERE IS THE LOGIC FOR ALERTING IF THE RESTOCK LEVEL IS SAME AS QUANTITY
-        // EITHER SMS OR EMAIL DEPENDS ON THE CLIENT
-
-        
         // Create the order
         $order = Orders::create([
             'order_id'     => $orderId,
@@ -324,9 +310,62 @@ class PaymentController extends Controller
             'user_id'      => $userId,
         ]);
 
+
+        // BROADCAST EVENT TO REFETCH THE MATERIALS DYNAMICALLY
+        $paymentMessage = 'Payment success from Paymongo!';
+        broadcast(new PaymentSucessful($paymentMessage));
+
+
+        // AUTOMATED DEDUCTION HERE USING THE FETCHED DESIGN:
+        foreach ($design->materials as $material) {
+
+            $materialName = $material->name;
+            $materialUnit = $material->unit;
+            $usedQty = $material->pivot->quantity_used;
+            $totalMaterialQuantityUsed = $quantity * $usedQty;
+
+
+            Log::info('Material: ' . $materialName);
+            Log::info('Used per unit: ' . $usedQty);
+            Log::info('Total Deduct: ' . $totalMaterialQuantityUsed);
+
+            // Now update the material's quantity
+            $material->quantity = max(0, $material->quantity - $totalMaterialQuantityUsed);
+            $material->save();
+
+
+            OrderLogs::create([
+                'user_id' => $userId,
+                'order_id' => $order->id,
+                'material_name' => $materialName,
+                'unit' => $materialUnit,
+                'total_quantity_used' => $totalMaterialQuantityUsed,
+            ]);
+        }
+
+
         return response()->json([
             'message' => 'Order created successfully',
             'order' => $order
         ]);
     }
+
+
+    public function getOrderLogs()
+    {
+        $orderLogs = OrderLogs::with([
+            'users' => function ($query) {
+                $query->select('id', 'name');
+            },
+
+            'orders' => function ($query) {
+                $query->select('id', 'order_id');
+            },
+        ])->get();
+
+        return response()->json($orderLogs);
+    }
+    
 }
+
+

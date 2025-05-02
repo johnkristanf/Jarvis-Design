@@ -64,5 +64,6 @@ type MaterialQuantityAttach = {
 
 export type DesignMaterialAttachmentData = {
     design_id: number,
+    designType: string,
     material_quantity_arr: MaterialQuantityAttach[]
 }

@@ -6,10 +6,9 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
-
+// THIS DESIGN IS FOR THE CUSTOMER SIDE 
 Route::get('/get/pre_made/designs/{sort?}/{categories?}', [DesignsController::class, 'getPreMadeDesigns']);
 
-Route::get('/get/all/designs', [DesignsController::class, 'getAllDesigns']);
 Route::get('/get/all/colors', [DesignsController::class, 'getAllColors']);
 Route::get('/get/all/sizes', [DesignsController::class, 'getAllSizes']);
 
@@ -21,7 +20,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
 
     // PROTECTED DESIGNS ROUTE
-    Route::get('/get/made/designs', [DesignsController::class, 'getUploadedDesigns']);
     Route::get('/uploaded/designs', [DesignsController::class, 'getUploadedDesigns']);
     Route::get('/get/design/categories', [DesignsController::class, 'getDesignCategories']);
 
@@ -30,6 +28,11 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/attach/design/material', [DesignsController::class, 'attachDesignMaterial']);
 
     Route::put('/update/uploaded/design', [DesignsController::class, 'updateUploadedDesigns']);
+
+
+    // THIS DESIGNS IS FOR THE ADMIN SIDE THAT SEE ALL DESIGN WITHOUT FILTER
+    Route::get('/get/all/designs', [DesignsController::class, 'getAllDesigns']);
+
 
 
     // PAYMONGO PAYMENT ROUTE
@@ -41,6 +44,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/get/order/status', [PaymentController::class, 'getAllOrderStatus']);
     Route::put('/update/order/status', [PaymentController::class, 'updateOrderStatus']);
 
+    Route::get('/get/order/logs', [PaymentController::class, 'getOrderLogs']);
     Route::get('/get/order/notifications', [PaymentController::class, 'getAllOrderNotifications']);
 
 

@@ -25,18 +25,18 @@
     }
 
     // USE QUERY FOR FETCHING DESIGN CATEGORIES
-    const { data: designs, isLoading, isFetching } = useQuery({
+    const { data: designs, isLoading } = useQuery({
         queryKey: ['designs'],
         queryFn: async () => {
             const sortTag = filterStore.selectedSort.tag
             const categoryIds = filterStore.selectedCategories.join(',')
 
-            console.log('sortTag: ', sortTag)
-            console.log('categoryIds: ', categoryIds)
-
             const respData = await apiService.get<Designs[]>(
                 `/api/get/pre_made/designs/${sortTag}/${categoryIds}`,
             )
+
+            console.log("respData pre made des: ", respData);
+            
             return respData
         },
     })
@@ -88,7 +88,7 @@
         <p>No designs available.</p>
     </div>
 
-    <div v-if="isLoading || isFetching">
+    <div v-if="isLoading ">
         <Loader msg="Loading Designs..." />
     </div>
 

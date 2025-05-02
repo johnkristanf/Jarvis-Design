@@ -44,6 +44,13 @@
         onError: (error) => {
             isLoadingMutation.value = false
             console.error('Error generating image:', error)
+
+            toast.add({
+                severity: 'error',
+                summary: 'AI Design Generation Failed',
+                detail: 'Please try again',
+                life: 3000,
+            })
         },
 
         onMutate: () => {
@@ -85,7 +92,7 @@
 
 <template>
     <TransitionRoot as="template" :show="isOpen">
-        <Dialog as="div" class="relative z-10" @close="handleCloseModal">
+        <Dialog as="div" class="relative z-10" :static="true">
             <TransitionChild
                 as="template"
                 enter="ease-out duration-300"
@@ -125,13 +132,28 @@
                                 <h2 class="text-2xl font-bold text-gray-900 mb-6">
                                     Prompt your Desired AI Design
                                 </h2>
-                                <button
-                                    v-if="imageUrls && imageUrls.length > 0"
-                                    @click="handleGenerateAnother"
-                                    class="font-bold bg-gray-900 text-white rounded-md p-2 text-gray-900 mr-3 hover:cursor-pointer hover:opacity-75"
-                                >
-                                    Generate another
-                                </button>
+
+
+                                <div class="flex items-center gap-2">
+
+                                    <button
+                                        v-if="imageUrls && imageUrls.length > 0"
+                                        @click="handleGenerateAnother"
+                                        class="font-bold bg-gray-900 text-white rounded-md p-2 text-gray-900 mr-3 hover:cursor-pointer hover:opacity-75"
+                                    >
+                                        Generate another
+                                    </button>
+
+                                    <button
+                                        v-if="imageUrls && imageUrls.length > 0"
+                                        @click="handleCloseModal"
+                                        class="font-bold bg-gray-700 text-white rounded-md p-2 text-gray-900 mr-3 hover:cursor-pointer hover:opacity-75"
+                                    >
+                                        Close
+                                    </button>
+
+                                </div>
+
                             </div>
 
                             <form
@@ -163,12 +185,21 @@
 
                                 <button
                                     type="submit"
-                                    class="px-4 py-2 rounded-md bg-black text-white hover:cursor-pointer hover:opacity-75"
+                                    class="px-4 py-2 rounded-md bg-gray-900 text-white hover:cursor-pointer hover:opacity-75"
                                 >
                                     Generate
                                 </button>
+
+                                <button
+                                    type="button"
+                                    @click="handleCloseModal"
+                                    class="px-4 py-2 rounded-md bg-gray-700 text-white hover:cursor-pointer hover:opacity-75"
+                                >
+                                    Close
+                                </button>
                             </form>
 
+                            <!-- LIST OF AI GENERATED DESIGNS -->
                             <div
                                 v-if="imageUrls && imageUrls.length > 0"
                                 class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"

@@ -3,7 +3,7 @@
     import { formatCurrency, formatDate } from '@/helper/designs'
     import { useAuthStore } from '@/stores/user'
     import { DesignStatus, type UploadedDesign } from '@/types/design'
-    import { onMounted, ref, watch } from 'vue'
+    import { onMounted, reactive, ref, watch } from 'vue'
     import Loader from '../Loader.vue'
     import { useQuery } from '@tanstack/vue-query'
     import PaymentModal from './PaymentModal.vue'
@@ -13,6 +13,7 @@
     import { InformationCircleIcon } from '@heroicons/vue/20/solid'
     import { OrderTypes } from '@/types/order'
     import { useAuthorization } from '@/composables/useAuthorization'
+    import AttachMaterialsModal from './AttachMaterialsModal.vue'
 
     const emit = defineEmits<{
         (e: 'openUpdateModal', design: UploadedDesign): void
@@ -22,9 +23,18 @@
         emit('openUpdateModal', design)
     }
 
-    const authStore = useAuthStore()
-    const openPaymentModal = ref<boolean>(false)
+    // MODALS TOGGLER
+    const modals = reactive({
+        show_attach_materials_modal: false,
+        show_payment_modal: false,
+    })
 
+    // SELECTED DESIGN ID TO BE ATTACHED SOME MATERIALS IN IT
+    const selectedDesignID = ref<number>()
+
+    const authStore = useAuthStore()
+
+    // THIS IS FOR THE CUSTOMER SIDE SELECTING SHIRT RELATED ATTRIBUTES
     const designAttributeData = ref<DesignAttribute>({
         design_id: -1,
         color: -1,
@@ -38,6 +48,7 @@
         name: '',
     })
 
+    // AUTHOTIZATION
     const { isAdmin, isUser } = useAuthorization()
 
     const { data, isLoading, refetch } = useQuery({
@@ -59,7 +70,7 @@
 
     const handleOpenPaymentModal = (design: UploadedDesign) => {
         if (design) {
-            openPaymentModal.value = true
+            modals.show_payment_modal = true
 
             paymentData.value.name = `Uploaded Design ${design.id}`
             paymentData.value.price = design.price
@@ -69,6 +80,11 @@
             designAttributeData.value.color = design.color.id
             designAttributeData.value.size = design.size.id
         }
+    }
+
+    const handleOpenAttachMaterialsModal = (designID: number) => {
+        selectedDesignID.value = designID
+        modals.show_attach_materials_modal = true
     }
 
     onMounted(() => {
@@ -81,7 +97,7 @@
         <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
             <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
                 <thead
-                    class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400"
+                    class="text-xs text-white uppercase bg-gray-900 dark:bg-gray-700 dark:text-gray-400"
                 >
                     <tr>
                         <th scope="col" class="px-16 py-3">
@@ -102,7 +118,7 @@
                             <button
                                 data-tooltip-target="tooltip-default"
                                 type="button"
-                                class="text-black focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-1 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                                class="focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-1 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
                             >
                                 <InformationCircleIcon class="size-5" />
                             </button>
@@ -176,18 +192,31 @@
                         </td>
 
                         <td class="px-6 py-4">
-                            <button
-                                v-if="isAdmin"
-                                @click="handleOpenUpdateModal(design)"
-                                class="text-blue-600 rounded-md p-2 hover:opacity-75 hover:cursor-pointer hover:underline font-medium"
-                            >
-                                Update
-                            </button>
+
+                            <!-- ADMIN ACCESSED BUTTONS -->
+                            <div v-if="isAdmin" class="flex items-center">
+                                <button
+                                    @click="handleOpenAttachMaterialsModal(design.id)"
+                                    class="text-gray-900 rounded-md p-2 hover:opacity-75 hover:cursor-pointer hover:underline font-medium"
+                                >
+                                    Attach Materials
+                                </button>
+
+                                <button
+                                    @click="handleOpenUpdateModal(design)"
+                                    class="text-blue-600 rounded-md p-2 hover:opacity-75 hover:cursor-pointer hover:underline font-medium"
+                                >
+                                    Update
+                                </button>
+                            </div>
+
+
+                            <!-- CUSTOMER ACCESSED BUTTONS -->
 
                             <button
                                 v-else-if="isUser && design.status == DesignStatus.TAGGED"
                                 @click="handleOpenPaymentModal(design)"
-                                class="text-blue-600 text-white rounded-md p-2 hover:opacity-75 hover:cursor-pointer"
+                                class="text-blue-600 rounded-md p-2 hover:opacity-75 hover:underline hover:cursor-pointer"
                             >
                                 Place Order
                             </button>
@@ -204,6 +233,14 @@
             </table>
         </div>
 
+        <!-- ATTACH MATERIALS MODAL -->
+        <AttachMaterialsModal
+            v-if="modals.show_attach_materials_modal && selectedDesignID"
+            :selectedDesignID="selectedDesignID"
+            :designType="OrderTypes.UPLOADED"
+            @close="modals.show_attach_materials_modal = false"
+        />
+
         <!-- LOADER -->
         <div v-if="isLoading">
             <Loader msg="Loading Uploaded Designs..." />
@@ -211,12 +248,12 @@
 
         <!-- PAYMENT MODAL -->
         <PaymentModal
-            v-if="designAttributeData && paymentData && openPaymentModal"
+            v-if="designAttributeData && paymentData && modals.show_payment_modal"
             :orderType="OrderTypes.UPLOADED"
             :paymentData="paymentData"
             :attributeData="designAttributeData"
-            :isOpen="openPaymentModal"
-            @close="openPaymentModal = false"
+            :isOpen="modals.show_payment_modal"
+            @close="modals.show_payment_modal = false"
         />
     </div>
 </template>

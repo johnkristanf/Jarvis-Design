@@ -7,19 +7,17 @@
     import { InformationCircleIcon } from '@heroicons/vue/20/solid'
     import Loader from '../Loader.vue'
     import Toast from 'primevue/toast'
-import type { DesignMaterialAttachmentData } from '@/types/design'
-
+    import type { DesignMaterialAttachmentData } from '@/types/design'
 
     // DESIGN RELATED PROPS
     const props = defineProps<{
         selectedDesignID: number
+        designType: string
     }>()
 
-
     // API RESPONSE HELPERS
-    const toast = useToast();
+    const toast = useToast()
     const queryClient = useQueryClient()
-
 
     // MODAL CLOSING EMITS
     const emit = defineEmits(['close'])
@@ -32,32 +30,23 @@ import type { DesignMaterialAttachmentData } from '@/types/design'
     const materialsUsedQuantities = ref<Record<number, number>>({})
 
     // GET ALL PRE - MADE DESIGNS DATA QUERY
-    const { isPending, isError, data, error } = useQuery({
+    const {
+        isPending,
+        isError,
+        data: groupedMaterials,
+        error,
+    } = useQuery({
         queryKey: ['attach-materials'],
         queryFn: async () => {
             const respData = await apiService.get('/api/get/grouped/materials')
+            console.log('respData grouped materials: ', respData)
+
             return respData
         },
     })
 
     // ATTACHMENT NOTE
     const attachementNote = `When assigning specific materials to a product design, please consider each configuration as representing one (1) unit of an order.`
-
-    // Watch for checkbox changes and set default quantity if newly selected
-    watch(selectedMaterials, (newVal) => {
-        newVal.forEach((id) => {
-            if (!materialsUsedQuantities.value[id]) {
-                materialsUsedQuantities.value[id] = 1 // default quantity
-            }
-        })
-
-        // Remove quantities for unchecked items
-        for (const id in materialsUsedQuantities.value) {
-            if (!newVal.includes(Number(id))) {
-                delete materialsUsedQuantities.value[Number(id)]
-            }
-        }
-    })
 
     // ADD NEW MATERIALS MUTATION
     const attachMutation = useMutation({
@@ -81,13 +70,11 @@ import type { DesignMaterialAttachmentData } from '@/types/design'
         },
 
         onError: (error) => {
-            console.error('Error uploading preferred image:', error)
+            console.error('Error attaching design materials:', error)
         },
     })
 
-    // ON SUBMISSION FINAL VALUE: quantity used, design_id and material_id
     const handleSubmission = () => {
-
         // MAP THE CORRECT MATERIAL WITH ITS RESPECTIVE INPUTTED QUANTITY
         const mappedMaterialsAndQuantity = selectedMaterials.value.map((id) => ({
             material_id: id,
@@ -99,12 +86,29 @@ import type { DesignMaterialAttachmentData } from '@/types/design'
 
         const data: DesignMaterialAttachmentData = {
             design_id: props.selectedDesignID,
-            material_quantity_arr: mappedMaterialsAndQuantity
+            designType: props.designType,
+            material_quantity_arr: mappedMaterialsAndQuantity,
         }
 
         attachMutation.mutate(data)
     }
 
+
+    // Watch for checkbox changes and set default quantity if newly selected
+    watch(selectedMaterials, (newVal) => {
+        newVal.forEach((id) => {
+            if (!materialsUsedQuantities.value[id]) {
+                materialsUsedQuantities.value[id] = 1 // default quantity
+            }
+        })
+
+        // Remove quantities for unchecked items
+        for (const id in materialsUsedQuantities.value) {
+            if (!newVal.includes(Number(id))) {
+                delete materialsUsedQuantities.value[Number(id)]
+            }
+        }
+    })
 
 </script>
 
@@ -138,6 +142,7 @@ import type { DesignMaterialAttachmentData } from '@/types/design'
                                 text: '!bg-primary !text-hite !font-medium',
                             },
                         }"
+                        
                         class="cursor-pointer text-gray-500 hover:text-primary transition-colors"
                     >
                         <InformationCircleIcon class="w-5 h-5" />
@@ -148,8 +153,12 @@ import type { DesignMaterialAttachmentData } from '@/types/design'
                     Select the materials that have been used to create the selected design
                 </p>
 
-                <div v-if="data">
-                    <div v-for="(materials, category) in data" :key="category" class="mb-6">
+                <div v-if="groupedMaterials">
+                    <div
+                        v-for="(materials, category) in groupedMaterials"
+                        :key="category"
+                        class="mb-6"
+                    >
                         <h3 class="mb-2 font-semibold text-gray-900">{{ category }}</h3>
                         <ul
                             class="w-full text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-lg"
@@ -194,7 +203,14 @@ import type { DesignMaterialAttachmentData } from '@/types/design'
                     </div>
                 </div>
 
-                <div class="font-medium w-full flex justify-end items-center gap-3 mt-4">
+                <!-- MATERIALS UNAVAILABLE CATCHER -->
+                <div v-else class="text-center my-12">No Materials Available</div>
+
+                <!-- MODAL FOOTER BUTTONS FOR SUBMISSION AND CANCEL -->
+                <div
+                    v-if="groupedMaterials"
+                    class="font-medium w-full flex justify-end items-center gap-3 mt-4"
+                >
                     <button
                         type="button"
                         @click="handleCloseModal"
@@ -217,7 +233,6 @@ import type { DesignMaterialAttachmentData } from '@/types/design'
     <div v-if="isPending">
         <Loader msg="Loading Materials..." />
     </div>
-
 
     <div v-if="attachMutation.isPending.value">
         <Loader msg="Attaching Design Materials..." />

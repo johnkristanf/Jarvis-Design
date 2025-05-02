@@ -3,7 +3,7 @@
     import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/vue'
     import { CheckIcon, ChevronUpDownIcon } from '@heroicons/vue/20/solid'
 
-    const props = defineProps<{
+    defineProps<{
         options: Array<any>
         modelValue: any
         displayKey?: string
@@ -23,7 +23,7 @@
                 class="relative w-full cursor-default rounded-lg py-2 pl-3 pr-10 text-left border border-gray-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 sm:text-sm"
             >
                 <span class="block font-medium truncate">
-                    {{ modelValue?.[displayKey || 'name'] || 'Select an option' }}
+                    {{ modelValue?.[displayKey || 'name'].toUpperCase() || 'Select an option' }}
                 </span>
                 <span class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
                     <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
@@ -56,7 +56,7 @@
                                     'block truncate',
                                 ]"
                             >
-                                {{ option[displayKey || 'name'] }}
+                                {{ option[displayKey || 'name'].toUpperCase() }}
                             </span>
                             <span
                                 v-if="selected"

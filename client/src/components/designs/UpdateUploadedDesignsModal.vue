@@ -14,6 +14,7 @@
     import { updateUploadedDesign } from '@/api/put/design'
     import Loader from '../Loader.vue'
     import ListSelectBox from '../ListSelectBox.vue'
+    import { InformationCircleIcon } from '@heroicons/vue/20/solid'
 
     const props = defineProps<{
         design: UploadedDesign
@@ -64,26 +65,29 @@
             design_id: props.design.id,
         })
     }
+
+    const priceNote = `
+            Note: <br>When setting the original price for your uploaded design, please price it as if it’s for one (1) order only.
+            <br>  <br>  Don’t multiply the price based on quantity.
+            <br> <br>  When a customer places an order, the system will automatically calculate the total price based on how many units they request.
+        `
 </script>
 
 <template>
-    <TransitionRoot appear :show="true" as="template">
-        <Dialog as="div" @close="handleClose" class="relative z-[99999] bg-gray-900/80">
+    <TransitionRoot appear :show="true">
+        <Dialog as="div" @close="handleClose" class="relative z-[999]">
             <TransitionChild
-                as="template"
                 enter="duration-300 ease-out"
                 enter-from="opacity-0"
                 enter-to="opacity-100"
                 leave="duration-200 ease-in"
                 leave-from="opacity-100"
                 leave-to="opacity-0"
-            >
-            </TransitionChild>
+            ></TransitionChild>
 
-            <div class="fixed inset-0 overflow-y-auto">
+            <div class="fixed inset-0 overflow-y-auto bg-gray-900/80">
                 <div class="flex min-h-full items-center justify-center p-4 text-center">
                     <TransitionChild
-                        as="template"
                         enter="duration-300 ease-out"
                         enter-from="opacity-0 scale-95"
                         enter-to="opacity-100 scale-100"
@@ -102,7 +106,7 @@
                                 <!-- DESIGN STATUS SELECT ELEMENT -->
 
                                 <div class="mt-8 w-full">
-                                    <h1 class="font-medium">Pricing Status:</h1>
+                                    <h1 class="font-medium">Pricing Status</h1>
 
                                     <ListSelectBox
                                         v-model="selectedStatus"
@@ -114,12 +118,37 @@
                                 <!-- END OF DESIGN STATUS SELECT ELEMENT -->
 
                                 <div class="mt-8">
-                                    <label
-                                        for="price"
-                                        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                                    >
-                                        Price (₱):
-                                    </label>
+                                    <div class="flex mb-2 items-center gap-1">
+                                        <label
+                                            for="price"
+                                            class="block text-sm font-medium text-gray-900 dark:text-white"
+                                        >
+                                            Original Price (₱)
+                                        </label>
+
+                                        <!-- PRICE TOOL TIP -->
+                                        <span
+                                            v-tooltip.right="{
+                                                value: priceNote,
+                                                escape: false,  // <-- This is the key to render HTML like <br>
+                                                pt: {
+                                                    root: {},
+
+                                                    text: {
+                                                        style: {
+                                                            padding: '20px',
+                                                            whiteSpace: 'normal',
+                                                        },
+                                                        class: '!bg-primary !text-white !font-medium text-md w-[500px]',
+                                                    },
+                                                },
+                                            }"
+                                            class="cursor-pointer text-gray-500 hover:text-primary transition-colors"
+                                        >
+                                            <InformationCircleIcon class="w-5 h-5" />
+                                        </span>
+                                    </div>
+
                                     <input
                                         type="text"
                                         id="price"
@@ -131,7 +160,7 @@
 
                                 <button
                                     type="submit"
-                                    class="mt-4 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 hover:cursor-pointer focus:outline-none focus:ring-blue-300 rounded-md text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                                    class="mt-4 text-white bg-gray-900 hover:opacity-75 hover:cursor-pointer focus:ring-4 hover:cursor-pointer focus:outline-none focus:ring-blue-300 rounded-md text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
                                 >
                                     Submit
                                 </button>
