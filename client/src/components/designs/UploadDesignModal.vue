@@ -49,20 +49,20 @@
     const uploadPreferredDesignMutation = useMutation({
         mutationFn: uploadDesign,
         onSuccess: (response) => {
-            isUploading.value = false;
+            isUploading.value = false
             console.log('response uploadPreferredDesignMutation: ', response)
             toast.add({
                 severity: 'success',
                 summary: 'Design Uploaded Successfully',
                 detail: 'Please wait for 1-2 bussiness days before your design get tagged',
-                life: 3000,
+                life: 2500,
             })
 
             queryClient.invalidateQueries({ queryKey: ['uploaded-designs'] })
-            
+
             setTimeout(() => {
                 handleCloseModal()
-            }, 3500)
+            }, 3000)
         },
 
         onError: (error) => {
@@ -304,10 +304,13 @@
                                                         >
                                                             <div
                                                                 :class="[
+                                                                    checked
+                                                                        ? 'ring-2 ring-indigo-500 border-indigo-500'
+                                                                        : 'border-gray-300',
                                                                     active
-                                                                        ? 'ring-2 ring-indigo-500'
+                                                                        ? 'ring-2 ring-indigo-300'
                                                                         : '',
-                                                                    'group relative hover:cursor-pointer flex items-center justify-center rounded-md border px-4 py-3 text-sm font-medium uppercase hover:bg-gray-50 focus:outline-hidden sm:flex-1',
+                                                                    'group relative hover:cursor-pointer flex items-center justify-center rounded-md border px-4 py-3 text-sm font-medium uppercase hover:bg-gray-50 focus:outline-none sm:flex-1',
                                                                 ]"
                                                             >
                                                                 <span>{{ size.name }}</span>

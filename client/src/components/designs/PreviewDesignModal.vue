@@ -69,7 +69,6 @@
     const quantity = ref<number>(0)
 
     const handleProceedPayment = () => {
-
         // HANDLE PAYMENT CANNOT PROCEED IF NOT LOGGED IN
         if (!authStore.currentUser && !authStore.isLogginedIn) {
             openFailureModal.value = true
@@ -150,12 +149,13 @@
                                     <XMarkIcon class="size-6" aria-hidden="true" />
                                 </button>
 
-                                <div class="flex justify-between w-full">
+                                <div class="flex flex-col justify-between w-full mt-8">
                                     <img
                                         :src="props.design.image_path"
-                                        class="aspect-2/3 w-1/2 rounded-lg bg-gray-100 object-cover sm:col-span-4 lg:col-span-5"
+                                        class="w-full h-[350px] rounded-lg bg-gray-100 object-cover object-center sm:col-span-4 lg:col-span-5"
                                     />
-                                    <div class="sm:col-span-8 lg:col-span-7">
+
+                                    <div class="sm:col-span-8 lg:col-span-7 mt-5">
                                         <h2 class="text-2xl font-bold text-gray-900 sm:pr-12">
                                             {{ props.design.name }}
                                         </h2>
@@ -274,10 +274,11 @@
                                                             :key="size.name"
                                                             :value="size"
                                                             v-slot="{ active, checked }"
+                                                            class="hover:cursor-pointer"
                                                         >
                                                             <div
                                                                 :class="[
-                                                                    active
+                                                                    active || checked
                                                                         ? 'ring-2 ring-indigo-500'
                                                                         : '',
                                                                     'group relative flex items-center justify-center rounded-md border px-4 py-3 text-sm font-medium uppercase hover:bg-gray-50 focus:outline-hidden sm:flex-1',

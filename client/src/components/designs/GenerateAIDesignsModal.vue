@@ -54,7 +54,7 @@
         },
 
         onMutate: () => {
-            loaderMsg.value = 'Generating Images...'
+            loaderMsg.value = 'Generating image take a while to finish, please wait...'
             isLoadingMutation.value = true
         },
     })
@@ -133,11 +133,11 @@
                                     Prompt your Desired AI Design
                                 </h2>
 
-
-                                <div class="flex items-center gap-2">
-
+                                <div
+                                    v-if="imageUrls && imageUrls.length > 0"
+                                    class="flex items-center gap-2"
+                                >
                                     <button
-                                        v-if="imageUrls && imageUrls.length > 0"
                                         @click="handleGenerateAnother"
                                         class="font-bold bg-gray-900 text-white rounded-md p-2 text-gray-900 mr-3 hover:cursor-pointer hover:opacity-75"
                                     >
@@ -151,9 +151,7 @@
                                     >
                                         Close
                                     </button>
-
                                 </div>
-
                             </div>
 
                             <form
@@ -183,20 +181,22 @@
                                     />
                                 </div>
 
-                                <button
-                                    type="submit"
-                                    class="px-4 py-2 rounded-md bg-gray-900 text-white hover:cursor-pointer hover:opacity-75"
-                                >
-                                    Generate
-                                </button>
+                                <div class="flex flex-col gap-3">
+                                    <button
+                                        type="submit"
+                                        class="px-4 py-2 rounded-md bg-gray-900 text-white hover:cursor-pointer hover:opacity-75"
+                                    >
+                                        Generate
+                                    </button>
 
-                                <button
-                                    type="button"
-                                    @click="handleCloseModal"
-                                    class="px-4 py-2 rounded-md bg-gray-700 text-white hover:cursor-pointer hover:opacity-75"
-                                >
-                                    Close
-                                </button>
+                                    <button
+                                        type="button"
+                                        @click="handleCloseModal"
+                                        class="px-4 py-2 rounded-md bg-gray-700 text-white hover:cursor-pointer hover:opacity-75"
+                                    >
+                                        Close
+                                    </button>
+                                </div>
                             </form>
 
                             <!-- LIST OF AI GENERATED DESIGNS -->

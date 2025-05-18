@@ -221,7 +221,7 @@
                                 Place Order
                             </button>
 
-                            <h1 v-else>Once design is tagged you can proceed to order.</h1>
+                            <h1 v-else>Once design is price tagged you can proceed to order.</h1>
                         </td>
                     </tr>
 

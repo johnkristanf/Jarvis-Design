@@ -1,4 +1,5 @@
 export type MaterialFormValues = {
+    id: number
     material_name: string
     unit: string
     quantity: number
@@ -23,11 +24,6 @@ export interface Material {
     category: MaterialsCategory
 }
 
-
 export type GroupedMaterials = {
-    id: number,
-    category_id: number,
-    name: string,
-    category: string
-
+    [categoryName: string]: Material[]
 }

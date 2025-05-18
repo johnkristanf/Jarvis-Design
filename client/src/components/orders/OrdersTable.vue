@@ -48,16 +48,43 @@
     const iconMap = Object.fromEntries(solutions.map((s) => [s.name, s.icon]))
     const queryClient = useQueryClient()
 
+    // PREFERRED ORDER OPTION FOR SETTING STATUS FILTERING
+    const selectedOrderOption = ref<string>('')
+
+    // ORDER STATUS FOR COMPLETED ORDER FILTERING
+    const selectedOrderStatus = ref<string>('')
+
+    // FILTERED STATUS
     const enrichedStatuses = computed(() => {
         if (!statusQuery.data?.value) return []
 
         return statusQuery.data.value
-            .filter((status) => status.name !== 'in_progress')
+            .filter((status) => {
+                const isSelected = status.name === selectedOrderOption.value
+                const isCompleted = status.name === OrderStatus.COMPLETED
+
+                const isDeliveryOrPickup =
+                    selectedOrderStatus.value === OrderStatus.DELIVERY ||
+                    selectedOrderStatus.value === OrderStatus.PICKUP
+
+                // RETURNS ONLY COMPLETED IF THE STATUS IS EITHER DELIVER OR PICK UP
+                if(isDeliveryOrPickup){
+                    return isCompleted
+                }
+
+                // IF NOT RETURNS THE SELECTED OPTION AND THE COMPLETED
+                return isSelected || isCompleted
+            })
             .map((status) => ({
                 ...status,
                 icon: iconMap[status.name] || null,
             }))
     })
+
+    const handleShowStatusFilter = (orderOption: string, orderStatus: string) => {
+        selectedOrderOption.value = orderOption
+        selectedOrderStatus.value = orderStatus
+    }
 
     const mutation = useMutation({
         mutationFn: updateOrderStatus,
@@ -101,7 +128,7 @@
 </script>
 
 <template>
-    <div class="relative h-full overflow-x-auto shadow-md sm:rounded-lg ">
+    <div class="relative h-[75%] overflow-y-auto shadow-md sm:rounded-lg mt-5">
         <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
             <thead
                 class="text-xs text-white uppercase bg-gray-900 dark:bg-gray-700 dark:text-gray-400"
@@ -190,6 +217,9 @@
                         >
                             <Popover v-slot="{ open, close }" class="relative">
                                 <PopoverButton
+                                    @click="
+                                        handleShowStatusFilter(order.order_option, order.status)
+                                    "
                                     :class="open ? 'text-white' : 'text-white/90'"
                                     class="group hover:opacity-75 hover:cursor-pointer inline-flex items-center rounded-md bg-gray-800 px-3 py-2 text-base font-medium hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75"
                                 >

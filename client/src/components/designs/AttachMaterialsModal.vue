@@ -8,6 +8,7 @@
     import Loader from '../Loader.vue'
     import Toast from 'primevue/toast'
     import type { DesignMaterialAttachmentData } from '@/types/design'
+    import type { GroupedMaterials } from '@/types/materials'
 
     // DESIGN RELATED PROPS
     const props = defineProps<{
@@ -30,15 +31,10 @@
     const materialsUsedQuantities = ref<Record<number, number>>({})
 
     // GET ALL PRE - MADE DESIGNS DATA QUERY
-    const {
-        isPending,
-        isError,
-        data: groupedMaterials,
-        error,
-    } = useQuery({
+    const { isPending, data: groupedMaterials } = useQuery({
         queryKey: ['attach-materials'],
         queryFn: async () => {
-            const respData = await apiService.get('/api/get/grouped/materials')
+            const respData = await apiService.get<GroupedMaterials>('/api/get/grouped/materials')
             console.log('respData grouped materials: ', respData)
 
             return respData
@@ -93,7 +89,6 @@
         attachMutation.mutate(data)
     }
 
-
     // Watch for checkbox changes and set default quantity if newly selected
     watch(selectedMaterials, (newVal) => {
         newVal.forEach((id) => {
@@ -109,7 +104,6 @@
             }
         }
     })
-
 </script>
 
 <template>
@@ -142,7 +136,6 @@
                                 text: '!bg-primary !text-hite !font-medium',
                             },
                         }"
-                        
                         class="cursor-pointer text-gray-500 hover:text-primary transition-colors"
                     >
                         <InformationCircleIcon class="w-5 h-5" />

@@ -1,6 +1,7 @@
 <script lang="ts" setup>
+    import { apiService } from '@/api/axios'
     import { generateQrCode } from '@/api/post/payment'
-    import type { OrderTypes } from '@/types/order'
+    import type { OrderTypes, PlaceOrderData } from '@/types/order'
     import {
         type ProceedPaymentResponseData,
         type DesignAttribute,
@@ -13,8 +14,13 @@
         DialogPanel,
         DialogTitle,
     } from '@headlessui/vue'
+    import { useMutation, useQueryClient } from '@tanstack/vue-query'
     import { ProgressSpinner } from 'primevue'
     import { onMounted, ref } from 'vue'
+    import Toast from 'primevue/toast'
+
+    import { useToast } from 'primevue/usetoast'
+    import Loader from '../Loader.vue'
 
     const props = defineProps<{
         orderType: OrderTypes
@@ -23,6 +29,7 @@
         isOpen: boolean
     }>()
 
+    // DYNAMIC QRCODE GENERATION RESPONSE
     const paymentResponseRef = ref<ProceedPaymentResponseData>({
         code_id: '',
         amount: -1,
@@ -30,8 +37,15 @@
         qrcode_img_src: '',
     })
 
+    // STATE FOR PLACE ORDER MUTATING
+    const isPlacingOrder = ref<boolean>(false)
+
+    // MODAL EMITS
     const emit = defineEmits(['close'])
-    const handleClose = () => emit('close')
+    const handleCloseModal = () => emit('close')
+
+    const queryClient = useQueryClient()
+    const toast = useToast()
 
     const handleGeneratePaymentQrCode = async () => {
         const designID = props.attributeData.design_id
@@ -65,14 +79,76 @@
         }
     }
 
-    onMounted(() => {
-        handleGeneratePaymentQrCode()
+    // UNCOMMENT THIS LATER IF PANEL OR ADVISOR ASK FOR DYNAMIC QRCODE PAYMENT PROCESS
+    // onMounted(() => {
+    //     handleGeneratePaymentQrCode()
+    // })
+
+    // PLACE ORDER MUTATION
+    const orderMutation = useMutation({
+        mutationFn: async (data: PlaceOrderData) => {
+            const respData = await apiService.post('/api/place/order', data)
+            return respData
+        },
+        onSuccess: (response) => {
+            console.log('response place order: ', response)
+
+            isPlacingOrder.value = false
+            toast.add({
+                severity: 'success',
+                summary: 'Place Order Successfully',
+                life: 2000,
+            })
+
+            queryClient.invalidateQueries({ queryKey: ['orders', 'order_notifications'] })
+
+            setTimeout(() => {
+                handleCloseModal()
+            }, 2500)
+        },
+
+        onError: (error) => {
+            console.error('Error placing order:', error)
+            isPlacingOrder.value = false
+
+            toast.add({
+                severity: 'error',
+                summary: 'Unexpected Error, please try again',
+            })
+        },
+
+        onMutate: () => {
+            isPlacingOrder.value = true
+        },
     })
+
+    const handlePlaceOrder = () => {
+        const designID = props.attributeData.design_id
+        const totalPrice = props.attributeData.quantity * props.paymentData.price
+        const orderOption = props.paymentData.order_option
+        const orderType = props.orderType
+
+        const quantity = props.attributeData.quantity
+        const color = props.attributeData.color
+        const size = props.attributeData.size
+
+        const data: PlaceOrderData = {
+            order_type: orderType,
+            design_id: designID,
+            total_price: totalPrice,
+            order_option: orderOption,
+            quantity: quantity,
+            color_id: color,
+            size_id: size,
+        }
+
+        orderMutation.mutate(data)
+    }
 </script>
 
 <template>
     <TransitionRoot appear :show="isOpen" as="template">
-        <Dialog as="div" @close="handleClose" class="relative z-10">
+        <Dialog as="div" @close="handleCloseModal" class="relative z-10">
             <TransitionChild
                 as="template"
                 enter="duration-300 ease-out"
@@ -120,33 +196,53 @@
                                         }).format(attributeData.quantity * paymentData.price)
                                     }}
                                 </p>
+
+                                <p class="text-sm text-center my-5">
+                                    Note:
+                                    <br />
+                                    Please ensure you pay the exact amount. Orders with incorrect
+                                    payments will not be processed.
+                                </p>
                             </div>
 
-                            <div class="mt-2" v-if="paymentResponseRef.qrcode_img_src != ''">
+                            <!-- <div class="mt-2" v-if="paymentResponseRef.qrcode_img_src != ''">
                                 <img
                                     :src="paymentResponseRef.qrcode_img_src"
                                     alt="Generated QR CODE"
                                 />
-                            </div>
+                            </div> -->
 
-                            <div class="w-full flex flex-col justify-center items-center" v-else>
+                            <div class="mt-5 flex flex-col items-center justify-center">
+                                <img
+                                    src="/jarvis-gcash-qr.webp"
+                                    alt="Generated QR CODE"
+                                    width="300"
+                                />
+
+                                <h1 class="text-gray-500">Name: JA**N S.</h1>
+                            </div>
+                            <!-- <div class="w-full flex flex-col justify-center items-center">
                                 <h1>Generating QR Code...</h1>
                                 <ProgressSpinner :pt="{ root: { style: { width: '40px' } } }" />
-                            </div>
+                            </div> -->
 
-                            <!-- <div class="mt-4">
-                <button
-                  type="button"
-                  class="inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-                  @click="closeModal"
-                >
-                  Got it, thanks!
-                </button>
-              </div> -->
+                            <div class="mt-4 flex justify-end">
+                                <button
+                                    type="button"
+                                    @click="handlePlaceOrder"
+                                    class="inline-flex justify-center rounded-md border border-transparent bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:opacity-75 hover:cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                                >
+                                    Place Order
+                                </button>
+                            </div>
                         </DialogPanel>
                     </TransitionChild>
                 </div>
             </div>
         </Dialog>
     </TransitionRoot>
+
+    <Toast />
+
+    <Loader v-if="isPlacingOrder" msg="Placing Order..." />
 </template>
