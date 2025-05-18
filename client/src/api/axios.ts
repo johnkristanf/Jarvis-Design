@@ -64,8 +64,10 @@ async function handleRequest<T>(promise: Promise<AxiosResponse<T>>): Promise<T> 
 const get = <T>(url: string, config?: object): Promise<T> => handleRequest(api.get<T>(url, config))
 const post = <T>(url: string, data?: any, config?: object): Promise<T> =>
     handleRequest(api.post<T>(url, data, config))
+
 const put = <T>(url: string, data?: any, config?: object): Promise<T> =>
     handleRequest(api.put<T>(url, data, config))
+
 const del = <T>(url: string, config?: object): Promise<T> =>
     handleRequest(api.delete<T>(url, config))
 

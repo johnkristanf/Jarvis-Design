@@ -123,7 +123,7 @@ class PaymentService
     {
         try {
             $billingName = "Jarvis Designs";
-            $billingEmail = "johnkristan01@gmail.com";
+            $billingEmail = "geraldvillaceran101@gmail.com";
             $paymentType = "qrph";
 
             $paymentMethodData = [

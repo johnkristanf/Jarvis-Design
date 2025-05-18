@@ -11,6 +11,7 @@ Route::get('/get/pre_made/designs/{sort?}/{categories?}', [DesignsController::cl
 
 Route::get('/get/all/colors', [DesignsController::class, 'getAllColors']);
 Route::get('/get/all/sizes', [DesignsController::class, 'getAllSizes']);
+Route::get('/get/design/categories', [DesignsController::class, 'getDesignCategories']);
 
 
 Route::middleware(['auth:sanctum'])->group(function () {
@@ -21,7 +22,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // PROTECTED DESIGNS ROUTE
     Route::get('/uploaded/designs', [DesignsController::class, 'getUploadedDesigns']);
-    Route::get('/get/design/categories', [DesignsController::class, 'getDesignCategories']);
 
     Route::post('/upload/design', [DesignsController::class, 'uploadDesign']);
     Route::post('/add/pre_made/design', [DesignsController::class, 'addPreMadeDesigns']);
@@ -55,10 +55,14 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // PROTECTED MATERIALS ROUTE
     Route::post('/add/material', [MaterialsController::class, 'store']);
+    Route::post('/edit/material', [MaterialsController::class, 'edit']);
     Route::get('/get/material/categories', [MaterialsController::class, 'getMaterialCategory']);
     Route::get('/get/materials', [MaterialsController::class, 'get']);
     Route::get('/get/grouped/materials', [MaterialsController::class, 'getGroupedMaterials']);
 
+
+    // PROTECTED ORDER ROUTE
+    Route::post('/place/order', [PaymentController::class, 'placeOrder']);
 });
 
 // TEST AUTOMATED DEDUCTION UPON ORDER

@@ -2,19 +2,23 @@
     import Toast from 'primevue/toast'
 
     import { Dialog, DialogPanel, DialogTitle, DialogDescription } from '@headlessui/vue'
-    import { defineProps, defineEmits, watch, onMounted, onUpdated, nextTick, ref } from 'vue'
+    import { defineProps, defineEmits, watch, onMounted, onUpdated, nextTick } from 'vue'
     import { useForm, useField } from 'vee-validate'
     import * as yup from 'yup'
     import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
     import { useToast } from 'primevue/usetoast'
     import { apiService } from '@/api/axios'
     import Loader from '../Loader.vue'
-    import { type MaterialsCategory, type MaterialFormValues } from '@/types/materials'
+    import type { MaterialsCategory, MaterialFormValues, Material } from '@/types/materials'
     import { InformationCircleIcon } from '@heroicons/vue/20/solid'
     import { initFlowbite } from 'flowbite'
 
     // MODAL TOGGLING HANDLERS
-    defineProps<{ open: boolean }>()
+    const props = defineProps<{
+        open: boolean
+        material: Material
+    }>()
+
     const emit = defineEmits(['close'])
     const handleCloseModal = () => emit('close')
 
@@ -33,8 +37,6 @@
         category: yup.string().required('Category is required'),
     })
 
-
-
     // PRIMVUE TOAST
     const toast = useToast()
 
@@ -42,7 +44,7 @@
     const queryClient = useQueryClient()
 
     // FORM INITIALIZATION
-    const { handleSubmit, handleReset } = useForm<MaterialFormValues>({
+    const { handleSubmit, handleReset, setFieldValue } = useForm<MaterialFormValues>({
         validationSchema: materialSchema,
     })
 
@@ -56,14 +58,14 @@
     // ADD NEW MATERIALS MUTATION
     const materialsMutation = useMutation({
         mutationFn: async (data: MaterialFormValues) => {
-            const respData = await apiService.post('/api/add/material', data)
+            const respData = await apiService.post('/api/edit/material', data)
             return respData
         },
         onSuccess: (response) => {
-            console.log('response addNewMaterial: ', response)
+            console.log('response editMaterial: ', response)
             toast.add({
                 severity: 'success',
-                summary: 'Material Added Successfully',
+                summary: 'Material Edited Successfully',
                 life: 3000,
             })
 
@@ -73,15 +75,16 @@
         },
 
         onError: (error) => {
-            console.error('Error adding new material:', error)
+            console.error('Error editting material:', error)
         },
     })
 
-    // ADD NEW MATERTIAL SUBMISSION HANDLER
+    // EDIT MATERTIAL SUBMISSION HANDLER
     const onSubmit = handleSubmit((values) => {
         console.log('Submitted:', values)
         materialsMutation.mutate(values)
     })
+
 
     // GET MATERIALS CATEGORY QUERY
     const { isPending, data } = useQuery({
@@ -96,18 +99,29 @@
         },
     })
 
-    // SET THE FIRST MATERIALS CATEGORY AS PRE-SELECTED
+
+    // WATCH EVERY TIME ADMIN OPEN EDIT MODAL THE SELECTED FIELDS GET FILLED
     watch(
-        () => data.value,
-        (categories) => {
-            if (categories && categories.length > 0 && !category.value) {
-                category.value = categories[0].id
+        () => props.open,
+        (isOpen) => {
+            if (isOpen && props.material) {
+                nextTick(() => {
+                    setFieldValue('id', props.material.id)
+                    setFieldValue('material_name', props.material.name)
+                    setFieldValue('unit', props.material.unit)
+                    setFieldValue('quantity', props.material.quantity)
+                    setFieldValue('reorder_level', props.material.reorder_level)
+                    setFieldValue('category', props.material.category_id)
+                })
             }
         },
+        { immediate: true },
     )
 
     onMounted(() => {
         initFlowbite()
+
+        console.log('material 123113: ', props.material)
     })
 
     // RE-INITIALIZED THE FLOWBITE CAUSE THE DIALOG GETS MOUNTED IN THE DOM DYNAMICALLY
@@ -125,7 +139,7 @@
         class="fixed inset-0 z-[99999] flex items-center justify-center bg-gray-900/80"
     >
         <DialogPanel class="w-full max-w-xl bg-white h-[70%] p-6 overflow-y-auto">
-            <DialogTitle class="text-lg font-bold">New Material</DialogTitle>
+            <DialogTitle class="text-lg font-bold">Edit Material</DialogTitle>
             <DialogDescription class="text-sm text-gray-600 mb-4">
                 Enter the material details below.
             </DialogDescription>
@@ -258,7 +272,7 @@
     </Dialog>
 
     <div v-if="materialsMutation.isPending.value">
-        <Loader msg="Adding New Material..." />
+        <Loader msg="Editing New Material..." />
     </div>
 
     <div v-if="isPending">

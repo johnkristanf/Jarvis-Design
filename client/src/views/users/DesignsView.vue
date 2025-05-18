@@ -34,6 +34,7 @@
                     <!-- FILTERS -->
                     <FIlterDesign />
 
+                    <!-- DESIGN OPTIONS -->
                     <DesignOptions />
                 </div>
             </div>

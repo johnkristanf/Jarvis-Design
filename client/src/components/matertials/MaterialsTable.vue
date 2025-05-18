@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-    import { onMounted, ref, watch } from 'vue'
+    import { onMounted, reactive, ref, watch } from 'vue'
     import AddMaterialsModal from './AddMaterialsModal.vue'
     import { PlusIcon } from '@heroicons/vue/20/solid'
     import { useQuery } from '@tanstack/vue-query'
@@ -10,9 +10,13 @@
     import Toast from 'primevue/toast'
 
     import echo from '@/services/echo'
+    import EditMaterialsModal from './EditMaterialsModal.vue'
 
     // REF TOGGLER OF ADD NEW MATERIALS MODAL
-    const isModalOpen = ref(false)
+    const modals = reactive({
+        show_add_materials_modal: false,
+        show_edit_materials_modal: false,
+    })
 
     // GET MATERIALS DATA QUERY
     const {
@@ -32,30 +36,14 @@
     // PRIMEVUE TOAST FOR ALERT
     const toast = useToast()
 
+    // REFERENCE FOR SELECT MATERIAL FOR EDIT
+    const selectedMaterial = ref<Material>()
+
+    // ALERT RESTOCK SOUND
     const userHasInteracted = ref(false)
     const alertSound = new Audio('/sounds/alarm.mp3')
 
-    const playAlertSound = () => {
-        if (userHasInteracted.value) {
-            alertSound.currentTime = 0
-            alertSound.play().catch((err) => {
-                console.warn('Audio play blocked or failed:', err)
-            })
-        } else {
-            console.warn('🔇 Sound skipped – user has not interacted with page yet.')
-        }
-    }
-
-    const handleAlertNeededRestocking = () => {
-        toast.add({
-            severity: 'error',
-            summary: 'Low Stock Warning',
-            detail: 'One or more materials have reached or fallen below their reorder level. Please restock soon.',
-            closable: true,
-            life: 6000,
-        })
-    }
-
+    // CHECKS FOR REAL TIME UPDATE IF THERE ARE USER ORDERS THAT PAYS SUCCESSFULLY
     onMounted(() => {
         const enableAudio = () => {
             userHasInteracted.value = true
@@ -75,16 +63,17 @@
             // REFETCH MATERIALS EVERYTIME SOMEONE SUCCESSFULLY ORDERS
             refetch()
         })
-
     })
 
+    const onShowEditMaterial = (material: Material) => {
+        selectedMaterial.value = material
+        modals.show_edit_materials_modal = true
+    }
 
-    
     // WATCH THE MATERIALS EVERY REFETCH TO CHECK IF THERE ARE ANY LOW STOCK MATERIALS
-
     watch(designMaterials, (newMaterials) => {
-        console.log("refetcheddd");
-        
+        console.log('refetcheddd')
+
         if (newMaterials) {
             const lowStockItems = newMaterials.filter(
                 (material) => material.quantity <= material.reorder_level,
@@ -107,7 +96,7 @@
     <div class="relative overflow-x-auto">
         <div class="flex justify-end gap-3 pb-3">
             <button
-                @click="isModalOpen = true"
+                @click="modals.show_add_materials_modal = true"
                 type="button"
                 class="w-[20%] flex items-center justify-center gap-1 px-3 py-2 text-sm font-medium text-center text-white bg-gray-900 rounded-lg hover:opacity-75 hover:cursor-pointer"
             >
@@ -186,6 +175,7 @@
                     <td class="px-6 py-6 flex gap-2">
                         <button
                             class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+                            @click="onShowEditMaterial(material)"
                         >
                             Edit
                         </button>
@@ -198,7 +188,20 @@
         </table>
     </div>
 
-    <AddMaterialsModal v-if="isModalOpen" :open="isModalOpen" @close="isModalOpen = false" />
+    <!-- ADD MATERIAL MODAL -->
+    <AddMaterialsModal
+        v-if="modals.show_add_materials_modal"
+        :open="modals.show_add_materials_modal"
+        @close="modals.show_add_materials_modal = false"
+    />
+
+    <!-- EDIT MATERIAL MODAL -->
+    <EditMaterialsModal
+        v-if="modals.show_edit_materials_modal && selectedMaterial"
+        :open="modals.show_edit_materials_modal"
+        :material="selectedMaterial"
+        @close="modals.show_edit_materials_modal = false"
+    />
 
     <div v-if="isPending">
         <Loader msg="Loading Materials..." />

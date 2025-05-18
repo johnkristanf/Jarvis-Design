@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\EditMaterialRequest;
 use App\Http\Requests\StoreMaterialRequest;
 use App\Models\Materials;
 use App\Models\MaterialsCategory;
@@ -42,6 +43,7 @@ class MaterialsController extends Controller
                 $query->select('id', 'name');
             }
         ])
+            ->orderByDesc('created_at') // <-- Latest first
             ->get();
 
         return response()->json($materials);
@@ -58,5 +60,27 @@ class MaterialsController extends Controller
 
         // IT WILL RETURN AN OBJECT THAT HAS KEY CATEGORY NAME AND VALUE IS AN ARRAY MATERIALS  
         return response()->json($materials);
+    }
+
+
+    public function edit(EditMaterialRequest $request)
+    {
+        $data = $request->validated();
+
+        // Find the existing material by ID and update it
+        $material = Materials::findOrFail($data['id']);
+
+        $material->update([
+            'name' => $data['material_name'],
+            'unit' => $data['unit'],
+            'quantity' => $data['quantity'],
+            'reorder_level' => $data['reorder_level'],
+            'category_id' => $data['category'],
+        ]);
+
+        return response()->json([
+            'msg' => 'Material Updated Successfully',
+            'material_id' => $material->id,
+        ]);
     }
 }

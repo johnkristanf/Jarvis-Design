@@ -256,7 +256,106 @@ class PaymentController extends Controller
 
 
     // ACTING AS A PAYMENT SUCCESS WEBHOOK
-    public function testOrder(Request $request)
+    public function placeOrder(Request $request)
+    {
+
+        $validated = $request->validate([
+            'order_type' => 'required|string',
+            'design_id' => 'required|integer',
+            'total_price' => 'required|numeric',
+            'order_option' => 'required|string',
+            'quantity' => 'required|integer',
+            'color_id' => 'required|integer',
+            'size_id' => 'required|integer',
+        ]);
+
+        // Assign validated fields to variables
+        $orderType = $validated['order_type'];
+        $designID = $validated['design_id'];
+        $totalPrice = $validated['total_price'];
+        $orderOption = $validated['order_option'];
+        $quantity = $validated['quantity'];
+        $colorId = $validated['color_id'];
+        $sizeId = $validated['size_id'];
+
+        // Generate Order ID
+        $orderId = 'ORD-' . now()->timestamp . '-' . str_pad(rand(0, 9999), 4, '0', STR_PAD_LEFT);
+
+        // Lookup order type ID
+        $orderTypeID = ModelsOrderType::where('name', $orderType)->value('id');
+
+        // Get user ID
+        $userId = Auth::user()->id ?? $request->user_id ?? null;
+
+        // Determine design source based on order type
+        $preMade = OrderType::PRE_MADE;
+        $uploaded = OrderType::UPLOADED;
+
+        $design = match ($orderType) {
+            $preMade->value => Designs::with('materials')->find($designID),
+            $uploaded->value => UploadedDesign::with('materials')->find($designID),
+            default => null,
+        };
+
+        if (!$design) {
+            Log::error('Error in finding design', ['error' => 'Design not found']);
+            return response()->json(['error' => 'Design not found.'], 404);
+        }
+
+        // Create the order
+        $order = Orders::create([
+            'order_id'     => $orderId,
+            'option'       => $orderOption,
+            'paid_amount'  => $totalPrice,
+            'quantity'     => $quantity,
+            'color_id'     => $colorId,
+            'size_id'      => $sizeId,
+            'type_id'      => $orderTypeID,
+            'design_id'    => $designID,
+            'status_id'    => 1, // "pending"
+            'user_id'      => $userId,
+        ]);
+
+        // Broadcast event to refresh materials
+        $paymentMessage = 'Payment success from Paymongo!';
+        broadcast(new PaymentSucessful($paymentMessage));
+
+
+        // AUTOMATED DEDUCTION HERE USING THE FETCHED DESIGN:
+        foreach ($design->materials as $material) {
+
+            $materialName = $material->name;
+            $materialUnit = $material->unit;
+            $usedQty = $material->pivot->quantity_used;
+            $totalMaterialQuantityUsed = $quantity * $usedQty;
+
+
+            Log::info('Material: ' . $materialName);
+            Log::info('Used per unit: ' . $usedQty);
+            Log::info('Total Deduct: ' . $totalMaterialQuantityUsed);
+
+            // Now update the material's quantity
+            $material->quantity = max(0, $material->quantity - $totalMaterialQuantityUsed);
+            $material->save();
+
+
+            OrderLogs::create([
+                'user_id' => $userId,
+                'order_id' => $order->id,
+                'material_name' => $materialName,
+                'unit' => $materialUnit,
+                'total_quantity_used' => $totalMaterialQuantityUsed,
+            ]);
+        }
+
+
+        return response()->json([
+            'message' => 'Place Order Successfully',
+            'order' => $order
+        ]);
+    }
+
+    public function handleAPIOrder(Request $request)
     {
 
         // ALL THIS STATIC DATA MUST BE REPLACE BY THE PAYMONGO WEBHOOK METADATA
@@ -351,6 +450,7 @@ class PaymentController extends Controller
     }
 
 
+
     public function getOrderLogs()
     {
         $orderLogs = OrderLogs::with([
@@ -365,7 +465,4 @@ class PaymentController extends Controller
 
         return response()->json($orderLogs);
     }
-    
 }
-
-
