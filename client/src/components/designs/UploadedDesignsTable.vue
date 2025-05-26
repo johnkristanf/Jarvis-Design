@@ -15,6 +15,10 @@
     import { useAuthorization } from '@/composables/useAuthorization'
     import AttachMaterialsModal from './AttachMaterialsModal.vue'
 
+    import Toast from 'primevue/toast'
+    import { useToast } from 'primevue/usetoast'
+import UploadedImagesModal from './UploadedImagesModal.vue'
+
     const emit = defineEmits<{
         (e: 'openUpdateModal', design: UploadedDesign): void
     }>()
@@ -27,6 +31,7 @@
     const modals = reactive({
         show_attach_materials_modal: false,
         show_payment_modal: false,
+        show_uploaded_images: false,
     })
 
     // SELECTED DESIGN ID TO BE ATTACHED SOME MATERIALS IN IT
@@ -50,8 +55,7 @@
 
     // AUTHOTIZATION
     const { isAdmin, isUser } = useAuthorization()
-
-    const { data, isLoading, refetch } = useQuery({
+    const { data, isLoading, refetch, isError } = useQuery({
         queryKey: ['uploaded-designs'],
         queryFn: getAllUploadedDesigns,
         enabled: true,
@@ -69,11 +73,15 @@
     console.log('uploaded designs data: ', data.value)
 
     const handleOpenPaymentModal = (design: UploadedDesign) => {
+
+
         if (design) {
             modals.show_payment_modal = true
 
             paymentData.value.name = `Uploaded Design ${design.id}`
             paymentData.value.price = design.price
+            paymentData.value.order_option = design.order_option
+
             designAttributeData.value.design_id = design.id
 
             designAttributeData.value.quantity = design.quantity
@@ -85,6 +93,11 @@
     const handleOpenAttachMaterialsModal = (designID: number) => {
         selectedDesignID.value = designID
         modals.show_attach_materials_modal = true
+    }
+
+    const handleOpenUploadedImagesModal = (designID: number) => {
+        selectedDesignID.value = designID
+        modals.show_uploaded_images = true
     }
 
     onMounted(() => {
@@ -144,12 +157,13 @@
                         :key="design.id"
                         class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600"
                     >
-                        <td class="p-4">
-                            <img
-                                :src="design.temp_url"
-                                class="w-24 max-w-full max-h-full rounded"
-                                :alt="design.path"
-                            />
+                        <td class="px-6 py-4 font-semibold text-gray-900 dark:text-white">
+                            <button
+                                @click="handleOpenUploadedImagesModal(design.id)"
+                                class="text-gray-900 rounded-md p-2 hover:opacity-75 hover:cursor-pointer hover:underline font-medium"
+                            >
+                                Show Uploaded Images
+                            </button>
                         </td>
 
                         <td class="px-6 py-4 font-semibold text-gray-900 dark:text-white">
@@ -192,7 +206,6 @@
                         </td>
 
                         <td class="px-6 py-4">
-
                             <!-- ADMIN ACCESSED BUTTONS -->
                             <div v-if="isAdmin" class="flex items-center">
                                 <button
@@ -209,7 +222,6 @@
                                     Update
                                 </button>
                             </div>
-
 
                             <!-- CUSTOMER ACCESSED BUTTONS -->
 
@@ -241,8 +253,16 @@
             @close="modals.show_attach_materials_modal = false"
         />
 
+        <!-- UPLOADED IMAGE MODAL -->
+        <UploadedImagesModal
+            v-if="modals.show_uploaded_images && selectedDesignID"
+            :selectedDesignID="selectedDesignID"
+            :isAdmin="isAdmin"
+            @close="modals.show_uploaded_images = false"
+        />
+
         <!-- LOADER -->
-        <div v-if="isLoading">
+        <div v-if="isLoading && !isError">
             <Loader msg="Loading Uploaded Designs..." />
         </div>
 
@@ -255,5 +275,7 @@
             :isOpen="modals.show_payment_modal"
             @close="modals.show_payment_modal = false"
         />
+
+        <Toast />
     </div>
 </template>

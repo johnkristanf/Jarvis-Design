@@ -51,8 +51,8 @@
     })
 
     const orderOptions = ref([
-        { id: 1, name: OrderOptions.DELIVERY },
-        { id: 2, name: OrderOptions.PICK_UP },
+        { id: 1, name: OrderOptions.DELIVERY, tag: "DELIVERY" },
+        { id: 2, name: OrderOptions.PICK_UP, tag: "PICK-UP" },
     ])
 
     const openPaymentModal = ref<boolean>(false)
@@ -212,7 +212,7 @@
                                                         <ListSelectBox
                                                             v-model="selectedOrderType"
                                                             :options="orderOptions"
-                                                            displayKey="name"
+                                                            displayKey="tag"
                                                         />
                                                     </div>
 

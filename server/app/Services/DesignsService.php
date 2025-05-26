@@ -22,7 +22,7 @@ class DesignsService
     {
         try {
             $designs = Designs::select('id', 'name', 'price', 'quantity', 'image_path')->get();
-            
+
             $designs->transform(function ($design) {
                 $design->image_path = Storage::disk('s3')->temporaryUrl(
                     $design->image_path,
@@ -32,7 +32,6 @@ class DesignsService
             });
 
             return $designs;
-            
         } catch (QueryException $e) {
             Log::error('Error fetching all designs: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
         } catch (Exception $e) {
@@ -67,19 +66,17 @@ class DesignsService
 
 
 
-    public function saveUploadedDesign(string $path, $orderOption, $quantity, $colorID, $sizeID): int
+    public function saveUploadedDesign($orderOption, $quantity, $colorID, $sizeID): int
     {
         try {
 
             $preferredDesignID = UploadedDesign::create([
-                'path' => $path,
                 'order_option' => $orderOption,
                 'quantity' => $quantity,
                 'color_id' => $colorID,
                 'size_id' => $sizeID,
                 'user_id' => Auth::user()->id
             ])->id;
-
 
             return $preferredDesignID;
         } catch (QueryException $e) {
@@ -101,7 +98,7 @@ class DesignsService
             ])
                 ->select(
                     'id',
-                    'path',
+                    'order_option',
                     'price',
                     'quantity',
                     'status',
@@ -117,32 +114,22 @@ class DesignsService
 
             $results = $query->orderBy('created_at', 'desc')->get();
 
-
-
             // Generate a temporary URL for each design
-            $results->transform(function ($item) {
-                $item->temp_url = Storage::disk('s3')->temporaryUrl(
-                    $item->path,
-                    Carbon::now()->addMinutes(10)
-                );
-                return $item;
-            });
+            // $results->transform(function ($item) {
+            //     $item->temp_url = Storage::disk('s3')->temporaryUrl(
+            //         $item->path,
+            //         Carbon::now()->addMinutes(10)
+            //     );
+            //     return $item;
+            // });
 
             return $results;
         } catch (QueryException $e) {
             Log::error("Database Query Failed: " . $e->getMessage());
-
-            return response()->json([
-                'error' => 'Failed to retrieve preferred designs.',
-                'message' => $e->getMessage(),
-            ], 500);
+            throw $e;
         } catch (\Exception $e) {
             Log::error("An unexpected error occurred: " . $e->getMessage());
-
-            return response()->json([
-                'error' => 'An unexpected error occurred.',
-                'message' => $e->getMessage(),
-            ], 500);
+            throw $e;
         }
     }
 

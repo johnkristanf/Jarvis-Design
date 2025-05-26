@@ -1,7 +1,7 @@
 <script lang="ts" setup>
     import { generateImageDesign } from '@/api/post/generate'
     import { useMutation } from '@tanstack/vue-query'
-    import { Select, Toast } from 'primevue'
+    import { Toast } from 'primevue'
     import { useField, useForm } from 'vee-validate'
     import Loader from '../Loader.vue'
     import { ref } from 'vue'
@@ -10,6 +10,9 @@
     import { ArrowDownTrayIcon, XMarkIcon } from '@heroicons/vue/20/solid'
     import { useToast } from 'primevue/usetoast'
     import ListSelectBox from '../ListSelectBox.vue'
+    import { InformationCircleIcon } from '@heroicons/vue/24/solid'
+
+    import { FwbButton, FwbTooltip } from 'flowbite-vue'
 
     defineProps<{
         isOpen: boolean
@@ -26,7 +29,7 @@
 
     const handleGenerateAnother = () => (imageUrls.value.length = 0)
 
-    const { handleSubmit, handleReset } = useForm()
+    const { handleSubmit } = useForm()
     const toast = useToast()
 
     const generateImageMutation = useMutation({
@@ -37,7 +40,13 @@
 
             if (response && response.data.image_urls) {
                 imageUrls.value = response.data.image_urls
-                handleReset()
+
+                toast.add({
+                    severity: 'success',
+                    summary: 'AI Design Generated Successfully',
+                    detail: 'Scroll down to look up for the designs',
+                    life: 3000,
+                })
             }
         },
 
@@ -133,7 +142,8 @@
                                     Prompt your Desired AI Design
                                 </h2>
 
-                                <div
+                                <!-- BUTTONS AFTER THE IMAGES GETTING GENERATED -->
+                                <!-- <div
                                     v-if="imageUrls && imageUrls.length > 0"
                                     class="flex items-center gap-2"
                                 >
@@ -151,22 +161,65 @@
                                     >
                                         Close
                                     </button>
-                                </div>
+                                </div> -->
                             </div>
 
+                            <!-- FORM INPUT BEFORE GENERATION -->
+                            <!-- v-if="imageUrls.length == 0" -->
                             <form
-                                v-if="imageUrls.length == 0"
                                 @submit.prevent="onImageGenerate"
                                 class="flex flex-col gap-7 w-full mb-8"
                             >
                                 <div class="flex flex-col gap-2">
-                                    <h1>Prompt:</h1>
+                                    <div class="flex justify-between items-center gap-2">
+                                        <h1>Prompt:</h1>
+
+                                        <!-- PROMPT TOOLTIP -->
+                                        <fwb-tooltip
+                                            placement="right"
+                                            theme="light"
+                                            trigger="click"
+                                        >
+                                            <template #trigger>
+                                                <fwb-button type="button" color="dark">
+                                                    Prompting Tips
+                                                </fwb-button>
+                                            </template>
+                                            <template #content>
+                                                <div
+                                                    class="whitespace-pre-line max-w-xl text-sm leading-relaxed font-normal text-gray-800"
+                                                >
+                                                    <div class="mb-2 text-xl font-semibold mt-3">
+                                                        🎨 Prompting Tips for Your Custom Design
+                                                    </div>
+
+                                                    Want to create the perfect design? Here's a sample prompt:
+
+                                                    <br />
+                                                    <br />
+                                                    "A cute Hello Kitty character holding a coffee
+                                                    mug, wearing a pink and yellow polo shirt with
+                                                    an armored futuristic design. The background is
+                                                    simple white or transparent."
+
+                                                    <br />
+                                                    <br />
+                                                    - Be specific — mention characters, style,
+                                                    colors ✅
+                                                    <br />
+                                                    - Think visually
+                                                    <br />
+                                                    - 🚫 Avoid long sentences
+                                                </div>
+                                            </template>
+                                        </fwb-tooltip>
+                                    </div>
 
                                     <textarea
                                         type="text"
                                         id="prompt"
                                         v-model="prompt"
-                                        placeholder="Sample Prompt: High-end basketball jersey design, front and back view, vibrant team colors, modern athletic cut, dynamic geometric patterns, sleek logo placement, professional sportswear aesthetic"
+                                        placeholder="Enter your prompt"
                                         class="font-medium block w-full rounded-md bg-white px-3 text-base text-black placeholder:text-gray-400 focus:outline-none border border-gray-300"
                                     ></textarea>
                                 </div>
@@ -199,38 +252,41 @@
                                 </div>
                             </form>
 
+
                             <!-- LIST OF AI GENERATED DESIGNS -->
-                            <div
-                                v-if="imageUrls && imageUrls.length > 0"
-                                class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
-                            >
-                                <div
-                                    v-for="(imageUrl, index) in imageUrls"
-                                    :key="'generated-' + index"
-                                    class="group relative overflow-hidden rounded-md"
-                                >
-                                    <!-- Download Button -->
-                                    <a
-                                        :href="`${aiAPIURL}/download/image/${imageUrl}`"
-                                        download
-                                        class="absolute top-2 right-2 z-10 p-1 bg-white/80 hover:bg-white rounded-full shadow-md transition"
-                                        target="_blank"
+                            <div v-if="imageUrls && imageUrls.length > 0" class="mt-5">
+                                <h1 class="mb-3">Generated AI Images:</h1>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    <div
+                                        v-for="(imageUrl, index) in imageUrls"
+                                        :key="'generated-' + index"
+                                        class="group relative overflow-hidden rounded-md"
                                     >
-                                        <ArrowDownTrayIcon
-                                            class="w-5 h-5 text-gray-700 hover:text-black"
+                                        <!-- Download Button -->
+                                        <a
+                                            :href="`${aiAPIURL}/download/image/${imageUrl}`"
+                                            download
+                                            class="absolute top-2 right-2 z-10 p-1 bg-white/80 hover:bg-white rounded-full shadow-md transition"
+                                            target="_blank"
+                                        >
+                                            <ArrowDownTrayIcon
+                                                class="w-5 h-5 text-gray-700 hover:text-black"
+                                            />
+                                        </a>
+
+                                        <!-- Image -->
+                                        <img
+                                            :src="`${aiAPIURL}/generated/image/${imageUrl}`"
+                                            class="aspect-square w-full rounded-md bg-gray-200 object-cover group-hover:opacity-75 transition"
                                         />
-                                    </a>
 
-                                    <!-- Image -->
-                                    <img
-                                        :src="`${aiAPIURL}/generated/image/${imageUrl}`"
-                                        class="aspect-square w-full rounded-md bg-gray-200 object-cover group-hover:opacity-75 transition"
-                                    />
-
-                                    <!-- Caption -->
-                                    <h3 class="mt-2 text-sm text-center text-gray-700 font-medium">
-                                        Generated Design {{ index + 1 }}
-                                    </h3>
+                                        <!-- Caption -->
+                                        <h3
+                                            class="mt-2 text-sm text-center text-gray-700 font-medium"
+                                        >
+                                            Generated Design {{ index + 1 }}
+                                        </h3>
+                                    </div>
                                 </div>
                             </div>
                         </DialogPanel>

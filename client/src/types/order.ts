@@ -24,6 +24,7 @@ export const OrderOptions = {
 export type Orders = {
     id: number
     order_id: string
+    design_id: number,
     order_option: string
     paid_amount: string
     quantity: number
@@ -31,7 +32,6 @@ export type Orders = {
     status: string
     name: string
     image_path: string
-    temp_url: string
 }
 
 export type OrderStatusType = {

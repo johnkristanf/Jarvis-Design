@@ -13,6 +13,7 @@ export type LoginCredentials = {
 export type RegistrationCredentials = {
     name: string
     username: string
+    email: string
     password?: string
 }
 

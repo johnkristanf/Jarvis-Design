@@ -12,6 +12,7 @@ import OrdersView from '@/views/users/OrdersView.vue'
 import FAQView from '../views/users/FAQView.vue'
 import AdminOrdersView from '@/views/admin/AdminOrdersView.vue'
 import AdminMatertialsView from '@/views/admin/AdminMatertialsView.vue'
+import AdminCommunicationView from '@/views/admin/AdminCommunicationView.vue'
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -75,14 +76,22 @@ const router = createRouter({
                 },
 
                 {
+                    path: 'materials',
+                    component: AdminMatertialsView,
+                },
+
+                
+                {
                     path: 'orders',
                     component: AdminOrdersView,
                 },
 
+
                 {
-                    path: 'materials',
-                    component: AdminMatertialsView,
+                    path: 'communication',
+                    component: AdminCommunicationView,
                 },
+
             ],
         },
 

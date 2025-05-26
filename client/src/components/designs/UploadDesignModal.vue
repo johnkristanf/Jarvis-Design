@@ -42,8 +42,8 @@
 
     // SELECTION OF ORDER OPTIONS
     const orderOptions = ref([
-        { id: 1, name: OrderOptions.DELIVERY },
-        { id: 2, name: OrderOptions.PICK_UP },
+        { id: 1, name: OrderOptions.DELIVERY, tag: 'DELIVERY' },
+        { id: 2, name: OrderOptions.PICK_UP, tag: 'PICK-UP' },
     ])
 
     const uploadPreferredDesignMutation = useMutation({
@@ -75,8 +75,6 @@
         },
     })
 
-    const formData = new FormData()
-
     // GET DATABASE CREATED COLORS AND SIZES
     const { colors, sizes, loadingColors, loadingSizes } = useProductAttributes()
 
@@ -84,31 +82,45 @@
     const selectedSize = ref(sizes.value && sizes.value[2])
     const selectedOrderOptions = ref(orderOptions.value[0])
 
-    const selectedFile = ref<File | null>(null)
+    // FILE UPLOAD REFS
     const fileInput = ref<HTMLInputElement | null>(null)
-    const imagePreview = ref<string | null>(null)
+
+    const selectedFiles = ref<File[]>([])
+    const imagePreviews = ref<string[]>([])
 
     // FILE CHANGE HANDLER
-
     const handleFileChange = (event: Event) => {
         const input = event.target as HTMLInputElement
 
         if (input.files && input.files.length > 0) {
-            selectedFile.value = input.files[0]
+            const filesArray = Array.from(input.files)
+            selectedFiles.value = []
+            imagePreviews.value = []
 
-            // Update formData with the selected file
-            formData.delete('file')
-            formData.append('file', selectedFile.value)
+            filesArray.forEach((file) => {
+                selectedFiles.value.push(file)
+                const reader = new FileReader()
+                reader.onload = (e) => {
+                    imagePreviews.value.push(e.target?.result as string)
+                }
+                reader.readAsDataURL(file)
+            })
 
-            console.log('Selected file:', selectedFile.value.name)
-
-            // UPLOADED IMAGE PREVIEWER
-            const reader = new FileReader()
-            reader.onload = (e) => {
-                imagePreview.value = e.target?.result as string
-            }
-            reader.readAsDataURL(selectedFile.value)
+            console.log(
+                'Selected files:',
+                selectedFiles.value.map((f) => f.name),
+            )
         }
+    }
+
+    const removeFile = (index: number) => {
+        selectedFiles.value.splice(index, 1)
+        imagePreviews.value.splice(index, 1)
+    }
+
+    const clearAll = () => {
+        selectedFiles.value = []
+        imagePreviews.value = []
     }
 
     // UPLOADING CUSTOMER DESIGN HANDLER
@@ -118,7 +130,7 @@
         console.log('selectedSize: ', selectedSize.value)
         console.log('quantity: ', quantity.value)
 
-        if (!selectedFile.value) {
+        if (selectedFiles.value.length == 0) {
             toast.add({
                 severity: 'error',
                 summary: 'Error',
@@ -128,12 +140,26 @@
             return
         }
 
+        const formData = new FormData()
+
+        selectedFiles.value.forEach((file, index) => {
+            formData.append('multi_file_upload[]', file)
+            // Alternative approach - indexed keys:
+            // uploadFormData.append(`multi_file_upload[${index}]`, file)
+        })
+
         formData.append('order_option', selectedOrderOptions.value.name)
         formData.append('color', selectedColor.value.id.toString())
         formData.append('size', selectedSize.value.id.toString())
         formData.append('quantity', quantity.value.toString())
 
-        console.log('file: ', formData.get('file'))
+        for (let [key, value] of formData.entries()) {
+            if (value instanceof File) {
+                console.log(`${key}: ${value.name} (${value.size} bytes)`)
+            } else {
+                console.log(`${key}: ${value}`)
+            }
+        }
 
         uploadPreferredDesignMutation.mutate(formData)
     }
@@ -240,7 +266,7 @@
                                                         <ListSelectBox
                                                             v-model="selectedOrderOptions"
                                                             :options="orderOptions"
-                                                            displayKey="name"
+                                                            displayKey="tag"
                                                         />
                                                     </div>
 
@@ -330,14 +356,13 @@
                                                 </div>
 
                                                 <!-- UPLOAD INPUT -->
-
                                                 <div class="mt-10">
                                                     <div class="flex items-center justify-between">
                                                         <p>File Upload</p>
                                                     </div>
 
                                                     <div
-                                                        v-if="!imagePreview"
+                                                        v-if="imagePreviews.length === 0"
                                                         class="mt-4 border-2 border-dashed border-gray-300 rounded-md p-6 flex flex-col items-center justify-center"
                                                     >
                                                         <div
@@ -373,6 +398,7 @@
                                                             ref="fileInput"
                                                             type="file"
                                                             accept="image/*"
+                                                            multiple
                                                             class="hidden"
                                                             @change="handleFileChange"
                                                         />
@@ -386,33 +412,42 @@
                                                         </button>
                                                     </div>
 
-                                                    <!-- Image Preview Section -->
+                                                    <!-- Image Previews -->
                                                     <div
                                                         v-else
                                                         class="mt-4 border-2 border-gray-300 rounded-md p-4"
                                                     >
-                                                        <div class="flex flex-col items-center">
-                                                            <img
-                                                                :src="imagePreview"
-                                                                alt="Design preview"
-                                                                class="max-h-48 object-contain rounded-md"
-                                                            />
+                                                        <div class="grid grid-cols-2 gap-4">
                                                             <div
-                                                                class="mt-3 flex items-center justify-center"
+                                                                v-for="(
+                                                                    preview, index
+                                                                ) in imagePreviews"
+                                                                :key="index"
+                                                                class="flex flex-col items-center"
                                                             >
+                                                                <img
+                                                                    :src="preview"
+                                                                    alt="Preview"
+                                                                    class="max-h-48 object-contain rounded-md"
+                                                                />
                                                                 <button
                                                                     type="button"
-                                                                    class="text-sm text-indigo-600 hover:text-indigo-500"
-                                                                    @click="
-                                                                        () => {
-                                                                            imagePreview = null
-                                                                            selectedFile = null
-                                                                        }
-                                                                    "
+                                                                    class="mt-2 text-sm text-red-600 hover:text-red-400"
+                                                                    @click="removeFile(index)"
                                                                 >
-                                                                    Change
+                                                                    Remove
                                                                 </button>
                                                             </div>
+                                                        </div>
+
+                                                        <div class="mt-4 flex justify-center">
+                                                            <button
+                                                                type="button"
+                                                                class="text-sm text-indigo-600 hover:text-indigo-500"
+                                                                @click="clearAll"
+                                                            >
+                                                                Clear All
+                                                            </button>
                                                         </div>
                                                     </div>
                                                 </div>

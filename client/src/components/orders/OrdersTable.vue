@@ -14,6 +14,7 @@
     import Loader from '../Loader.vue'
     import { computed, ref } from 'vue'
     import { updateOrderStatus } from '@/api/put/orders'
+import UploadedImagesModal from '../designs/UploadedImagesModal.vue'
 
     const { isAdmin } = useAuthorization()
     const isStatusUpdating = ref<boolean>(false)
@@ -51,6 +52,10 @@
     // PREFERRED ORDER OPTION FOR SETTING STATUS FILTERING
     const selectedOrderOption = ref<string>('')
 
+    // SELECTED DESIGN TO RENDER
+    const selectedDesignID = ref<number>()
+    const showUploadedImageModal = ref<boolean>(false)
+
     // ORDER STATUS FOR COMPLETED ORDER FILTERING
     const selectedOrderStatus = ref<string>('')
 
@@ -68,7 +73,7 @@
                     selectedOrderStatus.value === OrderStatus.PICKUP
 
                 // RETURNS ONLY COMPLETED IF THE STATUS IS EITHER DELIVER OR PICK UP
-                if(isDeliveryOrPickup){
+                if (isDeliveryOrPickup) {
                     return isCompleted
                 }
 
@@ -125,6 +130,14 @@
 
         close()
     }
+
+    // NAA NIY POSSIBLE PROBLEM MAHITABO, WALA PA NA SEPARATE ANG PAG FETCH SA IMAGE
+    // BETWEEN PRE-MADE AND UPLOADED
+    //  - I CONDITION RATO NA MO FETCH SA pre_made or uploads FOLDER SA S3 BUCKET
+    const handleOpenUploadedImagesModal = (designID: number) => {
+        selectedDesignID.value = designID
+        showUploadedImageModal.value = true
+    }
 </script>
 
 <template>
@@ -166,11 +179,12 @@
                     </td>
 
                     <td class="p-4">
-                        <img
-                            :src="order.temp_url"
-                            class="w-24 max-w-full max-h-full rounded"
-                            :alt="order.image_path"
-                        />
+                        <button
+                            @click="handleOpenUploadedImagesModal(order.design_id)"
+                            class="text-gray-900 rounded-md p-2 hover:opacity-75 hover:cursor-pointer hover:underline font-medium"
+                        >
+                            Show Uploaded Images
+                        </button>
                     </td>
 
                     <td class="px-6 py-4 font-semibold text-gray-900 dark:text-white">
@@ -296,11 +310,15 @@
         </table>
     </div>
 
-    <div v-if="orderQuery.isLoading.value">
-        <Loader msg="Loading Orders..." />
-    </div>
+    <Loader v-if="orderQuery.isLoading.value" msg="Loading Orders..." />
 
-    <div v-if="isStatusUpdating">
-        <Loader msg="Updating Order Status..." />
-    </div>
+    <Loader v-if="isStatusUpdating" msg="Updating Order Status..." />
+
+    <!-- UPLOADED IMAGE MODAL -->
+    <UploadedImagesModal
+        v-if="showUploadedImageModal && selectedDesignID"
+        :selectedDesignID="selectedDesignID"
+        :isAdmin="isAdmin"
+        @close="showUploadedImageModal = false"
+    />
 </template>
