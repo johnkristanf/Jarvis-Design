@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::create('uploaded_designs', function (Blueprint $table) {
             $table->id();
-            $table->string('path');
             $table->string('order_option');
             $table->decimal('price', 15, 2)->default(0);
             $table->unsignedInteger('quantity')->default(0);

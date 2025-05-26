@@ -15,11 +15,11 @@
         DialogTitle,
     } from '@headlessui/vue'
     import { useMutation, useQueryClient } from '@tanstack/vue-query'
-    import { ProgressSpinner } from 'primevue'
-    import { onMounted, ref } from 'vue'
-    import Toast from 'primevue/toast'
+    import { ref } from 'vue'
 
+    import Toast from 'primevue/toast'
     import { useToast } from 'primevue/usetoast'
+
     import Loader from '../Loader.vue'
 
     const props = defineProps<{
@@ -39,6 +39,7 @@
 
     // STATE FOR PLACE ORDER MUTATING
     const isPlacingOrder = ref<boolean>(false)
+    const fileInput = ref<HTMLInputElement | null>(null)
 
     // MODAL EMITS
     const emit = defineEmits(['close'])
@@ -96,7 +97,7 @@
             isPlacingOrder.value = false
             toast.add({
                 severity: 'success',
-                summary: 'Place Order Successfully',
+                summary: 'Placed Order Successfully',
                 life: 2000,
             })
 
@@ -225,6 +226,57 @@
                                 <h1>Generating QR Code...</h1>
                                 <ProgressSpinner :pt="{ root: { style: { width: '40px' } } }" />
                             </div> -->
+
+
+                            <!-- PAYMENT CONFIRMATION SCREENSHOT UPLOAD -->
+                            <div class="mt-10">
+                                <div class="flex items-center justify-between">
+                                    <p>Screenshot of Payment Confirmation</p>
+                                </div>
+
+                                <div
+                                    class="mt-4 border-2 border-dashed border-gray-300 rounded-md p-6 flex flex-col items-center justify-center"
+                                >
+                                    <div class="flex items-center justify-center">
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            class="w-12 h-12 text-gray-400"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                                            />
+                                        </svg>
+                                    </div>
+
+                                    <div class="mt-4 text-center">
+                                        <p class="text-sm text-gray-600">
+                                            Drag and drop files to here to upload
+                                        </p>
+                                        <p class="text-xs text-gray-500 mt-1">or</p>
+                                    </div>
+
+                                    <input
+                                        ref="fileInput"
+                                        type="file"
+                                        accept="image/*"
+                                        class="hidden"
+                                    />
+
+                                    <button
+                                        type="button"
+                                        class="mt-4 px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none"
+                                        @click="fileInput?.click()"
+                                    >
+                                        Select File
+                                    </button>
+                                </div>
+                            </div>
 
                             <div class="mt-4 flex justify-end">
                                 <button

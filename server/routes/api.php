@@ -23,6 +23,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // PROTECTED DESIGNS ROUTE
     Route::get('/uploaded/designs', [DesignsController::class, 'getUploadedDesigns']);
 
+    Route::get('/uploaded/{designID}/design', [DesignsController::class, 'getUploadedDesignByID']);
+
+
     Route::post('/upload/design', [DesignsController::class, 'uploadDesign']);
     Route::post('/add/pre_made/design', [DesignsController::class, 'addPreMadeDesigns']);
     Route::post('/attach/design/material', [DesignsController::class, 'attachDesignMaterial']);

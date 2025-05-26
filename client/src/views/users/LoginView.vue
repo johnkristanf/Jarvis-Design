@@ -1,64 +1,66 @@
 <script lang="ts" setup>
-    import { login } from '@/api/post/login'
-    import Loader from '@/components/Loader.vue'
-    import { UserRole, type AuthenticatedUserData, type LoginCredentials } from '@/types/user'
-    import { useMutation } from '@tanstack/vue-query'
-    import { useForm, useField } from 'vee-validate'
-    import { ref } from 'vue'
-    import * as yup from 'yup'
+import { login } from '@/api/post/login'
+import Loader from '@/components/Loader.vue'
+import { UserRole, type AuthenticatedUserData, type LoginCredentials } from '@/types/user'
+import { useMutation } from '@tanstack/vue-query'
+import { useForm, useField } from 'vee-validate'
+import { ref } from 'vue'
+import * as yup from 'yup'
 
-    const isLoadingMutation = ref(false)
+// Heroicons
+import { EyeIcon, EyeSlashIcon } from '@heroicons/vue/24/solid'
 
-    const validationSchema = yup.object({
-        username: yup.string().required('Username is required'),
-        password: yup.string().required('Password is required'),
-    })
+const isLoadingMutation = ref(false)
+const showPassword = ref(false) // 👁️ Password visibility toggle
 
-    // Use vee-validate's useForm hook
-    const { handleSubmit, isSubmitting } = useForm({
-        validationSchema,
-    })
+const validationSchema = yup.object({
+    username: yup.string().required('Username is required'),
+    password: yup.string().required('Password is required'),
+})
 
-    const { value: username, errorMessage: usernameError } = useField('username')
-    const { value: password, errorMessage: passwordError } = useField('password')
+const { handleSubmit, isSubmitting } = useForm({
+    validationSchema,
+})
 
-    const mutation = useMutation({
-        mutationFn: login,
-        onSuccess: (response) => {
-            isLoadingMutation.value = false
-            console.log('response login: ', response)
+const { value: username, errorMessage: usernameError } = useField('username')
+const { value: password, errorMessage: passwordError } = useField('password')
 
-            const authenticatedUser: AuthenticatedUserData = {
-                id: response.id,
-                name: response.name,
-                username: response.username,
-                role_id: response.role_id,
-                role: response.role,
-            }
+const mutation = useMutation({
+    mutationFn: login,
+    onSuccess: (response) => {
+        isLoadingMutation.value = false
+        console.log('response login: ', response)
 
-            if (authenticatedUser.role.name == UserRole.USER) window.location.href = '/'
-            if (authenticatedUser.role.name == UserRole.ADMIN)
-                window.location.href = '/admin/dashboard'
-        },
-
-        onError: (error) => {
-            isLoadingMutation.value = false
-            console.error('Error Logging In:', error)
-        },
-
-        onMutate: () => {
-            isLoadingMutation.value = true
-        },
-    })
-
-    const onSubmit = handleSubmit(async (values) => {
-        const userData: LoginCredentials = {
-            username: values.username,
-            password: values.password,
+        const authenticatedUser: AuthenticatedUserData = {
+            id: response.id,
+            name: response.name,
+            username: response.username,
+            role_id: response.role_id,
+            role: response.role,
         }
 
-        mutation.mutate(userData)
-    })
+        if (authenticatedUser.role.name === UserRole.USER) window.location.href = '/'
+        if (authenticatedUser.role.name === UserRole.ADMIN) window.location.href = '/admin/dashboard'
+    },
+
+    onError: (error) => {
+        isLoadingMutation.value = false
+        console.error('Error Logging In:', error)
+    },
+
+    onMutate: () => {
+        isLoadingMutation.value = true
+    },
+})
+
+const onSubmit = handleSubmit(async (values) => {
+    const userData: LoginCredentials = {
+        username: values.username,
+        password: values.password,
+    }
+
+    mutation.mutate(userData)
+})
 </script>
 
 <template>
@@ -70,6 +72,7 @@
 
         <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-sm">
             <form class="space-y-6" @submit="onSubmit" method="POST">
+                <!-- Username -->
                 <div>
                     <label for="username" class="block text-sm/6 font-medium">Username</label>
                     <div class="mt-2">
@@ -85,24 +88,41 @@
                     </p>
                 </div>
 
+                <!-- Password with toggle and forgot -->
                 <div>
                     <div class="flex items-center justify-between">
                         <label for="password" class="block text-sm/6 font-medium">Password</label>
+                        <div class="text-sm">
+                            <a href="/forgot-password" class="font-medium text-gray-600 hover:underline">
+                                Forgot password?
+                            </a>
+                        </div>
                     </div>
-                    <div class="mt-2">
+
+                    <div class="mt-2 relative">
                         <input
-                            type="password"
+                            :type="showPassword ? 'text' : 'password'"
                             id="password"
                             v-model="password"
                             autocomplete="current-password"
-                            class="font-medium block w-full rounded-md bg-white px-3 py-1.5 text-base text-black outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-none sm:text-sm/6"
+                            class="font-medium block w-full rounded-md bg-white px-3 py-1.5 pr-10 text-base text-black outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-none sm:text-sm/6"
                         />
+                        <button
+                            type="button"
+                            @click="showPassword = !showPassword"
+                            class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-gray-700"
+                            tabindex="-1"
+                        >
+                            <component :is="showPassword ? EyeSlashIcon : EyeIcon" class="h-5 w-5" />
+                        </button>
                     </div>
+
                     <p v-if="passwordError" class="mt-1 text-red-500 text-sm">
                         {{ passwordError }}
                     </p>
                 </div>
 
+                <!-- Submit -->
                 <div>
                     <button
                         type="submit"
@@ -116,6 +136,7 @@
         </div>
     </div>
 
+    <!-- Loading Indicator -->
     <div v-if="isLoadingMutation">
         <Loader msg="Logging In..." />
     </div>

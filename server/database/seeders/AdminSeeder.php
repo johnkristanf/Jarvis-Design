@@ -22,6 +22,7 @@ class AdminSeeder extends Seeder
         User::firstOrCreate([
             'name' => "Administrator",
             'username' => 'admin@admin',
+            'email' => 'admin@gmail.com',
             'password' => Hash::make("admin123"),
             'role_id'  => $adminRoleID
         ]);
@@ -29,6 +30,7 @@ class AdminSeeder extends Seeder
         User::firstOrCreate([
             'name' => "John Kristan Torremocha",
             'username' => 'jake',
+            'email' => 'johnkristan01@gmail.com',
             'password' => Hash::make("jkgwapo123"),
             'role_id'  => $userRoleID
         ]);

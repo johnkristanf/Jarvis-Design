@@ -86,41 +86,64 @@ class DesignsController extends Controller
         try {
 
             $request->validate([
-                'file' => 'required|file|max:10240', // Max 10MB
+                'multi_file_upload' => 'required|array',
+                'multi_file_upload.*' => 'file|max:10240', // each file max 10MB
             ]);
 
-            $uploadedFileData = $request->file('file');
+            $uploadedFiles  = $request->file('multi_file_upload');
+
+            Log::info("uploadedFiles: ", [
+                'uploadedFiles' => $uploadedFiles
+            ]);
+
             $orderOption = $request->input('order_option');
             $colorId = $request->input('color');
             $sizeId = $request->input('size');
             $quantity = $request->input('quantity');
 
-            $extractedFileName = $uploadedFileData->getClientOriginalName();
-            $file = file_get_contents($uploadedFileData->getPathname());
+            // SAVE DESIGN DATA TO THE DATABASE
+            $preferredDesignID = $this->designsService->saveUploadedDesign($orderOption, $quantity, $colorId, $sizeId);
 
 
-            $uniqueFileName = uniqid() . '_' . basename($extractedFileName);
-            $s3Key = "uploads/" . $uniqueFileName;
+            $uploadedFilePaths = [];
+            $failedUploads = [];
 
+            foreach ($uploadedFiles as $index => $file) {
+                try {
+                    $extractedFileName = $file->getClientOriginalName();
+                    $fileContent = file_get_contents($file->getPathname());
 
-            // S3 UPLOAD FACADE
-            $isUploaded = Storage::disk('s3')->put($s3Key, $file, [
-                'visibility' => 'private'
-            ]);
+                    // Create unique filename to avoid conflicts
+                    $uniqueFileName = uniqid() . '_' . basename($extractedFileName);
+                    $s3Key = "uploads/{$preferredDesignID}/{$uniqueFileName}";
 
-            if ($isUploaded) {
-                $preferredDesignID = $this->designsService->saveUploadedDesign($s3Key, $orderOption, $quantity, $colorId, $sizeId);
+                    // Upload to S3
+                    Storage::disk('s3')->put($s3Key, $fileContent, [
+                        'visibility' => 'private'
+                    ]);
 
+                    $uploadedFilePaths[] = $s3Key;
+                } catch (\Exception $e) {
+                    $failedUploads[] = $extractedFileName ?? "File {$index}";
+                    Log::error("Individual file upload failed: " . $e->getMessage());
+                }
+            }
+
+            if (empty($uploadedFilePaths)) {
                 return response()->json([
-                    'success' => true,
-                    'preferred_design_id' => $preferredDesignID
-                ], 200);
+                    'error' => true,
+                    'msg' => 'All file uploads failed',
+                    'failed_files' => $failedUploads
+                ], 500);
             }
 
             return response()->json([
-                'error' => true,
-                'message' => "No File Uploaded to S3 Bucket"
-            ], 500);
+                'success' => true,
+                'preferred_design_id' => $preferredDesignID,
+                'uploaded_files' => $uploadedFilePaths,
+                'total_uploaded' => count($uploadedFilePaths),
+                'failed_files' => $failedUploads
+            ], 200);
         } catch (\Exception $e) {
 
             Log::error("Error in Upload Preferred Design: ", [
@@ -137,10 +160,41 @@ class DesignsController extends Controller
 
     public function getUploadedDesigns()
     {
-
-        $results = $this->designsService->allUploadedDesigns();
-        return response()->json($results, 200);
+        try {
+            $results = $this->designsService->allUploadedDesigns();
+            return response()->json($results, 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Failed to retrieve preferred designs.',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
     }
+
+    public function getUploadedDesignByID($designID)
+    {
+        Log::info("designID: " . $designID);
+
+        $prefix = "uploads/{$designID}";
+        $files = Storage::disk('s3')->files($prefix);
+
+        Log::info("files: ", [
+            'files' => $files
+        ]);
+
+        $urls = [];
+
+        foreach ($files as $filePath) {
+            // Create temporary URL valid for 1 hour (60 minutes)
+            $tempUrl = Storage::disk('s3')->temporaryUrl($filePath, now()->addMinutes(60));
+            $urls[] = [
+                'temporary_url' => $tempUrl,
+            ];
+        }
+
+        return response()->json($urls);
+    }
+
 
     public function updateUploadedDesigns(Request $request)
     {
@@ -236,7 +290,7 @@ class DesignsController extends Controller
         // }
 
 
-        $design = match($designType) {
+        $design = match ($designType) {
             OrderType::PRE_MADE->value => Designs::with('materials')->find($designID),
             OrderType::UPLOADED->value => UploadedDesign::with('materials')->find($designID),
             default => null

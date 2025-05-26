@@ -37,8 +37,9 @@ export type DesignGenerate = {
 
 export interface UploadedDesign {
     id: number
+    order_option: string
     path: string
-    temp_url?: string
+    
     price: number
     quantity: number
 
@@ -66,4 +67,9 @@ export type DesignMaterialAttachmentData = {
     design_id: number,
     designType: string,
     material_quantity_arr: MaterialQuantityAttach[]
+}
+
+
+export type UploadedDesignsByID = {
+    temporary_url: string
 }

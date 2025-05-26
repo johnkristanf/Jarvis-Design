@@ -69,14 +69,14 @@
                                             class="h-64 w-44 overflow-hidden rounded-lg sm:opacity-0 lg:opacity-100"
                                         >
                                             <img
-                                                src="/durant-jersey.jpg"
+                                                src="/JD-JERSEY-1.jpg"
                                                 alt=""
                                                 class="size-full object-cover"
                                             />
                                         </div>
                                         <div class="h-64 w-44 overflow-hidden rounded-lg">
                                             <img
-                                                src="/random-jersey.jpg"
+                                                src="/JD-JERSEY-2.jpg"
                                                 alt=""
                                                 class="size-full object-cover"
                                             />
@@ -86,14 +86,14 @@
                                     <div class="grid shrink-0 grid-cols-1 gap-y-6 lg:gap-y-8">
                                         <div class="h-64 w-44 overflow-hidden rounded-lg">
                                             <img
-                                                src="/oneal-jersey.jpg"
+                                                src="/JD-JERSEY-3.jpg"
                                                 alt=""
                                                 class="size-full object-cover"
                                             />
                                         </div>
                                         <div class="h-64 w-44 overflow-hidden rounded-lg">
                                             <img
-                                                src="/steph-jersey.jpg"
+                                                src="/JD-JERSEY-4.jpg"
                                                 alt=""
                                                 class="size-full object-cover"
                                             />

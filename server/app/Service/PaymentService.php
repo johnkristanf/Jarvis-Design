@@ -209,7 +209,6 @@ class PaymentService
             ]);
 
             return $attachPaymentIntentResponseData;
-            
         } catch (RequestException $e) {
             Log::error("Error attaching payment intent (RequestException):", [
                 'message' => $e->getMessage(),
@@ -234,7 +233,7 @@ class PaymentService
 
     public function allOrders()
     {
-        try{
+        try {
 
             $orders = DB::table('orders')
                 ->join('order_types', 'orders.type_id', '=', 'order_types.id')
@@ -243,16 +242,16 @@ class PaymentService
                 // DESIGN DATA EITHER FROM UPLOADED DESIGNS TABLE
                 ->leftJoin('uploaded_designs', function ($join) {
                     $join->on('orders.design_id', '=', 'uploaded_designs.id')
-                    ->where('orders.type_id', '=', 1); 
+                        ->where('orders.type_id', '=', 1);
                 })
 
                 // OR FROM THE PRE-MADE DESIGNS TABLE
                 ->leftJoin('designs', function ($join) {
                     $join->on('orders.design_id', '=', 'designs.id')
-                    ->where('orders.type_id', '=', 2); 
+                        ->where('orders.type_id', '=', 2);
                 })
-               
-                ->join('users', 'orders.user_id', '=', 'users.id') 
+
+                ->join('users', 'orders.user_id', '=', 'users.id')
                 ->select(
                     'orders.id',
                     'orders.order_id',
@@ -262,44 +261,47 @@ class PaymentService
                     'orders.created_at',
                     'order_status.name as status',
                     'users.name',
-                    
-                    // conditionally grab either name from designs or uploaded_designs
-                    DB::raw("COALESCE(designs.image_path, uploaded_designs.path) as image_path")
+
+                    // Conditional Design ID based on type
+                    DB::raw("
+                        CASE 
+                            WHEN orders.type_id = 1 THEN uploaded_designs.id
+                            WHEN orders.type_id = 2 THEN designs.id
+                            ELSE NULL
+                        END as design_id
+                    ")
                 );
 
-                $authenticatedUser = Auth::user();
+            $authenticatedUser = Auth::user();
 
-                if (!$authenticatedUser->isAdmin()) {
-                    $orders->where('orders.user_id', '=', $authenticatedUser->id);
-                }
-                
-                $orders = $orders->orderBy('orders.created_at', 'desc')->get();
-        
+            if (!$authenticatedUser->isAdmin()) {
+                $orders->where('orders.user_id', '=', $authenticatedUser->id);
+            }
 
-                $orders->transform(function ($order) {
-                    $order->temp_url = $order->image_path 
-                        ? Storage::disk('s3')->temporaryUrl($order->image_path, Carbon::now()->addMinutes(10))
-                        : null;
-                
-                    return $order;
-                });
+            $orders = $orders->orderBy('orders.created_at', 'desc')->get();
+
+            // $orders->transform(function ($order) {
+            //     $order->temp_url = $order->image_path 
+            //         ? Storage::disk('s3')->temporaryUrl($order->image_path, Carbon::now()->addMinutes(10))
+            //         : null;
+
+            //     return $order;
+            // });
 
             return $orders;
-
         } catch (QueryException $e) {
             Log::error("Database Query Failed: " . $e->getMessage());
 
             return response()->json([
                 'error' => 'Failed to retrieve all orders.',
-                'message' => $e->getMessage(), 
-            ], 500); 
-
+                'message' => $e->getMessage(),
+            ], 500);
         } catch (\Exception $e) {
             Log::error("An unexpected error occurred: " . $e->getMessage());
 
             return response()->json([
                 'error' => 'An unexpected error occurred.',
-                'message' => $e->getMessage(), 
+                'message' => $e->getMessage(),
             ], 500);
         }
     }
@@ -307,25 +309,23 @@ class PaymentService
 
     public function allOrderStatus()
     {
-        try{
+        try {
 
             $orderStatus = OrderStatus::select('id', 'name')->get();
             return $orderStatus;
-
         } catch (QueryException $e) {
             Log::error("Database Query Failed: " . $e->getMessage());
 
             return response()->json([
                 'error' => 'Failed to retrieve preferred designs.',
-                'message' => $e->getMessage(), 
-            ], 500); 
-
+                'message' => $e->getMessage(),
+            ], 500);
         } catch (\Exception $e) {
             Log::error("An unexpected error occurred: " . $e->getMessage());
 
             return response()->json([
                 'error' => 'An unexpected error occurred.',
-                'message' => $e->getMessage(), 
+                'message' => $e->getMessage(),
             ], 500);
         }
     }
@@ -333,7 +333,7 @@ class PaymentService
 
     public function updateStatus($orderID, $statusID)
     {
-        try{
+        try {
 
             $order = Orders::findOrFail($orderID);
             $order->status_id = $statusID;
@@ -344,31 +344,29 @@ class PaymentService
                 'status_id' => $order->status_id,
                 'user_id'  =>  $order->user_id
             ]);
-            
+
 
             return $order->id;
-
         } catch (QueryException $e) {
             Log::error("Database Query Failed: " . $e->getMessage());
 
             return response()->json([
                 'error' => 'Failed to update order status.',
-                'message' => $e->getMessage(), 
-            ], 500); 
-
+                'message' => $e->getMessage(),
+            ], 500);
         } catch (\Exception $e) {
             Log::error("An unexpected error occurred: " . $e->getMessage());
 
             return response()->json([
                 'error' => 'An unexpected error occurred.',
-                'message' => $e->getMessage(), 
+                'message' => $e->getMessage(),
             ], 500);
         }
     }
 
     public function allOrdersNotifications()
     {
-        try{
+        try {
 
             $notifications = DB::table('notifications')
                 ->join('order_status', 'notifications.status_id', '=', 'order_status.id')
@@ -385,21 +383,19 @@ class PaymentService
 
 
             return $notifications;
-
         } catch (QueryException $e) {
             Log::error("Database Query Failed: " . $e->getMessage());
 
             return response()->json([
                 'error' => 'Failed to fetch order notifications.',
-                'message' => $e->getMessage(), 
-            ], 500); 
-
+                'message' => $e->getMessage(),
+            ], 500);
         } catch (\Exception $e) {
             Log::error("An unexpected error occurred: " . $e->getMessage());
 
             return response()->json([
                 'error' => 'An unexpected error occurred.',
-                'message' => $e->getMessage(), 
+                'message' => $e->getMessage(),
             ], 500);
         }
     }
@@ -407,28 +403,26 @@ class PaymentService
 
     public function updateNotification($notificationID)
     {
-        try{
+        try {
 
             Notifications::where('id', $notificationID)->update([
                 'is_read' => true
             ]);
 
             return $notificationID;
-
         } catch (QueryException $e) {
             Log::error("Database Query Failed: " . $e->getMessage());
 
             return response()->json([
                 'error' => 'Failed to update order status.',
-                'message' => $e->getMessage(), 
-            ], 500); 
-
+                'message' => $e->getMessage(),
+            ], 500);
         } catch (\Exception $e) {
             Log::error("An unexpected error occurred: " . $e->getMessage());
 
             return response()->json([
                 'error' => 'An unexpected error occurred.',
-                'message' => $e->getMessage(), 
+                'message' => $e->getMessage(),
             ], 500);
         }
     }
@@ -442,7 +436,6 @@ class PaymentService
             ]);
 
             return 'success';
-
         } catch (QueryException $e) {
             Log::error("Database Query Failed: " . $e->getMessage());
 
@@ -450,7 +443,6 @@ class PaymentService
                 'error' => 'Failed to update notifications.',
                 'message' => $e->getMessage(),
             ], 500);
-
         } catch (\Exception $e) {
             Log::error("An unexpected error occurred: " . $e->getMessage());
 
@@ -460,6 +452,4 @@ class PaymentService
             ], 500);
         }
     }
-
-
 }

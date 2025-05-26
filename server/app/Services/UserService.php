@@ -19,6 +19,7 @@ class UserService
             $createdUserID = User::create([
                 'name' => $data['name'],
                 'username' => $data['username'],
+                'email' => $data['email'],
                 'password' => $hashedPassword,
                 'role_id' => $roleID
             ])->id;
