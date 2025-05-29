@@ -15,6 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class PaymentController extends Controller
 {
@@ -211,15 +212,37 @@ class PaymentController extends Controller
     {
         $validated = $request->validate([
             'order_id' => 'required|numeric',
-            'status_id' => 'required|numeric',
+            'status' => 'required|string',
         ]);
 
-        $updatedOrderID = $this->paymentService->updateStatus($validated['order_id'], $validated['status_id']);
+        $updatedOrderID = $this->paymentService->updateStatus($validated['order_id'], $validated['status']);
 
         return response()->json([
             'msg' => 'Order Status Updated Successfully',
             'orderID' => $updatedOrderID
         ], 200);
+    }
+
+
+    public function setOrderDate(Request $request)
+    {
+        $validated = $request->validate([
+            'order_id' => 'required|integer',
+            'action_date' => 'required|date',
+        ]);
+
+        Log::info("order date data: ", [
+            'validated' => $validated
+        ]);
+
+        $order = Orders::findOrFail($validated['order_id']);
+        $order->delivery_date = $validated['action_date'];
+        $order->save();
+
+        return response()->json([
+            'message' => 'Order action date updated successfully.',
+            'order' => $order,
+        ]);
     }
 
 
@@ -253,10 +276,69 @@ class PaymentController extends Controller
         ], 200);
     }
 
+    public function placeOrder(Request $request)
+    {
+        $validated = $request->validate([
+            'color' => 'required|string',
+            'design_type' => 'required|in:own-design,business-design,ai-generation',
+            'order_option' => 'required|string',
+            'total_quantity' => 'required|numeric|min:1',
+            'total_price' => 'required|numeric|min:1',
+            'solo_quantity' => 'nullable|numeric',
+            'sizes' => 'nullable|array',
+            'sizes.*' => 'nullable|numeric|min:0',
+            'own_design_file' => 'nullable|file|mimes:jpg,jpeg,png,pdf',
+            'business_design_url' => 'nullable|string',
+        ]);
+
+        Log::info("Order Data: ", ['validated' => $validated]);
+
+        // Step 1: Create order first, without the design URL yet
+        $order = Orders::create([
+            'color' => $validated['color'],
+            'design_type' => $validated['design_type'],
+            'order_option' => $validated['order_option'],
+            'total_quantity' => $validated['total_quantity'],
+            'total_price' => $validated['total_price'],
+            'solo_quantity' => $validated['solo_quantity'] ?? null,
+            'business_design_url' => $validated['business_design_url'] ?? null,
+            'user_id' => Auth::user()->id
+        ]);
+
+        // Step 2: Handle own-design file upload (after Order is created)
+        if ($request->hasFile('own_design_file')) {
+            $file = $request->file('own_design_file');
+            $extractedFileName = $file->getClientOriginalName();
+
+            $s3Key = "orders/{$order->id}/{$extractedFileName}";
+
+            Storage::disk('s3')->put($s3Key, file_get_contents($file), [
+                'visibility' => 'private'
+            ]);
+
+            // Step 3: Update the order with the uploaded file's URL
+            $order->update([
+                'own_design_url' => $s3Key
+            ]);
+        }
+
+        // Step 4: Handle sizes (many-to-many pivot with quantity)
+        if (!empty($validated['sizes'])) {
+            foreach ($validated['sizes'] as $sizeId => $qty) {
+                if ($qty > 0) {
+                    $order->sizes()->attach($sizeId, ['quantity' => $qty]);
+                }
+            }
+        }
+
+        return response()->json(['message' => 'Order placed successfully', 'order_id' => $order->id]);
+    }
+
+
 
 
     // ACTING AS A PAYMENT SUCCESS WEBHOOK
-    public function placeOrder(Request $request)
+    public function OLDplaceOrder(Request $request)
     {
 
         $validated = $request->validate([

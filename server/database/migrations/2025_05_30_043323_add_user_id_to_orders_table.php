@@ -11,12 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('design_categories', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->boolean('is_fixed_priced');
-            $table->decimal('fixed_price', 15, 2)->nullable();
-            $table->timestamps();
+        Schema::table('orders', function (Blueprint $table) {
+            $table->foreignId('user_id')
+                ->nullable()
+                ->constrained('users')
+                ->onDelete('cascade');
         });
     }
 
@@ -25,6 +24,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('design_categories');
+        Schema::table('orders', function (Blueprint $table) {
+            $table->dropColumn(['user_id']);
+        });
     }
 };

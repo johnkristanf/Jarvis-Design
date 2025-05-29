@@ -10,14 +10,9 @@
     import { ArrowDownTrayIcon, XMarkIcon } from '@heroicons/vue/20/solid'
     import { useToast } from 'primevue/usetoast'
     import ListSelectBox from '../ListSelectBox.vue'
-    import { InformationCircleIcon } from '@heroicons/vue/24/solid'
 
     import { FwbButton, FwbTooltip } from 'flowbite-vue'
 
-    defineProps<{
-        isOpen: boolean
-        onClose: () => void
-    }>()
 
     const emit = defineEmits(['close'])
     const handleCloseModal = () => emit('close')
@@ -100,8 +95,8 @@
 </script>
 
 <template>
-    <TransitionRoot as="template" :show="isOpen">
-        <Dialog as="div" class="relative z-10" :static="true">
+    <TransitionRoot as="template" :show="true">
+        <Dialog as="div" class="relative z-[9999]" :static="true">
             <TransitionChild
                 as="template"
                 enter="ease-out duration-300"

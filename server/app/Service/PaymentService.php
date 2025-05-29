@@ -235,58 +235,44 @@ class PaymentService
     {
         try {
 
-            $orders = DB::table('orders')
-                ->join('order_types', 'orders.type_id', '=', 'order_types.id')
-                ->join('order_status', 'orders.status_id', '=', 'order_status.id')
+            $query = Orders::with(['user', 'sizes']) // eager load sizes + user
+                ->select([
+                    'id',
+                    'color',
+                    'design_type',
+                    'order_option',
+                    'total_quantity',
+                    'total_price',
+                    'solo_quantity',
+                    'own_design_url',
+                    'business_design_url',
+                    'status',
+                    'delivery_date',
+                    'user_id',
+                    'created_at'
+                ]);
 
-                // DESIGN DATA EITHER FROM UPLOADED DESIGNS TABLE
-                ->leftJoin('uploaded_designs', function ($join) {
-                    $join->on('orders.design_id', '=', 'uploaded_designs.id')
-                        ->where('orders.type_id', '=', 1);
-                })
-
-                // OR FROM THE PRE-MADE DESIGNS TABLE
-                ->leftJoin('designs', function ($join) {
-                    $join->on('orders.design_id', '=', 'designs.id')
-                        ->where('orders.type_id', '=', 2);
-                })
-
-                ->join('users', 'orders.user_id', '=', 'users.id')
-                ->select(
-                    'orders.id',
-                    'orders.order_id',
-                    'orders.option as order_option',
-                    'orders.paid_amount',
-                    'orders.quantity',
-                    'orders.created_at',
-                    'order_status.name as status',
-                    'users.name',
-
-                    // Conditional Design ID based on type
-                    DB::raw("
-                        CASE 
-                            WHEN orders.type_id = 1 THEN uploaded_designs.id
-                            WHEN orders.type_id = 2 THEN designs.id
-                            ELSE NULL
-                        END as design_id
-                    ")
-                );
 
             $authenticatedUser = Auth::user();
-
             if (!$authenticatedUser->isAdmin()) {
-                $orders->where('orders.user_id', '=', $authenticatedUser->id);
+                $query->where('user_id', '=', $authenticatedUser->id);
             }
 
-            $orders = $orders->orderBy('orders.created_at', 'desc')->get();
+            $orders = $query->latest()->get();
 
-            // $orders->transform(function ($order) {
-            //     $order->temp_url = $order->image_path 
-            //         ? Storage::disk('s3')->temporaryUrl($order->image_path, Carbon::now()->addMinutes(10))
-            //         : null;
+            Log::info("Orders Data: ", [
+                'orders' => $orders
+            ]);
 
-            //     return $order;
-            // });
+            $orders->transform(function ($order) {
+                $filePath = $order->own_design_url ?: $order->business_design_url;
+
+                $order->temp_url = $filePath
+                    ? Storage::disk('s3')->temporaryUrl($filePath, Carbon::now()->addMinutes(10))
+                    : null;
+
+                return $order;
+            });
 
             return $orders;
         } catch (QueryException $e) {
@@ -331,22 +317,24 @@ class PaymentService
     }
 
 
-    public function updateStatus($orderID, $statusID)
+    public function updateStatus($orderID, $status)
     {
         try {
 
             $order = Orders::findOrFail($orderID);
-            $order->status_id = $statusID;
+            $order->status = $status;
             $order->save();
 
             Notifications::create([
                 'order_id' => $order->order_id,
-                'status_id' => $order->status_id,
+                'status_id' => -1,
                 'user_id'  =>  $order->user_id
             ]);
 
 
             return $order->id;
+
+
         } catch (QueryException $e) {
             Log::error("Database Query Failed: " . $e->getMessage());
 

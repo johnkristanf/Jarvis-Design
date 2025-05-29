@@ -6,13 +6,13 @@ import LoginView from '@/views/users/LoginView.vue'
 import NotFoundView from '@/views/NotFoundView.vue'
 import RegisterView from '@/views/users/RegisterView.vue'
 import { createRouter, createWebHistory } from 'vue-router'
-import AdminDesignsView from '@/views/admin/AdminDesignsView.vue'
+import AdminProductsView from '@/views/admin/AdminProductsView.vue'
 import AdminDashboardView from '@/views/admin/AdminDashboardView.vue'
 import OrdersView from '@/views/users/OrdersView.vue'
 import FAQView from '../views/users/FAQView.vue'
 import AdminOrdersView from '@/views/admin/AdminOrdersView.vue'
 import AdminMatertialsView from '@/views/admin/AdminMatertialsView.vue'
-import AdminCommunicationView from '@/views/admin/AdminCommunicationView.vue'
+import AdminMessageView from '@/views/admin/AdminMessageView.vue'
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -71,8 +71,8 @@ const router = createRouter({
                 },
 
                 {
-                    path: 'designs',
-                    component: AdminDesignsView,
+                    path: 'products',
+                    component: AdminProductsView,
                 },
 
                 {
@@ -88,8 +88,8 @@ const router = createRouter({
 
 
                 {
-                    path: 'communication',
-                    component: AdminCommunicationView,
+                    path: 'message',
+                    component: AdminMessageView,
                 },
 
             ],

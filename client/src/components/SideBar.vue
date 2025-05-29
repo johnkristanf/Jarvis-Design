@@ -24,8 +24,8 @@
              `,
         },
         {
-            name: 'Designs',
-            to: '/admin/designs',
+            name: 'Products',
+            to: '/admin/products',
             icon: `
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M9.53 16.122a3 3 0 0 0-5.78 1.128 2.25 2.25 0 0 1-2.4 2.245 4.5 4.5 0 0 0 8.4-2.245c0-.399-.078-.78-.22-1.128Zm0 0a15.998 15.998 0 0 0 3.388-1.62m-5.043-.025a15.994 15.994 0 0 1 1.622-3.395m3.42 3.42a15.995 15.995 0 0 0 4.764-4.648l3.876-5.814a1.151 1.151 0 0 0-1.597-1.597L14.146 6.32a15.996 15.996 0 0 0-4.649 4.763m3.42 3.42a6.776 6.776 0 0 0-3.42-3.42" />
@@ -55,8 +55,8 @@
         },
 
         {
-            name: 'Communication',
-            to: '/admin/communication',
+            name: 'Message',
+            to: '/admin/message',
             icon: `
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
             <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3.75h6M21 12a9 9 0 11-18 0 9 9 0 0118 0zM15.75 15.75l3 3" />
@@ -111,7 +111,7 @@
 
                         <h1 class="text-white text-2xl hover:cursor-pointer hover:opacity-75">
                             Jarvis
-                            <span class="text-gray-700">Designs</span>
+                            <span class="text-yellow-600">Designs</span>
                         </h1>
                     </RouterLink>
                 </div>
@@ -180,7 +180,7 @@
 
     <aside
         id="logo-sidebar"
-        class="fixed top-0 left-0 mt-12 z-40 w-64 h-screen transition-transform -translate-x-full border-r border-gray-200 sm:translate-x-0 dark:bg-gray-800 dark:border-gray-700"
+        class="fixed top-0 left-0 mt-14 z-40 w-64 h-screen transition-transform -translate-x-full border-r border-gray-200 sm:translate-x-0 dark:bg-gray-800 dark:border-gray-700"
         aria-label="Sidebar"
     >
         <div class="h-full overflow-y-auto bg-gray-900 dark:bg-gray-800 pt-2">

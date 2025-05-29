@@ -13,7 +13,7 @@
 
                     <div class="flex flex-col">
                         <span class="text-xl font-semibold whitespace-nowrap dark:text-white">
-                            Communication
+                            Message
                         </span>
 
                         <p class="text-xs text-gray-500">Talk with the customer.</p>

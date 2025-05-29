@@ -1,10 +1,9 @@
 type OrderStatus = 'in_progress' | 'pick_up' | 'delivery' | 'completed'
 
 export const OrderStatus = {
-    IN_PROGRESS: 'in_progress',
-    PICKUP: 'pick_up',
-    DELIVERY: 'delivery',
-    COMPLETED: 'completed',
+    PENDING: 'pending',
+    CANCELLED: 'cancelled',
+    APPROVED: 'completed',
 } as const
 
 export type OrderTypes = 'uploaded' | 'pre-made'
@@ -21,10 +20,22 @@ export const OrderOptions = {
     PICK_UP: 'pick_up',
 } as const
 
+export type SelectedOrderOption = {
+    id: number
+    name: OrderOptions
+    tag: string
+}
+
+export type QrCodePaymentData = {
+    product_name: string
+    total_quantity: number
+    total_price: number
+}
+
 export type Orders = {
     id: number
     order_id: string
-    design_id: number,
+    design_id: number
     order_option: string
     paid_amount: string
     quantity: number
@@ -41,7 +52,7 @@ export type OrderStatusType = {
 
 export type UpdateStatusType = {
     order_id: number
-    status_id: number
+    status: string
 }
 
 export type Notifications = {
@@ -71,13 +82,12 @@ export type OrderLogs = {
     }
 }
 
-
 export type PlaceOrderData = {
-    order_type: string,
-    design_id: number,
-    total_price: number,
-    order_option: string,
-    quantity: number,
-    color_id: number,
-    size_id: number,
+    order_type: string
+    design_id: number
+    total_price: number
+    order_option: string
+    quantity: number
+    color_id: number
+    size_id: number
 }

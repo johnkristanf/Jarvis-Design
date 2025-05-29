@@ -12,6 +12,11 @@ Route::get('/get/pre_made/designs/{sort?}/{categories?}', [DesignsController::cl
 Route::get('/get/all/colors', [DesignsController::class, 'getAllColors']);
 Route::get('/get/all/sizes', [DesignsController::class, 'getAllSizes']);
 Route::get('/get/design/categories', [DesignsController::class, 'getDesignCategories']);
+Route::get('/get/fabric/types', [DesignsController::class, 'getFabricTypes']);
+
+
+// BUSINESS PRODUCT DESIGNS
+Route::get('/get/bussiness_designs/{product_id}', [DesignsController::class, 'getProductBusinessDesign']);
 
 
 Route::middleware(['auth:sanctum'])->group(function () {
@@ -28,9 +33,17 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::post('/upload/design', [DesignsController::class, 'uploadDesign']);
     Route::post('/add/pre_made/design', [DesignsController::class, 'addPreMadeDesigns']);
-    Route::post('/attach/design/material', [DesignsController::class, 'attachDesignMaterial']);
 
+    Route::post('/attach/design/material', [DesignsController::class, 'attachDesignMaterial']);
     Route::put('/update/uploaded/design', [DesignsController::class, 'updateUploadedDesigns']);
+
+
+    // PROTECTED PRODUCT ROUTE
+    Route::post('/add/product', [DesignsController::class, 'addProduct']);
+    Route::post('/add/product/design', [DesignsController::class, 'addProductDesign']);
+    Route::get('/get/all/products', [DesignsController::class, 'getAllProducts']);
+
+
 
 
     // THIS DESIGNS IS FOR THE ADMIN SIDE THAT SEE ALL DESIGN WITHOUT FILTER
@@ -46,6 +59,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/get/orders', [PaymentController::class, 'getAllOrders']);
     Route::get('/get/order/status', [PaymentController::class, 'getAllOrderStatus']);
     Route::put('/update/order/status', [PaymentController::class, 'updateOrderStatus']);
+    Route::post('/set/order/date', [PaymentController::class, 'setOrderDate']);
 
     Route::get('/get/order/logs', [PaymentController::class, 'getOrderLogs']);
     Route::get('/get/order/notifications', [PaymentController::class, 'getAllOrderNotifications']);
@@ -65,6 +79,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
 
     // PROTECTED ORDER ROUTE
+    // Route::post('/place/order', [PaymentController::class, 'OLDplaceOrder']);
     Route::post('/place/order', [PaymentController::class, 'placeOrder']);
 });
 

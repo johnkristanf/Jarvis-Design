@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Designs extends Model
 {
@@ -23,8 +22,8 @@ class Designs extends Model
             ->withTimestamps();
     }
 
-    public function design_categories(): BelongsTo
+    public function products(): BelongsTo
     {
-        return $this->belongsTo(DesignCategory::class, 'category_id');
+        return $this->belongsTo(Products::class, 'product_id');
     }
 }
