@@ -13,6 +13,9 @@ import FAQView from '../views/users/FAQView.vue'
 import AdminOrdersView from '@/views/admin/AdminOrdersView.vue'
 import AdminMatertialsView from '@/views/admin/AdminMatertialsView.vue'
 import AdminMessageView from '@/views/admin/AdminMessageView.vue'
+import EmailVerificationView from '@/views/users/EmailVerificationView.vue'
+import VerifiedEmail from '@/views/users/VerifiedEmail.vue'
+import Profile from '@/views/users/Profile.vue'
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -56,6 +59,21 @@ const router = createRouter({
                     path: 'auth/register',
                     component: RegisterView,
                 },
+
+                {
+                    path: 'email/verification',
+                    component: EmailVerificationView,
+                },
+
+                {
+                    path: 'email/verified',
+                    component: VerifiedEmail,
+                },
+
+                {
+                    path: 'profile',
+                    component: Profile,
+                },
             ],
         },
 
@@ -80,18 +98,15 @@ const router = createRouter({
                     component: AdminMatertialsView,
                 },
 
-                
                 {
                     path: 'orders',
                     component: AdminOrdersView,
                 },
 
-
                 {
                     path: 'message',
                     component: AdminMessageView,
                 },
-
             ],
         },
 

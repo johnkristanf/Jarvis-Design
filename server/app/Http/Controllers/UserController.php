@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\EmailVerification;
 use App\Models\User;
 use App\Services\UserService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class UserController extends Controller
 {
@@ -34,10 +37,17 @@ class UserController extends Controller
 
         $createdUserID = $this->userService->registerUser($validatedData);
 
-        if(!$createdUserID !== -1){
+        if ($createdUserID) {
+            if (!empty($validatedData['email'])) {
+                // EMAIL VERIFICATION LINK
+                Mail::to($validatedData['email'])->send(new EmailVerification(emailTo: $validatedData['email']));
+            } else {
+                Log::warning('Attempted to send email without a valid recipient.');
+            }
+
             return response()->json([
                 'msg' => 'Account Created Successfully',
-                'accountID' => $createdUserID
+                'email' => $validatedData['email']
             ], 201);
         }
 
@@ -75,13 +85,41 @@ class UserController extends Controller
     {
         $authenticatedUser = Auth::user();
         $authenticatedUser = User::where('id', $authenticatedUser->id)
-            ->select('id', 'name', 'username', 'role_id')
+            ->select('id', 'name', 'email', 'username', 'role_id')
             ->with(['role' => function ($query) {
                 $query->select('id', 'name');
             }])
             ->first();
 
         return response()->json($authenticatedUser, 200);
+    }
+
+    public function update(Request $request)
+    {
+        Log::info("ENDPOINT HIT");
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'name' => ['required', 'string'],
+            'username' => ['required', 'string'],
+            'email' => ['required', 'email'],
+            'password' => ['nullable', 'string', 'min:8'],
+        ]);
+
+        $user->name = $validated['name'];
+        $user->username = $validated['username'];
+        $user->email = $validated['email'];
+
+        if (!empty($validated['password'])) {
+            $user->password = Hash::make($validated['password']);
+        }
+
+        $user->save();
+
+        return response()->json([
+            'message' => 'Profile updated successfully.',
+            'user' => $user,
+        ]);
     }
 
 
@@ -91,6 +129,6 @@ class UserController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return response()->json([ 'success' => true ]);
+        return response()->json(['success' => true]);
     }
 }

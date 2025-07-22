@@ -23,6 +23,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // PROTECTED USER ROUTE
     Route::get('/user/data', [UserController::class, 'user']);
+    Route::post('/update/profile', [UserController::class, 'update']);
 
 
     // PROTECTED DESIGNS ROUTE

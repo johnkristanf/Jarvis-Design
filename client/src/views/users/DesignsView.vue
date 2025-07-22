@@ -26,7 +26,7 @@
 
                 <div class="w-[60%] flex justify-end gap-3">
                     <!-- FILTERS -->
-                    <FIlterDesign />
+                    <!-- <FIlterDesign /> -->
 
                     <!-- DESIGN OPTIONS -->
                     <!-- <DesignOptions /> -->

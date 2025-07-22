@@ -14,6 +14,8 @@
     const isLoadingMutation = ref(false)
     const toast = useToast()
     const showPassword = ref(false)
+
+    // VALIDATION SCHEMA
     const validationSchema = yup.object({
         first_name: yup.string().required('First Name is required'),
         last_name: yup.string().required('Last Name is required'),
@@ -35,24 +37,32 @@
     const { value: email, errorMessage: emailError } = useField('email')
     const { value: password, errorMessage: passwordError } = useField('password')
 
+    // REGISTER MUTATION
     const mutation = useMutation({
         mutationFn: register,
-        onSuccess: (response) => {
+        onSuccess: (response: any) => {
             isLoadingMutation.value = false
-            console.log('register response: ', response)
             handleReset()
 
             toast.add({
                 severity: 'success',
                 summary: 'Registration Success!',
-                detail: 'Account Registered. You may now proceed to login.',
+                detail: 'Account Registered',
                 life: 3000,
-            })
+            });
+
+            window.location.href = '/email/verification?email=' + encodeURIComponent(response.email);
+
         },
 
-        onError: (error) => {
+        onError: () => {
             isLoadingMutation.value = false
-            console.error('Error registering user:', error)
+            toast.add({
+                severity: 'error',
+                summary: 'Registration Failed',
+                detail: 'An error occurred while registering your account. Please try again.',
+                life: 3000,
+            })
         },
 
         onMutate: () => {
@@ -60,6 +70,8 @@
         },
     })
 
+
+    // FORM SUBMISSION HANDLER
     const onSubmit = handleSubmit(async (values) => {
         const userData: RegistrationCredentials = {
             name: `${values.first_name} ${values.last_name}`.trim(),

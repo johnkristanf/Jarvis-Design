@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Roles;
 use App\Models\User;
+use Exception;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 
@@ -32,7 +33,7 @@ class UserService
                 'code' => $e->getCode()
             ]);
 
-            return -1;
+            throw new Exception('Error in registering user. Please try again', 500);
         }
     }
 

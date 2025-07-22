@@ -17,6 +17,8 @@ export type RegistrationCredentials = {
     password?: string
 }
 
+export interface UpdateProfilePayload extends RegistrationCredentials {}
+
 type Role = {
     id: number
     name: string
@@ -26,6 +28,7 @@ export type AuthenticatedUserData = {
     id: number
     name: string
     username: string
+    email: string
     role_id: number
     role: Role
 }
