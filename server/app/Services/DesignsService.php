@@ -21,7 +21,9 @@ class DesignsService
     public function allDesigns()
     {
         try {
-            $designs = Designs::select('id', 'name', 'price', 'quantity', 'image_path')->get();
+            $designs = Designs::with('design_categories:id,name') 
+                ->select('id', 'name', 'price', 'quantity', 'image_path', 'category_id')
+                ->get();
 
             $designs->transform(function ($design) {
                 $design->image_path = Storage::disk('s3')->temporaryUrl(

@@ -1,7 +1,6 @@
 <script lang="ts" setup>
     import PreviewDesignModal from '@/components/designs/PreviewDesignModal.vue'
     import Loader from '@/components/Loader.vue'
-    import type { Designs } from '@/types/design'
     import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/vue/20/solid'
     import { ref } from 'vue'
     import UploadedDesignsTable from '@/components/designs/UploadedDesignsTable.vue'
@@ -11,14 +10,6 @@
     import { useQuery } from '@tanstack/vue-query'
     import { apiService } from '@/api/axios'
     import PreMadeDesignCard from '@/components/designs/PreMadeDesign.vue'
-
-    // USER AUTH STATE
-    const authStore = useAuthStore()
-
-    // AI DESIGNS GENERATION REF'S
-    const imageUrls = ref([])
-    const isLoadingMutation = ref(false)
-    const loaderMsg = ref<string>('')
 
     // REF FOR SHOWING UPLOADED DESIGNS OR PRE MADE DESIGNS
     const showUploadedDesignsTableRef = ref<boolean>(false)
@@ -32,16 +23,16 @@
 
                 <div class="w-[60%] flex justify-end gap-3">
                     <!-- FILTERS -->
-                    <FIlterDesign />
+                    <!-- <FIlterDesign /> -->
 
                     <!-- DESIGN OPTIONS -->
-                    <DesignOptions />
+                    <!-- <DesignOptions /> -->
                 </div>
             </div>
 
             <div class="mt-6">
                 <!-- BUTTON TOGGLERS BETWEEN UPLOADED DESIGNS AND PRE MADE DESIGNS -->
-                <div
+                <!-- <div
                     v-if="authStore.currentUser && authStore.isAuthenticated"
                     class="mt-12 mb-5 w-full flex justify-end"
                 >
@@ -62,12 +53,12 @@
                         <ArrowLeftIcon class="size-6" />
                         View Made Designs
                     </h1>
-                </div>
+                </div> -->
 
                 <!-- UPLOADED DESIGNS -->
-                <div class="w-full" v-if="showUploadedDesignsTableRef">
+                <!-- <div class="w-full" v-if="showUploadedDesignsTableRef">
                     <UploadedDesignsTable />
-                </div>
+                </div> -->
 
                 <!-- PRE-MADE DESIGNS -->
                 <PreMadeDesignCard 

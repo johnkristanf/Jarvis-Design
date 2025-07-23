@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             OrderTypeSeeder::class,
             OrderStatusSeeder::class,
             MaterialsCategorySeeder::class,
+            FabricTypesSeeder::class,
             DesignCategorySeeder::class
 
             // FOR TESTING USE CASE ONLY: 

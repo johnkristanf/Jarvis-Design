@@ -28,7 +28,6 @@
         queryKey: ['design-categories'],
         queryFn: async () => {
             const respData = await apiService.get<DesignCategory[]>('/api/get/design/categories')
-            console.log('respData categ: ', respData)
             return respData
         },
     })

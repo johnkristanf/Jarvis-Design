@@ -22,6 +22,8 @@
     import { updateNotificationAsRead, updateNotificationAsReadAll } from '@/api/put/notifications'
 
     const route = useRoute()
+    const router = useRouter()
+
     const { authStore, isLoading } = useFetchAuthenticatedUser()
     const isMarkingAsRead = ref<boolean>(false)
 
@@ -29,11 +31,12 @@
         { name: 'Home', to: '/home' },
         { name: 'Designs', to: '/designs' },
         { name: 'Orders', to: '/orders' },
+        { name: 'Message', to: '/message' },
         { name: 'FAQ', to: '/faq' },
     ]
 
     const userNavigation = [
-        { name: 'Your Profile', href: '#' },
+        { name: 'Your Profile', onclick: () => router.push('/profile') },
         { name: 'Settings', href: '#' },
         {
             name: 'Sign Out',
@@ -82,7 +85,6 @@
     })
 
     const handleReadNotification = (notification_id: number) => {
-        console.log('notification_id: ', notification_id)
         isMarkingAsRead.value = true
         notifReadByIDMutation.mutate(notification_id)
     }
@@ -104,7 +106,7 @@
                             class="text-white text-3xl hover:cursor-pointer hover:opacity-75"
                         >
                             Jarvis
-                            <span class="text-gray-700">Designs</span>
+                            <span class="text-yellow-600">Designs</span>
                         </a>
 
                         <!-- MENU FOR SMALL SIZE -->
@@ -152,7 +154,9 @@
                             <div class="ml-6 flex items-baseline space-x-4">
                                 <router-link
                                     v-for="item in navigation.filter(
-                                        (nav) => nav.name !== 'Orders' || authStore.currentUser,
+                                        (nav) =>
+                                            !['Orders', 'Message'].includes(nav.name) ||
+                                            authStore.currentUser,
                                     )"
                                     :key="item.name"
                                     :to="item.to"

@@ -17,7 +17,5 @@ export async function getAllOrderStatus(): Promise<OrderStatusType[]> {
 
 export async function getAllOrderNotifications(): Promise<Notifications[]> {
     const respData = await apiService.get<Notifications[]>('/api/get/order/notifications')
-    console.log('getAllOrderNotifications: ', respData)
-
     return respData
 }

@@ -40,4 +40,10 @@ class Materials extends Model
         $this->quantity -= $amount;
         $this->save();
     }
+
+
+    public function products()
+    {
+        return $this->hasMany(Products::class, 'fabric_type_id');
+    }
 }

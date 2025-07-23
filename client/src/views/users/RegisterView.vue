@@ -1,74 +1,87 @@
 <script lang="ts" setup>
-import { register } from '@/api/post/register'
-import Loader from '@/components/Loader.vue'
-import type { RegistrationCredentials } from '@/types/user'
-import { useMutation } from '@tanstack/vue-query'
-import { Toast, useToast } from 'primevue'
-import { useForm, useField } from 'vee-validate'
-import { ref } from 'vue'
-import * as yup from 'yup'
+    import { register } from '@/api/post/register'
+    import Loader from '@/components/Loader.vue'
+    import type { RegistrationCredentials } from '@/types/user'
+    import { useMutation } from '@tanstack/vue-query'
+    import { Toast, useToast } from 'primevue'
+    import { useForm, useField } from 'vee-validate'
+    import { ref } from 'vue'
+    import * as yup from 'yup'
 
-// 👁️ Eye toggle icons
-import { EyeIcon, EyeSlashIcon } from '@heroicons/vue/24/solid'
+    // 👁️ Eye toggle icons
+    import { EyeIcon, EyeSlashIcon } from '@heroicons/vue/24/solid'
 
-const isLoadingMutation = ref(false)
-const toast = useToast()
-const showPassword = ref(false)
+    const isLoadingMutation = ref(false)
+    const toast = useToast()
+    const showPassword = ref(false)
 
-const validationSchema = yup.object({
-    name: yup.string().required('Name is required'),
-    username: yup.string().required('Username is required'),
-    email: yup.string().email('Invalid Email Address').required('Username is required'),
-    password: yup
-        .string()
-        .required('Password is required')
-        .min(8, 'Password must be at least 8 characters'),
-})
+    // VALIDATION SCHEMA
+    const validationSchema = yup.object({
+        first_name: yup.string().required('First Name is required'),
+        last_name: yup.string().required('Last Name is required'),
+        username: yup.string().required('Username is required'),
+        email: yup.string().email('Invalid Email Address').required('Email is required'),
+        password: yup
+            .string()
+            .required('Password is required')
+            .min(8, 'Password must be at least 8 characters'),
+    })
 
-const { handleSubmit, isSubmitting, handleReset } = useForm({
-    validationSchema,
-})
+    const { handleSubmit, isSubmitting, handleReset } = useForm({
+        validationSchema,
+    })
 
-const { value: name, errorMessage: nameError } = useField('name')
-const { value: username, errorMessage: usernameError } = useField('username')
-const { value: email, errorMessage: emailError } = useField('email')
-const { value: password, errorMessage: passwordError } = useField('password')
+    const { value: firstName, errorMessage: firstNameError } = useField('first_name')
+    const { value: lastName, errorMessage: lastNameError } = useField('last_name')
+    const { value: username, errorMessage: usernameError } = useField('username')
+    const { value: email, errorMessage: emailError } = useField('email')
+    const { value: password, errorMessage: passwordError } = useField('password')
 
-const mutation = useMutation({
-    mutationFn: register,
-    onSuccess: (response) => {
-        isLoadingMutation.value = false
-        console.log('register response: ', response)
-        handleReset()
+    // REGISTER MUTATION
+    const mutation = useMutation({
+        mutationFn: register,
+        onSuccess: (response: any) => {
+            isLoadingMutation.value = false
+            handleReset()
 
-        toast.add({
-            severity: 'success',
-            summary: 'Registration Success!',
-            detail: 'Account Registered. You may now proceed to login.',
-            life: 3000,
-        })
-    },
+            toast.add({
+                severity: 'success',
+                summary: 'Registration Success!',
+                detail: 'Account Registered',
+                life: 3000,
+            });
 
-    onError: (error) => {
-        isLoadingMutation.value = false
-        console.error('Error registering user:', error)
-    },
+            window.location.href = '/email/verification?email=' + encodeURIComponent(response.email);
 
-    onMutate: () => {
-        isLoadingMutation.value = true
-    },
-})
+        },
 
-const onSubmit = handleSubmit(async (values) => {
-    const userData: RegistrationCredentials = {
-        name: values.name,
-        username: values.username,
-        email: values.email,
-        password: values.password,
-    }
+        onError: () => {
+            isLoadingMutation.value = false
+            toast.add({
+                severity: 'error',
+                summary: 'Registration Failed',
+                detail: 'An error occurred while registering your account. Please try again.',
+                life: 3000,
+            })
+        },
 
-    mutation.mutate(userData)
-})
+        onMutate: () => {
+            isLoadingMutation.value = true
+        },
+    })
+
+
+    // FORM SUBMISSION HANDLER
+    const onSubmit = handleSubmit(async (values) => {
+        const userData: RegistrationCredentials = {
+            name: `${values.first_name} ${values.last_name}`.trim(),
+            username: values.username,
+            email: values.email,
+            password: values.password,
+        }
+
+        mutation.mutate(userData)
+    })
 </script>
 
 <template>
@@ -81,23 +94,41 @@ const onSubmit = handleSubmit(async (values) => {
         </div>
 
         <div class="mt-3 sm:mx-auto sm:w-full sm:max-w-sm">
-            <form class="space-y-4" @submit="onSubmit" method="POST">
-                <!-- Name -->
+            <form class="space-y-4 grid grid-cols-2 gap-3" @submit="onSubmit" method="POST">
+                <!-- First Name -->
                 <div>
-                    <label for="name" class="block text-sm/6 font-medium">Full Name</label>
+                    <label for="first_name" class="block text-sm/6 font-medium">First Name</label>
                     <div class="mt-2">
                         <input
                             type="text"
-                            id="name"
-                            v-model="name"
-                            class="font-medium block w-full rounded-md bg-white px-3 py-1.5 text-base text-black outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-none sm:text-sm/6"
+                            id="first_name"
+                            v-model="firstName"
+                            class="font-medium block w-full rounded-md bg-white px-3 py-1.5 text-base text-black outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:outline-none sm:text-sm/6"
                         />
                     </div>
-                    <p v-if="nameError" class="mt-1 text-red-500 text-sm">{{ nameError }}</p>
+                    <p v-if="firstNameError" class="mt-1 text-red-500 text-sm">
+                        {{ firstNameError }}
+                    </p>
+                </div>
+
+                <!-- Last Name -->
+                <div>
+                    <label for="last_name" class="block text-sm/6 font-medium">Last Name</label>
+                    <div class="mt-2">
+                        <input
+                            type="text"
+                            id="last_name"
+                            v-model="lastName"
+                            class="font-medium block w-full rounded-md bg-white px-3 py-1.5 text-base text-black outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:outline-none sm:text-sm/6"
+                        />
+                    </div>
+                    <p v-if="lastNameError" class="mt-1 text-red-500 text-sm">
+                        {{ lastNameError }}
+                    </p>
                 </div>
 
                 <!-- Username -->
-                <div>
+                <div class="col-span-2">
                     <label for="username" class="block text-sm/6 font-medium">Username</label>
                     <div class="mt-2">
                         <input
@@ -107,11 +138,13 @@ const onSubmit = handleSubmit(async (values) => {
                             class="font-medium block w-full rounded-md bg-white px-3 py-1.5 text-base text-black outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-none sm:text-sm/6"
                         />
                     </div>
-                    <p v-if="usernameError" class="mt-1 text-red-500 text-sm">{{ usernameError }}</p>
+                    <p v-if="usernameError" class="mt-1 text-red-500 text-sm">
+                        {{ usernameError }}
+                    </p>
                 </div>
 
                 <!-- Email -->
-                <div>
+                <div class="col-span-2">
                     <label for="email" class="block text-sm/6 font-medium">Email</label>
                     <div class="mt-2">
                         <input
@@ -125,7 +158,7 @@ const onSubmit = handleSubmit(async (values) => {
                 </div>
 
                 <!-- Password with Eye Toggle -->
-                <div>
+                <div class="col-span-2">
                     <label for="password" class="block text-sm/6 font-medium">Password</label>
                     <div class="mt-2 relative">
                         <input
@@ -141,14 +174,19 @@ const onSubmit = handleSubmit(async (values) => {
                             class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-gray-700"
                             tabindex="-1"
                         >
-                            <component :is="showPassword ? EyeSlashIcon : EyeIcon" class="h-5 w-5" />
+                            <component
+                                :is="showPassword ? EyeSlashIcon : EyeIcon"
+                                class="h-5 w-5"
+                            />
                         </button>
                     </div>
-                    <p v-if="passwordError" class="mt-1 text-red-500 text-sm">{{ passwordError }}</p>
+                    <p v-if="passwordError" class="mt-1 text-red-500 text-sm">
+                        {{ passwordError }}
+                    </p>
                 </div>
 
                 <!-- Submit -->
-                <div>
+                <div class="col-span-2">
                     <button
                         type="submit"
                         :disabled="isSubmitting"

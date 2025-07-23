@@ -1,11 +1,13 @@
 <script lang="ts" setup>
     import { ref, watch } from 'vue'
     import PreviewDesignModal from './PreviewDesignModal.vue'
-    import type { Designs } from '@/types/design'
+    import type { Designs, GroupedDesignsResponse, Product } from '@/types/design'
     import { useQuery, useQueryClient } from '@tanstack/vue-query'
     import { apiService } from '@/api/axios'
     import Loader from '../Loader.vue'
     import { useDesignFilterStore } from '@/stores/filter'
+    import { FwbCard } from 'flowbite-vue'
+    import OrderProductModal from './OrderProductModal.vue'
 
     // FILTER SELECT STORE
     const filterStore = useDesignFilterStore()
@@ -15,34 +17,60 @@
     }>()
 
     // PREVIEW PREMADE DESIGN REF
-    const selectedDesign = ref<Designs>()
+    const selectedDesigns = ref<Designs[]>()
+    const selectedCategory = ref<string | number>()
+    const selectedTag = ref<string | number>()
     const openDesignModal = ref(false)
 
-    // PREVIEW SELECTED DESIGN MODAL TOGGLER
-    const handleSelectDesign = (design: Designs) => {
+    // CATEGORY EXPANSION TRACKER
+    const expandedCategory = ref<number | null>(null)
+
+    // HANDLE DESIGN SELECTION FOR MODAL
+    const handleSelectDesign = (
+        designs: Designs[],
+        categoryName: string | number,
+        tagName: string | number,
+    ) => {
         openDesignModal.value = true
-        selectedDesign.value = design
+        selectedDesigns.value = designs
+        selectedCategory.value = categoryName
+        selectedTag.value = tagName
     }
 
-    // USE QUERY FOR FETCHING DESIGN CATEGORIES
+    // ORDER RELATED
+    const showOrderModal = ref<boolean>(false)
+    const selectedProductRef = ref<Product>()
+    const selectedCategoryRef = ref<string>()
+    const fixedPriceAmmountRef = ref<number>()
+
+    const openOrderDetailsModal = (categoryName: string, selectedProduct: Product) => {
+        selectedProductRef.value = selectedProduct;
+        selectedCategoryRef.value = categoryName;
+        showOrderModal.value = true;
+    }
+
+    // HANDLE CATEGORY EXPANSION
+    const toggleCategory = (categoryId: number) => {
+        expandedCategory.value = expandedCategory.value === categoryId ? null : categoryId
+    }
+
+    // FETCH DESIGN CATEGORIES
     const { data: designs, isLoading } = useQuery({
         queryKey: ['designs'],
         queryFn: async () => {
             const sortTag = filterStore.selectedSort.tag
             const categoryIds = filterStore.selectedCategories.join(',')
 
-            const respData = await apiService.get<Designs[]>(
+            const respData = await apiService.get<GroupedDesignsResponse>(
                 `/api/get/pre_made/designs/${sortTag}/${categoryIds}`,
             )
 
-            console.log("respData pre made des: ", respData);
-            
             return respData
         },
     })
 
-    // DYNAMIC REFETCHING UPON FILTER CHANGES
-    const queryClient = useQueryClient();
+    // REFRESH DESIGNS ON FILTER CHANGE
+    const queryClient = useQueryClient()
 
     watch(
         () => [filterStore.selectedSort.tag, filterStore.selectedCategories.slice()],
@@ -56,46 +84,71 @@
 <template>
     <div
         v-if="!showUploadedDesignsTableRef && designs"
-        class="grid grid-cols-1 sm:grid-cols-3 gap-12"
+        class="space-y-6 grid grid-cols-3 sm:grid-col-4"
     >
-        <div
-            v-for="design in designs"
-            :key="design.id"
-            class="group relative"
-            @click="handleSelectDesign(design)"
-        >
-            <img
-                :src="design.image_path"
-                class="aspect-square w-full rounded-md bg-gray-200 object-cover group-hover:opacity-75 lg:aspect-auto lg:h-80"
-            />
-
-            <div class="mt-4 flex justify-between">
-                <div>
-                    <h3 class="text-sm text-gray-700">
-                        <h1>
-                            <span aria-hidden="true" class="absolute inset-0" />
-                            {{ design.name }}
-                        </h1>
-                    </h3>
+        <div v-for="category in designs" :key="category.id">
+            <!-- CATEGORY CARD -->
+            <fwb-card @click="toggleCategory(category.id)" class="cursor-pointer">
+                <div class="p-5">
+                    <h5 class="text-2xl font-bold text-gray-900 dark:text-white">
+                        {{ category.name }}
+                    </h5>
+                    <p class="text-sm text-gray-600 dark:text-gray-300">
+                        {{
+                            category.is_fixed_priced
+                                ? `₱${category.fixed_price}`
+                                : 'Variable Pricing'
+                        }}
+                    </p>
                 </div>
+            </fwb-card>
 
-                <p class="text-sm font-medium text-gray-900">₱ {{ design.price }}</p>
+            <!-- PRODUCT CARDS -->
+            <div
+                v-if="expandedCategory === category.id && category.products.length > 0"
+                class="mt-4 flex flex-col"
+            >
+                <fwb-card v-for="product in category.products" :key="product.id">
+                    <div
+                        class="p-4 w-full bg-gray-900 hover:cursor-pointer hover:opacity-75"
+                        @click="openOrderDetailsModal(category.name, product)"
+                    >
+                        <h5 class="text-lg font-medium text-white dark:text-white">
+                            {{ product.name }}
+                            {{ product.fabric_type ? `(${product.fabric_type.name})` : '' }}
+                        </h5>
+                        <p class="text-sm text-white dark:text-gray-400">
+                            ₱{{ product.unit_price }}
+                        </p>
+                    </div>
+                </fwb-card>
+            </div>
+
+            <!-- NO PRODUCTS MESSAGE -->
+            <div
+                v-else-if="expandedCategory === category.id && category.products.length === 0"
+                class="text-sm text-gray-500 dark:text-gray-400 mt-2 px-4"
+            >
+                No products in this category.
             </div>
         </div>
     </div>
 
-    <div v-if="(!isLoading && !designs) || (designs && designs.length == 0)">
-        <p>No designs available.</p>
-    </div>
-
-    <div v-if="isLoading ">
-        <Loader msg="Loading Designs..." />
-    </div>
+    <Loader v-if="isLoading" msg="Loading Designs..." />
 
     <PreviewDesignModal
-        v-if="selectedDesign"
-        :design="selectedDesign"
+        v-if="selectedDesigns && selectedCategory && selectedTag"
+        :design="selectedDesigns"
+        :category="selectedCategory"
+        :tag="selectedTag"
         :isOpen="openDesignModal"
         @close="openDesignModal = false"
+    />
+
+    <OrderProductModal
+        v-if="showOrderModal && selectedCategoryRef && selectedProductRef"
+        :categoryName="selectedCategoryRef"
+        :product="selectedProductRef"
+        @close="showOrderModal = false"
     />
 </template>

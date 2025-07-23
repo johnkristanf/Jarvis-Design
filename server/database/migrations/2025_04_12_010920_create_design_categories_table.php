@@ -14,6 +14,8 @@ return new class extends Migration
         Schema::create('design_categories', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->boolean('is_fixed_priced');
+            $table->decimal('fixed_price', 15, 2)->nullable();
             $table->timestamps();
         });
     }

@@ -30,43 +30,46 @@
                 </span>
             </ListboxButton>
 
+            <!-- DROPDOWN OPTIONS -->
             <transition
                 leave-active-class="transition duration-100 ease-in"
                 leave-from-class="opacity-100"
                 leave-to-class="opacity-0"
             >
-                <ListboxOptions
-                    class="mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm"
-                >
-                    <ListboxOption
-                        v-for="option in options"
-                        :key="option[displayKey || 'name']"
-                        :value="option"
-                        v-slot="{ active, selected }"
+                <div class="absolute z-10 w-full">
+                    <ListboxOptions
+                        class="mt-1 max-h-60 overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm"
                     >
-                        <li
-                            :class="[
-                                active ? 'bg-blue-100 text-blue-900' : 'text-gray-900',
-                                'relative cursor-default select-none py-2 pl-10 pr-4',
-                            ]"
+                        <ListboxOption
+                            v-for="option in options"
+                            :key="option[displayKey || 'name']"
+                            :value="option"
+                            v-slot="{ active, selected }"
                         >
-                            <span
+                            <li
                                 :class="[
-                                    selected ? 'font-medium' : 'font-normal',
-                                    'block truncate',
+                                    active ? 'bg-blue-100 text-blue-900' : 'text-gray-900',
+                                    'relative cursor-default select-none py-2 pl-10 pr-4',
                                 ]"
                             >
-                                {{ option[displayKey || 'name'].toUpperCase() }}
-                            </span>
-                            <span
-                                v-if="selected"
-                                class="absolute inset-y-0 left-0 flex items-center pl-3 text-blue-600"
-                            >
-                                <CheckIcon class="h-5 w-5" />
-                            </span>
-                        </li>
-                    </ListboxOption>
-                </ListboxOptions>
+                                <span
+                                    :class="[
+                                        selected ? 'font-medium' : 'font-normal',
+                                        'block truncate',
+                                    ]"
+                                >
+                                    {{ option[displayKey || 'name'].toUpperCase() }}
+                                </span>
+                                <span
+                                    v-if="selected"
+                                    class="absolute inset-y-0 left-0 flex items-center pl-3 text-blue-600"
+                                >
+                                    <CheckIcon class="h-5 w-5" />
+                                </span>
+                            </li>
+                        </ListboxOption>
+                    </ListboxOptions>
+                </div>
             </transition>
         </div>
     </Listbox>

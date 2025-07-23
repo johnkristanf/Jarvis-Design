@@ -12,7 +12,7 @@
 
     // DESIGN RELATED PROPS
     const props = defineProps<{
-        selectedDesignID: number
+        selectedProductID: number
         designType: string
     }>()
 
@@ -35,8 +35,6 @@
         queryKey: ['attach-materials'],
         queryFn: async () => {
             const respData = await apiService.get<GroupedMaterials>('/api/get/grouped/materials')
-            console.log('respData grouped materials: ', respData)
-
             return respData
         },
     })
@@ -55,14 +53,14 @@
             toast.add({
                 severity: 'success',
                 summary: 'Design Material Attached Successfully',
-                life: 2000,
+                life: 1500,
             })
 
             queryClient.invalidateQueries({ queryKey: ['materials'] })
 
             setTimeout(() => {
                 handleCloseModal()
-            }, 2300)
+            }, 2000)
         },
 
         onError: (error) => {
@@ -77,11 +75,11 @@
             quantity_used: materialsUsedQuantities.value[id],
         }))
 
-        console.log('selectedDesignID: ', props.selectedDesignID)
+        console.log('selectedProductID: ', props.selectedProductID)
         console.log('mappedMaterialsAndQuantity:', mappedMaterialsAndQuantity)
 
         const data: DesignMaterialAttachmentData = {
-            design_id: props.selectedDesignID,
+            design_id: props.selectedProductID,
             designType: props.designType,
             material_quantity_arr: mappedMaterialsAndQuantity,
         }
@@ -197,7 +195,7 @@
                 </div>
 
                 <!-- MATERIALS UNAVAILABLE CATCHER -->
-                <div v-else class="text-center my-12">No Materials Available</div>
+                <div v-if="groupedMaterials && Object.keys(groupedMaterials).length === 0" class="text-center my-12">No Materials Available</div>
 
                 <!-- MODAL FOOTER BUTTONS FOR SUBMISSION AND CANCEL -->
                 <div

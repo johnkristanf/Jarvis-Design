@@ -1,14 +1,7 @@
 <script lang="ts" setup>
-    import { ref, computed } from 'vue'
-    import {
-        Dialog,
-        DialogPanel,
-        TransitionChild,
-        TransitionRoot,
-        RadioGroup,
-        RadioGroupOption,
-    } from '@headlessui/vue'
-    import { XMarkIcon } from '@heroicons/vue/20/solid'
+    import { ref, computed, onMounted } from 'vue'
+    import { Dialog, DialogPanel, TransitionChild, TransitionRoot } from '@headlessui/vue'
+    import { PlusIcon, XMarkIcon } from '@heroicons/vue/20/solid'
     import { type Designs } from '@/types/design'
     import { ProgressSpinner } from 'primevue'
 
@@ -19,11 +12,14 @@
     import { useProductAttributes } from '@/composables/useProductAttribute'
 
     import { OrderOptions, OrderTypes } from '@/types/order'
+    import { FwbButton } from 'flowbite-vue'
 
     import ListSelectBox from '../ListSelectBox.vue'
 
     const props = defineProps<{
-        design: Designs
+        design: Designs[]
+        category: string | number
+        tag: string | number
         isOpen: boolean
         onClose: () => void
     }>()
@@ -37,22 +33,22 @@
     const authStore = useAuthStore()
     const { colors, sizes, loadingColors, loadingSizes } = useProductAttributes()
 
-    const paymentData = ref<ProceedPaymentData>({
-        order_option: '',
-        price: props.design.price,
-        name: props.design.name,
-    })
+    // const paymentData = ref<ProceedPaymentData>({
+    //     order_option: '',
+    //     price: props.design.price,
+    //     name: props.design.name,
+    // })
 
-    const designAttributeData = ref<DesignAttribute>({
-        design_id: -1,
-        color: -1,
-        size: -1,
-        quantity: 1,
-    })
+    // const designAttributeData = ref<DesignAttribute>({
+    //     design_id: -1,
+    //     color: -1,
+    //     size: -1,
+    //     quantity: 1,
+    // })
 
     const orderOptions = ref([
-        { id: 1, name: OrderOptions.DELIVERY, tag: "DELIVERY" },
-        { id: 2, name: OrderOptions.PICK_UP, tag: "PICK-UP" },
+        { id: 1, name: OrderOptions.DELIVERY, tag: 'DELIVERY' },
+        { id: 2, name: OrderOptions.PICK_UP, tag: 'PICK-UP' },
     ])
 
     const openPaymentModal = ref<boolean>(false)
@@ -63,47 +59,63 @@
 
     const open = computed(() => props.isOpen)
 
-    const selectedColor = ref(colors.value && colors.value[0])
+    // const selectedColor = ref(colors.value && colors.value[0])
     const selectedSize = ref(sizes.value && sizes.value[2])
     const selectedOrderType = ref(orderOptions.value[0])
     const quantity = ref<number>(0)
 
-    const handleProceedPayment = () => {
-        // HANDLE PAYMENT CANNOT PROCEED IF NOT LOGGED IN
+    const checkUserIsLoggined = () => {
         if (!authStore.currentUser && !authStore.isLogginedIn) {
             openFailureModal.value = true
             failureModalMessageRef.value = 'Please Login First to Proceed to Order'
             failureUnauthenticated.value = true
             return
         }
-
-        if (selectedColor && selectedColor.value && selectedColor && selectedSize.value) {
-            openFailureModal.value = false
-            handleCloseModal()
-
-            openPaymentModal.value = true
-
-            paymentData.value.order_option = selectedOrderType.value.name
-            paymentData.value.name = props.design.name
-            paymentData.value.price = props.design.price
-            designAttributeData.value.design_id = props.design.id
-
-            designAttributeData.value.color = selectedColor.value.id
-            designAttributeData.value.size = selectedSize.value.id
-            designAttributeData.value.quantity = quantity.value
-
-            console.log(' openPaymentModal: ', openPaymentModal.value)
-            console.log(' paymentData: ', paymentData.value)
-            console.log(' designAttributeData: ', designAttributeData.value)
-        } else {
-            openFailureModal.value = true
-            failureUnauthenticated.value = false
-            failureModalMessageRef.value = 'Please Select a Color and Size to Proceed Order'
-        }
     }
 
-    console.log(' selectedColor: ', selectedColor.value)
-    console.log(' selectedSize: ', selectedSize.value)
+    // const handleProceedPayment = () => {
+    //     // HANDLE PAYMENT CANNOT PROCEED IF NOT LOGGED IN
+    //     checkUserIsLoggined()
+
+    //     if (selectedColor && selectedColor.value && selectedColor && selectedSize.value) {
+    //         openFailureModal.value = false
+    //         handleCloseModal()
+
+    //         openPaymentModal.value = true
+
+    //         paymentData.value.order_option = selectedOrderType.value.name
+    //         paymentData.value.name = props.design.name
+    //         paymentData.value.price = props.design.price
+
+    //         designAttributeData.value.design_id = props.design.id
+    //         designAttributeData.value.color = selectedColor.value.id
+    //         designAttributeData.value.size = selectedSize.value.id
+    //         designAttributeData.value.quantity = quantity.value
+
+    //         console.log(' openPaymentModal: ', openPaymentModal.value)
+    //         console.log(' paymentData: ', paymentData.value)
+    //         console.log(' designAttributeData: ', designAttributeData.value)
+    //     } else {
+    //         openFailureModal.value = true
+    //         failureUnauthenticated.value = false
+    //         failureModalMessageRef.value = 'Please Select a Color and Size to Proceed Order'
+    //     }
+    // }
+
+    // CONDITION HANDLER FOR FABRIC DROPDOWN
+    const fabricRelevantKeywords = ['shirt', 'jersey']
+
+    const hasFabricOptions = computed(() => {
+        if (typeof props.category !== 'string') return false
+        const categoryLower = props.category.toLowerCase()
+        return fabricRelevantKeywords.some((keyword) => categoryLower.includes(keyword))
+    })
+
+    onMounted(() => {
+        console.log('design: ', props.design)
+        console.log('category: ', props.category)
+        console.log('tag: ', props.tag)
+    })
 </script>
 
 <template>
@@ -149,24 +161,24 @@
                                     <XMarkIcon class="size-6" aria-hidden="true" />
                                 </button>
 
-                                <div class="flex flex-col justify-between w-full mt-8">
-                                    <img
+                                <div class="flex flex-col justify-between w-full">
+                                    <!-- <img
                                         :src="props.design.image_path"
                                         class="w-full h-[350px] rounded-lg bg-gray-100 object-cover object-center sm:col-span-4 lg:col-span-5"
-                                    />
+                                    /> -->
 
                                     <div class="sm:col-span-8 lg:col-span-7 mt-5">
-                                        <h2 class="text-2xl font-bold text-gray-900 sm:pr-12">
+                                        <!-- <h2 class="text-2xl font-bold text-gray-900 sm:pr-12">
                                             {{ props.design.name }}
-                                        </h2>
+                                        </h2> -->
 
                                         <section aria-labelledby="information-heading" class="mt-2">
                                             <h3 id="information-heading" class="sr-only">
                                                 Design Information
                                             </h3>
-                                            <p class="text-2xl text-gray-900">
+                                            <!-- <p class="text-2xl text-gray-900">
                                                 ₱ {{ props.design.price }}
-                                            </p>
+                                            </p> -->
                                         </section>
 
                                         <section aria-labelledby="options-heading" class="mt-10">
@@ -174,26 +186,104 @@
                                                 design options
                                             </h3>
 
-                                            <form @submit.prevent="handleProceedPayment">
-                                                <!-- QUANTITY -->
+                                            <form>
+                                                <div
+                                                    class="flex flex-col items-center justify-center"
+                                                >
+                                                    <h1 class="text-2xl">{{ props.category }}</h1>
+                                                </div>
 
+                                                <!-- FABRIC TYPE FIELD -->
+                                                <fieldset
+                                                    v-if="hasFabricOptions"
+                                                    class="mt-10 w-full"
+                                                >
+                                                    <label for="fabric" class="block text-md mb-2">
+                                                        Fabric Type
+                                                    </label>
+                                                    <select
+                                                        id="fabric"
+                                                        class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                                    >
+                                                        <option value="cotton">Cotton</option>
+                                                        <option value="polyester">Polyester</option>
+                                                        <option value="dry_fit">Dry Fit</option>
+                                                    </select>
+                                                </fieldset>
+
+                                                <!-- COLOR FIELD -->
                                                 <fieldset
                                                     class="mt-10 w-full"
                                                     aria-label="Select quantity"
                                                 >
                                                     <div class="flex items-center justify-between">
-                                                        <div class="text-md">Quantity</div>
+                                                        <div class="text-md">Color</div>
                                                     </div>
 
                                                     <div class="mt-4 w-full">
                                                         <input
-                                                            type="number"
-                                                            min="1"
-                                                            v-model="quantity"
+                                                            type="text"
                                                             class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                                         />
                                                     </div>
                                                 </fieldset>
+
+                                                <div class="flex gap-3">
+                                                    <!-- SIZES FIELD -->
+                                                    <fieldset
+                                                        v-if="sizes && !loadingSizes"
+                                                        class="mt-10"
+                                                        aria-label="Choose a color"
+                                                    >
+                                                        <div
+                                                            class="flex items-center justify-between"
+                                                        >
+                                                            <div class="text-md">Sizes</div>
+                                                        </div>
+
+                                                        <div class="mt-4 w-full">
+                                                            <ListSelectBox
+                                                                :options="sizes"
+                                                                :modelValue="selectedSize"
+                                                                displayKey="name"
+                                                            />
+                                                        </div>
+                                                    </fieldset>
+
+                                                    <!-- QUANTITY FIELD -->
+
+                                                    <fieldset
+                                                        class="mt-10 w-1/2"
+                                                        aria-label="Select quantity"
+                                                    >
+                                                        <div
+                                                            class="flex items-center justify-between"
+                                                        >
+                                                            <div class="text-md">Quantity</div>
+                                                        </div>
+
+                                                        <div class="mt-4 w-full">
+                                                            <input
+                                                                type="number"
+                                                                min="1"
+                                                                v-model="quantity"
+                                                                class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                                            />
+                                                        </div>
+                                                    </fieldset>
+
+                                                    <!-- ADD BOTH QUANTITY AND SIZE -->
+
+                                                    <div class="w-1/4 flex items-end">
+                                                        <fwb-button
+                                                            class="w-full !text-gray-900 hover:cursor-pointer"
+                                                            color="light"
+                                                        >
+                                                            Add
+                                                        </fwb-button>
+                                                    </div>
+                                                </div>
+
 
                                                 <!-- ORDER TYPES -->
 
@@ -221,27 +311,26 @@
 
                                                 <!-- COLORS -->
 
-                                                <fieldset
+                                                <!-- <fieldset
                                                     v-if="colors && !loadingColors"
                                                     class="mt-10"
                                                     aria-label="Choose a color"
                                                 >
                                                     <div class="flex items-center justify-between">
                                                         <div class="text-md">Color</div>
-                                                    </div>
+                                                    </div> -->
 
-                                                    <!-- DESIGN STATUS SELECT ELEMENT -->
+                                                <!-- DESIGN STATUS SELECT ELEMENT -->
 
-                                                    <div class="mt-4 w-full">
+                                                <!-- <div class="mt-4 w-full">
                                                         <ListSelectBox
-                                                            v-model="selectedColor"
                                                             :options="colors"
                                                             displayKey="name"
                                                         />
                                                     </div>
+                                                </fieldset> -->
 
-                                                    <!-- END OF DESIGN STATUS SELECT ELEMENT -->
-                                                </fieldset>
+                                                <!-- END OF DESIGN STATUS SELECT ELEMENT -->
 
                                                 <div
                                                     class="w-full flex items-center"
@@ -255,7 +344,7 @@
 
                                                 <!-- SIZES -->
 
-                                                <fieldset
+                                                <!-- <fieldset
                                                     v-if="sizes && !loadingSizes"
                                                     class="mt-10"
                                                     aria-label="Choose a size"
@@ -288,9 +377,9 @@
                                                             </div>
                                                         </RadioGroupOption>
                                                     </RadioGroup>
-                                                </fieldset>
+                                                </fieldset> -->
 
-                                                <div
+                                                <!-- <div
                                                     class="w-full flex items-center"
                                                     v-if="loadingSizes"
                                                 >
@@ -298,7 +387,7 @@
                                                     <ProgressSpinner
                                                         :pt="{ root: { style: { width: '40px' } } }"
                                                     />
-                                                </div>
+                                                </div> -->
 
                                                 <button
                                                     type="submit"

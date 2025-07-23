@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\DesignCategory;
 use App\Models\Designs;
+use App\Models\FabricTypes;
+use App\Models\Materials;
 use App\Models\PreferredDesign;
+use App\Models\Products;
 use App\Models\UploadedDesign;
 use App\OrderType;
 use App\Services\DesignsService;
@@ -27,36 +30,50 @@ class DesignsController extends Controller
     public function getPreMadeDesigns($sort, $categories = '')
     {
         $categoriesArray = $categories ? explode(',', $categories) : [];
-        $query = Designs::query();
+
+        $result = DesignCategory::with('products.fabric_type:id,name') // eager load category
+            ->select('id', 'name', 'is_fixed_priced', 'fixed_price')
+            ->get();
+
+        return response()->json($result, 200);
+
+
 
         // Apply category filter
-        if (!empty($categoriesArray)) {
-            $query->whereIn('category_id', $categoriesArray);
-        }
+        // if (!empty($categoriesArray)) {
+        //     $query->whereIn('category_id', $categoriesArray);
+        // }
 
-        // Apply sort
-        switch ($sort) {
-            case 'high_low':
-                $query->orderBy('price', 'desc');
-                break;
-            case 'low_high':
-                $query->orderBy('price', 'asc');
-                break;
-            default: // newest
-                $query->orderBy('created_at', 'desc');
-                break;
-        }
+        // // Apply sort
+        // switch ($sort) {
+        //     case 'high_low':
+        //         $query->orderBy('price', 'desc');
+        //         break;
+        //     case 'low_high':
+        //         $query->orderBy('price', 'asc');
+        //         break;
+        //     default: // newest
+        //         $query->orderBy('created_at', 'desc');
+        //         break;
+        // }
 
-        $designs = $query->get()->transform(function ($design) {
-            $design->image_path = Storage::disk('s3')->temporaryUrl(
-                $design->image_path,
-                now()->addMinutes(60) // You can adjust the expiry time
-            );
+        // $designs = $query->get()->transform(function ($design) {
+        //     $design->image_path = Storage::disk('s3')->temporaryUrl(
+        //         $design->image_path,
+        //         now()->addMinutes(60) // You can adjust the expiry time
+        //     );
 
-            return $design;
-        });
+        //     return $design;
+        // });
 
-        return response()->json($designs);
+        // $grouped = $designs
+        //     ->groupBy(fn($design) => $design->design_categories->name ?? 'Uncategorized')
+        //     ->map(function ($group) {
+        //         return $group->groupBy('tag');
+        //     });
+
+
+        // return response()->json($grouped);
     }
 
 
@@ -64,6 +81,35 @@ class DesignsController extends Controller
     public function getAllDesigns()
     {
         $designs = $this->designsService->allDesigns();
+        return response()->json($designs, 200);
+    }
+
+
+    public function getAllProducts()
+    {
+        $products = Products::select('id', 'name', 'unit_price', 'category_id', 'fabric_quantity')
+            ->with(['design_category:id,name'])
+            ->latest()
+            ->get();
+
+        return response()->json($products, 200);
+    }
+
+
+    public function getProductBusinessDesign($product_id)
+    {
+        $designs = Designs::select('id', 'image_url')
+            ->where('product_id', $product_id)
+            ->get()
+            ->map(function ($design) {
+                $design->temp_url = Storage::disk('s3')->temporaryUrl(
+                    $design->image_url,              // key on S3
+                    now()->addMinutes(10)            // expires in 10 minutes
+                );
+
+                return $design;
+            });
+
         return response()->json($designs, 200);
     }
 
@@ -171,6 +217,8 @@ class DesignsController extends Controller
         }
     }
 
+
+
     public function getUploadedDesignByID($designID)
     {
         Log::info("designID: " . $designID);
@@ -222,39 +270,140 @@ class DesignsController extends Controller
         ]);
     }
 
-    public function addPreMadeDesigns(Request $request)
+    // public function addPreMadeDesigns(Request $request)
+    // {
+    //     $category_id = $request->input('category_id');
+    //     $name = $request->input('name');
+    //     $price = $request->input('price');
+    //     $unitMeasure = $request->input('unitMeasure');
+    //     $tag = $request->input('tag');
+    //     $description = $request->input('description');
+
+    //     Log::info("New Data: ", [
+    //         'unitMeasure' => $unitMeasure,
+    //         'tag' => $tag,
+    //         'description' => $description,
+    //     ]);
+
+    //     $file = $request->file('file');
+
+
+    //     $extractedFileName = $file->getClientOriginalName();
+    //     $file = file_get_contents($file->getPathname());
+
+
+    //     $uniqueFileName = uniqid() . '_' . basename($extractedFileName);
+    //     $s3Key = "pre_made/" . $uniqueFileName;
+
+
+    //     // S3 UPLOAD FACADE
+    //     $isUploaded = Storage::disk('s3')->put($s3Key, $file, [
+    //         'visibility' => 'private'
+    //     ]);
+
+    //     if ($isUploaded) {
+    //         $createdDesignId = Designs::create([
+    //             'price' => $price,
+    //             'image_path' => $s3Key,
+    //             'unit_measure' => $unitMeasure,
+    //             'tag' => $tag,
+    //             'description' => $description,
+    //             'category_id' => $category_id,
+    //         ]);
+
+    //         return response()->json(['created_design_id' => $createdDesignId]);
+    //     }
+    // }
+
+
+    public function addProduct(Request $request)
     {
-        $category_id = $request->input('category_id');
-        $name = $request->input('name');
-        $price = $request->input('price');
-        $quantity = $request->input('quantity');
 
-        $file = $request->file('file');
-
-
-        $extractedFileName = $file->getClientOriginalName();
-        $file = file_get_contents($file->getPathname());
-
-
-        $uniqueFileName = uniqid() . '_' . basename($extractedFileName);
-        $s3Key = "pre_made/" . $uniqueFileName;
-
-
-        // S3 UPLOAD FACADE
-        $isUploaded = Storage::disk('s3')->put($s3Key, $file, [
-            'visibility' => 'private'
+        $validatedData = $request->validate([
+            'category_id' => 'required|exists:design_categories,id',
+            'product_name' => 'required|string|max:255',
+            'unit_price' => 'required|numeric|min:0',
+            'fabric_type_id' => 'numeric|min:0',
+            'fabric_quantity' => 'numeric|min:0',
         ]);
 
-        if ($isUploaded) {
-            $createdDesignId = Designs::create([
-                'name' => $name,
-                'price' => $price,
-                'quantity' => -1, // UP FOR DECIDING IF THE QUANTITY IS INCLUDED FOR NOW WE PUT DUMMY VALUES TO NOT GET ERROR
-                'image_path' => $s3Key,
-                'category_id' => $category_id,
+        Log::info("Product Info: ", [
+            'data' => $validatedData
+        ]);
+
+        $newProduct = Products::create([
+            'name' => $validatedData['product_name'],
+            'unit_price' => $validatedData['unit_price'],
+            'category_id' => $validatedData['category_id'],
+            'fabric_type_id' => $validatedData['fabric_type_id'] ?? null,
+            'fabric_quantity'  => $validatedData['fabric_quantity'] ?? null,
+        ]);
+
+        return response()->json([
+            'message' => 'Product created successfully!',
+            'product' => $newProduct,
+        ], 201);
+    }
+
+
+
+    public function addProductDesign(Request $request)
+    {
+        try {
+
+            $validated = $request->validate([
+                'design' => 'required|image|max:2048',
+                'product_id' => 'required',
+                'product_name' => 'required|string',
+                'category_name' => 'required|string',
             ]);
 
-            return response()->json(['created_design_id' => $createdDesignId]);
+            Log::info("Design Data: ", $validated);
+
+            if ($request->hasFile('design')) {
+                $file = $request->file('design');
+
+                // Generate safe, unique filename
+                $categorySlug = Str::slug($validated['category_name']);
+                $slugName = Str::slug($validated['product_name']);
+                $extractedFileName = $file->getClientOriginalName();
+
+                // Sanitize category name for S3 path
+                $s3Key = "designs/{$categorySlug}/{$slugName}/{$extractedFileName}";
+
+                // Upload to S3
+                Storage::disk('s3')->put($s3Key, file_get_contents($file), [
+                    'visibility' => 'private',
+                ]);
+
+                Log::info("Uploaded to S3", ['s3_key' => $s3Key]);
+
+                // Save record in the 'designs' table
+                Designs::create([
+                    'image_url' => $s3Key, // Store the S3 object key
+                    'product_id' => $validated['product_id'],
+                ]);
+            }
+
+            return response()->json([
+                'message' => 'Product design uploaded successfully!',
+            ], 201);
+
+            
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'message' => 'Validation failed.',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error('Design Upload Error:', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json([
+                'message' => 'An error occurred while uploading the design.',
+            ], 500);
         }
     }
 
@@ -319,7 +468,14 @@ class DesignsController extends Controller
 
     public function getDesignCategories()
     {
-        $categories = DesignCategory::select('id', 'name')->get();
+        $categories = DesignCategory::select('id', 'name', 'is_fixed_priced', 'fixed_price')->get();
+        return response()->json($categories);
+    }
+
+
+    public function getFabricTypes()
+    {
+        $categories = Materials::select('id', 'name', 'unit')->get();
         return response()->json($categories);
     }
 }

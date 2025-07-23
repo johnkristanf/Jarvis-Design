@@ -11,8 +11,15 @@ class Sizes extends Model
         'name'
     ];
 
-    public function preferred_design(): HasOne 
+    // public function preferred_design(): HasOne 
+    // {
+    //     return $this->hasOne(PreferredDesign::class);
+    // }
+
+    public function orders()
     {
-        return $this->hasOne(PreferredDesign::class);
+        return $this->belongsToMany(Orders::class, 'order_quantity_size', 'size_id', 'order_id')
+            ->withPivot('quantity')
+            ->withTimestamps();
     }
 }
