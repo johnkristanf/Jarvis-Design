@@ -13,7 +13,7 @@
     import { useRoute, useRouter } from 'vue-router'
     import Loader from './Loader.vue'
     import { useFetchAuthenticatedUser } from '@/composables/useFetchAuthenticatedUser'
-    import { ref } from 'vue'
+    import { onMounted, ref } from 'vue'
     import { Drawer } from 'primevue'
     import { OrderStatus } from '@/types/order'
     import { useMutation, useQuery } from '@tanstack/vue-query'
@@ -57,7 +57,6 @@
     const notificationsQuery = useQuery({
         queryKey: ['order_notifications'],
         queryFn: getAllOrderNotifications,
-        enabled: true,
     })
 
     const notifReadByIDMutation = useMutation({
@@ -93,6 +92,10 @@
         isMarkingAsRead.value = true
         notifReadAllMutation.mutate()
     }
+
+    onMounted(() => {
+        console.log('notificationsQuery.data.value: ', notificationsQuery.data.value)
+    })
 </script>
 
 <template>

@@ -326,15 +326,13 @@ class PaymentService
             $order->save();
 
             Notifications::create([
-                'order_id' => $order->order_id,
-                'status_id' => -1,
+                'order_id' => $order->id,
+                'status' => $status,
                 'user_id'  =>  $order->user_id
             ]);
 
 
             return $order->id;
-
-
         } catch (QueryException $e) {
             Log::error("Database Query Failed: " . $e->getMessage());
 
@@ -357,13 +355,12 @@ class PaymentService
         try {
 
             $notifications = DB::table('notifications')
-                ->join('order_status', 'notifications.status_id', '=', 'order_status.id')
                 ->select(
-                    'notifications.id',
-                    'notifications.order_id',
-                    'notifications.created_at',
-                    'order_status.name as status',
-                    'notifications.is_read'
+                    'id',
+                    'order_id',
+                    'created_at',
+                    'status',
+                    'is_read'
                 )
                 ->where('user_id', '=', Auth::user()->id)
                 ->orderByDesc('notifications.created_at')
