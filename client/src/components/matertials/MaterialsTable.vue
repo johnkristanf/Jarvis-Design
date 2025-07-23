@@ -84,7 +84,7 @@
                 toast.add({
                     severity: 'warn',
                     summary: 'Low Stock Alert',
-                    detail: `The following materials are low on stock: ${materialNames}`,
+                    detail: `The following fabric are low on stock: ${materialNames}`,
                     closable: true,
                 })
             }
@@ -101,7 +101,7 @@
                 class="w-[20%] flex items-center justify-center gap-1 px-3 py-2 text-sm font-medium text-center text-white bg-gray-900 rounded-lg hover:opacity-75 hover:cursor-pointer"
             >
                 <PlusIcon class="size-6" />
-                Add New Material
+                Add New Fabric
             </button>
 
             <!-- SEARCH FIELD -->
@@ -131,7 +131,7 @@
                         type="text"
                         id="table-search"
                         class="block pt-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                        placeholder="Search for materials"
+                        placeholder="Search for fabrics"
                     />
                 </div>
             </div>
@@ -141,11 +141,11 @@
             class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 mt-6"
         >
             <thead
-                class="text-xs text-gray-700 uppercase bg-gray-800 text-white dark:bg-gray-700 dark:text-gray-400"
+                class="text-xs uppercase bg-gray-800 text-white dark:bg-gray-700 dark:text-gray-400"
             >
                 <tr>
-                    <th scope="col" class="px-6 py-3">Material Category</th>
-                    <th scope="col" class="px-6 py-3">Material Name</th>
+                    <!-- <th scope="col" class="px-6 py-3">Material Category</th> -->
+                    <th scope="col" class="px-6 py-3">Fabric Name</th>
                     <th scope="col" class="px-6 py-3">Unit</th>
                     <th scope="col" class="px-6 py-3">Stock Quantity</th>
                     <th scope="col" class="px-6 py-3">Reorder Level</th>
@@ -158,7 +158,7 @@
                     :key="material.id"
                     class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600"
                 >
-                    <td class="px-6 py-4">{{ material.category?.name }}</td>
+                    <!-- <td class="px-6 py-4">{{ material.category?.name }}</td> -->
                     <td class="px-6 py-4">{{ material.name }}</td>
                     <td class="px-6 py-4">{{ material.unit }}</td>
 

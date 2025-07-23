@@ -25,7 +25,7 @@
 
     import { useToast } from 'primevue/usetoast'
     import Toast from 'primevue/toast'
-import Loader from '../Loader.vue'
+    import Loader from '../Loader.vue'
 
     const props = defineProps({
         categoryName: String,
@@ -39,7 +39,7 @@ import Loader from '../Loader.vue'
 
     onMounted(() => {
         console.log('categoryName 123: ', props.categoryName)
-        console.log('product 123: ', props.product)
+        console.log('product ni: ', props.product)
         console.log('sizes: ', sizes)
     })
 
@@ -84,6 +84,7 @@ import Loader from '../Loader.vue'
     const selectedBusinessDesignId = ref<number | null>(null)
     const qrCodePaymentData = ref<QrCodePaymentData | null>(null)
 
+    // FILTER SELECTED PRODUCT CATEGORY IF NEEDED THE SIZES INPUT (IF MUGS SELECTED THEREFORE NO SIZES IS AVAILABLE)
     const shouldIncludeSizes = computed(() =>
         sublimationProductCategories.includes(props.categoryName ?? ''),
     )
@@ -111,6 +112,7 @@ import Loader from '../Loader.vue'
         showQrCodePaymentModal.value = true
     }
 
+    // FETCH UPLOADED BUSINESS DESIGNS
     const fetchBusinessDesigns = async (product_id: number) => {
         isLoadingBusinessDesigns.value = true
         const designs = await apiService.get<BusinessProductDesign[]>(
@@ -128,6 +130,7 @@ import Loader from '../Loader.vue'
         data.append('color', formData.value.color)
         data.append('design_type', formData.value.designType)
         data.append('order_option', formData.value.orderOption?.name as string)
+        data.append('fabric_type_id', props.product.fabric_type.id.toString())
 
         // Conditionally append size quantities or solo quantity
         if (shouldIncludeSizes.value) {
@@ -152,12 +155,13 @@ import Loader from '../Loader.vue'
         Object.values(formData.value.quantityPerSize).reduce((acc, qty) => acc + (qty || 0), 0),
     )
 
-    // TOTAL PRICE FOR MULTIPLE SIZES
+    // TOTAL PRICE FOR MULTI SIZES
     const totalPriceForMultiSizes = computed(
         () => totalQuantityForMultiSizes.value * Number(props.product.unit_price),
     )
 
-    // FINAL TOTAL QUANTITY THAT CATCHES CATEGORY THAT HAS MULTI SIZES AND SOLO
+    // FINAL TOTAL QUANTITY THAT CATCHES CATEGORY THAT HAS
+    // MULTI SIZES (BASKET APPAREL) AND SOLO (MUGS, LANYARD, etc..)
     const totalQuantity = computed(() => {
         return shouldIncludeSizes.value
             ? totalQuantityForMultiSizes.value
@@ -192,8 +196,19 @@ import Loader from '../Loader.vue'
                 handleClose()
             }, 1500)
         },
-        onError: (err) => {
+        onError: (err: any) => {
             console.error('Place order error', err)
+
+            if (err.statusCode === 401) {
+                toast.add({
+                    severity: 'error',
+                    summary: 'Please login your account to proceed the order.',
+                    life: 3000,
+                });
+
+                return;
+            }
+
             toast.add({
                 severity: 'error',
                 summary: 'Placing order error, please try again',
@@ -202,12 +217,10 @@ import Loader from '../Loader.vue'
         },
     })
 
-
     // SUBMIT ORDER HANDLER
     const handlePlaceOrder = async () => {
-
         // CLOSE QRCODE MODAL FOR LOADER
-        showQrCodePaymentModal.value = false;
+        showQrCodePaymentModal.value = false
 
         const formData = prepareFormData()
         for (const [key, value] of formData.entries()) {

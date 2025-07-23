@@ -27,7 +27,7 @@ class StoreMaterialRequest extends FormRequest
             'unit' => 'required|string|max:50',
             'quantity' => 'required|integer|min:0',
             'reorder_level' => 'required|integer|min:0',
-            'category' => 'required|integer',
+            // 'category' => 'required|integer',
         ];
     }
 }

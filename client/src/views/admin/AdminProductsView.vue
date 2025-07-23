@@ -77,7 +77,7 @@
         />
 
         <!-- PRE-MADE DESIGNS -->
-        <ProductsTable v-if="!refToggles.show_uploaded_designs_table"></ProductsTable>
+        <ProductsTable v-if="!refToggles.show_uploaded_designs_table" />
     </div>
 
     <AddProductModal

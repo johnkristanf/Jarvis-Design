@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\DesignCategory;
 use App\Models\Designs;
 use App\Models\FabricTypes;
+use App\Models\Materials;
 use App\Models\PreferredDesign;
 use App\Models\Products;
 use App\Models\UploadedDesign;
@@ -86,7 +87,7 @@ class DesignsController extends Controller
 
     public function getAllProducts()
     {
-        $products = Products::select('id', 'name', 'unit_price', 'category_id')
+        $products = Products::select('id', 'name', 'unit_price', 'category_id', 'fabric_quantity')
             ->with(['design_category:id,name'])
             ->latest()
             ->get();
@@ -322,15 +323,20 @@ class DesignsController extends Controller
             'category_id' => 'required|exists:design_categories,id',
             'product_name' => 'required|string|max:255',
             'unit_price' => 'required|numeric|min:0',
-            'fabric_type_id' => 'nullable|exists:fabric_types,id',
+            'fabric_type_id' => 'numeric|min:0',
+            'fabric_quantity' => 'numeric|min:0',
         ]);
 
+        Log::info("Product Info: ", [
+            'data' => $validatedData
+        ]);
 
         $newProduct = Products::create([
             'name' => $validatedData['product_name'],
             'unit_price' => $validatedData['unit_price'],
             'category_id' => $validatedData['category_id'],
             'fabric_type_id' => $validatedData['fabric_type_id'] ?? null,
+            'fabric_quantity'  => $validatedData['fabric_quantity'] ?? null,
         ]);
 
         return response()->json([
@@ -382,6 +388,8 @@ class DesignsController extends Controller
             return response()->json([
                 'message' => 'Product design uploaded successfully!',
             ], 201);
+
+            
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'message' => 'Validation failed.',
@@ -467,7 +475,7 @@ class DesignsController extends Controller
 
     public function getFabricTypes()
     {
-        $categories = FabricTypes::select('id', 'name')->get();
+        $categories = Materials::select('id', 'name', 'unit')->get();
         return response()->json($categories);
     }
 }

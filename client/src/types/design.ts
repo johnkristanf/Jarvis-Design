@@ -9,6 +9,7 @@ export const DesignStatus = {
 export interface FabricTypes {
     id: number
     name: string
+    unit: string
 }
 
 export type DesignCategories = {

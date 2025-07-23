@@ -22,6 +22,8 @@
     import { updateNotificationAsRead, updateNotificationAsReadAll } from '@/api/put/notifications'
 
     const route = useRoute()
+    const router = useRouter()
+
     const { authStore, isLoading } = useFetchAuthenticatedUser()
     const isMarkingAsRead = ref<boolean>(false)
 
@@ -34,7 +36,7 @@
     ]
 
     const userNavigation = [
-        { name: 'Your Profile', href: '#' },
+        { name: 'Your Profile', onclick: () => router.push('/profile') },
         { name: 'Settings', href: '#' },
         {
             name: 'Sign Out',
@@ -152,7 +154,9 @@
                             <div class="ml-6 flex items-baseline space-x-4">
                                 <router-link
                                     v-for="item in navigation.filter(
-                                        (nav) => !['Orders', 'Message'].includes(nav.name) || authStore.currentUser,
+                                        (nav) =>
+                                            !['Orders', 'Message'].includes(nav.name) ||
+                                            authStore.currentUser,
                                     )"
                                     :key="item.name"
                                     :to="item.to"
