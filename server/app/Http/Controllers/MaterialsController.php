@@ -20,7 +20,7 @@ class MaterialsController extends Controller
             'unit' => $data['unit'],
             'quantity' => $data['quantity'],
             'reorder_level' => $data['reorder_level'],
-            'category_id' => $data['category'],
+            'category_id' => 1, // DUMMY DATA CAUSE THE CATEGORIZATION HAS BEEN REMOVED DUE TO PANEL REQUEST
         ]);
 
         return response()->json([

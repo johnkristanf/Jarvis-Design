@@ -94,7 +94,7 @@ const router = createRouter({
                 },
 
                 {
-                    path: 'materials',
+                    path: 'fabrics',
                     component: AdminMatertialsView,
                 },
 

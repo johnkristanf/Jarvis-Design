@@ -11,9 +11,6 @@
     import { apiService } from '@/api/axios'
     import PreMadeDesignCard from '@/components/designs/PreMadeDesign.vue'
 
-    // USER AUTH STATE
-    const authStore = useAuthStore()
-
     // REF FOR SHOWING UPLOADED DESIGNS OR PRE MADE DESIGNS
     const showUploadedDesignsTableRef = ref<boolean>(false)
 </script>
@@ -59,9 +56,9 @@
                 </div> -->
 
                 <!-- UPLOADED DESIGNS -->
-                <div class="w-full" v-if="showUploadedDesignsTableRef">
+                <!-- <div class="w-full" v-if="showUploadedDesignsTableRef">
                     <UploadedDesignsTable />
-                </div>
+                </div> -->
 
                 <!-- PRE-MADE DESIGNS -->
                 <PreMadeDesignCard 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Events\PaymentSucessful;
 use App\Models\Designs;
+use App\Models\Materials;
 use App\Models\OrderLogs;
 use App\Models\Orders;
 use App\Models\OrderType as ModelsOrderType;
@@ -284,6 +285,7 @@ class PaymentController extends Controller
             'order_option' => 'required|string',
             'total_quantity' => 'required|numeric|min:1',
             'total_price' => 'required|numeric|min:1',
+            'fabric_type_id' => 'required|numeric|min:1',
             'solo_quantity' => 'nullable|numeric',
             'sizes' => 'nullable|array',
             'sizes.*' => 'nullable|numeric|min:0',
@@ -329,6 +331,22 @@ class PaymentController extends Controller
                     $order->sizes()->attach($sizeId, ['quantity' => $qty]);
                 }
             }
+        }
+
+        // FIND A WAY TO GET THE MATERIAL ID FOR AUTOMATIC DEDUCTION
+        // Step 5: Deduct total quantity ordered in materials table
+        $fabric = Materials::findOrFail($validated['fabric_type_id']);
+
+        $totalOrderedQuantity = (int) $validated['total_quantity'];
+        $fabricUsedPerUnit = (float) $fabric->products()->pluck('fabric_quantity')->first();
+
+        $totalDeduction = $totalOrderedQuantity * $fabricUsedPerUnit;
+
+        if ($fabric->quantity >= $totalDeduction) {
+            $fabric->decrement('quantity', $totalDeduction);
+        } else {
+            // Handle insufficient stock (throw exception or return error)
+            throw new \Exception('Not enough material in stock.');
         }
 
         return response()->json(['message' => 'Order placed successfully', 'order_id' => $order->id]);

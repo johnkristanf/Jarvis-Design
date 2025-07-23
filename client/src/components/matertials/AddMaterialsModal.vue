@@ -20,7 +20,7 @@
 
     // Yup validation schema
     const materialSchema = yup.object({
-        material_name: yup.string().required('Material name is required'),
+        material_name: yup.string().required('Fabric name is required'),
         unit: yup.string().required('Unit is required'),
         quantity: yup
             .number()
@@ -30,7 +30,7 @@
             .number()
             .required('Reorder level is required')
             .min(0, 'Reorder level cannot be negative'),
-        category: yup.string().required('Category is required'),
+        // category: yup.string().required('Category is required'),
     })
 
 
@@ -51,7 +51,7 @@
     const { value: unit, errorMessage: unitError } = useField<string>('unit')
     const { value: quantity, errorMessage: quantityError } = useField<number>('quantity')
     const { value: reorder_level, errorMessage: reorderError } = useField<number>('reorder_level')
-    const { value: category, errorMessage: categoryError } = useField<number>('category')
+    // const { value: category, errorMessage: categoryError } = useField<number>('category')
 
     // ADD NEW MATERIALS MUTATION
     const materialsMutation = useMutation({
@@ -63,7 +63,7 @@
             console.log('response addNewMaterial: ', response)
             toast.add({
                 severity: 'success',
-                summary: 'Material Added Successfully',
+                summary: 'Fabric Added Successfully',
                 life: 3000,
             })
 
@@ -97,14 +97,14 @@
     })
 
     // SET THE FIRST MATERIALS CATEGORY AS PRE-SELECTED
-    watch(
-        () => data.value,
-        (categories) => {
-            if (categories && categories.length > 0 && !category.value) {
-                category.value = categories[0].id
-            }
-        },
-    )
+    // watch(
+    //     () => data.value,
+    //     (categories) => {
+    //         if (categories && categories.length > 0 && !category.value) {
+    //             category.value = categories[0].id
+    //         }
+    //     },
+    // )
 
     onMounted(() => {
         initFlowbite()
@@ -125,14 +125,14 @@
         class="fixed inset-0 z-[99999] flex items-center justify-center bg-gray-900/80"
     >
         <DialogPanel class="w-full max-w-xl bg-white h-[70%] p-6 overflow-y-auto">
-            <DialogTitle class="text-lg font-bold">New Material</DialogTitle>
+            <DialogTitle class="text-lg font-bold">New Fabric</DialogTitle>
             <DialogDescription class="text-sm text-gray-600 mb-4">
-                Enter the material details below.
+                Enter the fabric details below.
             </DialogDescription>
 
             <form @submit.prevent="onSubmit" class="mt-5">
                 <!-- Category -->
-                <div class="mb-4">
+                <!-- <div class="mb-4">
                     <label class="block text-sm">Category</label>
                     <select
                         v-model="category"
@@ -143,11 +143,11 @@
                         </option>
                     </select>
                     <span class="text-sm text-red-600 mt-1 block">{{ categoryError }}</span>
-                </div>
+                </div> -->
 
-                <!-- Material Name -->
+                <!-- Fabric Name -->
                 <div class="mb-4">
-                    <label class="block text-sm">Material Name</label>
+                    <label class="block text-sm">Fabric Name</label>
                     <input
                         v-model="material_name"
                         type="text"
@@ -178,7 +178,7 @@
                             role="tooltip"
                             class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700"
                         >
-                            (kg, ml, pcs, etc...)
+                            (rolls, meters, yards, etc...)
                             <div class="tooltip-arrow" data-popper-arrow></div>
                         </div>
                     </div>
@@ -198,24 +198,24 @@
                         <label class="block text-sm">Stock Quantity</label>
 
                         <!-- Tooltip Trigger -->
-                        <button
+                        <!-- <button
                             type="button"
                             data-tooltip-target="quantity-tooltip"
                             data-tooltip-placement="right"
                             class="hover:text-gray-700"
                         >
                             <InformationCircleIcon class="w-4 h-4" />
-                        </button>
+                        </button> -->
 
                         <!-- Tooltip Content -->
-                        <div
+                        <!-- <div
                             id="quantity-tooltip"
                             role="tooltip"
                             class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700"
                         >
                             If the unit is in mililiter specify quantity in mililiter quantity,
                             <div class="tooltip-arrow" data-popper-arrow></div>
-                        </div>
+                        </div> -->
                     </div>
 
                     <input
@@ -228,7 +228,7 @@
 
                 <!-- Reorder Level -->
                 <div class="mb-4">
-                    <label class="block text-sm">Reorder Level</label>
+                    <label class="block text-sm">Stock Reorder Level</label>
                     <input
                         v-model="reorder_level"
                         type="number"

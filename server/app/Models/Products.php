@@ -18,7 +18,7 @@ class Products extends Model
 
     public function fabric_type(): BelongsTo
     {
-        return $this->belongsTo(FabricTypes::class, 'fabric_type_id');
+        return $this->belongsTo(Materials::class, 'fabric_type_id'); // Fabric is now in materials due to panel request
     }
 
 

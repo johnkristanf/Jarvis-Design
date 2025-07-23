@@ -8,9 +8,14 @@
     import Toast from 'primevue/toast'
 
     import Loader from '../Loader.vue'
-    import { sublimationProductCategories, type DesignCategory, type FabricTypes } from '@/types/design'
+    import {
+        sublimationProductCategories,
+        type DesignCategory,
+        type FabricTypes,
+    } from '@/types/design'
 
     const emit = defineEmits(['close'])
+    const selectedFabricUnit = ref<string | null>(null)
 
     const toast = useToast()
     const queryClient = useQueryClient()
@@ -21,6 +26,7 @@
         productName: yup.string().required('Design name is required'),
         price: yup.number().required('Price is required').min(0, 'Invalid price'),
         fabricType: yup.number().nullable(),
+        fabricQuantity: yup.number().nullable(),
     })
 
     const { handleSubmit, resetForm } = useForm({ validationSchema: schema })
@@ -32,14 +38,16 @@
     const { value: fabricType, errorMessage: fabricTypeError } = useField<number | null>(
         'fabricType',
     )
+    const { value: fabricQuantity, errorMessage: fabricQuantityError } =
+        useField<number>('fabricQuantity')
 
-    // ADD NEW PRE MADE DESIGN MUTATION
+    // ADD NEW PRODUCT MUTATION
     const mutation = useMutation({
         mutationFn: async (formData: FormData) => {
             return await apiService.post('/api/add/product', formData)
         },
         onSuccess: (response) => {
-            toast.add({ severity: 'success', summary: 'Design added!', life: 3000 })
+            toast.add({ severity: 'success', summary: 'Product Added!', life: 3000 })
             queryClient.invalidateQueries({ queryKey: ['products'] })
             resetForm()
             emit('close')
@@ -83,12 +91,22 @@
         const formData = new FormData()
         formData.append('category_id', values.category.toString())
 
+        // NULLABLE FABRIC TYPE CAUSE OTHER PRODUCTS LIKE MUGS DONT HAVE FABRICS
         if (
             values.fabricType !== null &&
             values.fabricType !== undefined &&
             values.fabricType !== ''
         ) {
             formData.append('fabric_type_id', values.fabricType.toString())
+        }
+
+        // NULLABLE FABRIC QUANTITY CAUSE OTHER PRODUCTS LIKE MUGS DONT HAVE FABRICS
+        if (
+            values.fabricQuantity !== null &&
+            values.fabricQuantity !== undefined &&
+            values.fabricQuantity !== ''
+        ) {
+            formData.append('fabric_quantity', values.fabricQuantity.toString())
         }
 
         formData.append('product_name', values.productName)
@@ -122,9 +140,20 @@
         },
     )
 
+    // WATCH SELECTED FABRIC AND GET ITS UNIT (rolls, yards, etc...)
+    watch(
+        () => fabricType.value,
+        (fabricTypeId) => {
+            const matched = fabricTypes.value?.find((fab) => fab.id === fabricTypeId)
+            selectedFabricUnit.value = matched?.unit ?? null
+        }
+    )
+
     // CHECK IF THE SELECTED CATEGORY HAS FABRIC REQUIRED
     const isFabricRequired = computed(() =>
-        selectedCategory.value ? sublimationProductCategories.includes(selectedCategory.value.name) : false,
+        selectedCategory.value
+            ? sublimationProductCategories.includes(selectedCategory.value.name)
+            : false,
     )
 </script>
 
@@ -149,8 +178,18 @@
                     <p class="text-sm text-red-500 mt-1">{{ categoryError }}</p>
                 </div>
 
-                <!-- PRODUCT FABRIC TYPE (OPTIONAL) -->
+                <!-- PRODUCT NAME -->
+                <div>
+                    <label class="block text-sm mb-3">Product Name</label>
+                    <input
+                        v-model="productName"
+                        type="text"
+                        class="font-medium w-full border p-2 rounded"
+                    />
+                    <p class="text-sm text-red-500 mt-1">{{ productNameError }}</p>
+                </div>
 
+                <!-- PRODUCT FABRIC TYPE (OPTIONAL) -->
                 <div v-if="isFabricRequired">
                     <label class="block text-sm mb-3">Fabric Type</label>
                     <select
@@ -165,20 +204,21 @@
                     <p class="text-sm text-red-500 mt-1">{{ fabricTypeError }}</p>
                 </div>
 
-                <!-- PRODUCT NAME -->
+                <!-- PRODUCT FABRIC TYPE (OPTIONAL) -->
 
-                <div>
-                    <label class="block text-sm mb-3">Product Name</label>
+                <div v-if="isFabricRequired">
+                    <label class="block text-sm mb-3">
+                        Unit Fabric Quantity Used ({{ selectedFabricUnit }})
+                    </label>
                     <input
-                        v-model="productName"
-                        type="text"
+                        v-model="fabricQuantity"
+                        type="number"
                         class="font-medium w-full border p-2 rounded"
                     />
-                    <p class="text-sm text-red-500 mt-1">{{ productNameError }}</p>
+                    <p class="text-sm text-red-500 mt-1">{{ fabricQuantityError }}</p>
                 </div>
 
                 <!-- PRODUCT UNIT PRICE -->
-
                 <div>
                     <label class="block text-sm mb-3">Unit Price</label>
                     <input
