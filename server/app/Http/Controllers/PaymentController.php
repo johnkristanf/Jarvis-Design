@@ -291,7 +291,7 @@ class PaymentController extends Controller
             'solo_quantity' => 'nullable|numeric',
             'sizes' => 'nullable|array',
             'sizes.*' => 'nullable|numeric|min:0',
-            'own_design_file' => 'nullable|file|mimes:jpg,jpeg,png,pdf',
+            'own_design_file' => 'nullable|file',
             'business_design_url' => 'nullable|string',
         ]);
 
