@@ -240,6 +240,8 @@ class PaymentController extends Controller
         $order->delivery_date = $validated['action_date'];
         $order->save();
 
+        // INSERT NOTIFICATION
+
         return response()->json([
             'message' => 'Order action date updated successfully.',
             'order' => $order,
@@ -289,7 +291,7 @@ class PaymentController extends Controller
             'solo_quantity' => 'nullable|numeric',
             'sizes' => 'nullable|array',
             'sizes.*' => 'nullable|numeric|min:0',
-            'own_design_file' => 'nullable|file|mimes:jpg,jpeg,png,pdf',
+            'own_design_file' => 'nullable|file',
             'business_design_url' => 'nullable|string',
         ]);
 

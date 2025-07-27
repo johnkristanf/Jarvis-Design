@@ -17,7 +17,6 @@
     import type { PropType } from 'vue'
     import { useProductAttributes } from '@/composables/useProductAttribute'
     import { apiService } from '@/api/axios'
-    import GenerateAIDesignsModal from './GenerateAIDesignsModal.vue'
     import { OrderOptions, type QrCodePaymentData, type SelectedOrderOption } from '@/types/order'
     import QrCodePaymentModal from './QrCodePaymentModal.vue'
     import ListSelectBox from '../ListSelectBox.vue'
@@ -44,8 +43,9 @@
     })
 
     // Define emits
-    const emit = defineEmits(['close'])
-    const handleClose = () => emit('close')
+    const emit = defineEmits(['close', 'openAIDesigns'])
+    const handleClose = () => emit('close');
+    const handleOpenAIDesigns = () => emit('openAIDesigns');
 
     // Reactive data
     const formData = ref({
@@ -77,7 +77,6 @@
 
     const businessProductDesign = ref<BusinessProductDesign[]>([])
     const isLoadingBusinessDesigns = ref<boolean>(false)
-    const showAIDesignModal = ref<boolean>(false)
     const showQrCodePaymentModal = ref<boolean>(false)
     const toast = useToast()
 
@@ -91,7 +90,7 @@
 
     const openAIDesignModal = () => {
         formData.value.designType = 'ai-generation'
-        showAIDesignModal.value = true
+        emit('openAIDesigns')
     }
 
     const openQrCodePaymentModal = (
@@ -533,7 +532,6 @@
 
     <Loader v-if="mutation.isPending.value" msg="Placing Order..." />
 
-    <GenerateAIDesignsModal v-if="showAIDesignModal" @close="showAIDesignModal = false" />
 
     <QrCodePaymentModal
         v-if="showQrCodePaymentModal"

@@ -1,10 +1,10 @@
 type OrderStatus = 'in_progress' | 'pick_up' | 'delivery' | 'completed'
 
 export const OrderStatus = {
-    PENDING: 'pending',
-    CANCELLED: 'cancelled',
-    APPROVED: 'completed',
-} as const
+    PENDING: "pending",
+    CANCELLED: "cancelled",
+    APPROVED: "completed",
+} 
 
 export type OrderTypes = 'uploaded' | 'pre-made'
 

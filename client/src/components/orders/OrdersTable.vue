@@ -383,7 +383,7 @@
                                                         )
                                                     "
                                                     :class="open ? 'text-white' : 'text-white/90'"
-                                                    class="group hover:opacity-75 hover:cursor-pointer inline-flex items-center rounded-md w-full flex justify-center bg-gray-800 px-3 py-2 text-base font-medium hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75"
+                                                    class="group hover:opacity-75 hover:cursor-pointer items-center rounded-md w-full flex justify-center bg-gray-800 px-3 py-2 text-base font-medium hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75"
                                                 >
                                                     <span>Status</span>
                                                     <ChevronDownIcon
@@ -424,7 +424,7 @@
                                                                             close,
                                                                         )
                                                                     "
-                                                                    class="hover:cursor-pointer hover:bg-gray-800 flex justify-center hover:text-white flex items-center rounded-lg p-2 transition duration-150 ease-in-out hover:bg-gray-50 focus:outline-none focus-visible:ring focus-visible:ring-orange-500/50"
+                                                                    class="hover:cursor-pointer  justify-center hover:bg-gray-800 hover:text-white flex items-center rounded-lg p-2 transition duration-150 ease-in-out  focus:outline-none focus-visible:ring focus-visible:ring-orange-500/50"
                                                                 >
                                                                     <div>
                                                                         <p

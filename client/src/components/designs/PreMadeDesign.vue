@@ -8,6 +8,7 @@
     import { useDesignFilterStore } from '@/stores/filter'
     import { FwbCard } from 'flowbite-vue'
     import OrderProductModal from './OrderProductModal.vue'
+    import GenerateAIDesignsModal from './GenerateAIDesignsModal.vue'
 
     // FILTER SELECT STORE
     const filterStore = useDesignFilterStore()
@@ -21,6 +22,7 @@
     const selectedCategory = ref<string | number>()
     const selectedTag = ref<string | number>()
     const openDesignModal = ref(false)
+    const showAIDesignModal = ref<boolean>(false)
 
     // CATEGORY EXPANSION TRACKER
     const expandedCategory = ref<number | null>(null)
@@ -44,9 +46,9 @@
     const fixedPriceAmmountRef = ref<number>()
 
     const openOrderDetailsModal = (categoryName: string, selectedProduct: Product) => {
-        selectedProductRef.value = selectedProduct;
-        selectedCategoryRef.value = categoryName;
-        showOrderModal.value = true;
+        selectedProductRef.value = selectedProduct
+        selectedCategoryRef.value = categoryName
+        showOrderModal.value = true
     }
 
     // HANDLE CATEGORY EXPANSION
@@ -79,6 +81,11 @@
         },
         { deep: true },
     )
+
+    const handleOpenAIDesigns = () => {
+        showAIDesignModal.value = true
+        showOrderModal.value = false
+    }
 </script>
 
 <template>
@@ -145,10 +152,13 @@
         @close="openDesignModal = false"
     />
 
+    <GenerateAIDesignsModal v-if="showAIDesignModal" @close="showAIDesignModal = false" />
+
     <OrderProductModal
         v-if="showOrderModal && selectedCategoryRef && selectedProductRef"
         :categoryName="selectedCategoryRef"
         :product="selectedProductRef"
         @close="showOrderModal = false"
+        @openAIDesigns="handleOpenAIDesigns"
     />
 </template>
