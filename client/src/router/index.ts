@@ -16,6 +16,7 @@ import AdminMessageView from '@/views/admin/AdminMessageView.vue'
 import EmailVerificationView from '@/views/users/EmailVerificationView.vue'
 import VerifiedEmail from '@/views/users/VerifiedEmail.vue'
 import Profile from '@/views/users/Profile.vue'
+import MessageView from '@/views/users/MessageView.vue'
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -43,6 +44,11 @@ const router = createRouter({
                 {
                     path: 'orders',
                     component: OrdersView,
+                },
+
+                {
+                    path: 'message',
+                    component: MessageView,
                 },
 
                 {
