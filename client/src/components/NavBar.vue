@@ -245,16 +245,13 @@
                                                             :class="{
                                                                 'text-yellow-800 ':
                                                                     notif.status ===
-                                                                    OrderStatus.IN_PROGRESS,
-                                                                'text-sky-800 ':
+                                                                    OrderStatus.PENDING,
+                                                                'text-red-800 ':
                                                                     notif.status ===
-                                                                    OrderStatus.DELIVERY,
-                                                                'text-indigo-800 ':
-                                                                    notif.status ===
-                                                                    OrderStatus.PICKUP,
+                                                                    OrderStatus.CANCELLED,
                                                                 'text-green-800 ':
                                                                     notif.status ===
-                                                                    OrderStatus.COMPLETED,
+                                                                    OrderStatus.APPROVED,
                                                             }"
                                                         >
                                                             {{ notif.status.toUpperCase() }}
