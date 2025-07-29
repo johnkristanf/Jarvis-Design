@@ -352,7 +352,7 @@ class DesignsController extends Controller
         try {
 
             $validated = $request->validate([
-                'design' => 'required|image|max:2048',
+                'design' => 'required',
                 'product_id' => 'required',
                 'product_name' => 'required|string',
                 'category_name' => 'required|string',
