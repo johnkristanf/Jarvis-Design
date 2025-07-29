@@ -13,7 +13,6 @@
 
     import { FwbButton, FwbTooltip } from 'flowbite-vue'
 
-
     const emit = defineEmits(['close'])
     const handleCloseModal = () => emit('close')
 
@@ -170,7 +169,7 @@
                                         <h1>Prompt:</h1>
 
                                         <!-- PROMPT TOOLTIP -->
-                                        <fwb-tooltip
+                                        <!-- <fwb-tooltip
                                             placement="right"
                                             theme="light"
                                             trigger="click"
@@ -188,7 +187,8 @@
                                                         🎨 Prompting Tips for Your Custom Design
                                                     </div>
 
-                                                    Want to create the perfect design? Here's a sample prompt:
+                                                    Want to create the perfect design? Here's a
+                                                    sample prompt:
 
                                                     <br />
                                                     <br />
@@ -207,14 +207,14 @@
                                                     - 🚫 Avoid long sentences
                                                 </div>
                                             </template>
-                                        </fwb-tooltip>
+                                        </fwb-tooltip> -->
                                     </div>
 
                                     <textarea
                                         type="text"
                                         id="prompt"
                                         v-model="prompt"
-                                        placeholder="Enter your prompt"
+                                        placeholder="Mock up: Polo Shirt Design: Spider man Color: Green"
                                         class="font-medium block w-full rounded-md bg-white px-3 text-base text-black placeholder:text-gray-400 focus:outline-none border border-gray-300"
                                     ></textarea>
                                 </div>
@@ -246,7 +246,6 @@
                                     </button>
                                 </div>
                             </form>
-
 
                             <!-- LIST OF AI GENERATED DESIGNS -->
                             <div v-if="imageUrls && imageUrls.length > 0" class="mt-5">
