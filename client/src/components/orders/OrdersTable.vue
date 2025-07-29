@@ -313,7 +313,9 @@
                         v-if="!isAdmin"
                         class="relative flex items-center px-3 py-12 font-semibold text-gray-900 dark:text-white"
                     >
-                        <fwb-button color="light">Chat to Seller</fwb-button>
+                        <router-link to="/message">
+                            <fwb-button color="light">Chat to Seller</fwb-button>
+                        </router-link>
                     </td>
 
                     <!-- UPDATE STATUS ACTION BUTTON -->
@@ -347,15 +349,18 @@
                                         class="absolute flex flex-col gap-5 z-[9999] left-[-20rem] mt-2 w-[30vw] p-3 rounded-lg bg-white shadow-lg ring-1 ring-black/5"
                                     >
                                         <!-- CHAT TO CUSTOMER ACTION -->
-                                        <fwb-button
-                                            v-if="
-                                                order.status !== OrderStatus.APPROVED &&
-                                                order.status !== OrderStatus.CANCELLED
-                                            "
-                                            color="light"
-                                        >
-                                            Chat to Customer
-                                        </fwb-button>
+
+                                        <router-link class="w-full" to="/admin/message">
+                                            <fwb-button
+                                                v-if="
+                                                    order.status !== OrderStatus.APPROVED &&
+                                                    order.status !== OrderStatus.CANCELLED
+                                                "
+                                                color="light"
+                                            >
+                                                Chat to Customer
+                                            </fwb-button>
+                                        </router-link>
 
                                         <!-- PICK-UP OR DELIVERY DATE -->
                                         <div>
@@ -424,7 +429,7 @@
                                                                             close,
                                                                         )
                                                                     "
-                                                                    class="hover:cursor-pointer  justify-center hover:bg-gray-800 hover:text-white flex items-center rounded-lg p-2 transition duration-150 ease-in-out  focus:outline-none focus-visible:ring focus-visible:ring-orange-500/50"
+                                                                    class="hover:cursor-pointer justify-center hover:bg-gray-800 hover:text-white flex items-center rounded-lg p-2 transition duration-150 ease-in-out focus:outline-none focus-visible:ring focus-visible:ring-orange-500/50"
                                                                 >
                                                                     <div>
                                                                         <p
