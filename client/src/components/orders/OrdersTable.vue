@@ -18,7 +18,7 @@
     import { OrderStatus, type UpdateStatusType } from '@/types/order'
     import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
     import Loader from '../Loader.vue'
-    import { ref } from 'vue'
+    import { onMounted, ref } from 'vue'
     import { updateOrderStatus } from '@/api/put/orders'
     import UploadedImagesModal from '../designs/UploadedImagesModal.vue'
     import QuantityPerSizeModal from '../designs/QuantityPerSizeModal.vue'
@@ -224,7 +224,14 @@
                         <span>Image Design</span>
                     </th>
 
+                    <th scope="col" class="px-6 py-3">Name</th>
+
+                    <th scope="col" class="px-6 py-3">Phone Number</th>
+                    <th scope="col" class="px-6 py-3">Address</th>
+
                     <th scope="col" class="px-6 py-3">Quantity</th>
+
+                    <th scope="col" class="px-6 py-3">Color</th>
 
                     <!-- <th scope="col" class="px-6 py-3">Order Option</th> -->
 
@@ -265,6 +272,18 @@
                     </td>
 
                     <td class="px-6 py-4 font-semibold text-gray-900 dark:text-white">
+                        {{ order.user.name }}
+                    </td>
+
+                    <td class="px-6 py-4 font-semibold text-gray-900 dark:text-white">
+                        {{ order.phone_number }}
+                    </td>
+
+                    <td class="px-6 py-4 font-semibold text-gray-900 dark:text-white">
+                        {{ order.address }}
+                    </td>
+
+                    <td class="px-6 py-4 font-semibold text-gray-900 dark:text-white">
                         <div v-if="order.solo_quantity !== null">
                             {{ order.solo_quantity }}
                         </div>
@@ -278,9 +297,9 @@
                         </div>
                     </td>
 
-                    <!-- <td class="px-6 py-4 font-semibold text-gray-900 dark:text-white">
-                        {{ order.order_option ? order.order_option.toUpperCase() : 'N/A' }}
-                    </td> -->
+                    <td class="px-6 py-4 font-semibold text-gray-900 dark:text-white">
+                        {{ order.color }}
+                    </td>
 
                     <td class="px-6 py-4 font-semibold text-gray-900 dark:text-white">
                         {{ formatCurrency(order.total_price.toString()) }}
@@ -350,17 +369,27 @@
                                     >
                                         <!-- CHAT TO CUSTOMER ACTION -->
 
-                                        <router-link class="w-full" to="/admin/message">
-                                            <fwb-button
-                                                v-if="
-                                                    order.status !== OrderStatus.APPROVED &&
-                                                    order.status !== OrderStatus.CANCELLED
-                                                "
-                                                color="light"
-                                            >
+                                        <fwb-button
+                                            v-if="
+                                                order.status !== OrderStatus.APPROVED &&
+                                                order.status !== OrderStatus.CANCELLED
+                                            "
+                                            color="light"
+                                        >
+                                            <router-link class="w-full" to="/admin/message">
                                                 Chat to Customer
-                                            </fwb-button>
-                                        </router-link>
+                                            </router-link>
+                                        </fwb-button>
+
+                                        <fwb-button
+                                            v-if="
+                                                order.status !== OrderStatus.APPROVED &&
+                                                order.status !== OrderStatus.CANCELLED
+                                            "
+                                            color="light"
+                                        >
+                                            Payment Screenshot
+                                        </fwb-button>
 
                                         <!-- PICK-UP OR DELIVERY DATE -->
                                         <div>

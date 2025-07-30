@@ -35,6 +35,9 @@ export type QrCodePaymentData = {
 export type Orders = {
     id: number
     order_id: string
+    color: string
+    phone_number: string
+    address: string
     design_id: number
     order_option: string
     paid_amount: string

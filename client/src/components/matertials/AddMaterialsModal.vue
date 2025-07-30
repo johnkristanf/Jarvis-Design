@@ -152,6 +152,7 @@
                         v-model="material_name"
                         type="text"
                         class="font-medium w-full px-3 py-2 rounded mt-1 border"
+                        placeholder="(Semi-Cooltech, Microstepline, etc...)"
                     />
                     <span class="text-sm text-red-600 mt-1 block">{{ nameError }}</span>
                 </div>
@@ -162,31 +163,13 @@
                     <div class="flex items-center gap-1 relative">
                         <label class="block text-sm">Unit</label>
 
-                        <!-- Tooltip Trigger -->
-                        <button
-                            type="button"
-                            data-tooltip-target="unit-tooltip"
-                            data-tooltip-placement="right"
-                            class="hover:text-gray-700"
-                        >
-                            <InformationCircleIcon class="w-4 h-4" />
-                        </button>
-
-                        <!-- Tooltip Content -->
-                        <div
-                            id="unit-tooltip"
-                            role="tooltip"
-                            class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700"
-                        >
-                            (rolls, meters, yards, etc...)
-                            <div class="tooltip-arrow" data-popper-arrow></div>
-                        </div>
                     </div>
 
                     <input
                         v-model="unit"
                         type="text"
                         class="font-medium w-full px-3 py-2 rounded mt-1 border"
+                        placeholder="rolls, meters, yards, etc..."
                     />
                     <span class="text-sm text-red-600 mt-1 block">{{ unitError }}</span>
                 </div>
