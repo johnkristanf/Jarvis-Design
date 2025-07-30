@@ -235,10 +235,12 @@ class PaymentService
     {
         try {
 
-            $query = Orders::with(['user', 'sizes']) // eager load sizes + user
+            $query = Orders::with(['user', 'sizes', 'user']) // eager load sizes + user
                 ->select([
                     'id',
                     'color',
+                    'phone_number',
+                    'address',
                     'design_type',
                     'order_option',
                     'total_quantity',

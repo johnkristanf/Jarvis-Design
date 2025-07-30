@@ -31,16 +31,10 @@
             headerCell: { class: 'my-custom-header-cell' } // Add this for the cells
         }"
     >
-        <Column field="id" header="ID" />
+        <Column field="users.name" header="User Name" />
         <Column field="material_name" header="Material Name" />
-        <Column field="order_id" header="Order ID" />
-        <Column field="orders.order_id" header="Order Code" />
         <Column field="total_quantity_used" header="Total Quantity Used" />
         <Column field="unit" header="Unit" />
-        <Column field="created_at" header="Created At" />
-        <Column field="updated_at" header="Updated At" />
-        <Column field="user_id" header="User ID" />
-        <Column field="users.name" header="User Name" />
     </DataTable>
 </template>
 

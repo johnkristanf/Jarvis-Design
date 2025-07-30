@@ -44,12 +44,14 @@
 
     // Define emits
     const emit = defineEmits(['close', 'openAIDesigns'])
-    const handleClose = () => emit('close');
-    const handleOpenAIDesigns = () => emit('openAIDesigns');
+    const handleClose = () => emit('close')
+    const handleOpenAIDesigns = () => emit('openAIDesigns')
 
     // Reactive data
     const formData = ref({
         color: '',
+        phone_number: '',
+        address: '',
 
         // SOLO QUANTITY FOR FIXED PRICED PRODUCT
         solo_quantity: null as number | null,
@@ -127,6 +129,8 @@
         const data = new FormData()
 
         data.append('color', formData.value.color)
+        data.append('phone_number', formData.value.phone_number)
+        data.append('address', formData.value.address)
         data.append('design_type', formData.value.designType)
         data.append('order_option', formData.value.orderOption?.name as string)
         data.append('fabric_type_id', props.product.fabric_type.id.toString())
@@ -203,9 +207,19 @@
                     severity: 'error',
                     summary: 'Please login your account to proceed the order.',
                     life: 3000,
-                });
+                })
 
-                return;
+                return
+            }
+
+            if (err.message == 'Not enough material in stock.') {
+                toast.add({
+                    severity: 'error',
+                    summary: err.message,
+                    life: 3000,
+                })
+
+                return
             }
 
             toast.add({
@@ -214,6 +228,31 @@
                 life: 3000,
             })
         },
+    })
+
+    // FORM VALIDATION
+    const isFormInvalid = computed(() => {
+        if (!formData.value.phone_number) return true
+        if (!formData.value.address.trim()) return true
+        if (!formData.value.color.trim()) return true
+        if (!formData.value.orderOption) return true
+
+        // Design validation
+        if (formData.value.designType === 'own-design' && !formData.value.ownDesignFile) return true
+        if (formData.value.designType === 'business-design' && !formData.value.businessDesignURL)
+            return true
+
+        // Quantity validation
+        if (shouldIncludeSizes.value) {
+            const hasQuantity = Object.values(formData.value.quantityPerSize).some(
+                (qty) => Number(qty) > 0,
+            )
+            if (!hasQuantity) return true
+        } else {
+            if (!formData.value.solo_quantity || formData.value.solo_quantity <= 0) return true
+        }
+
+        return false
     })
 
     // SUBMIT ORDER HANDLER
@@ -284,6 +323,32 @@
                                             Unit Price:
                                             <strong>₱{{ props.product.unit_price }}</strong>
                                         </p>
+                                    </div>
+
+                                    <!-- Color Input -->
+                                    <div class="mb-8">
+                                        <label class="block text-sm text-gray-600 mb-1">
+                                            Phone Number:
+                                        </label>
+                                        <input
+                                            v-model="formData.phone_number"
+                                            type="number"
+                                            placeholder="Enter Phone Number"
+                                            class="w-full px-3 py-2 border font-medium border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
+                                        />
+                                    </div>
+
+                                    <!-- Color Input -->
+                                    <div class="mb-8">
+                                        <label class="block text-sm text-gray-600 mb-1">
+                                            Full Address:
+                                        </label>
+                                        <input
+                                            v-model="formData.address"
+                                            type="text"
+                                            placeholder="Enter Address"
+                                            class="w-full px-3 py-2 border font-medium border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
+                                        />
                                     </div>
 
                                     <!-- Color Input -->
@@ -503,6 +568,7 @@
 
                                 <!-- Place Order Button -->
                                 <button
+                                    :disabled="isFormInvalid"
                                     @click="
                                         openQrCodePaymentModal(
                                             props.product.name,
@@ -510,7 +576,12 @@
                                             totalPrice,
                                         )
                                     "
-                                    class="w-full bg-gray-800 hover:opacity-75 hover:bg-gray-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium py-3 px-4 rounded-md transition-colors duration-200"
+                                    :class="[
+                                        'w-full font-medium py-3 px-4 rounded-md transition-colors duration-200',
+                                        isFormInvalid
+                                            ? 'bg-gray-400 text-white cursor-not-allowed'
+                                            : 'bg-gray-800 text-white hover:opacity-75 hover:bg-gray-600',
+                                    ]"
                                 >
                                     Generate QR Code Payment
                                 </button>
@@ -531,7 +602,6 @@
     </TransitionRoot>
 
     <Loader v-if="mutation.isPending.value" msg="Placing Order..." />
-
 
     <QrCodePaymentModal
         v-if="showQrCodePaymentModal"

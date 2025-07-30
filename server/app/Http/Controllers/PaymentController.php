@@ -283,6 +283,8 @@ class PaymentController extends Controller
     {
         $validated = $request->validate([
             'color' => 'required|string',
+            'phone_number' => 'required|string',
+            'address' => 'required|string',
             'design_type' => 'required|in:own-design,business-design,ai-generation',
             'order_option' => 'required|string',
             'total_quantity' => 'required|numeric|min:1',
@@ -300,6 +302,8 @@ class PaymentController extends Controller
         // Step 1: Create order first, without the design URL yet
         $order = Orders::create([
             'color' => $validated['color'],
+            'phone_number' => $validated['phone_number'],
+            'address' => $validated['address'],
             'design_type' => $validated['design_type'],
             'order_option' => $validated['order_option'],
             'total_quantity' => $validated['total_quantity'],
@@ -342,14 +346,29 @@ class PaymentController extends Controller
         $totalOrderedQuantity = (int) $validated['total_quantity'];
         $fabricUsedPerUnit = (float) $fabric->products()->pluck('fabric_quantity')->first();
 
-        $totalDeduction = $totalOrderedQuantity * $fabricUsedPerUnit;
+        $totalQuantityDeduction = $totalOrderedQuantity * $fabricUsedPerUnit;
 
-        if ($fabric->quantity >= $totalDeduction) {
-            $fabric->decrement('quantity', $totalDeduction);
+        Log::info("FABRIC DATA: ", [
+            'fabric_type_id' => $validated['fabric_type_id'],
+            'totalDeduction' => $totalQuantityDeduction,
+            'fabric' => $fabric,
+        ]);
+
+        if ($fabric->quantity >= $totalQuantityDeduction) {
+            $fabric->decrement('quantity', $totalQuantityDeduction);
         } else {
             // Handle insufficient stock (throw exception or return error)
             throw new \Exception('Not enough material in stock.');
         }
+
+        // LOG ORDER
+        OrderLogs::create([
+            'user_id' => Auth::user()->id,
+            'order_id' => $order->id,
+            'material_name' => $fabric->name,
+            'unit' => $fabric->unit,
+            'total_quantity_used' => $totalQuantityDeduction
+        ]);
 
         return response()->json(['message' => 'Order placed successfully', 'order_id' => $order->id]);
     }
@@ -555,15 +574,13 @@ class PaymentController extends Controller
 
     public function getOrderLogs()
     {
-        $orderLogs = OrderLogs::with([
-            'users' => function ($query) {
-                $query->select('id', 'name');
-            },
-
-            'orders' => function ($query) {
-                $query->select('id', 'order_id');
-            },
-        ])->get();
+        $orderLogs = OrderLogs::select('*') // or explicitly: select('id', 'order_id', 'message', etc.)
+            ->with([
+                'users' => function ($query) {
+                    $query->select('id', 'name');
+                },
+            ])
+            ->get();
 
         return response()->json($orderLogs);
     }
