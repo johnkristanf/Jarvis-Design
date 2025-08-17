@@ -1,66 +1,78 @@
 <script lang="ts" setup>
-import { login } from '@/api/post/login'
-import Loader from '@/components/Loader.vue'
-import { UserRole, type AuthenticatedUserData, type LoginCredentials } from '@/types/user'
-import { useMutation } from '@tanstack/vue-query'
-import { useForm, useField } from 'vee-validate'
-import { ref } from 'vue'
-import * as yup from 'yup'
+    import { login } from '@/api/post/login'
+    import Loader from '@/components/Loader.vue'
+    import { UserRole, type AuthenticatedUserData, type LoginCredentials } from '@/types/user'
+    import { useMutation } from '@tanstack/vue-query'
+    import { useForm, useField } from 'vee-validate'
+    import { ref } from 'vue'
+    import * as yup from 'yup'
+    import Toast from 'primevue/toast'
 
-// Heroicons
-import { EyeIcon, EyeSlashIcon } from '@heroicons/vue/24/solid'
+    // Heroicons
+    import { EyeIcon, EyeSlashIcon } from '@heroicons/vue/24/solid'
+    import { useToast } from 'primevue'
 
-const isLoadingMutation = ref(false)
-const showPassword = ref(false) // 👁️ Password visibility toggle
+    const isLoadingMutation = ref(false)
+    const showPassword = ref(false) // 👁️ Password visibility toggle
+    const toast = useToast()
 
-const validationSchema = yup.object({
-    username: yup.string().required('Username is required'),
-    password: yup.string().required('Password is required'),
-})
+    const validationSchema = yup.object({
+        username: yup.string().required('Username is required'),
+        password: yup.string().required('Password is required'),
+    })
 
-const { handleSubmit, isSubmitting } = useForm({
-    validationSchema,
-})
+    const { handleSubmit, isSubmitting } = useForm({
+        validationSchema,
+    })
 
-const { value: username, errorMessage: usernameError } = useField('username')
-const { value: password, errorMessage: passwordError } = useField('password')
+    const { value: username, errorMessage: usernameError } = useField('username')
+    const { value: password, errorMessage: passwordError } = useField('password')
 
-const mutation = useMutation({
-    mutationFn: login,
-    onSuccess: (response) => {
-        isLoadingMutation.value = false
-        console.log('response login: ', response)
+    const mutation = useMutation({
+        mutationFn: login,
+        onSuccess: (response) => {
+            isLoadingMutation.value = false
+            console.log('response login: ', response)
 
-        const authenticatedUser: AuthenticatedUserData = {
-            id: response.id,
-            name: response.name,
-            username: response.username,
-            role_id: response.role_id,
-            role: response.role,
+            const authenticatedUser: AuthenticatedUserData = {
+                id: response.id,
+                name: response.name,
+                username: response.username,
+                role_id: response.role_id,
+                role: response.role,
+            }
+
+            if (authenticatedUser.role.name === UserRole.USER) window.location.href = '/'
+            if (authenticatedUser.role.name === UserRole.ADMIN)
+                window.location.href = '/admin/dashboard'
+        },
+
+        onError: (error) => {
+            isLoadingMutation.value = false
+            console.error('Error Logging In:', error)
+
+            if (error.statusCode === 401) {
+                toast.add({
+                    severity: 'error',
+                    summary: 'Invalid Username or Password',
+                    life: 3000,
+                })
+            }
+        },
+
+        onMutate: () => {
+            isLoadingMutation.value = true
+        },
+    })
+
+    const onSubmit = handleSubmit(async (values) => {
+        const userData: LoginCredentials = {
+            username: values.username,
+            password: values.password,
         }
 
-        if (authenticatedUser.role.name === UserRole.USER) window.location.href = '/'
-        if (authenticatedUser.role.name === UserRole.ADMIN) window.location.href = '/admin/dashboard'
-    },
-
-    onError: (error) => {
-        isLoadingMutation.value = false
-        console.error('Error Logging In:', error)
-    },
-
-    onMutate: () => {
-        isLoadingMutation.value = true
-    },
-})
-
-const onSubmit = handleSubmit(async (values) => {
-    const userData: LoginCredentials = {
-        username: values.username,
-        password: values.password,
-    }
-
-    mutation.mutate(userData)
-})
+        mutation.mutate(userData)
+    })
 </script>
 
 <template>
@@ -93,7 +105,10 @@ const onSubmit = handleSubmit(async (values) => {
                     <div class="flex items-center justify-between">
                         <label for="password" class="block text-sm/6 font-medium">Password</label>
                         <div class="text-sm">
-                            <a href="/forgot-password" class="font-medium text-gray-600 hover:underline">
+                            <a
+                                href="/forgot-password"
+                                class="font-medium text-gray-600 hover:underline"
+                            >
                                 Forgot password?
                             </a>
                         </div>
@@ -113,7 +128,10 @@ const onSubmit = handleSubmit(async (values) => {
                             class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-gray-700"
                             tabindex="-1"
                         >
-                            <component :is="showPassword ? EyeSlashIcon : EyeIcon" class="h-5 w-5" />
+                            <component
+                                :is="showPassword ? EyeSlashIcon : EyeIcon"
+                                class="h-5 w-5"
+                            />
                         </button>
                     </div>
 
@@ -140,4 +158,6 @@ const onSubmit = handleSubmit(async (values) => {
     <div v-if="isLoadingMutation">
         <Loader msg="Logging In..." />
     </div>
+
+    <Toast />
 </template>

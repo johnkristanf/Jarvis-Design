@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Interfaces\ChatServiceInterface;
+use App\Service\ChatService;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -11,7 +13,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(ChatServiceInterface::class, ChatService::class);
     }
 
     /**
