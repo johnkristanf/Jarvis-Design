@@ -1,5 +1,10 @@
 <script lang="ts" setup>
+    import CustomerChatBox from '@/components/message/CustomerChatBox.vue'
     import OrdersTable from '@/components/orders/OrdersTable.vue'
+    import { ChatBubbleLeftRightIcon } from '@heroicons/vue/20/solid'
+    import { ref } from 'vue'
+
+    const isOpenChatBox = ref<boolean>(false)
 </script>
 
 <template>
@@ -46,6 +51,18 @@
                     />
                 </div>
             </div>
+        </div>
+
+        <!-- FLOATING MESSAGE ICON -->
+        <div
+            class="absolute bottom-13 right-11 bg-gray-800 rounded-full z-[9999] p-3 hover:cursor-pointer hover:opacity-75"
+            @click="isOpenChatBox = true"
+        >
+            <ChatBubbleLeftRightIcon class="size-10 text-white" />
+        </div>
+
+        <div v-if="isOpenChatBox">
+            <CustomerChatBox :isOpen="isOpenChatBox" @close="isOpenChatBox = false" />
         </div>
 
         <OrdersTable />

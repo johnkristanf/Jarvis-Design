@@ -1,41 +1,159 @@
-<script lang="ts" setup></script>
+<script lang="ts" setup>
+    import { getAllConversation } from '@/api/get/message'
+    import { sendChatMessageApi } from '@/api/post/message'
+    import { useFetchAuthenticatedUser } from '@/composables/useFetchAuthenticatedUser'
+    import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
+    import { ref, watch } from 'vue'
+    import { ArrowUpOnSquareIcon, ChevronDoubleRightIcon, XMarkIcon } from '@heroicons/vue/20/solid'
+    import type { Conversation } from '@/types/message'
+    import Toast from 'primevue/toast'
+    import { useToast } from 'primevue'
+
+    const { authStore } = useFetchAuthenticatedUser()
+    const queryClient = useQueryClient()
+
+    // ALL CONVERSATION QUERY
+    const allConversationQuery = useQuery({
+        queryKey: ['all_conversation'],
+        queryFn: getAllConversation,
+    })
+
+    // track selected conversation
+    const selectedConversation = ref<Conversation>()
+
+    const selectConversation = (data: Conversation) => {
+        selectedConversation.value = data
+    }
+
+    // PRE-SELECT 1st CONVERSATION
+    watch(
+        () => allConversationQuery.data.value,
+        (conversations) => {
+            if (conversations && conversations.length > 0 && !selectedConversation.value) {
+                selectedConversation.value = conversations[0]
+            }
+        },
+        { immediate: true },
+    )
+
+    // Local state
+    const messageContent = ref('')
+    const attachment = ref<File | null>(null)
+    const attachmentPreview = ref<string | null>(null)
+    const toast = useToast()
+
+    // SEND MESSAGE MUTATION
+    const sendMessageMutation = useMutation({
+        mutationFn: sendChatMessageApi,
+        onSuccess: () => {
+            console.log('SUCCESSSS')
+
+            // Refetch conversation messages
+            queryClient.invalidateQueries({
+                queryKey: ['conversation', selectedConversation.value?.id],
+            })
+
+            // Also refresh conversations list if needed
+            queryClient.invalidateQueries({ queryKey: ['all_conversation'] })
+            allConversationQuery.refetch()
+
+            messageContent.value = ''
+            attachment.value = null
+        },
+        onError: (error) => {
+            console.error('Message send failed:', error)
+        },
+    })
+
+    // Handle file selection
+    const handleFileChange = (e: Event) => {
+        const target = e.target as HTMLInputElement
+        if (target.files && target.files[0]) {
+            const file = target.files[0]
+
+            if (!file.type.startsWith('image/')) {
+                toast.add({
+                    severity: 'warn',
+                    summary: 'Invalid File Type',
+                    detail: 'Only image is accepted',
+                    life: 3000,
+                })
+                target.value = '' // reset input
+                return
+            }
+
+            if (file.type.startsWith('image/')) {
+                attachment.value = file
+                attachmentPreview.value = URL.createObjectURL(file)
+            } else {
+                attachmentPreview.value = null // optional: preview icon for docs/pdf
+            }
+        }
+    }
+
+    // CLEAR UPLOADED ATTACHMENT
+    const clearAttachment = () => {
+        attachment.value = null
+        attachmentPreview.value = null
+    }
+
+    const handleSendMessage = () => {
+        if (!messageContent.value && !attachment.value) return // prevent empty submission
+
+        console.log('message: ', messageContent.value)
+        console.log('selectedUserId: ', selectedConversation.value?.id)
+        console.log('attachment: ', attachment.value)
+
+        const formData = new FormData()
+        if (messageContent.value) {
+            formData.append('content', messageContent.value)
+        }
+
+        if (selectedConversation.value?.user?.id) {
+            formData.append('user_id', selectedConversation.value?.user?.id.toString())
+        }
+
+        if (attachment.value) {
+            formData.append('attachment', attachment.value)
+        }
+
+        sendMessageMutation.mutate(formData)
+    }
+</script>
 
 <template>
-    <div class="w-full h-[100vh] mb-16 bg-gray-100 border border-gray-400 rounded-md flex">
+    <div class="w-full h-[75vh] bg-gray-100 border border-gray-400 rounded-md flex">
+        <!-- Sidebar with conversations -->
         <aside id="logo-sidebar" class="w-[25%] h-full" aria-label="Sidebar">
             <div class="h-full px-3 py-4 overflow-y-auto bg-white dark:bg-gray-800">
-                <a href="https://flowbite.com/" class="flex items-center ps-2.5 mb-5">
-                    <img
-                        src="/jarvis-logo-circle.png"
-                        class="h-6 me-3 sm:h-7"
-                        alt="Flowbite Logo"
-                    />
-
+                <a href="#" class="flex items-center ps-2.5 mb-5">
+                    <img src="/jarvis-logo-circle.png" class="h-6 me-3 sm:h-7" />
                     <div class="flex flex-col">
                         <span class="text-xl font-semibold whitespace-nowrap dark:text-white">
                             Message
                         </span>
-
                         <p class="text-xs text-gray-500">Talk with the customer.</p>
                     </div>
                 </a>
-                <ul class="space-y-2 font-medium">
-                    <li>
-                        <a
-                            href="#"
-                            class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
-                        >
-                            <img
-                                src="/user_icon.jpeg"
-                                class="h-7 mr-3 sm:h-8"
-                                alt="Flowbite Logo"
-                            />
 
+                <!-- loop conversations -->
+                <ul class="space-y-2 font-medium">
+                    <li v-for="convo in allConversationQuery.data.value ?? []" :key="convo.id">
+                        <button
+                            @click="selectConversation(convo)"
+                            :class="[
+                                'w-full flex items-center p-2 text-left rounded-lg group',
+                                selectedConversation?.id === convo.id
+                                    ? 'bg-gray-100 dark:bg-gray-700'
+                                    : 'text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700',
+                            ]"
+                        >
+                            <img src="/user_icon.jpeg" class="h-7 mr-3 sm:h-8" alt="User avatar" />
                             <div class="flex flex-col text-sm">
-                                <h1>John Doe G. Seguerra</h1>
-                                <h1 class="text-gray-400">johndoe@gmail.com</h1>
+                                <h1>{{ convo.user?.name }}</h1>
+                                <h1 class="text-gray-400">{{ convo.user?.email }}</h1>
                             </div>
-                        </a>
+                        </button>
                     </li>
                 </ul>
             </div>
@@ -43,107 +161,123 @@
 
         <!-- Chat messages -->
         <div class="relative flex-1">
-            <!-- Chat Header -->
-            <div class="bg-gray-900 flex items-center font-medium h-18 pl-5">
-                <img src="/user_icon-removebg.png" class="h-12 mr-3" alt="Flowbite Logo" />
+            <template v-if="selectedConversation">
+                <div class="flex flex-col h-full">
+                    <!-- Chat Header -->
+                    <div class="bg-gray-900 flex items-center font-medium h-18 pl-5">
+                        <img src="/user_icon-removebg.png" class="h-12 mr-3" />
+                        <div class="flex flex-col text-sm text-white">
+                            <h1>{{ selectedConversation.user?.name }}</h1>
+                            <h1 class="text-gray-400">{{ selectedConversation.user?.email }}</h1>
+                        </div>
+                    </div>
 
-                <div class="flex flex-col text-sm text-white">
-                    <h1>John Doe G. Seguerra</h1>
-                    <h1 class="text-gray-400">johndoe@gmail.com</h1>
-                </div>
-            </div>
-
-            <div class="flex-1 font-medium h-[75%] pt-5 px-5 overflow-y-auto space-y-4">
-                <!-- Dummy chat messages -->
-                <div class="flex justify-start">
-                    <div class="bg-gray-200 px-4 py-2 rounded-lg max-w-sm">
-                        Hello, I have a question about the latest design.
-                    </div>
-                </div>
-                <div class="flex justify-end">
-                    <div class="bg-blue-500 text-white px-4 py-2 rounded-lg max-w-sm">
-                        Sure, let me know what you're thinking!
-                    </div>
-                </div>
-                <div class="flex justify-start">
-                    <div class="bg-gray-200 px-4 py-2 rounded-lg max-w-sm">
-                        Can we make the background white and the logo smaller?
-                    </div>
-                </div>
-                <div class="flex justify-end">
-                    <div class="bg-blue-500 text-white px-4 py-2 rounded-lg max-w-sm">
-                        Noted! I’ll update it.
-                    </div>
-                </div>
-
-                <!-- RECEIVED MESSAGE (left) -->
-                <div class="flex justify-start">
-                    <div class="rounded-lg max-w-xs overflow-hidden bg-gray-200 p-2 space-y-2">
-                        <img
-                            src="/JD-JERSEY-1.jpg"
-                            alt="Received"
-                            class="w-full max-w-[200px] rounded-md object-cover"
-                        />
-                        <p class="text-sm text-gray-800">
-                            Can we make the background white and the logo smaller?
-                        </p>
-                    </div>
-                </div>
-
-                <!-- SENT MESSAGE (right) -->
-                <div class="flex justify-end">
-                    <div class="rounded-lg max-w-xs overflow-hidden bg-blue-500 p-2 space-y-2">
-                        <img
-                            src="/JD-JERSEY-2.jpg"
-                            alt="Sent"
-                            class="w-full max-w-[200px] rounded-md object-cover"
-                        />
-                        <p class="text-sm text-white">Noted! I’ll update it.</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Message input -->
-            <div
-                class="absolute bottom-0 left-0 w-full flex items-center gap-2 p-4 bg-gray-50 border-t border-gray-300"
-            >
-                <label for="file-upload" class="cursor-pointer">
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        class="h-6 w-6 text-gray-600 hover:text-black"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
+                    <!-- Messages -->
+                    <div
+                        class="flex-1 font-medium h-[70%] pt-5 px-5 pb-8 overflow-y-auto space-y-4"
                     >
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828L18 9.828m-3-2.828L18 9.828M18 9.828V16a2 2 0 002 2h2"
-                        />
-                    </svg>
-                    <input id="file-upload" type="file" class="hidden" />
-                </label>
+                        <div
+                            v-for="msg in selectedConversation.messages"
+                            :key="msg.id"
+                            :class="[
+                                'flex',
+                                msg.sender_id === authStore.currentUser?.id
+                                    ? 'justify-end'
+                                    : 'justify-start',
+                            ]"
+                        >
+                            <div class="flex flex-col">
+                                <!-- If message has an attachment (image/file) -->
+                                <div v-if="msg.attachment_temp_url" class="mb-2">
+                                    <img
+                                        :src="msg.attachment_temp_url"
+                                        alt="Attachment"
+                                        class="w-full max-w-[200px] rounded-md object-cover"
+                                    />
+                                </div>
 
-                <input
-                    type="text"
-                    placeholder="Type your message..."
-                    class="flex-1 font-medium px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-500"
-                />
+                                <div
+                                    :class="[
+                                        'px-4 py-2 rounded-lg max-w-sm',
+                                        msg.sender_id === authStore.currentUser?.id
+                                            ? 'bg-blue-500 text-white'
+                                            : 'bg-gray-200 text-gray-800',
+                                    ]"
+                                >
+                                    {{ msg.content }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-                <button class="p-2 rounded-full bg-blue-500 hover:bg-blue-600 text-white">
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        class="h-5 w-5"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
+                    <!-- Message input -->
+                    <div
+                        class="w-full flex items-center gap-2 p-4 bg-gray-50 border-t border-gray-300"
                     >
-                        <path
-                            d="M2.94 2.94a.75.75 0 011.06 0l12 12a.75.75 0 01-1.06 1.06L13 14.06V16a.75.75 0 01-1.28.53L9 13H7.5A1.5 1.5 0 016 11.5V10h-.5A1.5 1.5 0 014 8.5V7l-1.06-1.06a.75.75 0 010-1.06z"
+                        <!-- File preview before sending -->
+                        <div v-if="attachment" class="flex items-center gap-2">
+                            <div v-if="attachmentPreview" class="relative">
+                                <!-- Image preview -->
+                                <img
+                                    :src="attachmentPreview"
+                                    class="h-16 w-16 object-cover rounded-md border"
+                                />
+
+                                <!-- X button inside image -->
+                                <button
+                                    @click="clearAttachment"
+                                    class="absolute top-1 right-1 bg-black/40 backdrop-blur-sm rounded-full p-0.5 text-white hover:bg-black/60"
+                                >
+                                    <XMarkIcon class="w-4 h-4" />
+                                </button>
+                            </div>
+
+                            <!-- Fallback if not image (file only) -->
+                            <p v-else class="text-sm text-gray-600">{{ attachment.name }}</p>
+                        </div>
+
+                        <label
+                            v-if="!attachment && !attachmentPreview"
+                            for="file-upload"
+                            class="cursor-pointer hover:opacity-75 bg-blue-500 rounded-md p-2"
+                        >
+                            <ArrowUpOnSquareIcon class="size-5 text-white" />
+                            <input
+                                id="file-upload"
+                                type="file"
+                                class="hidden"
+                                @change="handleFileChange"
+                            />
+                        </label>
+
+                        <input
+                            type="text"
+                            v-model="messageContent"
+                            placeholder="Type your message..."
+                            class="flex-1 font-medium px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-500"
                         />
-                    </svg>
-                </button>
+
+                        <button
+                            class="p-2 rounded-full hover:cursor-pointer bg-blue-500 hover:bg-blue-600 text-white"
+                            @click="handleSendMessage"
+                            :disabled="sendMessageMutation.isPending.value"
+                            :class="{
+                                'opacity-50 cursor-not-allowed':
+                                    sendMessageMutation.isPending.value,
+                            }"
+                        >
+                            <ChevronDoubleRightIcon class="size-5" />
+                        </button>
+                    </div>
+                </div>
+            </template>
+
+            <!-- No conversation selected -->
+            <div v-else class="flex items-center justify-center h-full text-gray-500">
+                Select a conversation to start chatting
             </div>
         </div>
+
+        <Toast />
     </div>
 </template>

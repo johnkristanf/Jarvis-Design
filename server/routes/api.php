@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ChatController;
 use App\Http\Controllers\DesignsController;
 use App\Http\Controllers\MaterialsController;
 use App\Http\Controllers\PaymentController;
@@ -82,6 +83,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // PROTECTED ORDER ROUTE
     // Route::post('/place/order', [PaymentController::class, 'OLDplaceOrder']);
     Route::post('/place/order', [PaymentController::class, 'placeOrder']);
+
+    // PROTECTED MESSAGE ROUTE
+    Route::post('/send/chat', [ChatController::class, 'sendChat']);
+    Route::get('/get/convo/{userID}', [ChatController::class, 'getConversationByUserID']);
+    Route::get('/get/all/convo', [ChatController::class, 'getAllConversation']);
+
 });
 
 // TEST AUTOMATED DEDUCTION UPON ORDER

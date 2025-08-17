@@ -32,3 +32,9 @@ export type AuthenticatedUserData = {
     role_id: number
     role: Role
 }
+
+export type User = {
+    id: number
+    name: string
+    email: string
+}

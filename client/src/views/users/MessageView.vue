@@ -1,46 +1,7 @@
 <script lang="ts" setup></script>
 
 <template>
-    <div class="w-full h-[100vh] mb-16 bg-gray-100 border border-gray-400 rounded-md flex">
-        <aside id="logo-sidebar" class="w-[25%] h-full" aria-label="Sidebar">
-            <div class="h-full px-3 py-4 overflow-y-auto bg-white dark:bg-gray-800">
-                <div class="flex items-center ps-2.5 mb-5">
-                    <img
-                        src="/jarvis-logo-circle.png"
-                        class="h-6 me-3 sm:h-7"
-                        alt="Flowbite Logo"
-                    />
-
-                    <div class="flex flex-col">
-                        <span class="text-xl font-semibold whitespace-nowrap dark:text-white">
-                            Message
-                        </span>
-
-                        <p class="text-xs text-gray-500">Talk with the seller</p>
-                    </div>
-                </div>
-                <ul class="space-y-2 font-medium">
-                    <li>
-                        <a
-                            href="#"
-                            class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
-                        >
-                            <img
-                                src="/user_icon.jpeg"
-                                class="h-7 mr-3 sm:h-8"
-                                alt="Flowbite Logo"
-                            />
-
-                            <div class="flex flex-col text-sm">
-                                <h1>John Doe G. Seguerra</h1>
-                                <h1 class="text-gray-400">johndoe@gmail.com</h1>
-                            </div>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </aside>
-
+    <div class="w-[40%] h-[100vh] mb-16 bg-gray-100 border border-gray-400 rounded-md flex">
         <!-- Chat messages -->
         <div class="relative flex-1">
             <!-- Chat Header -->

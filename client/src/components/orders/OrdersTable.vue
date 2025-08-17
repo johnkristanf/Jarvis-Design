@@ -18,7 +18,7 @@
     import { OrderStatus, type UpdateStatusType } from '@/types/order'
     import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
     import Loader from '../Loader.vue'
-    import { onMounted, ref } from 'vue'
+    import { ref, watch } from 'vue'
     import { updateOrderStatus } from '@/api/put/orders'
     import UploadedImagesModal from '../designs/UploadedImagesModal.vue'
     import QuantityPerSizeModal from '../designs/QuantityPerSizeModal.vue'
@@ -29,12 +29,22 @@
 
     const { isAdmin } = useAuthorization()
     const isStatusUpdating = ref<boolean>(false)
+    const isOrderLoading = ref<boolean>(true)
 
     const orderQuery = useQuery({
         queryKey: ['orders'],
         queryFn: getAllOrders,
         enabled: true,
     })
+
+    watch(
+        () => orderQuery.error,
+        (err) => {
+            if (err) {
+                isOrderLoading.value = false
+            }
+        },
+    )
 
     const statusQuery = useQuery({
         queryKey: ['order_status'],
@@ -241,7 +251,7 @@
 
                     <th scope="col" class="px-6 py-3">Delivery / Pick-Up Date</th>
 
-                    <th scope="col" class="px-6 py-3">Actions</th>
+                    <th v-if="isAdmin" scope="col" class="px-6 py-3">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -328,14 +338,14 @@
                         {{ order.delivery_date ? formatDate(order.delivery_date) : 'N/A' }}
                     </td>
 
-                    <td
+                    <!-- <td
                         v-if="!isAdmin"
                         class="relative flex items-center px-3 py-12 font-semibold text-gray-900 dark:text-white"
                     >
                         <router-link to="/message">
                             <fwb-button color="light">Chat to Seller</fwb-button>
                         </router-link>
-                    </td>
+                    </td> -->
 
                     <!-- UPDATE STATUS ACTION BUTTON -->
                     <td
@@ -509,13 +519,13 @@
                         !orderQuery.isLoading.value
                     "
                 >
-                    <td colspan="7" class="px-6 py-4 text-center">No orders found.</td>
+                    <td colspan="12" class="px-6 py-4 text-center">No orders found.</td>
                 </tr>
             </tbody>
         </table>
     </div>
 
-    <Loader v-if="orderQuery.isLoading.value" msg="Loading Orders..." />
+    <Loader v-if="orderQuery.isLoading.value && isOrderLoading" msg="Loading Orders..." />
 
     <Loader v-if="isStatusUpdating" msg="Updating Order Status..." />
 

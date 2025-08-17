@@ -8,7 +8,7 @@
         MenuItem,
         MenuItems,
     } from '@headlessui/vue'
-    import { BellAlertIcon, CheckIcon, ShoppingCartIcon, UserIcon } from '@heroicons/vue/20/solid'
+    import { BellAlertIcon, CheckIcon, UserIcon } from '@heroicons/vue/20/solid'
     import { BellIcon } from '@heroicons/vue/24/outline'
     import { useRoute, useRouter } from 'vue-router'
     import Loader from './Loader.vue'
@@ -31,7 +31,7 @@
         { name: 'Home', to: '/home' },
         { name: 'Designs', to: '/designs' },
         { name: 'Orders', to: '/orders' },
-        { name: 'Message', to: '/message' },
+        // { name: 'Message', to: '/message' },
         { name: 'FAQ', to: '/faq' },
     ]
 
@@ -180,8 +180,8 @@
                                     <div class="flex items-center gap-3 mr-3">
                                         <router-link
                                             v-for="nav in authNavigation"
+                                            v-bind:key="nav.name"
                                             :to="nav.to"
-                                            key="nav.to"
                                             :class="[
                                                 'px-3 py-2 text-white hover:border-b-2 ',
                                                 route.path === nav.to ? 'border-b-2' : '',
@@ -221,6 +221,7 @@
 
                                             <div
                                                 v-for="notif in notificationsQuery.data.value"
+                                                v-bind:key="notif.id"
                                                 @click="handleReadNotification(notif.id)"
                                                 :class="[
                                                     'flex items-center gap-3 p-3 ',
