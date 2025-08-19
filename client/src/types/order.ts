@@ -61,7 +61,9 @@ export type Orders = {
     paid_amount: string
     quantity: number
     solo_quantity: number
+    total_quantity: number
     total_price: number
+    product_unit_price: number
     created_at: string
     status: string
     name: string

@@ -227,7 +227,6 @@
                                 <ProgressSpinner :pt="{ root: { style: { width: '40px' } } }" />
                             </div> -->
 
-
                             <!-- PAYMENT CONFIRMATION SCREENSHOT UPLOAD -->
                             <div class="mt-10">
                                 <div class="flex items-center justify-between">

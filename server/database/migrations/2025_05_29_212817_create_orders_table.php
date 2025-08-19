@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('order_number')->unique();
             $table->string('color');
+            $table->decimal('product_unit_price', 15, 2);
             $table->enum('design_type', ['own-design', 'business-design', 'ai-generation']);
             $table->string('order_option');
 

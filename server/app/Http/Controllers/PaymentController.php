@@ -289,6 +289,7 @@ class PaymentController extends Controller
         $validated = $request->validate([
             'color' => 'required|string',
             'phone_number' => 'required|string',
+            'product_unit_price' => 'required|numeric',
             'address' => 'required|string',
             'design_type' => 'required|in:own-design,business-design,ai-generation',
             'order_option' => 'required|string',
@@ -317,6 +318,7 @@ class PaymentController extends Controller
         $order = Orders::create([
             'order_number' => $this->generateOrderNumber(),
             'color' => $validated['color'],
+            'product_unit_price' => $validated['product_unit_price'],
             'phone_number' => $validated['phone_number'],
             'address' => $validated['address'],
             'design_type' => $validated['design_type'],

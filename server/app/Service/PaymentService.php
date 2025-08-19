@@ -239,6 +239,7 @@ class PaymentService
                 ->select([
                     'id',
                     'order_number',
+                    'product_unit_price',
                     'color',
                     'phone_number',
                     'address',

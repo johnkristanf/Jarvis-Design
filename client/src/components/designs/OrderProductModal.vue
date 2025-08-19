@@ -20,7 +20,7 @@
     import { OrderOptions, type QrCodePaymentData, type SelectedOrderOption } from '@/types/order'
     import QrCodePaymentModal from './QrCodePaymentModal.vue'
     import ListSelectBox from '../ListSelectBox.vue'
-    import { useMutation } from '@tanstack/vue-query'
+    import { useMutation, useQueryClient } from '@tanstack/vue-query'
 
     import { useToast } from 'primevue/usetoast'
     import Toast from 'primevue/toast'
@@ -35,6 +35,7 @@
     })
 
     const { sizes, loadingSizes } = useProductAttributes()
+    const queryClient = useQueryClient()
 
     // Define emits
     const emit = defineEmits(['close', 'openAIDesigns'])
@@ -128,8 +129,7 @@
     const prepareFormData = () => {
         const data = new FormData()
 
-        console.log("paymentAttachmentFile.value: ", paymentAttachmentFile.value);
-        
+        console.log('paymentAttachmentFile.value: ', paymentAttachmentFile.value)
 
         data.append('color', formData.value.color)
         data.append('phone_number', formData.value.phone_number)
@@ -137,6 +137,7 @@
         data.append('design_type', formData.value.designType)
         data.append('order_option', formData.value.orderOption?.name as string)
         data.append('fabric_type_id', props.product.fabric_type.id.toString())
+        data.append('product_unit_price', props.product.unit_price)
 
         // Conditionally append size quantities or solo quantity
         if (shouldIncludeSizes.value) {
@@ -190,7 +191,7 @@
         },
         onSuccess: (response) => {
             console.log('respData success Order: ', response)
-
+            queryClient.invalidateQueries({ queryKey: ['order_notifications'] })
             toast.add({
                 severity: 'success',
                 summary: 'Order Place Successfully!',
@@ -272,7 +273,6 @@
             formData.append('total_quantity', totalQuantity.value.toString())
             formData.append('total_price', totalPrice.value.toString())
             formData.append('payment_attachment', paymentAttachmentFile.value)
-            
         }
 
         mutation.mutate(formData)
