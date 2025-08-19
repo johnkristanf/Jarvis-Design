@@ -28,22 +28,22 @@
     const expandedCategory = ref<number | null>(null)
 
     // HANDLE DESIGN SELECTION FOR MODAL
-    const handleSelectDesign = (
-        designs: Designs[],
-        categoryName: string | number,
-        tagName: string | number,
-    ) => {
-        openDesignModal.value = true
-        selectedDesigns.value = designs
-        selectedCategory.value = categoryName
-        selectedTag.value = tagName
-    }
+    // const handleSelectDesign = (
+    //     designs: Designs[],
+    //     categoryName: string | number,
+    //     tagName: string | number,
+    // ) => {
+    //     openDesignModal.value = true
+    //     selectedDesigns.value = designs
+    //     selectedCategory.value = categoryName
+    //     selectedTag.value = tagName
+    // }
 
     // ORDER RELATED
     const showOrderModal = ref<boolean>(false)
     const selectedProductRef = ref<Product>()
     const selectedCategoryRef = ref<string>()
-    const fixedPriceAmmountRef = ref<number>()
+    // const fixedPriceAmmountRef = ref<number>()
 
     const openOrderDetailsModal = (categoryName: string, selectedProduct: Product) => {
         selectedProductRef.value = selectedProduct

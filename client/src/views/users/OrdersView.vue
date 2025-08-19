@@ -1,10 +1,38 @@
 <script lang="ts" setup>
     import CustomerChatBox from '@/components/message/CustomerChatBox.vue'
-    import OrdersTable from '@/components/orders/OrdersTable.vue'
+    import OrderDetailsModal from '@/components/orders/OrderDetailsModal.vue'
     import { ChatBubbleLeftRightIcon } from '@heroicons/vue/20/solid'
-    import { ref } from 'vue'
+    import { ref, watch } from 'vue'
+    import { FwbCard } from 'flowbite-vue'
+    import { useQuery } from '@tanstack/vue-query'
+    import { getAllOrders } from '@/api/get/orders'
+    import Loader from '@/components/Loader.vue'
+    import type { Orders } from '@/types/order'
 
     const isOpenChatBox = ref<boolean>(false)
+    const isOrderDetailsOpen = ref<boolean>(false)
+    const orderDetails = ref<Orders>()
+    const isOrderLoading = ref<boolean>(true)
+
+    const orderQuery = useQuery({
+        queryKey: ['orders'],
+        queryFn: getAllOrders,
+        enabled: true,
+    })
+
+    watch(
+        () => orderQuery.error,
+        (err) => {
+            if (err) {
+                isOrderLoading.value = false
+            }
+        },
+    )
+
+    const openOrderDetails = (order: Orders) => {
+        isOrderDetailsOpen.value = true
+        orderDetails.value = order
+    }
 </script>
 
 <template>
@@ -46,7 +74,7 @@
                         type="search"
                         id="default-search"
                         class="block w-full p-4 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                        placeholder="Search Order ID, Status..."
+                        placeholder="Search Order No., Status..."
                         required
                     />
                 </div>
@@ -55,7 +83,7 @@
 
         <!-- FLOATING MESSAGE ICON -->
         <div
-            class="absolute bottom-13 right-11 bg-gray-800 rounded-full z-[9999] p-3 hover:cursor-pointer hover:opacity-75"
+            class="fixed bottom-13 right-11 bg-gray-800 rounded-full z-[9999] p-3 hover:cursor-pointer hover:opacity-75"
             @click="isOpenChatBox = true"
         >
             <ChatBubbleLeftRightIcon class="size-10 text-white" />
@@ -65,6 +93,31 @@
             <CustomerChatBox :isOpen="isOpenChatBox" @close="isOpenChatBox = false" />
         </div>
 
-        <OrdersTable />
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 mt-5 pb-10 gap-5">
+            <fwb-card
+                v-for="order in orderQuery.data.value"
+                :key="order.id"
+                :img-alt="order.name"
+                :img-src="order.temp_url"
+                variant="image"
+                class="w-xs hover:opacity-75 hover:cursor-pointer"
+                @click="() => openOrderDetails(order)"
+            >
+                <div class="p-5">
+                    <p class="font-semibold text-gray-700 dark:text-gray-400">
+                        {{ order.order_number }}
+                    </p>
+                </div>
+            </fwb-card>
+
+        </div>
+
+        <OrderDetailsModal
+            v-if="orderDetails"
+            :isOpen="isOrderDetailsOpen"
+            :orderDetails="orderDetails"
+            @close="isOrderDetailsOpen = false"
+        />
+        <Loader v-if="orderQuery.isLoading.value && isOrderLoading" msg="Loading Orders..." />
     </div>
 </template>

@@ -1,10 +1,12 @@
+import type { User } from './user'
+
 type OrderStatus = 'in_progress' | 'pick_up' | 'delivery' | 'completed'
 
 export const OrderStatus = {
-    PENDING: "pending",
-    CANCELLED: "cancelled",
-    APPROVED: "completed",
-} 
+    PENDING: 'pending',
+    CANCELLED: 'cancelled',
+    APPROVED: 'completed',
+}
 
 export type OrderTypes = 'uploaded' | 'pre-made'
 
@@ -32,9 +34,25 @@ export type QrCodePaymentData = {
     total_price: number
 }
 
+export interface SizePivot {
+    order_id: number
+    size_id: number
+    quantity: number
+    created_at: string
+    updated_at: string
+}
+
+export interface Size {
+    id: number
+    name: string
+    created_at: string
+    updated_at: string
+    pivot: SizePivot
+}
+
 export type Orders = {
     id: number
-    order_id: string
+    order_number: string
     color: string
     phone_number: string
     address: string
@@ -42,10 +60,19 @@ export type Orders = {
     order_option: string
     paid_amount: string
     quantity: number
+    solo_quantity: number
+    total_quantity: number
+    total_price: number
+    product_unit_price: number
     created_at: string
     status: string
     name: string
     image_path: string
+    temp_url: string
+    delivery_date: string | null
+
+    user?: User
+    sizes: Size[]
 }
 
 export type OrderStatusType = {

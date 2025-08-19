@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-    import { ref, computed, onMounted, watch } from 'vue'
+    import { ref, computed, watch } from 'vue'
     import {
         Dialog,
         DialogPanel,
@@ -20,7 +20,7 @@
     import { OrderOptions, type QrCodePaymentData, type SelectedOrderOption } from '@/types/order'
     import QrCodePaymentModal from './QrCodePaymentModal.vue'
     import ListSelectBox from '../ListSelectBox.vue'
-    import { useMutation } from '@tanstack/vue-query'
+    import { useMutation, useQueryClient } from '@tanstack/vue-query'
 
     import { useToast } from 'primevue/usetoast'
     import Toast from 'primevue/toast'
@@ -35,17 +35,11 @@
     })
 
     const { sizes, loadingSizes } = useProductAttributes()
-
-    onMounted(() => {
-        console.log('categoryName 123: ', props.categoryName)
-        console.log('product ni: ', props.product)
-        console.log('sizes: ', sizes)
-    })
+    const queryClient = useQueryClient()
 
     // Define emits
     const emit = defineEmits(['close', 'openAIDesigns'])
     const handleClose = () => emit('close')
-    const handleOpenAIDesigns = () => emit('openAIDesigns')
 
     // Reactive data
     const formData = ref({
@@ -72,7 +66,8 @@
     ])
 
     // UPLOAD HANDLER FOR "OWN DESIGN" ORDER CHOICE
-    const handleFileUpload = (event: any) => {
+    // @ts-expect-error event
+    const handleFileUpload = (event) => {
         const file = event.target.files[0]
         formData.value.ownDesignFile = file
     }
@@ -80,10 +75,16 @@
     const businessProductDesign = ref<BusinessProductDesign[]>([])
     const isLoadingBusinessDesigns = ref<boolean>(false)
     const showQrCodePaymentModal = ref<boolean>(false)
+    const paymentAttachmentFile = ref<File | null>(null)
     const toast = useToast()
 
     const selectedBusinessDesignId = ref<number | null>(null)
     const qrCodePaymentData = ref<QrCodePaymentData | null>(null)
+
+    // HANDLE PAYMENT ATTACHMENT FILE
+    const handlePaymentAttachmentFile = (file: File | null) => {
+        paymentAttachmentFile.value = file
+    }
 
     // FILTER SELECTED PRODUCT CATEGORY IF NEEDED THE SIZES INPUT (IF MUGS SELECTED THEREFORE NO SIZES IS AVAILABLE)
     const shouldIncludeSizes = computed(() =>
@@ -128,12 +129,15 @@
     const prepareFormData = () => {
         const data = new FormData()
 
+        console.log('paymentAttachmentFile.value: ', paymentAttachmentFile.value)
+
         data.append('color', formData.value.color)
         data.append('phone_number', formData.value.phone_number)
         data.append('address', formData.value.address)
         data.append('design_type', formData.value.designType)
         data.append('order_option', formData.value.orderOption?.name as string)
         data.append('fabric_type_id', props.product.fabric_type.id.toString())
+        data.append('product_unit_price', props.product.unit_price)
 
         // Conditionally append size quantities or solo quantity
         if (shouldIncludeSizes.value) {
@@ -149,7 +153,6 @@
         } else if (formData.value.designType === 'business-design') {
             data.append('business_design_url', formData.value.businessDesignURL)
         }
-
         return data
     }
 
@@ -188,7 +191,7 @@
         },
         onSuccess: (response) => {
             console.log('respData success Order: ', response)
-
+            queryClient.invalidateQueries({ queryKey: ['order_notifications'] })
             toast.add({
                 severity: 'success',
                 summary: 'Order Place Successfully!',
@@ -199,9 +202,10 @@
                 handleClose()
             }, 1500)
         },
-        onError: (err: any) => {
+        onError: (err) => {
             console.error('Place order error', err)
 
+            // @ts-expect-error custom payload
             if (err.statusCode === 401) {
                 toast.add({
                     severity: 'error',
@@ -265,9 +269,10 @@
             console.log(`${key}:`, value)
         }
 
-        if (totalQuantity && totalPrice) {
+        if (totalQuantity.value && totalPrice.value && paymentAttachmentFile.value) {
             formData.append('total_quantity', totalQuantity.value.toString())
             formData.append('total_price', totalPrice.value.toString())
+            formData.append('payment_attachment', paymentAttachmentFile.value)
         }
 
         mutation.mutate(formData)
@@ -608,6 +613,7 @@
         :paymentData="qrCodePaymentData"
         @close="showQrCodePaymentModal = false"
         @place_order="handlePlaceOrder"
+        @fileSelected="handlePaymentAttachmentFile"
     />
 
     <Toast />

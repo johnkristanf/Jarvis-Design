@@ -13,7 +13,7 @@
     import { useRoute, useRouter } from 'vue-router'
     import Loader from './Loader.vue'
     import { useFetchAuthenticatedUser } from '@/composables/useFetchAuthenticatedUser'
-    import { onMounted, ref } from 'vue'
+    import { computed, onMounted, ref } from 'vue'
     import { Drawer } from 'primevue'
     import { OrderStatus } from '@/types/order'
     import { useMutation, useQuery } from '@tanstack/vue-query'
@@ -69,6 +69,13 @@
         onError: (error) => {
             console.error('Mutation error:', error)
         },
+    })
+
+    // MAP ALL UNREAD NOTIFICATION
+    const unreadNotificationsCount = computed(() => {
+        if (!notificationsQuery.data.value) return 0
+
+        return notificationsQuery.data.value.filter((notification) => !notification.is_read).length
     })
 
     const notifReadAllMutation = useMutation({
@@ -280,6 +287,18 @@
                                     <span class="absolute -inset-1.5" />
                                     <span class="sr-only">View notifications</span>
                                     <BellIcon class="size-6" aria-hidden="true" />
+
+                                    <!-- Notification badge on bell icon -->
+                                    <span
+                                        v-if="unreadNotificationsCount > 0"
+                                        class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full min-w-5 h-5 flex items-center justify-center px-1"
+                                    >
+                                        {{
+                                            unreadNotificationsCount > 99
+                                                ? '99+'
+                                                : unreadNotificationsCount
+                                        }}
+                                    </span>
                                 </button>
 
                                 <Menu as="div" class="relative ml-3" v-if="authStore.currentUser">
@@ -369,6 +388,18 @@
                                 <span class="absolute -inset-1.5" />
                                 <span class="sr-only">View notifications</span>
                                 <BellIcon class="size-6" aria-hidden="true" />
+
+                                <!-- Notification badge on bell icon -->
+                                <span
+                                    v-if="unreadNotificationsCount > 0"
+                                    class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full min-w-5 h-5 flex items-center justify-center px-1"
+                                >
+                                    {{
+                                        unreadNotificationsCount > 99
+                                            ? '99+'
+                                            : unreadNotificationsCount
+                                    }}
+                                </span>
                             </button>
                         </div>
 
@@ -413,19 +444,20 @@
                         {{ item.name }}
                     </router-link>
 
-                    <router-link
-                        v-if="!authStore.currentUser"
-                        v-for="nav in authNavigation"
-                        :key="nav.to"
-                        :to="nav.to"
-                        @click="close"
-                        :class="[
-                            'block rounded-md px-3 py-2 text-base font-medium text-gray-400 hover:bg-gray-700 hover:cursor-pointer hover:text-white mt-1',
-                            route.path === nav.to ? 'bg-white text-black' : '',
-                        ]"
-                    >
-                        {{ nav.name }}
-                    </router-link>
+                    <div v-if="!authStore.currentUser">
+                        <router-link
+                            v-for="nav in authNavigation"
+                            :key="nav.to"
+                            :to="nav.to"
+                            @click="close"
+                            :class="[
+                                'block rounded-md px-3 py-2 text-base font-medium text-gray-400 hover:bg-gray-700 hover:cursor-pointer hover:text-white mt-1',
+                                route.path === nav.to ? 'bg-white text-black' : '',
+                            ]"
+                        >
+                            {{ nav.name }}
+                        </router-link>
+                    </div>
 
                     <div v-else-if="isLoading" class="px-2 py-2 text-gray-400">
                         Loading authentication links...

@@ -24,9 +24,6 @@ class ChatController extends Controller
         ]);
 
 
-        Log::info("VALIDATED", [$validated]);
-
-
         $conversation = $this->chat->findConversationByUserID(
             userID: $validated['user_id'],
             eagerLoad: false

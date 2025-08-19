@@ -7,15 +7,41 @@
         DialogPanel,
         DialogTitle,
     } from '@headlessui/vue'
+    import { ref } from 'vue'
 
     const props = defineProps<{
         paymentData: QrCodePaymentData | null
     }>()
 
     // MODAL EMITS
-    const emit = defineEmits(['close', 'place_order'])
+    const emit = defineEmits(['close', 'place_order', 'fileSelected'])
     const handleCloseModal = () => emit('close')
     const handleTriggerPlaceOrder = () => emit('place_order')
+
+    const file = ref<File | null>(null)
+    const fileInput = ref<HTMLInputElement | null>(null)
+    const previewUrl = ref<string | null>(null)
+
+    const triggerFileSelect = () => {
+        fileInput.value?.click()
+    }
+
+    const handleFileChange = (e: Event) => {
+        const target = e.target as HTMLInputElement
+        if (target.files && target.files[0]) {
+            file.value = target.files[0]
+            previewUrl.value = URL.createObjectURL(target.files[0])
+
+            emit('fileSelected', file.value)
+        }
+    }
+
+    const clearFile = () => {
+        file.value = null
+        previewUrl.value = null
+        if (fileInput.value) fileInput.value.value = '' // reset input
+        emit('fileSelected', null)
+    }
 </script>
 
 <template>
@@ -88,9 +114,29 @@
 
                                 <!-- PAYMENT CONFIRMATION SCREENSHOT UPLOAD -->
                                 <div
-                                    class="mt-4 border-2 border-dashed border-gray-300 rounded-md p-6 flex flex-col items-center justify-center"
+                                    class="mt-4 border-2 border-dashed border-gray-300 rounded-md p-6 flex flex-col items-center justify-center relative w-[280px] h-[200px]"
                                 >
-                                    <div class="flex items-center justify-center">
+                                    <!-- If preview exists -->
+                                    <div v-if="previewUrl" class="relative w-full h-full">
+                                        <img
+                                            :src="previewUrl"
+                                            alt="Payment Preview"
+                                            class="w-full h-full object-cover rounded-md"
+                                        />
+                                        <!-- Clear button -->
+                                        <button
+                                            @click="clearFile"
+                                            class="absolute top-[-12px] right-0 text-red-800 text-xl rounded-md p-1 hover:cursor-pointer"
+                                        >
+                                            ✕
+                                        </button>
+                                    </div>
+
+                                    <!-- If no file yet -->
+                                    <div
+                                        v-else
+                                        class="flex flex-col items-center justify-center text-center"
+                                    >
                                         <svg
                                             xmlns="http://www.w3.org/2000/svg"
                                             class="w-12 h-12 text-gray-400"
@@ -105,28 +151,26 @@
                                                 d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
                                             />
                                         </svg>
-                                    </div>
-
-                                    <div class="mt-4 text-center">
-                                        <p class="text-sm text-gray-600">
+                                        <p class="text-sm text-gray-600 mt-2">
                                             Screenshot of Payment Confirmation
                                         </p>
-                                        <p class="text-xs text-gray-500 mt-1">or</p>
+
+                                        <input
+                                            ref="fileInput"
+                                            type="file"
+                                            accept="image/*"
+                                            class="hidden"
+                                            @change="handleFileChange"
+                                        />
+
+                                        <button
+                                            type="button"
+                                            @click="triggerFileSelect"
+                                            class="mt-3 px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none"
+                                        >
+                                            Select File
+                                        </button>
                                     </div>
-
-                                    <input
-                                        ref="fileInput"
-                                        type="file"
-                                        accept="image/*"
-                                        class="hidden"
-                                    />
-
-                                    <button
-                                        type="button"
-                                        class="mt-4 px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none"
-                                    >
-                                        Select File
-                                    </button>
                                 </div>
                             </div>
 
@@ -140,8 +184,14 @@
                                 </button>
                                 <button
                                     type="button"
+                                    :disabled="!file"
                                     @click="handleTriggerPlaceOrder"
-                                    class="inline-flex justify-center rounded-md border border-transparent bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:opacity-75 hover:cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                                    :class="[
+                                        'inline-flex justify-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2',
+                                        !file
+                                            ? 'bg-gray-400 hover:cursor-not-allowed'
+                                            : 'bg-gray-900 hover:opacity-75 hover:cursor-pointer ',
+                                    ]"
                                 >
                                     Place Order
                                 </button>

@@ -235,9 +235,11 @@ class PaymentService
     {
         try {
 
-            $query = Orders::with(['user', 'sizes', 'user']) // eager load sizes + user
+            $query = Orders::with(['user:id,name,email', 'sizes'])
                 ->select([
                     'id',
+                    'order_number',
+                    'product_unit_price',
                     'color',
                     'phone_number',
                     'address',
@@ -261,10 +263,6 @@ class PaymentService
             }
 
             $orders = $query->latest()->get();
-
-            Log::info("Orders Data: ", [
-                'orders' => $orders
-            ]);
 
             $orders->transform(function ($order) {
                 $filePath = $order->own_design_url ?: $order->business_design_url;

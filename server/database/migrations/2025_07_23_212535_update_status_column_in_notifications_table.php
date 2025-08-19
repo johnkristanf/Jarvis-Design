@@ -9,9 +9,6 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('notifications', function (Blueprint $table) {
-            // Drop foreign key constraint first (if it exists)
-            $table->dropForeign(['status_id']);
-
             // Drop the old integer column
             $table->dropColumn('status_id');
 
