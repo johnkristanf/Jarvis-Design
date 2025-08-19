@@ -2,17 +2,11 @@
     import { Popover, PopoverButton, PopoverPanel } from '@headlessui/vue'
     import { FwbButton } from 'flowbite-vue'
 
-    import {
-        CheckBadgeIcon,
-        ChevronDownIcon,
-        EllipsisVerticalIcon,
-        ShoppingCartIcon,
-        TruckIcon,
-    } from '@heroicons/vue/20/solid'
+    import { ChevronDownIcon, EllipsisVerticalIcon } from '@heroicons/vue/20/solid'
 
     import DatePicker from 'primevue/datepicker'
 
-    import { getAllOrders, getAllOrderStatus } from '@/api/get/orders'
+    import { getAllOrders } from '@/api/get/orders'
     import { useAuthorization } from '@/composables/useAuthorization'
     import { formatCurrency, formatDate } from '@/helper/designs'
     import { OrderStatus, type UpdateStatusType } from '@/types/order'
@@ -46,29 +40,6 @@
         },
     )
 
-    const statusQuery = useQuery({
-        queryKey: ['order_status'],
-        queryFn: getAllOrderStatus,
-        enabled: true,
-    })
-
-    const solutions = [
-        {
-            name: OrderStatus.PENDING,
-            icon: TruckIcon,
-        },
-        {
-            name: OrderStatus.CANCELLED,
-            icon: ShoppingCartIcon,
-        },
-        {
-            name: OrderStatus.APPROVED,
-            icon: CheckBadgeIcon,
-        },
-    ]
-
-    const iconMap = Object.fromEntries(solutions.map((s) => [s.name, s.icon]))
-    const icondisplay = ref()
     const queryClient = useQueryClient()
     const toast = useToast()
 
@@ -139,36 +110,12 @@
         { name: 'Cancelled', tag: 'cancelled' },
     ])
 
-    // FILTERED STATUS
-    // const enrichedStatuses = computed(() => {
-    //     if (!statusQuery.data?.value) return []
-
-    //     return statusQuery.data.value
-    //         .filter((status) => {
-    //             const isSelected = status.name === selectedOrderOption.value
-
-    //             const isDeliveryOrPickup =
-    //                 selectedOrderStatus.value === OrderStatus.APPROVED
-
-    //             // RETURNS ONLY COMPLETED IF THE STATUS IS EITHER DELIVER OR PICK UP
-    //             if (isDeliveryOrPickup) {
-    //                 return isCompleted
-    //             }
-
-    //             // IF NOT RETURNS THE SELECTED OPTION AND THE COMPLETED
-    //             return isSelected || isCompleted
-    //         })
-    //         .map((status) => ({
-    //             ...status,
-    //             icon: iconMap[status.name] || null,
-    //         }))
-    // })
-
     const handleShowStatusFilter = (orderOption: string, orderStatus: string) => {
         selectedOrderOption.value = orderOption
         selectedOrderStatus.value = orderStatus
     }
 
+    // UPDATE ORDER MUTATION
     const mutation = useMutation({
         mutationFn: updateOrderStatus,
         onSuccess: async () => {
@@ -208,12 +155,13 @@
         close()
     }
 
-    const handleOpenUploadedImagesModal = (designID: number) => {
-        selectedDesignID.value = designID
-        showUploadedImageModal.value = true
-    }
+    // const handleOpenUploadedImagesModal = (designID: number) => {
+    //     selectedDesignID.value = designID
+    //     showUploadedImageModal.value = true
+    // }
 
-    const handleShowSizes = (sizes: any[]) => {
+    // @ts-expect-error any
+    const handleShowSizes = (sizes) => {
         selectedOrderSizes.value = sizes
         showSizeBreakdownModal.value = true
     }
@@ -229,6 +177,7 @@
                     <!-- <th scope="col" class="px-16 py-3">
                         <span>Order ID</span>
                     </th> -->
+                    <th scope="col" class="px-6 py-3">Order No.</th>
 
                     <th scope="col" class="px-16 py-3">
                         <span>Image Design</span>
@@ -260,9 +209,9 @@
                     :key="order.id"
                     class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600"
                 >
-                    <!-- <td class="px-6 py-4 font-semibold text-gray-900 dark:text-white">
-                        {{ order.order_id }}
-                    </td> -->
+                    <td class="px-6 py-4 font-semibold text-gray-900 dark:text-white">
+                        {{ order.order_number }}
+                    </td>
 
                     <!-- <td class="p-4">
                         <button
@@ -282,7 +231,7 @@
                     </td>
 
                     <td class="px-6 py-4 font-semibold text-gray-900 dark:text-white">
-                        {{ order.user.name }}
+                        {{ order.user?.name }}
                     </td>
 
                     <td class="px-6 py-4 font-semibold text-gray-900 dark:text-white">
@@ -359,7 +308,7 @@
                             "
                             class="w-full max-w-sm px-4"
                         >
-                            <Popover v-slot="{ open, close }" class="relative">
+                            <Popover v-slot="{ close }" class="relative z-10">
                                 <PopoverButton>
                                     <span>
                                         <EllipsisVerticalIcon class="size-6" />
@@ -404,14 +353,16 @@
                                         <!-- PICK-UP OR DELIVERY DATE -->
                                         <div>
                                             <DatePicker
-                                                class="w-full"
+                                                class="w-full z-[9999]"
                                                 showIcon
                                                 iconDisplay="input"
                                                 placeholder="Set Delivery / Pick-up Date"
                                                 v-model="selectedActionDates[order.id]"
+                                                :minDate="new Date()"
                                                 @update:model-value="
-                                                    (val) =>
+                                                    (val) => {
                                                         handleActionDateChange(order.id, val, close)
+                                                    }
                                                 "
                                             />
                                         </div>

@@ -1,15 +1,6 @@
 <script lang="ts" setup>
-    import PreviewDesignModal from '@/components/designs/PreviewDesignModal.vue'
-    import Loader from '@/components/Loader.vue'
-    import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/vue/20/solid'
-    import { ref } from 'vue'
-    import UploadedDesignsTable from '@/components/designs/UploadedDesignsTable.vue'
-    import { useAuthStore } from '@/stores/user'
-    import FIlterDesign from '@/components/designs/FIlterDesign.vue'
-    import DesignOptions from '@/components/designs/DesignOptions.vue'
-    import { useQuery } from '@tanstack/vue-query'
-    import { apiService } from '@/api/axios'
     import PreMadeDesignCard from '@/components/designs/PreMadeDesign.vue'
+    import { ref } from 'vue'
 
     // REF FOR SHOWING UPLOADED DESIGNS OR PRE MADE DESIGNS
     const showUploadedDesignsTableRef = ref<boolean>(false)
@@ -61,12 +52,8 @@
                 </div> -->
 
                 <!-- PRE-MADE DESIGNS -->
-                <PreMadeDesignCard 
-                    :showUploadedDesignsTableRef="showUploadedDesignsTableRef"
-                />
+                <PreMadeDesignCard :showUploadedDesignsTableRef="showUploadedDesignsTableRef" />
             </div>
         </div>
     </div>
-
-   
 </template>

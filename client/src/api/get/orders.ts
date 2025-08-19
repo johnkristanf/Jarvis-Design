@@ -2,7 +2,9 @@ import type { Notifications, Orders, OrderStatusType } from '@/types/order'
 import { apiService } from '../axios'
 
 export async function getAllOrders(): Promise<Orders[]> {
-    const respData = await apiService.get<Orders[]>('/api/get/orders')
+    const respData = await apiService.get<Orders[]>('/api/get/orders');
+    console.log("respData orders: ", respData);
+    
     return respData
 }
 

@@ -5,12 +5,15 @@ namespace App\Http\Controllers;
 use App\Events\PaymentSucessful;
 use App\Models\Designs;
 use App\Models\Materials;
+use App\Models\Notifications;
 use App\Models\OrderLogs;
 use App\Models\Orders;
 use App\Models\OrderType as ModelsOrderType;
 use App\Models\UploadedDesign;
 use App\OrderType;
 use App\Service\PaymentService;
+use App\Traits\HandleAttachments;
+use App\Traits\OrderTrait;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -20,6 +23,8 @@ use Illuminate\Support\Facades\Storage;
 
 class PaymentController extends Controller
 {
+    use OrderTrait, HandleAttachments;
+
     protected $paymentService;
 
     public function __construct()
@@ -295,12 +300,22 @@ class PaymentController extends Controller
             'sizes.*' => 'nullable|numeric|min:0',
             'own_design_file' => 'nullable|file',
             'business_design_url' => 'nullable|string',
+            'payment_attachment' => 'required|file',
         ]);
 
-        Log::info("Order Data: ", ['validated' => $validated]);
+        Log::info("Order Data: ", [$validated]);
+
+
+        // UPLOAD THE PAYMENT ATTACHMENT TO S3
+        $attachmentURL = $this->uploadToS3(
+            root: 'payment',
+            sub: Auth::id(),
+            file: $request->file('payment_attachment')
+        );
 
         // Step 1: Create order first, without the design URL yet
         $order = Orders::create([
+            'order_number' => $this->generateOrderNumber(),
             'color' => $validated['color'],
             'phone_number' => $validated['phone_number'],
             'address' => $validated['address'],
@@ -310,6 +325,7 @@ class PaymentController extends Controller
             'total_price' => $validated['total_price'],
             'solo_quantity' => $validated['solo_quantity'] ?? null,
             'business_design_url' => $validated['business_design_url'] ?? null,
+            'attachment_url' => $attachmentURL,
             'user_id' => Auth::user()->id
         ]);
 
@@ -368,6 +384,13 @@ class PaymentController extends Controller
             'material_name' => $fabric->name,
             'unit' => $fabric->unit,
             'total_quantity_used' => $totalQuantityDeduction
+        ]);
+
+        // NOTFICATION
+        Notifications::create([
+            'order_id' => $order->order_number,
+            'user_id' => Auth::user()->id,
+            'status' => 'pending'
         ]);
 
         return response()->json(['message' => 'Order placed successfully', 'order_id' => $order->id]);

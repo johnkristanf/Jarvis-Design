@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
+            $table->string('order_number')->unique();
             $table->string('color');
             $table->enum('design_type', ['own-design', 'business-design', 'ai-generation']);
             $table->string('order_option');
@@ -24,6 +25,7 @@ return new class extends Migration
 
             $table->string('own_design_url')->nullable();
             $table->string('business_design_url')->nullable();
+            $table->string('attachment_url')->nullable();
             $table->timestamps();
         });
     }
