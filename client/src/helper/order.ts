@@ -23,3 +23,8 @@ export const formatDateWithTime = (dateString: string) => {
         minute: '2-digit',
     })
 }
+
+export const isValidCssColor = (value: string) => {
+    if (!value) return false
+    return typeof CSS !== 'undefined' && CSS.supports?.('color', value)
+}
