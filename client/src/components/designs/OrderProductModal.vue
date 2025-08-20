@@ -25,6 +25,7 @@
     import { useToast } from 'primevue/usetoast'
     import Toast from 'primevue/toast'
     import Loader from '../Loader.vue'
+    import { isValidCssColor } from '@/helper/order'
 
     const props = defineProps({
         categoryName: String,
@@ -288,7 +289,53 @@
         },
     )
 
-    // CHECK IF THE SELECTED CATEGORY HAS SIZES REQUIRED
+    // COLOR SETTING
+
+    const swatchColor = computed<string | null>(() => {
+        // If custom, use the free-text input; otherwise the selected option label
+        const candidate =
+            selectedOption.value === 'custom' ? formData.value.color : selectedOption.value
+
+        if (!candidate) return null
+        if (colorPalette[candidate]) return colorPalette[candidate]
+        if (isValidCssColor(candidate)) return candidate
+        return null
+    })
+
+    const colorOptions = [
+        'Red',
+        'Blue',
+        'Green',
+        'Yellow',
+        'Black',
+        'Sunset Blaze',
+        'Tropical Punch',
+        'Ocean Wave',
+        'Aqua Breeze',
+    ]
+
+    const colorPalette: Record<string, string> = {
+        'Red': '#FF0000',
+        'Blue': '#0000FF',
+        'Green': '#008000',
+        'Yellow': '#FFFF00',
+        'Black': '#000000',
+        'Sunset Blaze': '#FF6B3D',
+        'Tropical Punch': '#FF3B7F',
+        'Ocean Wave': '#2E8BC0',
+        'Aqua Breeze': '#7FDBFF',
+    }
+
+    const selectedOption = ref('')
+
+    // Watch dropdown changes
+    watch(selectedOption, (newValue) => {
+        if (newValue !== 'custom') {
+            formData.value.color = newValue // Sync dropdown value directly
+        } else {
+            formData.value.color = '' // Reset if custom selected
+        }
+    })
 </script>
 
 <template>
@@ -361,12 +408,53 @@
                                         <label class="block text-sm text-gray-600 mb-1">
                                             Color:
                                         </label>
-                                        <input
-                                            v-model="formData.color"
-                                            type="text"
-                                            placeholder="Enter color"
-                                            class="w-full px-3 py-2 border font-medium border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
-                                        />
+                                        <div class="flex gap-2">
+                                            <!-- Select Dropdown -->
+                                            <select
+                                                v-model="selectedOption"
+                                                class="w-1/3 px-3 py-2 border font-medium border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
+                                            >
+                                                <option value="">-- Select --</option>
+                                                <option
+                                                    v-for="color in colorOptions"
+                                                    :key="color"
+                                                    :value="color"
+                                                >
+                                                    {{ color }}
+                                                </option>
+                                                <option value="custom">Custom</option>
+                                            </select>
+
+                                            <!-- Swatch -->
+                                            <div
+                                                class="w-6 h-6 rounded border border-gray-300 shrink-0"
+                                                :style="{
+                                                    backgroundColor: swatchColor || 'transparent',
+                                                }"
+                                                :title="
+                                                    swatchColor
+                                                        ? `Preview: ${swatchColor}`
+                                                        : 'No color selected/invalid color'
+                                                "
+                                            ></div>
+
+                                            <!-- Free Text Input -->
+                                            <input
+                                                v-if="selectedOption === 'custom'"
+                                                v-model="formData.color"
+                                                type="text"
+                                                placeholder="Enter custom color"
+                                                class="w-full px-3 py-2 border font-medium border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
+                                            />
+
+                                            <!-- Auto-set if dropdown selected -->
+                                            <input
+                                                v-else
+                                                :value="formData.color"
+                                                disabled
+                                                class="w-full px-3 py-2 border font-medium border-gray-300 rounded-md bg-gray-100 cursor-not-allowed"
+                                            />
+                                        </div>
                                     </div>
 
                                     <!-- Quantity for fixed price -->
