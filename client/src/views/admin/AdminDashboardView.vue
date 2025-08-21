@@ -11,7 +11,8 @@
         Legend,
     } from 'chart.js'
     import { Bar } from 'vue-chartjs'
-    import { Line } from 'vue-chartjs'
+    // import { Line } from 'vue-chartjs'
+    import type { ChartData, ChartOptions } from 'chart.js'
 
     ChartJS.register(
         CategoryScale,
@@ -24,7 +25,7 @@
         BarElement,
     )
 
-    const chartData = {
+    const chartData: ChartData<'bar'> = {
         labels: ['January', 'February', 'March'],
         datasets: [
             {
@@ -33,13 +34,11 @@
                 backgroundColor: ['#3B82F6', '#10B981', '#F59E0B'], // For Bar chart
                 borderColor: '#3B82F6', // For Line chart
                 borderWidth: 2,
-                fill: false, // Optional for line chart
-                tension: 0.4, // Smooth the line
             },
         ],
     }
 
-    const chartOptions = {
+    const chartOptions: ChartOptions<'bar'> = {
         responsive: true,
         plugins: {
             legend: {
@@ -68,13 +67,13 @@
             Gives an overview of key metrics, recent activities, and system summaries at a glance.
         </p>
 
-        <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-4 mb-4 ">
+        <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
             <div class="w-[500px] h-[300px] rounded-md p-3">
                 <Bar id="my-chart-id" :options="chartOptions" :data="chartData" />
             </div>
 
             <div class="w-[500px] h-[300px] rounded-md p-3">
-                <Line :data="chartData" :options="chartOptions" />
+                <Bar id="my-chart-id" :options="chartOptions" :data="chartData" />
             </div>
         </div>
     </div>

@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-    import { onMounted, reactive, ref, watch } from 'vue'
+    import { reactive, ref, watch } from 'vue'
     import AddMaterialsModal from './AddMaterialsModal.vue'
     import { PlusIcon } from '@heroicons/vue/20/solid'
     import { useQuery } from '@tanstack/vue-query'
@@ -9,7 +9,6 @@
     import { useToast } from 'primevue/usetoast'
     import Toast from 'primevue/toast'
 
-    import echo from '@/services/echo'
     import EditMaterialsModal from './EditMaterialsModal.vue'
 
     // REF TOGGLER OF ADD NEW MATERIALS MODAL
@@ -19,11 +18,7 @@
     })
 
     // GET MATERIALS DATA QUERY
-    const {
-        isPending,
-        data: designMaterials,
-        refetch,
-    } = useQuery({
+    const { isPending, data: designMaterials } = useQuery({
         queryKey: ['materials'],
         queryFn: async () => {
             const respData = await apiService.get<Material[]>('/api/get/materials')
@@ -40,30 +35,30 @@
     const selectedMaterial = ref<Material>()
 
     // ALERT RESTOCK SOUND
-    const userHasInteracted = ref(false)
-    const alertSound = new Audio('/sounds/alarm.mp3')
+    // const userHasInteracted = ref(false)
+    // const alertSound = new Audio('/sounds/alarm.mp3')
 
     // CHECKS FOR REAL TIME UPDATE IF THERE ARE USER ORDERS THAT PAYS SUCCESSFULLY
-    onMounted(() => {
-        const enableAudio = () => {
-            userHasInteracted.value = true
-            alertSound.play().then(() => alertSound.pause())
-            window.removeEventListener('click', enableAudio)
-        }
+    // onMounted(() => {
+    //     const enableAudio = () => {
+    //         userHasInteracted.value = true
+    //         alertSound.play().then(() => alertSound.pause())
+    //         window.removeEventListener('click', enableAudio)
+    //     }
 
-        window.addEventListener('click', enableAudio)
+    //     window.addEventListener('click', enableAudio)
 
-        echo.connector.pusher.connection.bind('connected', () => {
-            console.log('✅ Echo is connected to Reverb!')
-        })
+    //     echo.connector.pusher.connection.bind('connected', () => {
+    //         console.log('✅ Echo is connected to Reverb!')
+    //     })
 
-        echo.channel('payments').listen('.payment.successful', async (e: any) => {
-            console.log('Payment completed!', e)
+    //     echo.channel('payments').listen('.payment.successful', async (e: any) => {
+    //         console.log('Payment completed!', e)
 
-            // REFETCH MATERIALS EVERYTIME SOMEONE SUCCESSFULLY ORDERS
-            refetch()
-        })
-    })
+    //         // REFETCH MATERIALS EVERYTIME SOMEONE SUCCESSFULLY ORDERS
+    //         refetch()
+    //     })
+    // })
 
     const onShowEditMaterial = (material: Material) => {
         selectedMaterial.value = material

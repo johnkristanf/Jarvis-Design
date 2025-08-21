@@ -361,7 +361,13 @@
                                                 :minDate="new Date()"
                                                 @update:model-value="
                                                     (val) => {
-                                                        handleActionDateChange(order.id, val, close)
+                                                        if (val instanceof Date) {
+                                                            handleActionDateChange(
+                                                                order.id,
+                                                                val,
+                                                                close,
+                                                            )
+                                                        }
                                                     }
                                                 "
                                             />

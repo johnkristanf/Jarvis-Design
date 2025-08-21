@@ -1,6 +1,6 @@
 // src/services/echo.js or similar
-import Echo from 'laravel-echo';
-import Pusher from 'pusher-js';
+// import Echo from 'laravel-echo';
+// import Pusher from 'pusher-js';
 
 // console.log('🌐 Setting up Echo with:', {
 //     key: import.meta.env.VITE_REVERB_APP_KEY,
@@ -10,16 +10,16 @@ import Pusher from 'pusher-js';
 // })
 
 
-window.Pusher = Pusher;
-window.Echo = new Echo({
-    broadcaster: 'reverb',
-    key: import.meta.env.VITE_REVERB_APP_KEY,  // Or however you access env variables
-    wsHost: import.meta.env.VITE_REVERB_HOST,  // Your Laravel domain
-    wsPort: import.meta.env.VITE_REVERB_PORT || 8080,
-    wssPort: import.meta.env.VITE_REVERB_PORT || 8080,
-    forceTLS: import.meta.env.VITE_REVERB_SCHEME == 'https',
-    disableStats: true,
-    enabledTransports: ['ws', 'wss'],
-});
+// window.Pusher = Pusher;
+// window.Echo = new Echo({
+//     broadcaster: 'reverb',
+//     key: import.meta.env.VITE_REVERB_APP_KEY,  // Or however you access env variables
+//     wsHost: import.meta.env.VITE_REVERB_HOST,  // Your Laravel domain
+//     wsPort: import.meta.env.VITE_REVERB_PORT || 8080,
+//     wssPort: import.meta.env.VITE_REVERB_PORT || 8080,
+//     forceTLS: import.meta.env.VITE_REVERB_SCHEME == 'https',
+//     disableStats: true,
+//     enabledTransports: ['ws', 'wss'],
+// });
 
-export default window.Echo;
+// export default window.Echo;
