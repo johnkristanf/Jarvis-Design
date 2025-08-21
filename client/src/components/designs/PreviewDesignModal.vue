@@ -1,17 +1,14 @@
 <script lang="ts" setup>
     import { ref, computed, onMounted } from 'vue'
     import { Dialog, DialogPanel, TransitionChild, TransitionRoot } from '@headlessui/vue'
-    import { PlusIcon, XMarkIcon } from '@heroicons/vue/20/solid'
+    import { XMarkIcon } from '@heroicons/vue/20/solid'
     import { type Designs } from '@/types/design'
     import { ProgressSpinner } from 'primevue'
 
-    import PaymentModal from './PaymentModal.vue'
-    import { type DesignAttribute, type ProceedPaymentData } from '@/types/payment'
     import FailureMessageDialog from '../FailureMessageDialog.vue'
-    import { useAuthStore } from '@/stores/user'
     import { useProductAttributes } from '@/composables/useProductAttribute'
 
-    import { OrderOptions, OrderTypes } from '@/types/order'
+    import { OrderOptions } from '@/types/order'
     import { FwbButton } from 'flowbite-vue'
 
     import ListSelectBox from '../ListSelectBox.vue'
@@ -30,8 +27,7 @@
         emit('close')
     }
 
-    const authStore = useAuthStore()
-    const { colors, sizes, loadingColors, loadingSizes } = useProductAttributes()
+    const { sizes, loadingColors, loadingSizes } = useProductAttributes()
 
     // const paymentData = ref<ProceedPaymentData>({
     //     order_option: '',
@@ -51,7 +47,7 @@
         { id: 2, name: OrderOptions.PICK_UP, tag: 'PICK-UP' },
     ])
 
-    const openPaymentModal = ref<boolean>(false)
+    // const openPaymentModal = ref<boolean>(false)
     const openFailureModal = ref<boolean>(false)
 
     const failureModalMessageRef = ref<string>('')
@@ -64,14 +60,14 @@
     const selectedOrderType = ref(orderOptions.value[0])
     const quantity = ref<number>(0)
 
-    const checkUserIsLoggined = () => {
-        if (!authStore.currentUser && !authStore.isLogginedIn) {
-            openFailureModal.value = true
-            failureModalMessageRef.value = 'Please Login First to Proceed to Order'
-            failureUnauthenticated.value = true
-            return
-        }
-    }
+    // const checkUserIsLoggined = () => {
+    //     if (!authStore.currentUser && !authStore.isLogginedIn) {
+    //         openFailureModal.value = true
+    //         failureModalMessageRef.value = 'Please Login First to Proceed to Order'
+    //         failureUnauthenticated.value = true
+    //         return
+    //     }
+    // }
 
     // const handleProceedPayment = () => {
     //     // HANDLE PAYMENT CANNOT PROCEED IF NOT LOGGED IN
@@ -284,7 +280,6 @@
                                                     </div>
                                                 </div>
 
-
                                                 <!-- ORDER TYPES -->
 
                                                 <fieldset
@@ -407,14 +402,14 @@
         </Dialog>
     </TransitionRoot>
 
-    <PaymentModal
+    <!-- <PaymentModal
         v-if="designAttributeData && paymentData && openPaymentModal"
         :orderType="OrderTypes.PRE_MADE"
         :paymentData="paymentData"
         :attributeData="designAttributeData"
         :isOpen="openPaymentModal"
         @close="openPaymentModal = false"
-    />
+    /> -->
 
     <FailureMessageDialog
         v-if="openFailureModal"

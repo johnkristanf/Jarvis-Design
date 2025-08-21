@@ -1,12 +1,7 @@
 <script lang="ts" setup>
     import { apiService } from '@/api/axios'
-    import { generateQrCode } from '@/api/post/payment'
     import type { OrderTypes, PlaceOrderData } from '@/types/order'
-    import {
-        type ProceedPaymentResponseData,
-        type DesignAttribute,
-        type ProceedPaymentData,
-    } from '@/types/payment'
+    import { type DesignAttribute, type ProceedPaymentData } from '@/types/payment'
     import {
         TransitionRoot,
         TransitionChild,
@@ -30,12 +25,12 @@
     }>()
 
     // DYNAMIC QRCODE GENERATION RESPONSE
-    const paymentResponseRef = ref<ProceedPaymentResponseData>({
-        code_id: '',
-        amount: -1,
-        business_name: '',
-        qrcode_img_src: '',
-    })
+    // const paymentResponseRef = ref<ProceedPaymentResponseData>({
+    //     code_id: '',
+    //     amount: -1,
+    //     business_name: '',
+    //     qrcode_img_src: '',
+    // })
 
     // STATE FOR PLACE ORDER MUTATING
     const isPlacingOrder = ref<boolean>(false)
@@ -48,37 +43,37 @@
     const queryClient = useQueryClient()
     const toast = useToast()
 
-    const handleGeneratePaymentQrCode = async () => {
-        const designID = props.attributeData.design_id
-        const totalPrice = props.attributeData.quantity * props.paymentData.price
-        const orderOption = props.paymentData.order_option
-        const orderType = props.orderType
+    // const handleGeneratePaymentQrCode = async () => {
+    //     const designID = props.attributeData.design_id
+    //     const totalPrice = props.attributeData.quantity * props.paymentData.price
+    //     const orderOption = props.paymentData.order_option
+    //     const orderType = props.orderType
 
-        const quantity = props.attributeData.quantity
-        const color = props.attributeData.color
-        const size = props.attributeData.size
+    //     const quantity = props.attributeData.quantity
+    //     const color = props.attributeData.color
+    //     const size = props.attributeData.size
 
-        console.log('totalPrice: ', totalPrice)
-        console.log('orderType: ', orderType)
-        console.log('quantity: ', quantity)
-        console.log('color: ', color)
-        console.log('size: ', size)
+    //     console.log('totalPrice: ', totalPrice)
+    //     console.log('orderType: ', orderType)
+    //     console.log('quantity: ', quantity)
+    //     console.log('color: ', color)
+    //     console.log('size: ', size)
 
-        const response = await generateQrCode(
-            designID,
-            totalPrice,
-            orderOption,
-            orderType,
-            quantity,
-            color,
-            size,
-        )
-        console.log('response qrcode: ', response)
+    //     const response = await generateQrCode(
+    //         designID,
+    //         totalPrice,
+    //         orderOption,
+    //         orderType,
+    //         quantity,
+    //         color,
+    //         size,
+    //     )
+    //     console.log('response qrcode: ', response)
 
-        if (response && paymentResponseRef.value) {
-            paymentResponseRef.value = response
-        }
-    }
+    //     if (response && paymentResponseRef.value) {
+    //         paymentResponseRef.value = response
+    //     }
+    // }
 
     // UNCOMMENT THIS LATER IF PANEL OR ADVISOR ASK FOR DYNAMIC QRCODE PAYMENT PROCESS
     // onMounted(() => {
