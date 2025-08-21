@@ -13,10 +13,9 @@
     import { InformationCircleIcon } from '@heroicons/vue/20/solid'
     import { OrderTypes } from '@/types/order'
     import { useAuthorization } from '@/composables/useAuthorization'
-    import AttachMaterialsModal from './AttachMaterialsModal.vue'
 
     import Toast from 'primevue/toast'
-    import { useToast } from 'primevue/usetoast'
+    // import { useToast } from 'primevue/usetoast'
 import UploadedImagesModal from './UploadedImagesModal.vue'
 
     const emit = defineEmits<{
@@ -246,12 +245,12 @@ import UploadedImagesModal from './UploadedImagesModal.vue'
         </div>
 
         <!-- ATTACH MATERIALS MODAL -->
-        <AttachMaterialsModal
+        <!-- <AttachMaterialsModal
             v-if="modals.show_attach_materials_modal && selectedDesignID"
             :selectedDesignID="selectedDesignID"
             :designType="OrderTypes.UPLOADED"
             @close="modals.show_attach_materials_modal = false"
-        />
+        /> -->
 
         <!-- UPLOADED IMAGE MODAL -->
         <UploadedImagesModal

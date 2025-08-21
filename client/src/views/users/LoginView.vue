@@ -37,6 +37,7 @@
             const authenticatedUser: AuthenticatedUserData = {
                 id: response.id,
                 name: response.name,
+                email: response.email,
                 username: response.username,
                 role_id: response.role_id,
                 role: response.role,
@@ -47,7 +48,8 @@
                 window.location.href = '/admin/dashboard'
         },
 
-        onError: (error) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        onError: (error: any) => {
             isLoadingMutation.value = false
             console.error('Error Logging In:', error)
 
