@@ -14,7 +14,6 @@ class DesignsMaterials extends Model
         return $this->belongsTo(Designs::class, 'design_id');
     }
 
-
     public function materials(): BelongsTo
     {
         return $this->belongsTo(Materials::class, 'material_id');

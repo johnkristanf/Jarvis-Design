@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class MaterialsCategory extends Model
 {
     protected $guarded = ['id'];
+
     protected $table = 'materials_category';
 
     public function material(): HasOne

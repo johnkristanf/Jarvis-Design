@@ -12,12 +12,12 @@ trait HandleAttachments
         $fileContent = file_get_contents($file->getPathname());
 
         // Create unique filename to avoid conflicts
-        $uniqueFileName = uniqid() . '_' . basename($extractedFileName);
+        $uniqueFileName = uniqid().'_'.basename($extractedFileName);
         $s3Key = "{$root}/{$sub}/{$uniqueFileName}";
 
         // Upload to S3
         Storage::disk('s3')->put($s3Key, $fileContent, [
-            'visibility' => 'private'
+            'visibility' => 'private',
         ]);
 
         return $s3Key;

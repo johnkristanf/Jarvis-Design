@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\Colors;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class ColorsSeeder extends Seeder
@@ -24,7 +23,7 @@ class ColorsSeeder extends Seeder
 
         foreach ($colors as $color) {
             Colors::firstOrCreate([
-                'name' => $color
+                'name' => $color,
             ]);
         }
 

@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\Sizes;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class SizesSeeder extends Seeder
@@ -26,7 +25,7 @@ class SizesSeeder extends Seeder
 
         foreach ($sizes as $size) {
             Sizes::firstOrCreate([
-                'name' => $size
+                'name' => $size,
             ]);
         }
     }

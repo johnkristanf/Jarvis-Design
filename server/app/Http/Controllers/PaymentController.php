@@ -23,15 +23,14 @@ use Illuminate\Support\Facades\Storage;
 
 class PaymentController extends Controller
 {
-    use OrderTrait, HandleAttachments;
+    use HandleAttachments, OrderTrait;
 
     protected $paymentService;
 
     public function __construct()
     {
-        $this->paymentService = new PaymentService();
+        $this->paymentService = new PaymentService;
     }
-
 
     // THIS WEBHOOK HANDLES THE WHOLE PAYMENT PROCESS FROM CANCEL TO SUCCESS PAY
     // YOU MUST INCLUDE THE INSERTION OF ORDERS HERE IF PAYMENT WAY SUCCESSFULL
@@ -41,31 +40,28 @@ class PaymentController extends Controller
         $event = $request->all();
 
         Log::info('Event Data: ', [
-            'event' => $event['data']
+            'event' => $event['data'],
         ]);
 
         // Log::info('Meta Data: ', [
         //     'metadata' => $event['data']['attributes']['metadata']
         // ]);
 
-
-
         Log::info('Proccess Types: ', [
-            'type' => $event['data']['attributes']['type']
+            'type' => $event['data']['attributes']['type'],
         ]);
 
         $eventType = $event['data']['attributes']['type'];
 
         if ($eventType === 'source.chargeable') {
-            Log::info("SHESSHH NI GANAAA PARRR");
+            Log::info('SHESSHH NI GANAAA PARRR');
         }
-
 
         if ($eventType === 'payment.paid') {
 
             // HANDLE HERE THE GENERATION OF ORDER ID BASED ON THE FRONT END VUE SA FORMAT: ORD-12..xxxx
 
-            $orderId = 'ORD-' . now()->timestamp . '-' . str_pad(rand(0, 9999), 4, '0', STR_PAD_LEFT);
+            $orderId = 'ORD-'.now()->timestamp.'-'.str_pad(rand(0, 9999), 4, '0', STR_PAD_LEFT);
 
             $payment = $event['data'];
             $paymentAttributes = $payment['attributes'];
@@ -95,9 +91,7 @@ class PaymentController extends Controller
 
                 // INSIDE THE ATTACHED META DATA
 
-
                 // THEN PROCEDD TO INSERT IT IN THE ORDER TABLE
-
 
                 // Update your database based on the successful QR Ph payment
                 // Find the associated order and update its status, record the
@@ -116,7 +110,6 @@ class PaymentController extends Controller
         return response()->json(['status' => 'ok'], 200);
     }
 
-
     public function createQrPhSource(Request $request)
     {
         try {
@@ -130,8 +123,7 @@ class PaymentController extends Controller
             $size = $request->input('size');
 
             $secretKey = config('services.paymongo.secret_key');
-            $authHeader = "Basic " . base64_encode($secretKey . ":");
-
+            $authHeader = 'Basic '.base64_encode($secretKey.':');
 
             // ADD META DATA IN THE requestPaymentIntent SERVICE TO ADD THE (COLORS, SIZES, ETC...)
             $paymentIntentID = $this->paymentService->requestPaymentIntent($designID, $totalPrice, $orderOption, $orderType, $quantity, $color, $size, $authHeader);
@@ -140,11 +132,10 @@ class PaymentController extends Controller
 
             $attachPaymentIntentResponseData = $this->paymentService->requestAttachPaymentIntentRequest($paymentIntentID, $paymentMethodID, $authHeader);
 
-
             if (isset($attachPaymentIntentResponseData)) {
 
-                Log::info("paymentIntentResponseData: ", [
-                    'actions' => $attachPaymentIntentResponseData['data']['attributes']['next_action']
+                Log::info('paymentIntentResponseData: ', [
+                    'actions' => $attachPaymentIntentResponseData['data']['attributes']['next_action'],
                 ]);
 
                 $action = $attachPaymentIntentResponseData['data']['attributes']['next_action'];
@@ -161,15 +152,16 @@ class PaymentController extends Controller
                     'qrcode_img_src' => $qrcodeSrc,
                 ], 200);
             } else {
-                Log::error("Failed to generate QR Code: Incomplete response", $attachPaymentIntentResponseData);
+                Log::error('Failed to generate QR Code: Incomplete response', $attachPaymentIntentResponseData);
+
                 return response()->json(['error' => 'Failed to generate QR Code. Incomplete response from PayMongo.'], 500);
             }
         } catch (Exception $e) {
-            Log::error("Error in Generating QR Code: ", ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            Log::error('Error in Generating QR Code: ', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+
             return response()->json(['error' => 'Failed to generate QR Code. An unexpected error occurred.'], 500);
         }
     }
-
 
     public function triggerCreateTestPaymongoResource()
     {
@@ -189,9 +181,9 @@ class PaymentController extends Controller
                     'type' => 'gcash',
                     'currency' => 'PHP',
                     'metadata' => [
-                        'product_id' => "123",
+                        'product_id' => '123',
                         'user' => 'Kristan',
-                        'hell_miccc_hello_test' => 'hello miccc testtinggg...'
+                        'hell_miccc_hello_test' => 'hello miccc testtinggg...',
                     ],
                 ],
             ],
@@ -204,13 +196,14 @@ class PaymentController extends Controller
     public function getAllOrders()
     {
         $orders = $this->paymentService->allOrders();
+
         return response()->json($orders, 200);
     }
-
 
     public function getAllOrderStatus()
     {
         $orders = $this->paymentService->allOrderStatus();
+
         return response()->json($orders, 200);
     }
 
@@ -225,10 +218,9 @@ class PaymentController extends Controller
 
         return response()->json([
             'msg' => 'Order Status Updated Successfully',
-            'orderID' => $updatedOrderID
+            'orderID' => $updatedOrderID,
         ], 200);
     }
-
 
     public function setOrderDate(Request $request)
     {
@@ -237,8 +229,8 @@ class PaymentController extends Controller
             'action_date' => 'required|date',
         ]);
 
-        Log::info("order date data: ", [
-            'validated' => $validated
+        Log::info('order date data: ', [
+            'validated' => $validated,
         ]);
 
         $order = Orders::findOrFail($validated['order_id']);
@@ -253,13 +245,12 @@ class PaymentController extends Controller
         ]);
     }
 
-
     public function getAllOrderNotifications()
     {
         $orderNotifications = $this->paymentService->allOrdersNotifications();
+
         return response()->json($orderNotifications, 200);
     }
-
 
     public function updateNotificationAsRead(Request $request)
     {
@@ -271,7 +262,7 @@ class PaymentController extends Controller
 
         return response()->json([
             'msg' => 'Notification Read Update Successfully',
-            'notifID' => $updatedNotificationID
+            'notifID' => $updatedNotificationID,
         ], 200);
     }
 
@@ -304,8 +295,7 @@ class PaymentController extends Controller
             'payment_attachment' => 'required|file',
         ]);
 
-        Log::info("Order Data: ", [$validated]);
-
+        Log::info('Order Data: ', [$validated]);
 
         // UPLOAD THE PAYMENT ATTACHMENT TO S3
         $attachmentURL = $this->uploadToS3(
@@ -328,7 +318,7 @@ class PaymentController extends Controller
             'solo_quantity' => $validated['solo_quantity'] ?? null,
             'business_design_url' => $validated['business_design_url'] ?? null,
             'attachment_url' => $attachmentURL,
-            'user_id' => Auth::user()->id
+            'user_id' => Auth::user()->id,
         ]);
 
         // Step 2: Handle own-design file upload (after Order is created)
@@ -339,17 +329,17 @@ class PaymentController extends Controller
             $s3Key = "orders/{$order->id}/{$extractedFileName}";
 
             Storage::disk('s3')->put($s3Key, file_get_contents($file), [
-                'visibility' => 'private'
+                'visibility' => 'private',
             ]);
 
             // Step 3: Update the order with the uploaded file's URL
             $order->update([
-                'own_design_url' => $s3Key
+                'own_design_url' => $s3Key,
             ]);
         }
 
         // Step 4: Handle sizes (many-to-many pivot with quantity)
-        if (!empty($validated['sizes'])) {
+        if (! empty($validated['sizes'])) {
             foreach ($validated['sizes'] as $sizeId => $qty) {
                 if ($qty > 0) {
                     $order->sizes()->attach($sizeId, ['quantity' => $qty]);
@@ -366,7 +356,7 @@ class PaymentController extends Controller
 
         $totalQuantityDeduction = $totalOrderedQuantity * $fabricUsedPerUnit;
 
-        Log::info("FABRIC DATA: ", [
+        Log::info('FABRIC DATA: ', [
             'fabric_type_id' => $validated['fabric_type_id'],
             'totalDeduction' => $totalQuantityDeduction,
             'fabric' => $fabric,
@@ -385,21 +375,18 @@ class PaymentController extends Controller
             'order_id' => $order->id,
             'material_name' => $fabric->name,
             'unit' => $fabric->unit,
-            'total_quantity_used' => $totalQuantityDeduction
+            'total_quantity_used' => $totalQuantityDeduction,
         ]);
 
         // NOTFICATION
         Notifications::create([
             'order_id' => $order->order_number,
             'user_id' => Auth::user()->id,
-            'status' => 'pending'
+            'status' => 'pending',
         ]);
 
         return response()->json(['message' => 'Order placed successfully', 'order_id' => $order->id]);
     }
-
-
-
 
     // ACTING AS A PAYMENT SUCCESS WEBHOOK
     public function OLDplaceOrder(Request $request)
@@ -425,7 +412,7 @@ class PaymentController extends Controller
         $sizeId = $validated['size_id'];
 
         // Generate Order ID
-        $orderId = 'ORD-' . now()->timestamp . '-' . str_pad(rand(0, 9999), 4, '0', STR_PAD_LEFT);
+        $orderId = 'ORD-'.now()->timestamp.'-'.str_pad(rand(0, 9999), 4, '0', STR_PAD_LEFT);
 
         // Lookup order type ID
         $orderTypeID = ModelsOrderType::where('name', $orderType)->value('id');
@@ -443,29 +430,29 @@ class PaymentController extends Controller
             default => null,
         };
 
-        if (!$design) {
+        if (! $design) {
             Log::error('Error in finding design', ['error' => 'Design not found']);
+
             return response()->json(['error' => 'Design not found.'], 404);
         }
 
         // Create the order
         $order = Orders::create([
-            'order_id'     => $orderId,
-            'option'       => $orderOption,
-            'paid_amount'  => $totalPrice,
-            'quantity'     => $quantity,
-            'color_id'     => $colorId,
-            'size_id'      => $sizeId,
-            'type_id'      => $orderTypeID,
-            'design_id'    => $designID,
-            'status_id'    => 1, // "pending"
-            'user_id'      => $userId,
+            'order_id' => $orderId,
+            'option' => $orderOption,
+            'paid_amount' => $totalPrice,
+            'quantity' => $quantity,
+            'color_id' => $colorId,
+            'size_id' => $sizeId,
+            'type_id' => $orderTypeID,
+            'design_id' => $designID,
+            'status_id' => 1, // "pending"
+            'user_id' => $userId,
         ]);
 
         // Broadcast event to refresh materials
         $paymentMessage = 'Payment success from Paymongo!';
         broadcast(new PaymentSucessful($paymentMessage));
-
 
         // AUTOMATED DEDUCTION HERE USING THE FETCHED DESIGN:
         foreach ($design->materials as $material) {
@@ -475,15 +462,13 @@ class PaymentController extends Controller
             $usedQty = $material->pivot->quantity_used;
             $totalMaterialQuantityUsed = $quantity * $usedQty;
 
-
-            Log::info('Material: ' . $materialName);
-            Log::info('Used per unit: ' . $usedQty);
-            Log::info('Total Deduct: ' . $totalMaterialQuantityUsed);
+            Log::info('Material: '.$materialName);
+            Log::info('Used per unit: '.$usedQty);
+            Log::info('Total Deduct: '.$totalMaterialQuantityUsed);
 
             // Now update the material's quantity
             $material->quantity = max(0, $material->quantity - $totalMaterialQuantityUsed);
             $material->save();
-
 
             OrderLogs::create([
                 'user_id' => $userId,
@@ -494,10 +479,9 @@ class PaymentController extends Controller
             ]);
         }
 
-
         return response()->json([
             'message' => 'Place Order Successfully',
-            'order' => $order
+            'order' => $order,
         ]);
     }
 
@@ -506,13 +490,12 @@ class PaymentController extends Controller
 
         // ALL THIS STATIC DATA MUST BE REPLACE BY THE PAYMONGO WEBHOOK METADATA
 
-        $orderId = 'ORD-' . now()->timestamp . '-' . str_pad(rand(0, 9999), 4, '0', STR_PAD_LEFT);
+        $orderId = 'ORD-'.now()->timestamp.'-'.str_pad(rand(0, 9999), 4, '0', STR_PAD_LEFT);
 
         $orderType = 'pre-made';
         $orderTypeID = ModelsOrderType::where('name', '=', $orderType)->value('id');
 
         $designID = 1;
-
 
         $totalPrice = 70000;
         $orderOption = 'delivery';
@@ -522,8 +505,7 @@ class PaymentController extends Controller
         $sizeId = 2;
         $userId = 2; // Sample customer account
 
-
-        // THE FECTHING OF DESIGN WHETHER IN UPLOADED OR PRE MADE DESIGN IS 
+        // THE FECTHING OF DESIGN WHETHER IN UPLOADED OR PRE MADE DESIGN IS
         // BASED ON ORDER TYPE "uploaded" OR "pre-made"
 
         $preMade = OrderType::PRE_MADE;
@@ -535,31 +517,27 @@ class PaymentController extends Controller
             default => null,
         };
 
-
-        if (!$design) {
+        if (! $design) {
             Log::error('Error in finding design', ['error' => 'Design not found'], 404);
         }
 
-
         // Create the order
         $order = Orders::create([
-            'order_id'     => $orderId,
-            'option'       => $orderOption,
-            'paid_amount'  => $totalPrice,
-            'quantity'     => $quantity,
-            'color_id'     => $colorId,
-            'size_id'      => $sizeId,
-            'type_id'      => $orderTypeID, // if type_id refers to enum value
-            'design_id'    => $designID,
-            'status_id'    => 1, // default "pending" or however it's set
-            'user_id'      => $userId,
+            'order_id' => $orderId,
+            'option' => $orderOption,
+            'paid_amount' => $totalPrice,
+            'quantity' => $quantity,
+            'color_id' => $colorId,
+            'size_id' => $sizeId,
+            'type_id' => $orderTypeID, // if type_id refers to enum value
+            'design_id' => $designID,
+            'status_id' => 1, // default "pending" or however it's set
+            'user_id' => $userId,
         ]);
-
 
         // BROADCAST EVENT TO REFETCH THE MATERIALS DYNAMICALLY
         $paymentMessage = 'Payment success from Paymongo!';
         broadcast(new PaymentSucessful($paymentMessage));
-
 
         // AUTOMATED DEDUCTION HERE USING THE FETCHED DESIGN:
         foreach ($design->materials as $material) {
@@ -569,15 +547,13 @@ class PaymentController extends Controller
             $usedQty = $material->pivot->quantity_used;
             $totalMaterialQuantityUsed = $quantity * $usedQty;
 
-
-            Log::info('Material: ' . $materialName);
-            Log::info('Used per unit: ' . $usedQty);
-            Log::info('Total Deduct: ' . $totalMaterialQuantityUsed);
+            Log::info('Material: '.$materialName);
+            Log::info('Used per unit: '.$usedQty);
+            Log::info('Total Deduct: '.$totalMaterialQuantityUsed);
 
             // Now update the material's quantity
             $material->quantity = max(0, $material->quantity - $totalMaterialQuantityUsed);
             $material->save();
-
 
             OrderLogs::create([
                 'user_id' => $userId,
@@ -588,14 +564,11 @@ class PaymentController extends Controller
             ]);
         }
 
-
         return response()->json([
             'message' => 'Order created successfully',
-            'order' => $order
+            'order' => $order,
         ]);
     }
-
-
 
     public function getOrderLogs()
     {

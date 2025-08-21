@@ -3,9 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Materials;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 
 class MaterialsSeeder extends Seeder
 {
@@ -17,6 +15,6 @@ class MaterialsSeeder extends Seeder
 
         // Materials::firstOrCreate(['name' => 'Cotton', 'quantity' => 1000]);
         // Materials::firstOrCreate(['name' => 'Polyester', 'quantity' => 500]);
-        
+
     }
 }

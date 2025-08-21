@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class DesignCategory extends Model
 {
     protected $guarded = ['id'];
+
     protected $table = 'design_categories';
 
     public function designs(): HasMany
@@ -20,7 +21,6 @@ class DesignCategory extends Model
     {
         return $this->hasMany(Products::class, 'category_id');
     }
-
 
     public function sublimation_attribute(): HasOne
     {

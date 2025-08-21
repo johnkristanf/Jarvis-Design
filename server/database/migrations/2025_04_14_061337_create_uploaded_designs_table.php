@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('order_option');
             $table->decimal('price', 15, 2)->default(0);
             $table->unsignedInteger('quantity')->default(0);
-            
+
             $table->enum('status', ['pending', 'acknowledge', 'tagged'])->default('pending');
 
             $table->foreignId('color_id')->constrained('colors')->onDelete('cascade');

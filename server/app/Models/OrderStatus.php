@@ -7,13 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 class OrderStatus extends Model
 {
     protected $table = 'order_status';
-    
+
     protected $fillable = [
-        'name'
+        'name',
     ];
 
     // ORDER CLASS HERE
-    // public function orders(): HasOne 
+    // public function orders(): HasOne
     // {
     //     return $this->hasOne();
     // }

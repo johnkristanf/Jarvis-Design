@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\MaterialsCategory;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class MaterialsCategorySeeder extends Seeder
@@ -24,7 +23,7 @@ class MaterialsCategorySeeder extends Seeder
 
         foreach ($catergories as $category) {
             MaterialsCategory::firstOrCreate([
-                'name' => $category
+                'name' => $category,
             ]);
         }
     }

@@ -3,16 +3,15 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Colors extends Model
 {
     protected $fillable = [
-        'name'
+        'name',
     ];
 
-    public function preferred_design(): HasOne 
+    public function preferred_design(): HasOne
     {
         return $this->hasOne(PreferredDesign::class);
     }

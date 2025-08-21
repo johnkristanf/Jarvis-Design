@@ -6,7 +6,6 @@ use App\Interfaces\ChatServiceInterface;
 use App\Traits\HandleAttachments;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 
 class ChatController extends Controller
@@ -20,9 +19,8 @@ class ChatController extends Controller
         $validated = $request->validate([
             'content' => 'required|string',
             'user_id' => 'required|numeric',
-            'attachment' => 'nullable|file|max:2048'
+            'attachment' => 'nullable|file|max:2048',
         ]);
-
 
         $conversation = $this->chat->findConversationByUserID(
             userID: $validated['user_id'],
@@ -43,9 +41,9 @@ class ChatController extends Controller
             }
 
             $message = $this->chat->createLoadMessage([
-                'content'         => $validated['content'],
-                'attachment_url'  => $attachmentURL,
-                'sender_id'         => Auth::id(),
+                'content' => $validated['content'],
+                'attachment_url' => $attachmentURL,
+                'sender_id' => Auth::id(),
                 'conversation_id' => $conversation->id,
             ]);
         } else {
@@ -61,13 +59,12 @@ class ChatController extends Controller
             }
 
             $message = $this->chat->createLoadMessage([
-                'content'         => $validated['content'],
-                'attachment_url'  => $attachmentURL,
-                'sender_id'         => Auth::id(),
+                'content' => $validated['content'],
+                'attachment_url' => $attachmentURL,
+                'sender_id' => Auth::id(),
                 'conversation_id' => $conversation->id, // or handle new conversation
             ]);
         }
-
 
         $this->chat->send($message);
 
@@ -81,10 +78,9 @@ class ChatController extends Controller
                 ],
                 'conversation_id' => $message->conversation_id,
                 'created_at' => $message->created_at->toISOString(),
-            ]
+            ],
         ], Response::HTTP_CREATED);
     }
-
 
     public function getConversationByUserID(string $userID)
     {

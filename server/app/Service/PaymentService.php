@@ -6,36 +6,32 @@ use App\Models\Notifications;
 use App\Models\Orders;
 use App\Models\OrderStatus;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Log;
-
-
-use GuzzleHttp\Exception\RequestException;
-use GuzzleHttp\Exception\ConnectException;
 use Exception;
+use GuzzleHttp\Exception\ConnectException;
+use GuzzleHttp\Exception\RequestException;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class PaymentService
 {
-
     protected $client;
 
     public function __construct()
     {
-        $this->client = new \GuzzleHttp\Client();
+        $this->client = new \GuzzleHttp\Client;
     }
-
 
     public function requestPaymentIntent($designID, $totalPrice, $orderOption, $order_type, $quantity, $color, $size, $authHeader)
     {
         try {
-            $paymentMethodsAllowed = ["qrph", "card", "dob", "paymaya", "billease", "gcash", "grab_pay"];
-            $captureType = "automatic";
+            $paymentMethodsAllowed = ['qrph', 'card', 'dob', 'paymaya', 'billease', 'gcash', 'grab_pay'];
+            $captureType = 'automatic';
             $currency = 'PHP';
 
-            Log::info("Payment Intent Meta Data: ", [
+            Log::info('Payment Intent Meta Data: ', [
                 'designID' => $designID,
                 'totalPrice' => $totalPrice,
                 'orderOption' => $orderOption,
@@ -44,7 +40,6 @@ class PaymentService
                 'color' => $color,
                 'size' => $size,
             ]);
-
 
             $intentRequest = $this->client->request('POST', 'https://api.paymongo.com/v1/payment_intents', [
                 'body' => json_encode([
@@ -87,44 +82,41 @@ class PaymentService
             $intentResponseData = json_decode($intentRequest->getBody());
             $paymentIntentID = $intentResponseData->data->id;
 
-            Log::info("paymentIntentID: " . $paymentIntentID);
+            Log::info('paymentIntentID: '.$paymentIntentID);
 
             return $paymentIntentID;
         } catch (RequestException $e) {
-            Log::error("Error creating payment intent (RequestException):", [
+            Log::error('Error creating payment intent (RequestException):', [
                 'message' => $e->getMessage(),
                 'status_code' => $e->hasResponse() ? $e->getResponse()->getStatusCode() : null,
                 'response_body' => $e->hasResponse() ? $e->getResponse()->getBody()->getContents() : null,
             ]);
 
-            throw new Exception("Failed to create payment intent due to an API error."); // Re-throw
-
+            throw new Exception('Failed to create payment intent due to an API error.'); // Re-throw
         } catch (ConnectException $e) {
 
-            Log::error("Error creating payment intent (ConnectException):", [
+            Log::error('Error creating payment intent (ConnectException):', [
                 'message' => $e->getMessage(),
             ]);
 
-            throw new Exception("Failed to connect to the PayMongo API."); // Re-throw
-
+            throw new Exception('Failed to connect to the PayMongo API.'); // Re-throw
         } catch (Exception $e) {
 
-            Log::error("Error creating payment intent (General Exception):", [
+            Log::error('Error creating payment intent (General Exception):', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            throw new Exception("An unexpected error occurred while creating the payment intent."); // Re-throw
+            throw new Exception('An unexpected error occurred while creating the payment intent.'); // Re-throw
         }
     }
-
 
     public function requestPaymentMethod(string $authHeader)
     {
         try {
-            $billingName = "Jarvis Designs";
-            $billingEmail = "geraldvillaceran101@gmail.com";
-            $paymentType = "qrph";
+            $billingName = 'Jarvis Designs';
+            $billingEmail = 'geraldvillaceran101@gmail.com';
+            $paymentType = 'qrph';
 
             $paymentMethodData = [
                 'data' => [
@@ -146,38 +138,34 @@ class PaymentService
                     'authorization' => $authHeader,
                 ],
 
-
-
             ]);
-
 
             $paymentMethodResponseData = json_decode($paymentMethodRequest->getBody());
             $paymentMethodId = $paymentMethodResponseData->data->id;
 
-            Log::info("paymentMethodId: " . $paymentMethodId);
+            Log::info('paymentMethodId: '.$paymentMethodId);
 
             return $paymentMethodId;
         } catch (RequestException $e) {
-            Log::error("Error attaching payment intent  (RequestException):", [
+            Log::error('Error attaching payment intent  (RequestException):', [
                 'message' => $e->getMessage(),
                 'status_code' => $e->hasResponse() ? $e->getResponse()->getStatusCode() : null,
                 'response_body' => $e->hasResponse() ? $e->getResponse()->getBody()->getContents() : null,
             ]);
-            throw new Exception("Failed to attach payment intent  due to an API error.");
+            throw new Exception('Failed to attach payment intent  due to an API error.');
         } catch (ConnectException $e) {
-            Log::error("Error attaching payment intent  (ConnectException):", [
+            Log::error('Error attaching payment intent  (ConnectException):', [
                 'message' => $e->getMessage(),
             ]);
-            throw new Exception("Failed to connect to the PayMongo API.");
+            throw new Exception('Failed to connect to the PayMongo API.');
         } catch (Exception $e) {
-            Log::error("Error attaching payment intent  (General Exception):", [
+            Log::error('Error attaching payment intent  (General Exception):', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            throw new Exception("An unexpected error occurred while attaching the payment intent .");
+            throw new Exception('An unexpected error occurred while attaching the payment intent .');
         }
     }
-
 
     public function requestAttachPaymentIntentRequest(string $paymentIntentID, string $paymentMethodId, string $authHeader)
     {
@@ -197,37 +185,35 @@ class PaymentService
                     'content-type' => 'application/json',
                 ],
 
-
-
             ]);
 
             $returnAsAssociativeArray = true;
             $attachPaymentIntentResponseData = json_decode($attachPaymentIntentRequest->getBody(), $returnAsAssociativeArray);
 
-            Log::info("paymentIntentResponseData: ", [
-                'response' => $attachPaymentIntentResponseData
+            Log::info('paymentIntentResponseData: ', [
+                'response' => $attachPaymentIntentResponseData,
             ]);
 
             return $attachPaymentIntentResponseData;
         } catch (RequestException $e) {
-            Log::error("Error attaching payment intent (RequestException):", [
+            Log::error('Error attaching payment intent (RequestException):', [
                 'message' => $e->getMessage(),
                 'status_code' => $e->hasResponse() ? $e->getResponse()->getStatusCode() : null,
                 'response_body' => $e->hasResponse() ? $e->getResponse()->getBody()->getContents() : null,
             ]);
-            throw new Exception("Failed to attach payment intent  due to an API error.");
+            throw new Exception('Failed to attach payment intent  due to an API error.');
         } catch (ConnectException $e) {
-            Log::error("Error attaching payment intent (ConnectException):", [
+            Log::error('Error attaching payment intent (ConnectException):', [
                 'message' => $e->getMessage(),
             ]);
-            throw new Exception("Failed to connect to the PayMongo API.");
+            throw new Exception('Failed to connect to the PayMongo API.');
         } catch (Exception $e) {
-            Log::error("Error attaching payment intent (General Exception):", [
+            Log::error('Error attaching payment intent (General Exception):', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            throw new Exception("An unexpected error occurred while attaching the payment intent .");
+            throw new Exception('An unexpected error occurred while attaching the payment intent .');
         }
     }
 
@@ -253,12 +239,11 @@ class PaymentService
                     'status',
                     'delivery_date',
                     'user_id',
-                    'created_at'
+                    'created_at',
                 ]);
 
-
             $authenticatedUser = Auth::user();
-            if (!$authenticatedUser->isAdmin()) {
+            if (! $authenticatedUser->isAdmin()) {
                 $query->where('user_id', '=', $authenticatedUser->id);
             }
 
@@ -276,14 +261,14 @@ class PaymentService
 
             return $orders;
         } catch (QueryException $e) {
-            Log::error("Database Query Failed: " . $e->getMessage());
+            Log::error('Database Query Failed: '.$e->getMessage());
 
             return response()->json([
                 'error' => 'Failed to retrieve all orders.',
                 'message' => $e->getMessage(),
             ], 500);
         } catch (\Exception $e) {
-            Log::error("An unexpected error occurred: " . $e->getMessage());
+            Log::error('An unexpected error occurred: '.$e->getMessage());
 
             return response()->json([
                 'error' => 'An unexpected error occurred.',
@@ -291,23 +276,23 @@ class PaymentService
             ], 500);
         }
     }
-
 
     public function allOrderStatus()
     {
         try {
 
             $orderStatus = OrderStatus::select('id', 'name')->get();
+
             return $orderStatus;
         } catch (QueryException $e) {
-            Log::error("Database Query Failed: " . $e->getMessage());
+            Log::error('Database Query Failed: '.$e->getMessage());
 
             return response()->json([
                 'error' => 'Failed to retrieve preferred designs.',
                 'message' => $e->getMessage(),
             ], 500);
         } catch (\Exception $e) {
-            Log::error("An unexpected error occurred: " . $e->getMessage());
+            Log::error('An unexpected error occurred: '.$e->getMessage());
 
             return response()->json([
                 'error' => 'An unexpected error occurred.',
@@ -315,7 +300,6 @@ class PaymentService
             ], 500);
         }
     }
-
 
     public function updateStatus($orderID, $status)
     {
@@ -328,20 +312,19 @@ class PaymentService
             Notifications::create([
                 'order_id' => $order->id,
                 'status' => $status,
-                'user_id'  =>  $order->user_id
+                'user_id' => $order->user_id,
             ]);
-
 
             return $order->id;
         } catch (QueryException $e) {
-            Log::error("Database Query Failed: " . $e->getMessage());
+            Log::error('Database Query Failed: '.$e->getMessage());
 
             return response()->json([
                 'error' => 'Failed to update order status.',
                 'message' => $e->getMessage(),
             ], 500);
         } catch (\Exception $e) {
-            Log::error("An unexpected error occurred: " . $e->getMessage());
+            Log::error('An unexpected error occurred: '.$e->getMessage());
 
             return response()->json([
                 'error' => 'An unexpected error occurred.',
@@ -366,17 +349,16 @@ class PaymentService
                 ->orderByDesc('notifications.created_at')
                 ->get();
 
-
             return $notifications;
         } catch (QueryException $e) {
-            Log::error("Database Query Failed: " . $e->getMessage());
+            Log::error('Database Query Failed: '.$e->getMessage());
 
             return response()->json([
                 'error' => 'Failed to fetch order notifications.',
                 'message' => $e->getMessage(),
             ], 500);
         } catch (\Exception $e) {
-            Log::error("An unexpected error occurred: " . $e->getMessage());
+            Log::error('An unexpected error occurred: '.$e->getMessage());
 
             return response()->json([
                 'error' => 'An unexpected error occurred.',
@@ -384,26 +366,25 @@ class PaymentService
             ], 500);
         }
     }
-
 
     public function updateNotification($notificationID)
     {
         try {
 
             Notifications::where('id', $notificationID)->update([
-                'is_read' => true
+                'is_read' => true,
             ]);
 
             return $notificationID;
         } catch (QueryException $e) {
-            Log::error("Database Query Failed: " . $e->getMessage());
+            Log::error('Database Query Failed: '.$e->getMessage());
 
             return response()->json([
                 'error' => 'Failed to update order status.',
                 'message' => $e->getMessage(),
             ], 500);
         } catch (\Exception $e) {
-            Log::error("An unexpected error occurred: " . $e->getMessage());
+            Log::error('An unexpected error occurred: '.$e->getMessage());
 
             return response()->json([
                 'error' => 'An unexpected error occurred.',
@@ -412,24 +393,23 @@ class PaymentService
         }
     }
 
-
     public function updateAllNotificationsAsRead()
     {
         try {
             Notifications::where('is_read', false)->update([
-                'is_read' => true
+                'is_read' => true,
             ]);
 
             return 'success';
         } catch (QueryException $e) {
-            Log::error("Database Query Failed: " . $e->getMessage());
+            Log::error('Database Query Failed: '.$e->getMessage());
 
             return response()->json([
                 'error' => 'Failed to update notifications.',
                 'message' => $e->getMessage(),
             ], 500);
         } catch (\Exception $e) {
-            Log::error("An unexpected error occurred: " . $e->getMessage());
+            Log::error('An unexpected error occurred: '.$e->getMessage());
 
             return response()->json([
                 'error' => 'An unexpected error occurred.',

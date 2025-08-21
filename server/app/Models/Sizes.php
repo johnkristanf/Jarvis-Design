@@ -8,10 +8,10 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class Sizes extends Model
 {
     protected $fillable = [
-        'name'
+        'name',
     ];
 
-    // public function preferred_design(): HasOne 
+    // public function preferred_design(): HasOne
     // {
     //     return $this->hasOne(PreferredDesign::class);
     // }

@@ -22,22 +22,18 @@ class UserService
                 'username' => $data['username'],
                 'email' => $data['email'],
                 'password' => $hashedPassword,
-                'role_id' => $roleID
+                'role_id' => $roleID,
             ])->id;
 
             return $createdUserID;
 
         } catch (\Exception $e) {
-            Log::error("Error in registering user: ", [
+            Log::error('Error in registering user: ', [
                 'msg' => $e->getMessage(),
-                'code' => $e->getCode()
+                'code' => $e->getCode(),
             ]);
 
             throw new Exception('Error in registering user. Please try again', 500);
         }
     }
-
-
-
-
 }

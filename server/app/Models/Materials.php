@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Materials extends Model
 {
@@ -20,8 +19,6 @@ class Materials extends Model
             ->withPivot('quantity_used')
             ->withTimestamps();
     }
-
-
 
     public function uploadedDesigns()
     {
@@ -40,7 +37,6 @@ class Materials extends Model
         $this->quantity -= $amount;
         $this->save();
     }
-
 
     public function products()
     {

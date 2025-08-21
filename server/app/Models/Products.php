@@ -15,12 +15,10 @@ class Products extends Model
         return $this->belongsTo(DesignCategory::class, 'category_id');
     }
 
-
     public function fabric_type(): BelongsTo
     {
         return $this->belongsTo(Materials::class, 'fabric_type_id'); // Fabric is now in materials due to panel request
     }
-
 
     public function designs(): HasMany
     {

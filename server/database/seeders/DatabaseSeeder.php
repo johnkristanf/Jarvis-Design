@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -22,9 +21,9 @@ class DatabaseSeeder extends Seeder
             OrderStatusSeeder::class,
             MaterialsCategorySeeder::class,
             FabricTypesSeeder::class,
-            DesignCategorySeeder::class
+            DesignCategorySeeder::class,
 
-            // FOR TESTING USE CASE ONLY: 
+            // FOR TESTING USE CASE ONLY:
             // MaterialsSeeder::class,
             // DesignsSeeder::class,
             // DesignsMaterialsSeeder::class,

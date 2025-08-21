@@ -12,10 +12,9 @@ class Message extends Model
 
     protected $appends = ['attachment_temp_url'];
 
-
     public function getAttachmentTempUrlAttribute(): ?string
     {
-        if (!$this->attachment_url) {
+        if (! $this->attachment_url) {
             return null;
         }
 
@@ -25,7 +24,6 @@ class Message extends Model
             now()->addMinutes(5)
         );
     }
-
 
     public function conversation(): BelongsTo
     {
