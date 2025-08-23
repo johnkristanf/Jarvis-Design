@@ -4,16 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\DesignCategory;
 use App\Models\Designs;
-use App\Models\FabricTypes;
 use App\Models\Materials;
-use App\Models\PreferredDesign;
 use App\Models\Products;
 use App\Models\UploadedDesign;
 use App\OrderType;
 use App\Services\DesignsService;
-use Aws\S3\S3Client;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -36,8 +32,6 @@ class DesignsController extends Controller
             ->get();
 
         return response()->json($result, 200);
-
-
 
         // Apply category filter
         // if (!empty($categoriesArray)) {
@@ -72,29 +66,51 @@ class DesignsController extends Controller
         //         return $group->groupBy('tag');
         //     });
 
-
         // return response()->json($grouped);
     }
-
-
 
     public function getAllDesigns()
     {
         $designs = $this->designsService->allDesigns();
+
         return response()->json($designs, 200);
     }
-
 
     public function getAllProducts()
     {
         $products = Products::select('id', 'name', 'unit_price', 'category_id', 'fabric_quantity')
-            ->with(['design_category:id,name'])
+            ->with([
+                'design_category:id,name',
+                'designs:id,product_id,image_url',
+            ])
             ->latest()
             ->get();
 
+
+        // Map each product and generate signed URLs for designs
+        $products = $products->map(function ($product) {
+            // Generate temporary URLs for each design's image
+            $designImages = $product->designs->map(function ($design) {
+                if ($design->image_url && Storage::disk('s3')->exists($design->image_url)) {
+                    return Storage::disk('s3')->temporaryUrl(
+                        $design->image_url,
+                        now()->addMinutes(10) // 10 minutes validity
+                    );
+                }
+                return null;
+            })->filter()->values(); // Remove nulls if image doesn't exist
+
+            // Append design_images to product
+            $product->design_images = $designImages;
+
+            // Remove the designs relation if you only want URLs
+            unset($product->designs);
+
+            return $product;
+        });
+
         return response()->json($products, 200);
     }
-
 
     public function getProductBusinessDesign($product_id)
     {
@@ -116,15 +132,16 @@ class DesignsController extends Controller
     public function getAllColors()
     {
         $colors = $this->designsService->allColors();
+
         return response()->json($colors, 200);
     }
 
     public function getAllSizes()
     {
         $sizes = $this->designsService->allSizes();
+
         return response()->json($sizes, 200);
     }
-
 
     public function uploadDesign(Request $request)
     {
@@ -136,10 +153,10 @@ class DesignsController extends Controller
                 'multi_file_upload.*' => 'file|max:10240', // each file max 10MB
             ]);
 
-            $uploadedFiles  = $request->file('multi_file_upload');
+            $uploadedFiles = $request->file('multi_file_upload');
 
-            Log::info("uploadedFiles: ", [
-                'uploadedFiles' => $uploadedFiles
+            Log::info('uploadedFiles: ', [
+                'uploadedFiles' => $uploadedFiles,
             ]);
 
             $orderOption = $request->input('order_option');
@@ -149,7 +166,6 @@ class DesignsController extends Controller
 
             // SAVE DESIGN DATA TO THE DATABASE
             $preferredDesignID = $this->designsService->saveUploadedDesign($orderOption, $quantity, $colorId, $sizeId);
-
 
             $uploadedFilePaths = [];
             $failedUploads = [];
@@ -165,13 +181,13 @@ class DesignsController extends Controller
 
                     // Upload to S3
                     Storage::disk('s3')->put($s3Key, $fileContent, [
-                        'visibility' => 'private'
+                        'visibility' => 'private',
                     ]);
 
                     $uploadedFilePaths[] = $s3Key;
                 } catch (\Exception $e) {
                     $failedUploads[] = $extractedFileName ?? "File {$index}";
-                    Log::error("Individual file upload failed: " . $e->getMessage());
+                    Log::error('Individual file upload failed: ' . $e->getMessage());
                 }
             }
 
@@ -179,7 +195,7 @@ class DesignsController extends Controller
                 return response()->json([
                     'error' => true,
                     'msg' => 'All file uploads failed',
-                    'failed_files' => $failedUploads
+                    'failed_files' => $failedUploads,
                 ], 500);
             }
 
@@ -188,18 +204,18 @@ class DesignsController extends Controller
                 'preferred_design_id' => $preferredDesignID,
                 'uploaded_files' => $uploadedFilePaths,
                 'total_uploaded' => count($uploadedFilePaths),
-                'failed_files' => $failedUploads
+                'failed_files' => $failedUploads,
             ], 200);
         } catch (\Exception $e) {
 
-            Log::error("Error in Upload Preferred Design: ", [
+            Log::error('Error in Upload Preferred Design: ', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
 
             return response()->json([
                 'error' => true,
-                'msg'   => 'Error occured in uploading preferred design'
+                'msg' => 'Error occured in uploading preferred design',
             ], 500);
         }
     }
@@ -208,6 +224,7 @@ class DesignsController extends Controller
     {
         try {
             $results = $this->designsService->allUploadedDesigns();
+
             return response()->json($results, 200);
         } catch (\Exception $e) {
             return response()->json([
@@ -217,17 +234,15 @@ class DesignsController extends Controller
         }
     }
 
-
-
     public function getUploadedDesignByID($designID)
     {
-        Log::info("designID: " . $designID);
+        Log::info('designID: ' . $designID);
 
         $prefix = "uploads/{$designID}";
         $files = Storage::disk('s3')->files($prefix);
 
-        Log::info("files: ", [
-            'files' => $files
+        Log::info('files: ', [
+            'files' => $files,
         ]);
 
         $urls = [];
@@ -243,7 +258,6 @@ class DesignsController extends Controller
         return response()->json($urls);
     }
 
-
     public function updateUploadedDesigns(Request $request)
     {
         $validated = $request->validate([
@@ -256,7 +270,7 @@ class DesignsController extends Controller
         $price = $validated['price'];
         $designID = $validated['design_id'];
 
-        Log::info("Design Uploaded Data: ", [
+        Log::info('Design Uploaded Data: ', [
             'status' => $status,
             'price' => $price,
             'designID' => $designID,
@@ -266,7 +280,7 @@ class DesignsController extends Controller
 
         return response()->json([
             'message' => 'Design updated successfully',
-            'design_od' => $updatedUploadedDesignID
+            'design_od' => $updatedUploadedDesignID,
         ]);
     }
 
@@ -287,14 +301,11 @@ class DesignsController extends Controller
 
     //     $file = $request->file('file');
 
-
     //     $extractedFileName = $file->getClientOriginalName();
     //     $file = file_get_contents($file->getPathname());
 
-
     //     $uniqueFileName = uniqid() . '_' . basename($extractedFileName);
     //     $s3Key = "pre_made/" . $uniqueFileName;
-
 
     //     // S3 UPLOAD FACADE
     //     $isUploaded = Storage::disk('s3')->put($s3Key, $file, [
@@ -315,7 +326,6 @@ class DesignsController extends Controller
     //     }
     // }
 
-
     public function addProduct(Request $request)
     {
 
@@ -327,8 +337,8 @@ class DesignsController extends Controller
             'fabric_quantity' => 'numeric|min:0',
         ]);
 
-        Log::info("Product Info: ", [
-            'data' => $validatedData
+        Log::info('Product Info: ', [
+            'data' => $validatedData,
         ]);
 
         $newProduct = Products::create([
@@ -336,7 +346,7 @@ class DesignsController extends Controller
             'unit_price' => $validatedData['unit_price'],
             'category_id' => $validatedData['category_id'],
             'fabric_type_id' => $validatedData['fabric_type_id'] ?? null,
-            'fabric_quantity'  => $validatedData['fabric_quantity'] ?? null,
+            'fabric_quantity' => $validatedData['fabric_quantity'] ?? null,
         ]);
 
         return response()->json([
@@ -346,6 +356,26 @@ class DesignsController extends Controller
     }
 
 
+    public function destroy($id)
+    {
+        $product = Products::findOrFail($id);
+        
+        // Loop through related designs and delete their images from S3
+        foreach ($product->designs as $design) {
+            if ($design->image_url && Storage::disk('s3')->exists($design->image_url)) {
+                Storage::disk('s3')->delete($design->image_url);
+            }
+        }
+
+        // Optionally, delete the designs from DB (if needed)
+        $product->designs()->delete();
+        $product->delete();
+
+        return response()->json([
+            'message' => 'Product deleted successfully.',
+            'status' => true,
+        ], 200);
+    }
 
     public function addProductDesign(Request $request)
     {
@@ -358,7 +388,7 @@ class DesignsController extends Controller
                 'category_name' => 'required|string',
             ]);
 
-            Log::info("Design Data: ", $validated);
+            Log::info('Design Data: ', $validated);
 
             if ($request->hasFile('design')) {
                 $file = $request->file('design');
@@ -376,7 +406,7 @@ class DesignsController extends Controller
                     'visibility' => 'private',
                 ]);
 
-                Log::info("Uploaded to S3", ['s3_key' => $s3Key]);
+                Log::info('Uploaded to S3', ['s3_key' => $s3Key]);
 
                 // Save record in the 'designs' table
                 Designs::create([
@@ -388,8 +418,6 @@ class DesignsController extends Controller
             return response()->json([
                 'message' => 'Product design uploaded successfully!',
             ], 201);
-
-            
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'message' => 'Validation failed.',
@@ -421,7 +449,7 @@ class DesignsController extends Controller
         $designID = $validated['design_id'];
         $materials = $validated['material_quantity_arr'];
 
-        Log::info("Design Data: ", [
+        Log::info('Design Data: ', [
             'designType' => $designType,
             'designID' => $designID,
             'materials' => $materials,
@@ -438,21 +466,19 @@ class DesignsController extends Controller
         //         $design = null;
         // }
 
-
         $design = match ($designType) {
             OrderType::PRE_MADE->value => Designs::with('materials')->find($designID),
             OrderType::UPLOADED->value => UploadedDesign::with('materials')->find($designID),
             default => null
         };
 
-        if (!$design) {
-            Log::error("Error in finding design related tables");
+        if (! $design) {
+            Log::error('Error in finding design related tables');
         }
 
-        Log::info("Selected Design: ", [
-            'design' => $design
+        Log::info('Selected Design: ', [
+            'design' => $design,
         ]);
-
 
         foreach ($materials as $material) {
             $materialId = $material['material_id'];
@@ -465,17 +491,17 @@ class DesignsController extends Controller
         return response()->json(['message' => 'Materials attached successfully.']);
     }
 
-
     public function getDesignCategories()
     {
         $categories = DesignCategory::select('id', 'name', 'is_fixed_priced', 'fixed_price')->get();
+
         return response()->json($categories);
     }
-
 
     public function getFabricTypes()
     {
         $categories = Materials::select('id', 'name', 'unit')->get();
+
         return response()->json($categories);
     }
 }

@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('designables_materials', function (Blueprint $table) {
             $table->id();
             $table->unsignedInteger('quantity_used');
-            $table->foreignId('material_id')->constrained('materials')->onDelete('cascade'); 
+            $table->foreignId('material_id')->constrained('materials')->onDelete('cascade');
 
             // POLYMORPHIC RELATIOSHIP BETWEEN DESIGNS AND UPLOADED DESIGNS
             $table->morphs('designable');

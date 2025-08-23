@@ -14,7 +14,6 @@ class OrderLogs extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
-
     public function orders(): BelongsTo
     {
         return $this->belongsTo(Orders::class, 'order_id');

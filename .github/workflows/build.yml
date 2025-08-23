@@ -1,0 +1,25 @@
+name: Build Docker Image
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+        - name: Checkout Code
+          uses: actions/checkout@v4
+
+        - name: Set up Docker Buildx
+          uses: docker/setup-buildx-action@v3
+
+        - name: Build Docker Image
+          run:  docker build -t johnkristan/jarvis-designs:latest ./server  -f ./server/Dockerfile
+
+        - name: 🔐 Login to Docker Hub
+          run: echo "${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
+
+        - name: Push Docker Image to Docker Hub
+          run: docker push johnkristan/jarvis-designs:latest

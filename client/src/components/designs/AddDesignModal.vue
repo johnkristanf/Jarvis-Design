@@ -11,6 +11,7 @@
         selectedProductCategory: string | undefined
         selectedProductID: number
         selectedProductName: string | undefined
+        designImages: string[] | undefined
     }>()
 
     const emit = defineEmits(['close'])
@@ -33,8 +34,8 @@
         }
     }
 
-    // ADD DESIGN MUTATION
-    // ADD NEW PRE MADE DESIGN MUTATION
+    // UPLOAD DESIGN MUTATION
+    // UPLOAD NEW PRE MADE DESIGN MUTATION
     const mutation = useMutation({
         mutationFn: async (formData: FormData) => {
             return await apiService.post('/api/add/product/design', formData)
@@ -98,10 +99,10 @@
         class="fixed inset-0 z-[999] flex items-center justify-center bg-black/50"
     >
         <DialogPanel
-            class="bg-white h-[400px] overflow-y-auto rounded-2xl shadow-xl w-full max-w-md p-6 space-y-6"
+            class="bg-white h-[400px] overflow-y-auto shadow-xl w-full max-w-xl p-6 space-y-6"
         >
             <div class="space-y-1">
-                <h2 class="text-xl font-semibold text-gray-800">Add Design</h2>
+                <h2 class="text-xl font-semibold text-gray-800">Upload Design</h2>
                 <p class="text-sm text-gray-500">
                     Category:
                     <strong>{{ props.selectedProductCategory }}</strong>
@@ -113,8 +114,28 @@
                 </p>
             </div>
 
-            <div class="space-y-3">
+            <div class="flex flex-col">
+                <h2 class="font-semibold text-gray-800 mb-2">Uploaded Designs:</h2>
+
+                <div
+                    v-if="props.designImages && props.designImages.length > 0"
+                    class="grid grid-cols-1 sm:grid-cols-2 gap-4"
+                >
+                    <div v-for="(image, index) in props.designImages" :key="index" class="relative">
+                        <img
+                            :src="image"
+                            :alt="`Design ${index + 1}`"
+                            class="w-full max-h-64 object-contain rounded-md border border-gray-300 p-3"
+                        />
+                    </div>
+                </div>
+
+                <p v-else class="text-sm text-gray-500 mt-2">No uploaded designs yet.</p>
+            </div>
+
+            <div class="space-y-3 mt-10">
                 <!-- DESIGN IMAGE UPLOAD -->
+                <h2 class="font-semibold text-gray-800">Choose the Design to Upload:</h2>
 
                 <input
                     ref="fileInput"
@@ -147,14 +168,14 @@
                     @click="handleUpload"
                     class="px-4 py-2 text-sm font-semibold bg-gray-900 text-white hover:cursor-pointer hover:bg-gray-700"
                 >
-                    Add
+                    Upload
                 </button>
             </div>
         </DialogPanel>
     </Dialog>
 
     <!-- LOADER -->
-    <Loader v-if="mutation.isPending.value" msg="Adding Design..." />
+    <Loader v-if="mutation.isPending.value" msg="Uploading Design..." />
 
     <!-- TOAST -->
     <Toast />

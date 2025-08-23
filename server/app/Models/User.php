@@ -13,7 +13,7 @@ use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, HasRelationships;
+    use HasFactory, HasRelationships, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -25,7 +25,7 @@ class User extends Authenticatable
         'username',
         'email',
         'password',
-        'role_id'
+        'role_id',
     ];
 
     /**
@@ -60,7 +60,6 @@ class User extends Authenticatable
     {
         return optional($this->role)->name === $roleName;
     }
-
 
     public function isAdmin(): bool
     {

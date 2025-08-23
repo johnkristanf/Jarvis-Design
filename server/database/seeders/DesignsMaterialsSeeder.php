@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -13,11 +12,10 @@ class DesignsMaterialsSeeder extends Seeder
      */
     public function run(): void
     {
-       
+
         // EDITING THE DESIGN CREATED TO INTACT WHAT MATERIALS WILL BE USED IN THAT
         // SPECIFIC DESIGN IF USER WILL ORDER IT
         // (COULD BE MULTIPLE MATERIALS IS USED IN THAT DESIGN)
-
 
         // $selectedDesignID = 1;
 
@@ -37,20 +35,17 @@ class DesignsMaterialsSeeder extends Seeder
         //     DB::table('designs_materials')->insert([
         //         'design_id' => $selectedDesignID,
         //         'material_id' => $materialData['material_id'],
-        //         'quantity_used' => $materialData['quantity_used'], 
+        //         'quantity_used' => $materialData['quantity_used'],
         //         'created_at' => now(),
         //         'updated_at' => now()
         //     ]);
         // }
 
-
-
         // CHANGE OF PLANS: ONLY THE DESIGN CAN PICK WHAT MATERIALS BEING USED IN THEM
         // TO AVOID DATA REDUNDANCY
 
-        // EDITING THE MATERIALS CREATED TO INTACT WHAT DESIGN IT'S BEING USED 
+        // EDITING THE MATERIALS CREATED TO INTACT WHAT DESIGN IT'S BEING USED
         // (COULD BE MULTIPLE DESIGN IS USING THAT MATERIAL)
-
 
         // 1ST MATERIAL
 
@@ -63,17 +58,15 @@ class DesignsMaterialsSeeder extends Seeder
         //     ],
         // ];
 
-
         // foreach ($selectedDesignsForMat1 as $designData) {
         //     DB::table('designs_materials')->insert([
         //         'material_id' => $selectedMaterialID1,
         //         'design_id' => $designData['design_id'],
-        //         'quantity_used' => $designData['quantity_used'], 
+        //         'quantity_used' => $designData['quantity_used'],
         //         'created_at' => now(),
         //         'updated_at' => now()
         //     ]);
         // }
-
 
         // // 2ND MATERIAL
         // $selectedMaterialID2 = 2;
@@ -85,12 +78,11 @@ class DesignsMaterialsSeeder extends Seeder
         //     ],
         // ];
 
-
         // foreach ($selectedDesignsForMat2 as $designData) {
         //     DB::table('designs_materials')->insert([
         //         'material_id' => $selectedMaterialID2,
         //         'design_id' => $designData['design_id'],
-        //         'quantity_used' => $designData['quantity_used'], 
+        //         'quantity_used' => $designData['quantity_used'],
         //         'created_at' => now(),
         //         'updated_at' => now()
         //     ]);

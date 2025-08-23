@@ -7,7 +7,6 @@ use App\Http\Requests\StoreMaterialRequest;
 use App\Models\Materials;
 use App\Models\MaterialsCategory;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class MaterialsController extends Controller
 {
@@ -25,23 +24,23 @@ class MaterialsController extends Controller
 
         return response()->json([
             'msg' => 'Material Created Successfully',
-            'material_id' => $createdMaterialID
+            'material_id' => $createdMaterialID,
         ]);
     }
 
     public function getMaterialCategory()
     {
         $categories = MaterialsCategory::select('id', 'name')->get();
+
         return response()->json($categories);
     }
-
 
     public function get()
     {
         $materials = Materials::with([
             'category' => function ($query) {
                 $query->select('id', 'name');
-            }
+            },
         ])
             ->orderByDesc('created_at') // <-- Latest first
             ->get();
@@ -57,11 +56,9 @@ class MaterialsController extends Controller
                 return $item->category->name; // Group by category name
             });
 
-
-        // IT WILL RETURN AN OBJECT THAT HAS KEY CATEGORY NAME AND VALUE IS AN ARRAY MATERIALS  
+        // IT WILL RETURN AN OBJECT THAT HAS KEY CATEGORY NAME AND VALUE IS AN ARRAY MATERIALS
         return response()->json($materials);
     }
-
 
     public function edit(EditMaterialRequest $request)
     {
@@ -82,5 +79,16 @@ class MaterialsController extends Controller
             'msg' => 'Material Updated Successfully',
             'material_id' => $material->id,
         ]);
+    }
+
+    public function destroy($id)
+    {
+        $product = Materials::findOrFail($id);
+        $product->delete();
+
+        return response()->json([
+            'message' => 'Fabric deleted successfully.',
+            'status' => true,
+        ], 200);
     }
 }

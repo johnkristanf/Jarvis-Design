@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\Mail;
 
 class UserController extends Controller
 {
-
     protected $userService;
 
     public function __construct(UserService $userService)
@@ -21,24 +20,23 @@ class UserController extends Controller
         $this->userService = $userService;
     }
 
-
     public function register(Request $request)
     {
         $validatedData = $request->validate([
             'name' => 'required|string',
             'username' => 'required|string',
             'email' => 'required|string|email',
-            'password' => 'required|min:8'
+            'password' => 'required|min:8',
         ]);
 
-        Log::info("User Data: ", [
-            'data' => $validatedData
+        Log::info('User Data: ', [
+            'data' => $validatedData,
         ]);
 
         $createdUserID = $this->userService->registerUser($validatedData);
 
         if ($createdUserID) {
-            if (!empty($validatedData['email'])) {
+            if (! empty($validatedData['email'])) {
                 // EMAIL VERIFICATION LINK
                 Mail::to($validatedData['email'])->send(new EmailVerification(emailTo: $validatedData['email']));
             } else {
@@ -47,7 +45,7 @@ class UserController extends Controller
 
             return response()->json([
                 'msg' => 'Account Created Successfully',
-                'email' => $validatedData['email']
+                'email' => $validatedData['email'],
             ], 201);
         }
 
@@ -55,7 +53,6 @@ class UserController extends Controller
             'msg' => 'Failed to Create Account',
         ], 500);
     }
-
 
     public function login(Request $request)
     {
@@ -96,7 +93,7 @@ class UserController extends Controller
 
     public function update(Request $request)
     {
-        Log::info("ENDPOINT HIT");
+        Log::info('ENDPOINT HIT');
         $user = $request->user();
 
         $validated = $request->validate([
@@ -110,7 +107,7 @@ class UserController extends Controller
         $user->username = $validated['username'];
         $user->email = $validated['email'];
 
-        if (!empty($validated['password'])) {
+        if (! empty($validated['password'])) {
             $user->password = Hash::make($validated['password']);
         }
 
@@ -121,7 +118,6 @@ class UserController extends Controller
             'user' => $user,
         ]);
     }
-
 
     public function logout(Request $request)
     {

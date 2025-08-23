@@ -1,0 +1,214 @@
+name: Jarvis Design Deployment
+
+on:
+  push:
+    branches:
+      - production
+
+env:
+  EC2_SERVER_DIR: /home/${{ secrets.EC2_USER }}/server
+  EC2_SSH_TARGET: ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}
+
+  DOCKER_GPG_URL: https://download.docker.com/linux/ubuntu/gpg
+  DOCKER_GPG_PATH: /etc/apt/keyrings/docker.gpg
+  DOCKER_REPO_URL: https://download.docker.com/linux/ubuntu
+  DOCKER_REPO_LIST: /etc/apt/sources.list.d/docker.list
+
+
+jobs:
+  production:
+    runs-on: ubuntu-latest
+
+    # TANAN NAKA LOCALHOST ANG VALUE USABA TO PRODUCTION DOMAIN INIG HUMAN PALIT
+    steps:
+      - name: Create .env File for Docker Compose Environment
+        run: |
+          cat <<'EOF' > .env
+          APP_NAME=${{ secrets.APP_NAME }}
+          APP_KEY=${{ secrets.APP_KEY }}
+          APP_URL=http://localhost:8000
+
+          APP_TIMEZONE='Asia/Manila'
+          APP_ENV=production
+          APP_DEBUG=false
+
+          DB_CONNECTION=${{ secrets.DB_CONNECTION }}
+          DB_DATABASE=${{ secrets.DB_DATABASE }}
+          DB_HOST=${{ secrets.DB_HOST }}
+          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          DB_PORT=${{ secrets.DB_PORT }}
+          DB_USERNAME=${{ secrets.DB_USERNAME }}
+
+          LOG_CHANNEL=stack
+          LOG_LEVEL=error
+
+          SANCTUM_STATEFUL_DOMAINS=localhost:3000,localhost
+          SESSION_DOMAIN=${{ secrets.SESSION_DOMAIN }}
+
+          SESSION_DRIVER=${{ secrets.SESSION_DRIVER }}
+          SESSION_SAME_SITE=${{ secrets.SESSION_SAME_SITE }}
+          SESSION_SECURE_COOKIE=${{ secrets.SESSION_SECURE_COOKIE }}
+
+          MAIL_MAILER=smtp
+          MAIL_HOST=smtp.gmail.com
+          MAIL_PORT=587
+          
+          MAIL_ENCRYPTION=tls
+          MAIL_FROM_NAME="${APP_NAME}"
+          EMAIL_VERIFICATION_URL=http://localhost:3000/email/verified
+
+
+          MAIL_USERNAME=${{ secrets.MAIL_USERNAME }}
+          MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}
+          MAIL_FROM_ADDRESS=${{ secrets.MAIL_FROM_ADDRESS }}
+
+          EOF
+
+
+      - name: Make Server Directory on EC2
+        uses: appleboy/ssh-action@v1.0.2
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_KEY }}
+          script: |
+            mkdir -p ${{ env.EC2_SERVER_DIR }}
+
+
+
+      - name: Upload files to EC2 using native SCP
+        run: |
+            # Create temporary SSH key file
+            echo "${{ secrets.EC2_KEY }}" > temp_ssh_key
+            chmod 600 temp_ssh_key
+
+            # List of files to upload
+            FILES=(
+                "server/docker-compose.yml"
+                "server/default.conf"
+                ".env"
+            )
+
+            # Upload all files in a loop
+            for file in "${FILES[@]}"; do
+                scp -i temp_ssh_key -o StrictHostKeyChecking=no "$file" " ${{ env.EC2_SSH_TARGET }}:${{ env.EC2_SERVER_DIR }}/"$file" "
+            done
+
+            # Cleanup 
+            rm -rf temp_ssh_key
+
+
+
+      - name: Install Docker and Docker Compose inside EC2
+        uses: appleboy/ssh-action@v1.0.2
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_KEY }}
+          script: |
+            set -e
+
+            if ! command -v docker &> /dev/null; then
+              sudo apt-get update && sudo apt-get install -y ca-certificates curl gnupg
+              sudo install -m 0755 -d /etc/apt/keyrings
+
+              # Download and save Docker GPG key
+              curl -fsSL "${{ env.DOCKER_GPG_URL }}" | sudo gpg --dearmor -o "${{ env.DOCKER_GPG_PATH }}"
+
+              # Set correct permissions for the GPG key
+              sudo chmod a+r "${{ env.DOCKER_GPG_PATH }}"
+
+              # Add Docker official repository
+              echo \
+                  "deb [arch=$(dpkg --print-architecture) signed-by=${{ env.DOCKER_GPG_PATH }}] \
+                  ${{ env.DOCKER_REPO_URL }} \
+                  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+                  sudo tee "${{ env.DOCKER_REPO_LIST }}" > /dev/null
+
+              sudo apt-get update
+             
+              sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
+                
+              sudo usermod -aG docker $USER
+            fi
+
+            if ! docker compose version &> /dev/null; then
+              sudo apt-get install -y docker-compose-plugin
+            fi
+
+
+
+      - name: Setup Certbot Certificates
+        uses: appleboy/ssh-action@v1.0.2
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_KEY }}
+          script: |
+            set -e
+
+            # Install certbot if not yet existing
+            if ! command -v certbot &> /dev/null; then
+              sudo apt update && sudo apt install -y snapd
+              
+              # Ensure snap core is up to date
+              sudo snap install core
+              sudo snap refresh core
+
+              sudo snap install --classic certbot
+
+              # Make certbot globally accessible
+              sudo ln -s /snap/bin/certbot /usr/bin/certbot
+            fi
+
+            sudo certbot --nginx \
+              --non-interactive \
+              --agree-tos \
+              --redirect \
+              -m ${{ secrets.CERTBOT_EMAIL }} \
+              -d ${{ secrets.CERTBOT_DOMAIN }} -d ${{ secrets.CERTBOT_SUB_DOMAIN }}
+
+            # Enable auto-renewal timer
+            sudo systemctl enable snap.certbot.renew.service
+            sudo systemctl enable snap.certbot.renew.timer
+            sudo systemctl start snap.certbot.renew.timer
+
+            # (Optional) Check renewal schedule
+            sudo systemctl list-timers | grep certbot || true
+
+
+
+      - name: 🚀 Deploy on EC2 via SSH
+        uses: appleboy/ssh-action@v1.0.2
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_KEY }}
+          script: |
+            set -e
+
+            cd ${{ env.EC2_SERVER_DIR }}
+
+            echo "📄 Checking Files inside EC2"
+            ls -lah
+
+            echo "📄 Viewing .env"
+            cat .env
+
+            echo "🔐 Logging into Docker Hub..."
+            echo "${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
+
+            echo "Stopping old containers..."
+            docker compose down || true
+
+            echo "Pulling latest images..."
+            docker compose pull
+
+            echo "Starting containers..."
+            docker compose up -d --remove-orphans
+
+            echo "Checking container status..."
+            docker compose ps
+
+            echo "Recent logs:"
+            docker compose logs --tail=50

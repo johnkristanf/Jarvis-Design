@@ -9,7 +9,6 @@ class UploadedDesign extends Model
 {
     protected $guarded = ['id'];
 
-
     public function materials()
     {
         return $this->morphToMany(
@@ -22,7 +21,6 @@ class UploadedDesign extends Model
             ->withPivot('quantity_used')
             ->withTimestamps();
     }
-
 
     public function size(): BelongsTo
     {

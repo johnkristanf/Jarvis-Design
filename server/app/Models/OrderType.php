@@ -8,12 +8,11 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class OrderType extends Model
 {
     protected $fillable = [
-        'name'
+        'name',
     ];
 
-
     // ORDER CLASS HERE
-    // public function orders(): HasOne 
+    // public function orders(): HasOne
     // {
     //     return $this->hasOne();
     // }

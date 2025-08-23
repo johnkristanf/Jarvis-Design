@@ -3,11 +3,8 @@
 namespace App\Events;
 
 use App\Models\Message;
-use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
-use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
@@ -18,8 +15,8 @@ class MessageSent
     /**
      * Create a new event instance.
      */
-
     public $message;
+
     public $user;
 
     public function __construct(Message $message)
@@ -36,10 +33,9 @@ class MessageSent
     public function broadcastOn(): array
     {
         return [
-            new PresenceChannel('chat.' . $this->message->room_id),
+            new PresenceChannel('chat.'.$this->message->room_id),
         ];
     }
-
 
     /**
      * The event's broadcast name.
@@ -48,7 +44,6 @@ class MessageSent
     {
         return 'message.sent';
     }
-
 
     /**
      * Get the data to broadcast.

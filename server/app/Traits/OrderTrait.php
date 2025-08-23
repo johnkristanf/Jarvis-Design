@@ -6,6 +6,6 @@ trait OrderTrait
 {
     public function generateOrderNumber(): string
     {
-        return 'ORD-' . date('Ymd') . '-' . strtoupper(uniqid());
+        return 'ORD-'.date('Ymd').'-'.strtoupper(uniqid());
     }
 }

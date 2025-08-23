@@ -15,7 +15,6 @@ class ChatService implements ChatServiceInterface
         broadcast(new MessageSent($message))->toOthers();
     }
 
-
     public function createLoadMessage(array $data): Message
     {
         $message = Message::create([
@@ -27,19 +26,20 @@ class ChatService implements ChatServiceInterface
 
         // Load the user relationship
         $message->load('sender');
+
         return $message;
     }
 
     public function createLoadConversation($userID): Conversation
     {
         $conversation = Conversation::create([
-            'user_id' => $userID
+            'user_id' => $userID,
         ]);
 
         return $conversation;
     }
 
-    public function findConversationByUserID($userID, $eagerLoad): Conversation | null
+    public function findConversationByUserID($userID, $eagerLoad): ?Conversation
     {
         $query = Conversation::where('user_id', $userID);
 
@@ -56,8 +56,8 @@ class ChatService implements ChatServiceInterface
             ->with([
                 'messages',
                 'user' => function ($query) {
-                    $query->select('id', 'name', 'email'); 
-                }
+                    $query->select('id', 'name', 'email');
+                },
             ])
             ->get();
     }
