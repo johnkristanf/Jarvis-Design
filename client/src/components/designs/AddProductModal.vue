@@ -46,7 +46,7 @@
         mutationFn: async (formData: FormData) => {
             return await apiService.post('/api/add/product', formData)
         },
-        onSuccess: (response) => {
+        onSuccess: () => {
             toast.add({ severity: 'success', summary: 'Product Added!', life: 3000 })
             queryClient.invalidateQueries({ queryKey: ['products'] })
             resetForm()

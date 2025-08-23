@@ -61,7 +61,7 @@ class PaymentController extends Controller
 
             // HANDLE HERE THE GENERATION OF ORDER ID BASED ON THE FRONT END VUE SA FORMAT: ORD-12..xxxx
 
-            $orderId = 'ORD-'.now()->timestamp.'-'.str_pad(rand(0, 9999), 4, '0', STR_PAD_LEFT);
+            $orderId = 'ORD-' . now()->timestamp . '-' . str_pad(rand(0, 9999), 4, '0', STR_PAD_LEFT);
 
             $payment = $event['data'];
             $paymentAttributes = $payment['attributes'];
@@ -123,7 +123,7 @@ class PaymentController extends Controller
             $size = $request->input('size');
 
             $secretKey = config('services.paymongo.secret_key');
-            $authHeader = 'Basic '.base64_encode($secretKey.':');
+            $authHeader = 'Basic ' . base64_encode($secretKey . ':');
 
             // ADD META DATA IN THE requestPaymentIntent SERVICE TO ADD THE (COLORS, SIZES, ETC...)
             $paymentIntentID = $this->paymentService->requestPaymentIntent($designID, $totalPrice, $orderOption, $orderType, $quantity, $color, $size, $authHeader);
@@ -323,18 +323,15 @@ class PaymentController extends Controller
 
         // Step 2: Handle own-design file upload (after Order is created)
         if ($request->hasFile('own_design_file')) {
-            $file = $request->file('own_design_file');
-            $extractedFileName = $file->getClientOriginalName();
-
-            $s3Key = "orders/{$order->id}/{$extractedFileName}";
-
-            Storage::disk('s3')->put($s3Key, file_get_contents($file), [
-                'visibility' => 'private',
-            ]);
+            $attachmentURL = $this->uploadToS3(
+                root: 'orders',
+                sub: $order->id,
+                file: $request->file('own_design_file')
+            );
 
             // Step 3: Update the order with the uploaded file's URL
             $order->update([
-                'own_design_url' => $s3Key,
+                'own_design_url' => $attachmentURL,
             ]);
         }
 
@@ -412,7 +409,7 @@ class PaymentController extends Controller
         $sizeId = $validated['size_id'];
 
         // Generate Order ID
-        $orderId = 'ORD-'.now()->timestamp.'-'.str_pad(rand(0, 9999), 4, '0', STR_PAD_LEFT);
+        $orderId = 'ORD-' . now()->timestamp . '-' . str_pad(rand(0, 9999), 4, '0', STR_PAD_LEFT);
 
         // Lookup order type ID
         $orderTypeID = ModelsOrderType::where('name', $orderType)->value('id');
@@ -462,9 +459,9 @@ class PaymentController extends Controller
             $usedQty = $material->pivot->quantity_used;
             $totalMaterialQuantityUsed = $quantity * $usedQty;
 
-            Log::info('Material: '.$materialName);
-            Log::info('Used per unit: '.$usedQty);
-            Log::info('Total Deduct: '.$totalMaterialQuantityUsed);
+            Log::info('Material: ' . $materialName);
+            Log::info('Used per unit: ' . $usedQty);
+            Log::info('Total Deduct: ' . $totalMaterialQuantityUsed);
 
             // Now update the material's quantity
             $material->quantity = max(0, $material->quantity - $totalMaterialQuantityUsed);
@@ -490,7 +487,7 @@ class PaymentController extends Controller
 
         // ALL THIS STATIC DATA MUST BE REPLACE BY THE PAYMONGO WEBHOOK METADATA
 
-        $orderId = 'ORD-'.now()->timestamp.'-'.str_pad(rand(0, 9999), 4, '0', STR_PAD_LEFT);
+        $orderId = 'ORD-' . now()->timestamp . '-' . str_pad(rand(0, 9999), 4, '0', STR_PAD_LEFT);
 
         $orderType = 'pre-made';
         $orderTypeID = ModelsOrderType::where('name', '=', $orderType)->value('id');
@@ -547,9 +544,9 @@ class PaymentController extends Controller
             $usedQty = $material->pivot->quantity_used;
             $totalMaterialQuantityUsed = $quantity * $usedQty;
 
-            Log::info('Material: '.$materialName);
-            Log::info('Used per unit: '.$usedQty);
-            Log::info('Total Deduct: '.$totalMaterialQuantityUsed);
+            Log::info('Material: ' . $materialName);
+            Log::info('Used per unit: ' . $usedQty);
+            Log::info('Total Deduct: ' . $totalMaterialQuantityUsed);
 
             // Now update the material's quantity
             $material->quantity = max(0, $material->quantity - $totalMaterialQuantityUsed);

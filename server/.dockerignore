@@ -1,0 +1,43 @@
+# Node dependencies (for Laravel Mix / Vite builds)
+node_modules
+npm-debug.log
+yarn-error.log
+.pnpm-debug.log
+
+# Composer dependencies (we’ll install inside container)
+vendor
+
+# Laravel environment files
+.env
+.env.*.local
+.env.testing
+
+# OS / Editor files
+.DS_Store
+Thumbs.db
+.idea
+.vscode
+*.swp
+
+# Git files
+.git
+.gitignore
+.gitattributes
+
+# Docker / CI artifacts
+.dockerignore
+docker-compose.yml
+Dockerfile
+*.md
+
+# Storage & cache (re-generated at runtime)
+storage/*.key
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/testing/*
+storage/framework/views/*
+bootstrap/cache/*.php
+
+# Logs
+*.log
+storage/logs/*

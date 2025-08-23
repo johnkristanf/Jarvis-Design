@@ -66,7 +66,7 @@ jobs:
 
 
       - name: Make Server Directory on EC2
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@v1.0.2
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
@@ -91,7 +91,6 @@ jobs:
 
             # Upload all files in a loop
             for file in "${FILES[@]}"; do
-                echo "📤 Uploading $file..."
                 scp -i temp_ssh_key -o StrictHostKeyChecking=no "$file" " ${{ env.EC2_SSH_TARGET }}:${{ env.EC2_SERVER_DIR }}/"$file" "
             done
 
@@ -101,7 +100,7 @@ jobs:
 
 
       - name: Install Docker and Docker Compose inside EC2
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@v1.0.2
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
@@ -110,34 +109,29 @@ jobs:
             set -e
 
             if ! command -v docker &> /dev/null; then
+              sudo apt-get update && sudo apt-get install -y ca-certificates curl gnupg
+              sudo install -m 0755 -d /etc/apt/keyrings
 
-                sudo apt-get remove -y docker docker-engine docker.io containerd runc || true
-              
-                sudo apt-get update && sudo apt-get install -y ca-certificates curl gnupg
-                
-                sudo install -m 0755 -d /etc/apt/keyrings
+              # Download and save Docker GPG key
+              curl -fsSL "${{ env.DOCKER_GPG_URL }}" | sudo gpg --dearmor -o "${{ env.DOCKER_GPG_PATH }}"
 
-                # Download and save Docker GPG key
-                curl -fsSL "${{ env.DOCKER_GPG_URL }}" | sudo gpg --dearmor -o "${{ env.DOCKER_GPG_PATH }}"
+              # Set correct permissions for the GPG key
+              sudo chmod a+r "${{ env.DOCKER_GPG_PATH }}"
 
-                # Set correct permissions for the GPG key
-                sudo chmod a+r "${{ env.DOCKER_GPG_PATH }}"
+              # Add Docker official repository
+              echo \
+                  "deb [arch=$(dpkg --print-architecture) signed-by=${{ env.DOCKER_GPG_PATH }}] \
+                  ${{ env.DOCKER_REPO_URL }} \
+                  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+                  sudo tee "${{ env.DOCKER_REPO_LIST }}" > /dev/null
 
-                # Add Docker official repository
-                echo \
-                    "deb [arch=$(dpkg --print-architecture) signed-by=${{ env.DOCKER_GPG_PATH }}] \
-                    ${{ env.DOCKER_REPO_URL }} \
-                    $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
-                    sudo tee "${{ env.DOCKER_REPO_LIST }}" > /dev/null
-
-                sudo apt-get update
+              sudo apt-get update
              
-                sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+              sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
                 
-                sudo usermod -aG docker $USER
+              sudo usermod -aG docker $USER
             fi
 
-            # Install Docker Compose plugin if not installed
             if ! docker compose version &> /dev/null; then
               sudo apt-get install -y docker-compose-plugin
             fi
@@ -145,7 +139,7 @@ jobs:
 
 
       - name: Setup Certbot Certificates
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@v1.0.2
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
@@ -185,7 +179,7 @@ jobs:
 
 
       - name: 🚀 Deploy on EC2 via SSH
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@v1.0.2
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}

@@ -39,6 +39,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/add/product', [DesignsController::class, 'addProduct']);
     Route::post('/add/product/design', [DesignsController::class, 'addProductDesign']);
     Route::get('/get/all/products', [DesignsController::class, 'getAllProducts']);
+    Route::delete('/delete/product/{id}', [DesignsController::class, 'destroy']);
+
 
     // THIS DESIGNS IS FOR THE ADMIN SIDE THAT SEE ALL DESIGN WITHOUT FILTER
     Route::get('/get/all/designs', [DesignsController::class, 'getAllDesigns']);
@@ -65,6 +67,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/get/material/categories', [MaterialsController::class, 'getMaterialCategory']);
     Route::get('/get/materials', [MaterialsController::class, 'get']);
     Route::get('/get/grouped/materials', [MaterialsController::class, 'getGroupedMaterials']);
+    Route::delete('/delete/material/{id}', [MaterialsController::class, 'destroy']);
 
     // PROTECTED ORDER ROUTE
     // Route::post('/place/order', [PaymentController::class, 'OLDplaceOrder']);

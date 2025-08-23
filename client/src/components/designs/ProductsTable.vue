@@ -1,6 +1,5 @@
 <script lang="ts" setup>
     import { apiService } from '@/api/axios'
-    import type { Designs } from '@/types/design'
     import { useQuery } from '@tanstack/vue-query'
     import Loader from '../Loader.vue'
     import AttachMaterialsModal from './AttachMaterialsModal.vue'
@@ -8,6 +7,7 @@
     import { OrderTypes } from '@/types/order'
     import type { Products } from '@/types/product'
     import AddDesignModal from './AddDesignModal.vue'
+    import DeleteDialog from '../DeleteDialog..vue'
 
     const modals = reactive({
         show_attach_materials: false,
@@ -18,6 +18,7 @@
     const selectedProductCategory = ref<string>()
     const selectedProductID = ref<number>()
     const selectedProductName = ref<string>()
+    const selectedDesignImages = ref<string[]>()
 
     // GET ALL PRE - MADE DESIGNS DATA QUERY
     const {
@@ -35,19 +36,21 @@
         },
     })
 
-    const handleAttachMaterialsOnDesign = (product_id: number) => {
-        selectedProductID.value = product_id
-        modals.show_attach_materials = true
-    }
+    // const handleAttachMaterialsOnDesign = (product_id: number) => {
+    //     selectedProductID.value = product_id
+    //     modals.show_attach_materials = true
+    // }
 
     const handleAddDesignOnProduct = (
         product_id: number,
         product_name: string,
         product_category: string,
+        design_images: string[]
     ) => {
         selectedProductCategory.value = product_category
         selectedProductID.value = product_id
         selectedProductName.value = product_name
+        selectedDesignImages.value = design_images
         modals.show_add_design = true
     }
 </script>
@@ -92,11 +95,12 @@
                                     product.id,
                                     product.name,
                                     product.design_category.name,
+                                    product.design_images
                                 )
                             "
                             class="text-gray-900 hover:underline"
                         >
-                            Add Design
+                            Upload Design
                         </button>
 
                         <!-- <button
@@ -106,7 +110,11 @@
                             Attach Materials
                         </button> -->
                         <button class="text-blue-600 hover:underline">Edit</button>
-                        <button class="text-red-800 hover:underline">Delete</button>
+                        <DeleteDialog
+                            :selectedID="product.id"
+                            endpoint_url="/api/delete/product"
+                            query_key="products"
+                        />
                     </td>
                 </tr>
             </tbody>
@@ -125,6 +133,7 @@
             :selectedProductCategory="selectedProductCategory"
             :selectedProductID="selectedProductID"
             :selectedProductName="selectedProductName"
+            :designImages="selectedDesignImages"
             @close="modals.show_add_design = false"
         />
 

@@ -79,9 +79,35 @@ class DesignsController extends Controller
     public function getAllProducts()
     {
         $products = Products::select('id', 'name', 'unit_price', 'category_id', 'fabric_quantity')
-            ->with(['design_category:id,name'])
+            ->with([
+                'design_category:id,name',
+                'designs:id,product_id,image_url',
+            ])
             ->latest()
             ->get();
+
+
+        // Map each product and generate signed URLs for designs
+        $products = $products->map(function ($product) {
+            // Generate temporary URLs for each design's image
+            $designImages = $product->designs->map(function ($design) {
+                if ($design->image_url && Storage::disk('s3')->exists($design->image_url)) {
+                    return Storage::disk('s3')->temporaryUrl(
+                        $design->image_url,
+                        now()->addMinutes(10) // 10 minutes validity
+                    );
+                }
+                return null;
+            })->filter()->values(); // Remove nulls if image doesn't exist
+
+            // Append design_images to product
+            $product->design_images = $designImages;
+
+            // Remove the designs relation if you only want URLs
+            unset($product->designs);
+
+            return $product;
+        });
 
         return response()->json($products, 200);
     }
@@ -150,7 +176,7 @@ class DesignsController extends Controller
                     $fileContent = file_get_contents($file->getPathname());
 
                     // Create unique filename to avoid conflicts
-                    $uniqueFileName = uniqid().'_'.basename($extractedFileName);
+                    $uniqueFileName = uniqid() . '_' . basename($extractedFileName);
                     $s3Key = "uploads/{$preferredDesignID}/{$uniqueFileName}";
 
                     // Upload to S3
@@ -161,7 +187,7 @@ class DesignsController extends Controller
                     $uploadedFilePaths[] = $s3Key;
                 } catch (\Exception $e) {
                     $failedUploads[] = $extractedFileName ?? "File {$index}";
-                    Log::error('Individual file upload failed: '.$e->getMessage());
+                    Log::error('Individual file upload failed: ' . $e->getMessage());
                 }
             }
 
@@ -210,7 +236,7 @@ class DesignsController extends Controller
 
     public function getUploadedDesignByID($designID)
     {
-        Log::info('designID: '.$designID);
+        Log::info('designID: ' . $designID);
 
         $prefix = "uploads/{$designID}";
         $files = Storage::disk('s3')->files($prefix);
@@ -329,6 +355,28 @@ class DesignsController extends Controller
         ], 201);
     }
 
+
+    public function destroy($id)
+    {
+        $product = Products::findOrFail($id);
+        
+        // Loop through related designs and delete their images from S3
+        foreach ($product->designs as $design) {
+            if ($design->image_url && Storage::disk('s3')->exists($design->image_url)) {
+                Storage::disk('s3')->delete($design->image_url);
+            }
+        }
+
+        // Optionally, delete the designs from DB (if needed)
+        $product->designs()->delete();
+        $product->delete();
+
+        return response()->json([
+            'message' => 'Product deleted successfully.',
+            'status' => true,
+        ], 200);
+    }
+
     public function addProductDesign(Request $request)
     {
         try {
@@ -370,7 +418,6 @@ class DesignsController extends Controller
             return response()->json([
                 'message' => 'Product design uploaded successfully!',
             ], 201);
-
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'message' => 'Validation failed.',

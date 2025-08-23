@@ -1,11 +1,8 @@
 <script lang="ts" setup>
     import AddProductModal from '@/components/designs/AddProductModal.vue'
     import ProductsTable from '@/components/designs/ProductsTable.vue'
-    import UpdateUploadedDesignsModal from '@/components/designs/UpdateUploadedDesignsModal.vue'
-    import UploadedDesignsTable from '@/components/designs/UploadedDesignsTable.vue'
-    import type { UploadedDesign } from '@/types/design'
-    import { ArrowLeftIcon, ArrowRightIcon, PlusIcon } from '@heroicons/vue/20/solid'
-    import { reactive, ref } from 'vue'
+    import {  PlusIcon } from '@heroicons/vue/20/solid'
+    import { reactive } from 'vue'
 
     const refToggles = reactive({
         show_uploaded_designs_table: false,
@@ -14,14 +11,14 @@
     })
 
     // SELECTING TO UPDATE UPLOADED DESIGN STATUS
-    const selectedDesign = ref<UploadedDesign>()
+    // const selectedDesign = ref<UploadedDesign>()
 
-    const openUpdateModal = (design: UploadedDesign) => {
-        console.log('selected design: ', design)
+    // const openUpdateModal = (design: UploadedDesign) => {
+    //     console.log('selected design: ', design)
 
-        selectedDesign.value = design
-        refToggles.show_update_design_modal = true
-    }
+    //     selectedDesign.value = design
+    //     refToggles.show_update_design_modal = true
+    // }
 </script>
 
 <template>
@@ -71,10 +68,10 @@
         </div>
 
         <!-- CUSTOMER UPLOADED DESIGNS TABLE -->
-        <UploadedDesignsTable
+        <!-- <UploadedDesignsTable
             v-if="refToggles.show_uploaded_designs_table"
             @openUpdateModal="openUpdateModal"
-        />
+        /> -->
 
         <!-- PRE-MADE DESIGNS -->
         <ProductsTable v-if="!refToggles.show_uploaded_designs_table" />
@@ -86,9 +83,9 @@
     />
 
     <!-- UPDATE CUSTOMER UPLOADED DESIGNS MODAL -->
-    <UpdateUploadedDesignsModal
+    <!-- <UpdateUploadedDesignsModal
         v-if="selectedDesign && refToggles.show_update_design_modal"
         :design="selectedDesign"
         @close="refToggles.show_update_design_modal = false"
-    />
+    /> -->
 </template>

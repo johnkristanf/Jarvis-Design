@@ -80,4 +80,15 @@ class MaterialsController extends Controller
             'material_id' => $material->id,
         ]);
     }
+
+    public function destroy($id)
+    {
+        $product = Materials::findOrFail($id);
+        $product->delete();
+
+        return response()->json([
+            'message' => 'Fabric deleted successfully.',
+            'status' => true,
+        ], 200);
+    }
 }

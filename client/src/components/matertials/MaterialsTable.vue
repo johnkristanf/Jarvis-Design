@@ -10,6 +10,7 @@
     import Toast from 'primevue/toast'
 
     import EditMaterialsModal from './EditMaterialsModal.vue'
+    import DeleteDialog from '../DeleteDialog..vue'
 
     // REF TOGGLER OF ADD NEW MATERIALS MODAL
     const modals = reactive({
@@ -167,6 +168,7 @@
                     </td>
 
                     <td class="px-6 py-4">{{ material.reorder_level }}</td>
+                    
                     <td class="px-6 py-6 flex gap-2">
                         <button
                             class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
@@ -174,9 +176,11 @@
                         >
                             Edit
                         </button>
-                        <button class="font-medium text-red-800 dark:text-blue-500 hover:underline">
-                            Delete
-                        </button>
+                        <DeleteDialog
+                            :selectedID="material.id"
+                            endpoint_url="/api/delete/material"
+                            query_key="materials"
+                        />
                     </td>
                 </tr>
             </tbody>
