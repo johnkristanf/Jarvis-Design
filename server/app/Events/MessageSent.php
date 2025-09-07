@@ -3,12 +3,13 @@
 namespace App\Events;
 
 use App\Models\Message;
+use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PresenceChannel;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class MessageSent
+class MessageSent implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -16,13 +17,13 @@ class MessageSent
      * Create a new event instance.
      */
     public $message;
+    public $conversationUserID;
 
-    public $user;
-
-    public function __construct(Message $message)
+    public function __construct(Message $message, $conversationUserID)
     {
+
         $this->message = $message;
-        $this->user = $message->user;
+        $this->conversationUserID = $conversationUserID;
     }
 
     /**
@@ -33,7 +34,7 @@ class MessageSent
     public function broadcastOn(): array
     {
         return [
-            new PresenceChannel('chat.'.$this->message->room_id),
+            new Channel('chat.' . $this->conversationUserID),
         ];
     }
 
@@ -51,14 +52,12 @@ class MessageSent
     public function broadcastWith(): array
     {
         return [
-            'id' => $this->message->id,
-            'content' => $this->message->content,
-            'user' => [
-                'id' => $this->user->id,
-                'name' => $this->user->name,
+            'message' => [
+                'id' => $this->message->id,
+                'content' => $this->message->content,
+                'conversation_user_id' => $this->conversationUserID,
+                'created_at' => $this->message->created_at->toISOString(),
             ],
-            'conversation_id' => $this->message->conversation_id,
-            'created_at' => $this->message->created_at->toISOString(),
         ];
     }
 }

@@ -27,6 +27,8 @@ return new class extends Migration
             $table->string('own_design_url')->nullable();
             $table->string('business_design_url')->nullable();
             $table->string('attachment_url')->nullable();
+
+            $table->foreignId('product_id')->constrained('products');
             $table->timestamps();
         });
     }

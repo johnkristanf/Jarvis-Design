@@ -2,6 +2,9 @@
 
 namespace App\Traits;
 
+use Carbon\Carbon;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Storage;
 
 trait HandleAttachments
@@ -12,7 +15,7 @@ trait HandleAttachments
         $fileContent = file_get_contents($file->getPathname());
 
         // Create unique filename to avoid conflicts
-        $uniqueFileName = uniqid().'_'.basename($extractedFileName);
+        $uniqueFileName = uniqid() . '_' . basename($extractedFileName);
         $s3Key = "{$root}/{$sub}/{$uniqueFileName}";
 
         // Upload to S3
@@ -21,5 +24,24 @@ trait HandleAttachments
         ]);
 
         return $s3Key;
+    }
+
+    public function transformOrderDesignToS3Temp($orders)
+    {
+        $collection = ($orders instanceof LengthAwarePaginator || $orders instanceof Paginator)
+            ? $orders->getCollection()
+            : $orders;
+
+        $collection->transform(function ($order) {
+            $filePath = $order->own_design_url ?: $order->business_design_url;
+
+            $order->temp_url = $filePath
+                ? Storage::disk('s3')->temporaryUrl($filePath, Carbon::now()->addMinutes(10))
+                : null;
+
+            return $order;
+        });
+
+        return $orders;
     }
 }

@@ -5,9 +5,9 @@
     import { ref, watch } from 'vue'
     import { FwbCard } from 'flowbite-vue'
     import { useQuery } from '@tanstack/vue-query'
-    import { getAllOrders } from '@/api/get/orders'
     import Loader from '@/components/Loader.vue'
     import type { Orders } from '@/types/order'
+    import { apiService } from '@/api/axios'
 
     const isOpenChatBox = ref<boolean>(false)
     const isOrderDetailsOpen = ref<boolean>(false)
@@ -16,7 +16,10 @@
 
     const orderQuery = useQuery({
         queryKey: ['orders'],
-        queryFn: getAllOrders,
+        queryFn: async () => {
+            const respData = await apiService.get<Orders[]>(`/api/get/orders`)
+            return respData
+        },
         enabled: true,
     })
 
@@ -109,7 +112,6 @@
                     </p>
                 </div>
             </fwb-card>
-
         </div>
 
         <OrderDetailsModal

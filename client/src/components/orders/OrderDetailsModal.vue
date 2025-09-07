@@ -1,5 +1,6 @@
 <script lang="ts" setup>
-    import { formatDateWithTime, getStatusBadgeClass } from '@/helper/order'
+    import { formatDate } from '@/helper/designs';
+import { formatDateWithTime, getStatusBadgeClass } from '@/helper/order'
     import { OrderOptions, type Orders } from '@/types/order'
     import {
         TransitionRoot,
@@ -109,7 +110,7 @@
                                             Created
                                         </h3>
                                         <p class="text-sm text-black mt-1">
-                                            {{ formatDateWithTime(orderDetails.created_at) }}
+                                            {{ formatDate(orderDetails.created_at) }}
                                         </p>
                                     </div>
                                     <div>
@@ -121,7 +122,7 @@
                                         <p class="text-sm text-black mt-1">
                                             {{
                                                 orderDetails.delivery_date
-                                                    ? formatDateWithTime(orderDetails.delivery_date)
+                                                    ? formatDate(orderDetails.delivery_date)
                                                     : 'N/A'
                                             }}
                                         </p>

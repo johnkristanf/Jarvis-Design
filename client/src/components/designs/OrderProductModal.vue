@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-    import { ref, computed, watch } from 'vue'
+    import { ref, computed, watch, onMounted } from 'vue'
     import {
         Dialog,
         DialogPanel,
@@ -33,6 +33,11 @@
             type: Object as PropType<Product>,
             required: true,
         },
+    })
+
+    onMounted(() => {
+        console.log('categoryName: ', props.categoryName)
+        console.log('product: ', props.product)
     })
 
     const { sizes, loadingSizes } = useProductAttributes()
@@ -137,8 +142,13 @@
         data.append('address', formData.value.address)
         data.append('design_type', formData.value.designType)
         data.append('order_option', formData.value.orderOption?.name as string)
-        data.append('fabric_type_id', props.product.fabric_type.id.toString())
         data.append('product_unit_price', props.product.unit_price)
+        data.append('product_id', props.product.id.toString())
+
+        // Null if the product has no corresponding fabric like (mugs, lanyard, etc..)
+        if (props.product.fabric_type && props.product.fabric_type.id) {
+            data.append('fabric_type_id', props.product.fabric_type.id.toString())
+        }
 
         // Conditionally append size quantities or solo quantity
         if (shouldIncludeSizes.value) {
@@ -225,6 +235,16 @@
                 })
 
                 return
+            }
+
+            if (err.message == 'Network Error'){
+                 toast.add({
+                    severity: 'error',
+                    summary: 'Check your internet connection and try again',
+                    life: 3000,
+                })
+
+                return;
             }
 
             toast.add({
@@ -315,11 +335,11 @@
     ]
 
     const colorPalette: Record<string, string> = {
-        'Red': '#FF0000',
-        'Blue': '#0000FF',
-        'Green': '#008000',
-        'Yellow': '#FFFF00',
-        'Black': '#000000',
+        Red: '#FF0000',
+        Blue: '#0000FF',
+        Green: '#008000',
+        Yellow: '#FFFF00',
+        Black: '#000000',
         'Sunset Blaze': '#FF6B3D',
         'Tropical Punch': '#FF3B7F',
         'Ocean Wave': '#2E8BC0',

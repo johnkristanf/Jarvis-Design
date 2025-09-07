@@ -1,39 +1,47 @@
 <script lang="ts" setup>
-    import { getAllConversation } from '@/api/get/message'
+    import { getAllCustomers, getConversation } from '@/api/get/message'
     import { sendChatMessageApi } from '@/api/post/message'
     import { useFetchAuthenticatedUser } from '@/composables/useFetchAuthenticatedUser'
     import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
-    import { ref, watch } from 'vue'
+    import { computed, ref, watch } from 'vue'
     import { ArrowUpOnSquareIcon, ChevronDoubleRightIcon, XMarkIcon } from '@heroicons/vue/20/solid'
-    import type { Conversation } from '@/types/message'
     import Toast from 'primevue/toast'
     import { useToast } from 'primevue'
+    import echo from '@/services/echo'
 
     const { authStore } = useFetchAuthenticatedUser()
     const queryClient = useQueryClient()
 
     // ALL CONVERSATION QUERY
-    const allConversationQuery = useQuery({
-        queryKey: ['all_conversation'],
-        queryFn: getAllConversation,
+
+    const allCustomersQuery = useQuery({
+        queryKey: ['all_customers'],
+        queryFn: getAllCustomers,
     })
 
     // track selected conversation
-    const selectedConversation = ref<Conversation>()
+    const selectedCustomerData = ref({
+        id: -1,
+        name: '',
+        email: '',
+    })
 
-    const selectConversation = (data: Conversation) => {
-        selectedConversation.value = data
+    const selectCustomerToChat = (user_id: number, name: string, email: string) => {
+        selectedCustomerData.value.id = user_id
+        selectedCustomerData.value.name = name
+        selectedCustomerData.value.email = email
     }
 
-    // PRE-SELECT 1st CONVERSATION
+    // PRE-SELECT 1st CUSTOMER
     watch(
-        () => allConversationQuery.data.value,
-        (conversations) => {
-            if (conversations && conversations.length > 0 && !selectedConversation.value) {
-                selectedConversation.value = conversations[0]
+        () => allCustomersQuery.data.value,
+        (customer) => {
+            if (customer && customer.length > 0) {
+                selectedCustomerData.value.id = customer[0].id
+                selectedCustomerData.value.name = customer[0].name
+                selectedCustomerData.value.email = customer[0].email
             }
         },
-        { immediate: true },
     )
 
     // Local state
@@ -45,24 +53,22 @@
     // SEND MESSAGE MUTATION
     const sendMessageMutation = useMutation({
         mutationFn: sendChatMessageApi,
-        onSuccess: () => {
-            console.log('SUCCESSSS')
-
-            // Refetch conversation messages
-            queryClient.invalidateQueries({
-                queryKey: ['conversation', selectedConversation.value?.id],
-            })
-
-            // Also refresh conversations list if needed
-            queryClient.invalidateQueries({ queryKey: ['all_conversation'] })
-            allConversationQuery.refetch()
-
+        onSuccess: async () => {
             messageContent.value = ''
             attachment.value = null
         },
         onError: (error) => {
             console.error('Message send failed:', error)
         },
+    })
+
+    const messagesQuery = useQuery({
+        queryKey: computed(() => ['admin_conversation', selectedCustomerData.value.id]),
+        queryFn: async () => {
+            if (!selectedCustomerData.value.id) return null
+            return await getConversation(selectedCustomerData.value.id)
+        },
+        enabled: computed(() => !!selectedCustomerData.value.id),
     })
 
     // Handle file selection
@@ -101,7 +107,6 @@
         if (!messageContent.value && !attachment.value) return // prevent empty submission
 
         console.log('message: ', messageContent.value)
-        console.log('selectedUserId: ', selectedConversation.value?.id)
         console.log('attachment: ', attachment.value)
 
         const formData = new FormData()
@@ -109,8 +114,8 @@
             formData.append('content', messageContent.value)
         }
 
-        if (selectedConversation.value?.user?.id) {
-            formData.append('user_id', selectedConversation.value?.user?.id.toString())
+        if (selectedCustomerData.value.id) {
+            formData.append('user_id', selectedCustomerData.value.id.toString())
         }
 
         if (attachment.value) {
@@ -119,6 +124,31 @@
 
         sendMessageMutation.mutate(formData)
     }
+
+    // WATCH FOR NEW CHAT EVENT
+    watch(
+        () => selectedCustomerData.value.id,
+        (newID) => {
+            if (newID) {
+                const channel = echo.channel(`chat.${newID}`)
+
+                // Debug channel subscription
+                channel.subscribed(() => {
+                    console.log('✅ Subscribed to channel: chat.' + newID)
+                })
+
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                channel.listen('.message.sent', (event: any) => {
+                    console.log('📨 Event data:', event.message)
+                    const eventMessage = event.message
+
+                    queryClient.invalidateQueries({
+                        queryKey: ['admin_conversation', eventMessage.conversation_user_id],
+                    })
+                })
+            }
+        }
+    )
 </script>
 
 <template>
@@ -138,20 +168,22 @@
 
                 <!-- loop conversations -->
                 <ul class="space-y-2 font-medium">
-                    <li v-for="convo in allConversationQuery.data.value ?? []" :key="convo.id">
+                    <li v-for="customer in allCustomersQuery.data.value ?? []" :key="customer.id">
                         <button
-                            @click="selectConversation(convo)"
+                            @click="
+                                selectCustomerToChat(customer.id, customer.name, customer.email)
+                            "
                             :class="[
                                 'w-full flex items-center p-2 text-left rounded-lg group',
-                                selectedConversation?.id === convo.id
+                                selectedCustomerData.id === customer.id
                                     ? 'bg-gray-100 dark:bg-gray-700'
                                     : 'text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700',
                             ]"
                         >
                             <img src="/user_icon.jpeg" class="h-7 mr-3 sm:h-8" alt="User avatar" />
                             <div class="flex flex-col text-sm">
-                                <h1>{{ convo.user?.name }}</h1>
-                                <h1 class="text-gray-400">{{ convo.user?.email }}</h1>
+                                <h1>{{ customer.name }}</h1>
+                                <h1 class="text-gray-400">{{ customer.email }}</h1>
                             </div>
                         </button>
                     </li>
@@ -161,14 +193,16 @@
 
         <!-- Chat messages -->
         <div class="relative flex-1">
-            <template v-if="selectedConversation">
+            <template v-if="messagesQuery">
                 <div class="flex flex-col h-full">
                     <!-- Chat Header -->
                     <div class="bg-gray-900 flex items-center font-medium h-18 pl-5">
                         <img src="/user_icon-removebg.png" class="h-12 mr-3" />
                         <div class="flex flex-col text-sm text-white">
-                            <h1>{{ selectedConversation.user?.name }}</h1>
-                            <h1 class="text-gray-400">{{ selectedConversation.user?.email }}</h1>
+                            <h1>{{ selectedCustomerData.name }}</h1>
+                            <h1 class="text-gray-400">
+                                {{ selectedCustomerData.email }}
+                            </h1>
                         </div>
                     </div>
 
@@ -177,7 +211,7 @@
                         class="flex-1 font-medium h-[70%] pt-5 px-5 pb-8 overflow-y-auto space-y-4"
                     >
                         <div
-                            v-for="msg in selectedConversation.messages"
+                            v-for="msg in messagesQuery.data.value?.messages"
                             :key="msg.id"
                             :class="[
                                 'flex',

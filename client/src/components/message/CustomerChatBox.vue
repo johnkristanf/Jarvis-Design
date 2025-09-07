@@ -1,3 +1,4 @@
+<!-- eslint-disable @typescript-eslint/no-explicit-any -->
 <script lang="ts" setup>
     import { getConversation } from '@/api/get/message'
     import { sendChatMessageApi } from '@/api/post/message'
@@ -5,9 +6,10 @@
     import { TransitionRoot, TransitionChild, Dialog, DialogPanel } from '@headlessui/vue'
     import { ArrowUpOnSquareIcon, ChevronDoubleRightIcon, XMarkIcon } from '@heroicons/vue/20/solid'
     import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
-    import { ref } from 'vue'
+    import { ref, watch } from 'vue'
     import Toast from 'primevue/toast'
     import { useToast } from 'primevue'
+    import echo from '@/services/echo'
 
     defineProps<{
         isOpen: boolean
@@ -30,7 +32,7 @@
 
     // USE QUERY COVERSATION
     const conversationQuery = useQuery({
-        queryKey: ['conversation', authStore.currentUser?.id],
+        queryKey: ['user_conversation', authStore.currentUser?.id],
         queryFn: async () => {
             if (!authStore.currentUser?.id) return null
             return await getConversation(authStore.currentUser.id)
@@ -41,11 +43,7 @@
     // SEND MESSAGE MUTATION
     const sendMessageMutation = useMutation({
         mutationFn: sendChatMessageApi,
-        onSuccess: () => {
-            // ✅ Refresh messages query (if you have a messages query keyed by conversation)
-            queryClient.invalidateQueries({ queryKey: ['conversation', 'all_conversation'] })
-
-            // reset form
+        onSuccess: async () => {
             messageContent.value = ''
             attachment.value = null
         },
@@ -102,6 +100,32 @@
 
         sendMessageMutation.mutate(formData)
     }
+
+    // WATCH FOR NEW CHAT EVENT
+    watch(
+        () => authStore.currentUser?.id,
+        (newUserId) => {
+            if (newUserId) {
+                const channel = echo.channel(`chat.${newUserId}`)
+
+                // Debug channel subscription
+                channel.subscribed(() => {
+                    console.log('✅ Subscribed to channel: chat.' + newUserId)
+                })
+
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                channel.listen('.message.sent', (event: any) => {
+                    console.log('📨 Event data:', event.message)
+                    const eventMessage = event.message
+
+                    queryClient.invalidateQueries({
+                        queryKey: ['user_conversation', eventMessage.conversation_user_id],
+                    })
+                })
+            }
+        },
+        { immediate: true },
+    )
 </script>
 
 <template>

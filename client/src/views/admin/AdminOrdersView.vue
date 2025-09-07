@@ -8,7 +8,7 @@
 </script>
 
 <template>
-    <div class="w-full h-[100vh] p-4 rounded-md bg-gray-100 border-1 border-gray-400 mb-16">
+    <div class="w-full h-[70vh] p-4 rounded-md bg-gray-100 border-1 border-gray-400 mb-16">
         <h1 class="text-2xl">Customer Orders</h1>
         <p class="text-sm text-gray-400 mt-1">
             Displays all customer orders, their statuses, and essential order details for tracking

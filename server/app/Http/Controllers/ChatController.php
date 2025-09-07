@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Interfaces\ChatServiceInterface;
+use App\Models\Roles;
+use App\Models\User;
 use App\Traits\HandleAttachments;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 
 class ChatController extends Controller
@@ -66,7 +69,8 @@ class ChatController extends Controller
             ]);
         }
 
-        $this->chat->send($message);
+        Log::info("conversation: ", [$conversation]);
+        $this->chat->send($message,  $conversation->user_id);
 
         return response()->json([
             'message' => [
@@ -93,5 +97,14 @@ class ChatController extends Controller
     public function getAllConversation()
     {
         return $this->chat->loadAllConversation();
+    }
+
+
+    public function getAllCustomers()
+    {
+        $userRoleID = Roles::where('name', 'user')->first()->id;
+        return User::select('id', 'name', 'email')
+            ->where('role_id', '=', $userRoleID)
+            ->get();
     }
 }

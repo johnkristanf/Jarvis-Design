@@ -35,15 +35,16 @@ class MaterialsController extends Controller
         return response()->json($categories);
     }
 
-    public function get()
+    public function get(Request $request)
     {
+        $limit = $request->get('limit', 10);
         $materials = Materials::with([
             'category' => function ($query) {
                 $query->select('id', 'name');
             },
         ])
             ->orderByDesc('created_at') // <-- Latest first
-            ->get();
+            ->paginate($limit);
 
         return response()->json($materials);
     }

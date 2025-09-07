@@ -7,12 +7,19 @@ use App\Interfaces\ChatServiceInterface;
 use App\Models\Conversation;
 use App\Models\Message;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Log;
 
 class ChatService implements ChatServiceInterface
 {
-    public function send(Message $message)
+    public function send(Message $message, $conversationUserID)
     {
-        broadcast(new MessageSent($message))->toOthers();
+
+        try {
+            broadcast(new MessageSent($message, $conversationUserID));
+        } catch (\Exception $e) {
+            Log::error('Broadcast exception: ' . $e->getMessage());
+            Log::error('Stack trace: ' . $e->getTraceAsString());
+        }
     }
 
     public function createLoadMessage(array $data): Message
@@ -42,11 +49,9 @@ class ChatService implements ChatServiceInterface
     public function findConversationByUserID($userID, $eagerLoad): ?Conversation
     {
         $query = Conversation::where('user_id', $userID);
-
         if ($eagerLoad) {
-            $query->with('messages');
+            $query->with(['messages', 'user:id,name,email']);
         }
-
         return $query->first();
     }
 

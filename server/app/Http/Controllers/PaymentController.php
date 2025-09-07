@@ -193,9 +193,10 @@ class PaymentController extends Controller
         return response()->json($response->json());
     }
 
-    public function getAllOrders()
+    public function getAllOrders(Request $request)
     {
-        $orders = $this->paymentService->allOrders();
+        $limit = $request->get('limit', 10);
+        $orders = $this->paymentService->allOrders($limit);
 
         return response()->json($orders, 200);
     }
@@ -226,6 +227,7 @@ class PaymentController extends Controller
     {
         $validated = $request->validate([
             'order_id' => 'required|integer',
+            'status' => 'required|string',
             'action_date' => 'required|date',
         ]);
 
@@ -233,9 +235,11 @@ class PaymentController extends Controller
             'validated' => $validated,
         ]);
 
-        $order = Orders::findOrFail($validated['order_id']);
-        $order->delivery_date = $validated['action_date'];
-        $order->save();
+        $order = Orders::where('id', $validated['order_id'])->update([
+            'delivery_date' => $validated['action_date'],
+            'status' => $validated['status'],
+        ]);
+
 
         // INSERT NOTIFICATION
 
@@ -281,18 +285,20 @@ class PaymentController extends Controller
             'color' => 'required|string',
             'phone_number' => 'required|string',
             'product_unit_price' => 'required|numeric',
+            'product_id' => 'required|numeric',
             'address' => 'required|string',
             'design_type' => 'required|in:own-design,business-design,ai-generation',
             'order_option' => 'required|string',
             'total_quantity' => 'required|numeric|min:1',
             'total_price' => 'required|numeric|min:1',
-            'fabric_type_id' => 'required|numeric|min:1',
+            'fabric_type_id' => 'nullable|numeric',
             'solo_quantity' => 'nullable|numeric',
             'sizes' => 'nullable|array',
             'sizes.*' => 'nullable|numeric|min:0',
             'own_design_file' => 'nullable|file',
             'business_design_url' => 'nullable|string',
             'payment_attachment' => 'required|file',
+
         ]);
 
         Log::info('Order Data: ', [$validated]);
@@ -309,6 +315,7 @@ class PaymentController extends Controller
             'order_number' => $this->generateOrderNumber(),
             'color' => $validated['color'],
             'product_unit_price' => $validated['product_unit_price'],
+            'product_id' => $validated['product_id'],
             'phone_number' => $validated['phone_number'],
             'address' => $validated['address'],
             'design_type' => $validated['design_type'],
@@ -344,36 +351,40 @@ class PaymentController extends Controller
             }
         }
 
-        // FIND A WAY TO GET THE MATERIAL ID FOR AUTOMATIC DEDUCTION
         // Step 5: Deduct total quantity ordered in materials table
-        $fabric = Materials::findOrFail($validated['fabric_type_id']);
+        if (isset($validated['fabric_type_id']) && $validated['fabric_type_id']) {
 
-        $totalOrderedQuantity = (int) $validated['total_quantity'];
-        $fabricUsedPerUnit = (float) $fabric->products()->pluck('fabric_quantity')->first();
+            $fabric = Materials::findOrFail($validated['fabric_type_id']);
 
-        $totalQuantityDeduction = $totalOrderedQuantity * $fabricUsedPerUnit;
+            $totalOrderedQuantity = (int) $validated['total_quantity'];
+            $fabricUsedPerUnit = (float) $fabric->products()->pluck('fabric_quantity')->first();
 
-        Log::info('FABRIC DATA: ', [
-            'fabric_type_id' => $validated['fabric_type_id'],
-            'totalDeduction' => $totalQuantityDeduction,
-            'fabric' => $fabric,
-        ]);
+            $totalQuantityDeduction = $totalOrderedQuantity * $fabricUsedPerUnit;
 
-        if ($fabric->quantity >= $totalQuantityDeduction) {
-            $fabric->decrement('quantity', $totalQuantityDeduction);
-        } else {
-            // Handle insufficient stock (throw exception or return error)
-            throw new \Exception('Not enough material in stock.');
+            Log::info('FABRIC DATA: ', [
+                'fabric_type_id' => $validated['fabric_type_id'],
+                'totalDeduction' => $totalQuantityDeduction,
+                'fabric' => $fabric,
+            ]);
+
+            if ($fabric->quantity >= $totalQuantityDeduction) {
+                $fabric->decrement('quantity', $totalQuantityDeduction);
+            } else {
+                // Handle insufficient stock (throw exception or return error)
+                throw new \Exception('Not enough material in stock.');
+            }
+
+            // LOG ORDER
+            OrderLogs::create([
+                'user_id' => Auth::user()->id,
+                'order_id' => $order->id,
+                'material_name' => $fabric->name,
+                'unit' => $fabric->unit,
+                'total_quantity_used' => $totalQuantityDeduction,
+            ]);
         }
 
-        // LOG ORDER
-        OrderLogs::create([
-            'user_id' => Auth::user()->id,
-            'order_id' => $order->id,
-            'material_name' => $fabric->name,
-            'unit' => $fabric->unit,
-            'total_quantity_used' => $totalQuantityDeduction,
-        ]);
+
 
         // NOTFICATION
         Notifications::create([
