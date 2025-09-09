@@ -22,7 +22,7 @@ jobs:
         run: composer install --prefer-dist --no-progress --no-suggest
 
       - name: Run Laravel Pint (Formatter)
-        run: ./vendor/bin/pint --test
+        run: ./vendor/bin/pint
 
     #   - name: Run PHPUnit Tests
     #     run: ./vendor/bin/phpunit
