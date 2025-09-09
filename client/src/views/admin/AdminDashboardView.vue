@@ -12,7 +12,6 @@
     } from 'chart.js'
 
     import {
-        FwbA,
         FwbTable,
         FwbTableBody,
         FwbTableCell,
@@ -26,7 +25,7 @@
     import { useQuery } from '@tanstack/vue-query'
     import { apiService } from '@/api/axios'
     import type { SalesReport } from '@/types/dashboard'
-    import { Orders, OrderStatus, type LatestOrders } from '@/types/order'
+    import { type LatestOrders } from '@/types/order'
 import StatusBadge from '@/components/orders/StatusBadge.vue'
 
     ChartJS.register(
@@ -79,7 +78,7 @@ import StatusBadge from '@/components/orders/StatusBadge.vue'
     }
 
     // LATEST ORDERS
-    const { data: latestOrders, isLoading } = useQuery({
+    const { data: latestOrders } = useQuery({
         queryKey: ['latest-orders'],
         queryFn: async () => {
             const respData = await apiService.get<LatestOrders[]>('/api/get/latest/orders')
