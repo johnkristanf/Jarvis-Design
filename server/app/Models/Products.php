@@ -10,6 +10,11 @@ class Products extends Model
 {
     protected $guarded = ['id'];
 
+    public function products()
+    {
+        return $this->hasMany(Orders::class, 'product_id');
+    }
+
     public function design_category(): BelongsTo
     {
         return $this->belongsTo(DesignCategory::class, 'category_id');

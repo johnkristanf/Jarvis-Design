@@ -16,8 +16,15 @@ return new class extends Migration
             $table->string('name');
             $table->decimal('unit_price', 15, 2);
 
-            $table->foreignId('category_id')->constrained('design_categories')->onDelete('cascade');
-            $table->foreignId('fabric_type_id')->nullable()->constrained()->onDelete('set null');
+            $table->foreignId('category_id')
+                ->constrained('design_categories')
+                ->onDelete('cascade');
+                
+            $table->foreignId('fabric_type_id')
+                ->nullable()
+                ->constrained('materials')
+                ->onDelete('set null');
+
 
             $table->timestamps();
         });

@@ -6,13 +6,12 @@
 
     import DatePicker from 'primevue/datepicker'
 
-    import { getAllOrders } from '@/api/get/orders'
     import { useAuthorization } from '@/composables/useAuthorization'
     import { formatCurrency, formatDate } from '@/helper/designs'
-    import { OrderStatus, type UpdateStatusType } from '@/types/order'
+    import { OrderOptions, OrderStatus, type Orders, type UpdateStatusType } from '@/types/order'
     import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
     import Loader from '../Loader.vue'
-    import { ref, watch } from 'vue'
+    import { onBeforeMount, onMounted, reactive, ref, watch } from 'vue'
     import { updateOrderStatus } from '@/api/put/orders'
     import UploadedImagesModal from '../designs/UploadedImagesModal.vue'
     import QuantityPerSizeModal from '../designs/QuantityPerSizeModal.vue'
@@ -20,19 +19,39 @@
 
     import { useToast } from 'primevue'
     import Toast from 'primevue/toast'
+    import StatusBadge from './StatusBadge.vue'
+    import PaginationControls from '../PaginationControls.vue'
+    import type { PaginatedResponse } from '@/types/pagination'
 
     const { isAdmin } = useAuthorization()
     const isStatusUpdating = ref<boolean>(false)
     const isOrderLoading = ref<boolean>(true)
 
-    const orderQuery = useQuery({
-        queryKey: ['orders'],
-        queryFn: getAllOrders,
+    // PAGINATION REFS
+    const pagination = reactive({
+        page: 1,
+        limit: 5,
+    })
+
+    const {
+        data: orders,
+        error,
+        refetch,
+        isLoading,
+    } = useQuery({
+        queryKey: ['orders', pagination.page, pagination.limit],
+        queryFn: async () => {
+            const respData = await apiService.get<PaginatedResponse<Orders>>(
+                `/api/get/orders?page=${pagination.page}&limit=${pagination.limit}`,
+            )
+            console.log('respData orders: ', respData)
+            return respData
+        },
         enabled: true,
     })
 
     watch(
-        () => orderQuery.error,
+        () => error,
         (err) => {
             if (err) {
                 isOrderLoading.value = false
@@ -75,8 +94,14 @@
     // DATE SELECTION
     const selectedActionDates = ref<Record<number, Date | null>>({})
 
-    const handleActionDateChange = (orderId: number, date: Date, close: () => void) => {
+    const handleActionDateChange = (
+        orderId: number,
+        date: Date,
+        status: string,
+        close: () => void,
+    ) => {
         console.log('Selected Date:', date)
+        console.log('Status:', status)
         console.log('Order ID:', orderId)
 
         if (date) {
@@ -84,6 +109,7 @@
 
             const formData = new FormData()
             formData.append('order_id', String(orderId))
+            formData.append('status', status)
             formData.append('action_date', formattedDate)
 
             setDateMutation.mutate(formData, {
@@ -105,9 +131,10 @@
         }
     }
 
+    // ORDER STATUSES
     const status = ref([
-        { name: 'Approved', tag: 'completed' },
-        { name: 'Cancelled', tag: 'cancelled' },
+        { name: 'Complete', tag: OrderStatus.COMPLETED },
+        { name: 'Cancel', tag: OrderStatus.CANCELLED },
     ])
 
     const handleShowStatusFilter = (orderOption: string, orderStatus: string) => {
@@ -122,7 +149,7 @@
             queryClient.invalidateQueries({ queryKey: ['orders', 'order_notifications'] })
 
             try {
-                const refetchResult = await orderQuery.refetch()
+                const refetchResult = await refetch()
 
                 if (refetchResult.status === 'success') {
                     isStatusUpdating.value = false
@@ -165,10 +192,46 @@
         selectedOrderSizes.value = sizes
         showSizeBreakdownModal.value = true
     }
+
+    // POPOVER POSITIONING
+    const popoverRef = ref<HTMLElement | null>(null)
+    const popoverClose = ref<null | (() => void)>(null)
+    const popoverPosition = ref({ top: 0, left: 0 })
+
+    const setPopoverPosition = (event: MouseEvent) => {
+        const target = event.currentTarget as HTMLElement
+        const rect = target.getBoundingClientRect()
+
+        popoverPosition.value = {
+            top: rect.bottom + window.scrollY + 8, // below the button
+            left: rect.left + window.scrollX - 220, // adjust so it's right-aligned
+        }
+    }
+
+    // CLOSE POPOVER ON SCROLL
+    const onTableScroll = () => {
+        if (popoverClose.value) {
+            popoverClose.value() // ✅ Properly close using Headless UI's API
+        }
+    }
+
+    onMounted(() => {
+        const container = document.querySelector('.order-table')
+        if (container) {
+            container.addEventListener('scroll', onTableScroll, { passive: true })
+        }
+    })
+
+    onBeforeMount(() => {
+        const container = document.querySelector('.order-table')
+        if (container) {
+            container.removeEventListener('scroll', onTableScroll)
+        }
+    })
 </script>
 
 <template>
-    <div class="relative h-[75%] overflow-y-auto shadow-md sm:rounded-lg mt-5">
+    <div class="order-table relative h-[75%] overflow-y-auto shadow-md sm:rounded-lg">
         <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
             <thead
                 class="text-xs text-white uppercase bg-gray-900 dark:bg-gray-700 dark:text-gray-400"
@@ -180,32 +243,31 @@
                     <th scope="col" class="px-6 py-3">Order No.</th>
 
                     <th scope="col" class="px-16 py-3">
-                        <span>Image Design</span>
+                        <span>Design</span>
                     </th>
 
-                    <th scope="col" class="px-6 py-3">Name</th>
+                    <!-- <th scope="col" class="px-6 py-3">Name</th>
 
                     <th scope="col" class="px-6 py-3">Phone Number</th>
                     <th scope="col" class="px-6 py-3">Address</th>
 
                     <th scope="col" class="px-6 py-3">Quantity</th>
 
-                    <th scope="col" class="px-6 py-3">Color</th>
+                    <th scope="col" class="px-6 py-3">Color</th> -->
 
-                    <!-- <th scope="col" class="px-6 py-3">Order Option</th> -->
+                    <!-- <th scope="col" class="px-6 py-3">Total Price</th> -->
+                    <th scope="col" class="px-6 py-3">Option</th>
 
-                    <th scope="col" class="px-6 py-3">Total Price</th>
-
-                    <th scope="col" class="px-6 py-3 flex items-center">Order Status</th>
+                    <th scope="col" class="px-6 py-3">Status</th>
 
                     <th scope="col" class="px-6 py-3">Delivery / Pick-Up Date</th>
 
                     <th v-if="isAdmin" scope="col" class="px-6 py-3">Actions</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody v-if="orders">
                 <tr
-                    v-for="order in orderQuery.data.value"
+                    v-for="order in orders.data"
                     :key="order.id"
                     class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600"
                 >
@@ -230,8 +292,8 @@
                         />
                     </td>
 
-                    <td class="px-6 py-4 font-semibold text-gray-900 dark:text-white">
-                        {{ order.user?.name }}
+                    <!-- <td class="px-6 py-4 font-semibold text-gray-900 dark:text-white">
+                        {{ order.user.name }}
                     </td>
 
                     <td class="px-6 py-4 font-semibold text-gray-900 dark:text-white">
@@ -258,63 +320,48 @@
 
                     <td class="px-6 py-4 font-semibold text-gray-900 dark:text-white">
                         {{ order.color }}
-                    </td>
+                    </td> -->
+
+                    <!-- <td class="px-6 py-4 font-semibold text-gray-900 dark:text-white">
+                        {{ formatCurrency(order.total_price.toString()) }}
+                    </td> -->
 
                     <td class="px-6 py-4 font-semibold text-gray-900 dark:text-white">
-                        {{ formatCurrency(order.total_price.toString()) }}
+                        {{ order.order_option.toUpperCase() }}
                     </td>
 
                     <td class="px-6 py-4">
-                        <span
-                            :class="{
-                                'bg-yellow-100 text-yellow-800 px-2 py-1 rounded':
-                                    order.status === OrderStatus.PENDING,
-                                'bg-red-100 text-red-800 px-2 py-1 rounded':
-                                    order.status === OrderStatus.CANCELLED,
-                                'bg-green-100 text-green-800 px-2 py-1 rounded':
-                                    order.status === OrderStatus.APPROVED,
-                            }"
-                        >
-                            {{
-                                order.status === 'completed'
-                                    ? 'APPROVED'
-                                    : order.status.toUpperCase()
-                            }}
-                        </span>
+                        <StatusBadge :status="order.status" />
                     </td>
 
                     <td class="px-6 py-4 font-semibold text-gray-900 dark:text-white">
                         {{ order.delivery_date ? formatDate(order.delivery_date) : 'N/A' }}
                     </td>
 
-                    <!-- <td
-                        v-if="!isAdmin"
-                        class="relative flex items-center px-3 py-12 font-semibold text-gray-900 dark:text-white"
-                    >
-                        <router-link to="/message">
-                            <fwb-button color="light">Chat to Seller</fwb-button>
-                        </router-link>
-                    </td> -->
-
                     <!-- UPDATE STATUS ACTION BUTTON -->
                     <td
                         v-if="isAdmin"
-                        class="relative pr-5 py-4 font-semibold text-gray-900 dark:text-white"
+                        class="pr-5 py-4 font-semibold text-gray-900 dark:text-white"
                     >
                         <div
                             v-if="
-                                order.status !== OrderStatus.APPROVED &&
+                                order.status !== OrderStatus.COMPLETED &&
                                 order.status !== OrderStatus.CANCELLED
                             "
                             class="w-full max-w-sm px-4"
                         >
-                            <Popover v-slot="{ close }" class="relative z-10">
-                                <PopoverButton>
-                                    <span>
-                                        <EllipsisVerticalIcon class="size-6" />
-                                    </span>
+                            <Popover v-slot="{ open, close }">
+                                <div v-if="!(popoverClose = close)"></div>
+
+                                <!-- Ellipsis Button -->
+                                <PopoverButton
+                                    class="focus:outline-none"
+                                    @click="setPopoverPosition($event)"
+                                >
+                                    <EllipsisVerticalIcon class="w-6 h-6 cursor-pointer" />
                                 </PopoverButton>
 
+                                <!-- Transition -->
                                 <transition
                                     enter-active-class="transition duration-200 ease-out"
                                     enter-from-class="translate-y-1 opacity-0"
@@ -323,111 +370,147 @@
                                     leave-from-class="translate-y-0 opacity-100"
                                     leave-to-class="translate-y-1 opacity-0"
                                 >
-                                    <PopoverPanel
-                                        class="absolute flex flex-col gap-5 z-[9999] left-[-20rem] mt-2 w-[30vw] p-3 rounded-lg bg-white shadow-lg ring-1 ring-black/5"
-                                    >
-                                        <!-- CHAT TO CUSTOMER ACTION -->
-
-                                        <fwb-button
-                                            v-if="
-                                                order.status !== OrderStatus.APPROVED &&
-                                                order.status !== OrderStatus.CANCELLED
-                                            "
-                                            color="light"
+                                    <teleport to="body">
+                                        <PopoverPanel
+                                            v-if="open"
+                                            class="absolute z-[999] w-64 rounded-lg bg-white shadow-lg ring-1 ring-black/5 p-3"
+                                            :style="{
+                                                top: `${popoverPosition.top}px`,
+                                                left: `${popoverPosition.left}px`,
+                                            }"
+                                            ref="popoverRef"
                                         >
-                                            <router-link class="w-full" to="/admin/message">
-                                                Chat to Customer
-                                            </router-link>
-                                        </fwb-button>
-
-                                        <fwb-button
-                                            v-if="
-                                                order.status !== OrderStatus.APPROVED &&
-                                                order.status !== OrderStatus.CANCELLED
-                                            "
-                                            color="light"
-                                        >
-                                            Payment Screenshot
-                                        </fwb-button>
-
-                                        <!-- PICK-UP OR DELIVERY DATE -->
-                                        <div>
-                                            <DatePicker
-                                                class="w-full z-[9999]"
-                                                showIcon
-                                                iconDisplay="input"
-                                                placeholder="Set Delivery / Pick-up Date"
-                                                v-model="selectedActionDates[order.id]"
-                                                :minDate="new Date()"
-                                                @update:model-value="
-                                                    (val) => {
-                                                        if (val instanceof Date) {
-                                                            handleActionDateChange(
-                                                                order.id,
-                                                                val,
-                                                                close,
-                                                            )
-                                                        }
-                                                    }
-                                                "
-                                            />
-                                        </div>
-
-                                        <!-- STATUS UPDATE BUTTON -->
-                                        <div class="w-full">
-                                            <Popover v-slot="{ open, close }" class="relative">
-                                                <PopoverButton
-                                                    @click="
-                                                        handleShowStatusFilter(
-                                                            order.order_option,
-                                                            order.status,
-                                                        )
+                                            <!-- Actions -->
+                                            <div class="flex flex-col gap-4">
+                                                <!-- Chat Button -->
+                                                <fwb-button
+                                                    v-if="
+                                                        order.status !== OrderStatus.COMPLETED &&
+                                                        order.status !== OrderStatus.CANCELLED
                                                     "
-                                                    :class="open ? 'text-white' : 'text-white/90'"
-                                                    class="group hover:opacity-75 hover:cursor-pointer items-center rounded-md w-full flex justify-center bg-gray-800 px-3 py-2 text-base font-medium hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75"
+                                                    color="light"
                                                 >
-                                                    <span>Status</span>
-                                                    <ChevronDownIcon
-                                                        :class="
-                                                            open
-                                                                ? 'text-gray-300'
-                                                                : 'text-gray-300/70'
-                                                        "
-                                                        class="ml-2 h-5 w-5 transition duration-150 ease-in-out group-hover:text-gray-300/80"
-                                                        aria-hidden="true"
-                                                    />
-                                                </PopoverButton>
+                                                    <router-link class="w-full" to="/admin/message">
+                                                        Chat to Customer
+                                                    </router-link>
+                                                </fwb-button>
 
-                                                <transition
-                                                    enter-active-class="transition duration-200 ease-out"
-                                                    enter-from-class="translate-y-1 opacity-0"
-                                                    enter-to-class="translate-y-0 opacity-100"
-                                                    leave-active-class="transition duration-150 ease-in"
-                                                    leave-from-class="translate-y-0 opacity-100"
-                                                    leave-to-class="translate-y-1 opacity-0"
+                                                <!-- Payment Screenshot -->
+                                                <fwb-button
+                                                    v-if="
+                                                        order.status !== OrderStatus.COMPLETED &&
+                                                        order.status !== OrderStatus.CANCELLED
+                                                    "
+                                                    color="light"
                                                 >
-                                                    <PopoverPanel
-                                                        class="absolute z-[9999] w-full mt-2rounded-lg bg-white shadow-lg ring-1 ring-black/5"
+                                                    Payment Screenshot
+                                                </fwb-button>
+
+                                                <!-- Delivery or Pickup Date -->
+                                                <div v-if="!order.delivery_date">
+                                                    <DatePicker
+                                                        class="w-full z-[999999]"
+                                                        showIcon
+                                                        iconDisplay="input"
+                                                        :placeholder="
+                                                            order.order_option ===
+                                                            OrderOptions.DELIVERY
+                                                                ? 'Set Delivery Date'
+                                                                : 'Set Pick-up Date'
+                                                        "
+                                                        v-model="selectedActionDates[order.id]"
+                                                        :minDate="new Date()"
+                                                        @update:model-value="
+                                                            (val) => {
+                                                                if (val instanceof Date) {
+                                                                    handleActionDateChange(
+                                                                        order.id,
+                                                                        val,
+                                                                        order.order_option ===
+                                                                            OrderOptions.DELIVERY
+                                                                            ? OrderStatus.FOR_DELIVERY
+                                                                            : OrderStatus.FOR_PICKUP,
+                                                                        close,
+                                                                    )
+                                                                }
+                                                            }
+                                                        "
+                                                    />
+                                                </div>
+
+                                                <!-- Status Update Button -->
+                                                <div class="w-full">
+                                                    <Popover
+                                                        v-slot="{ open, close }"
+                                                        class="relative z-[999999]"
                                                     >
-                                                        <div
-                                                            class="overflow-hidden z-[9999] rounded-lg shadow-lg ring-1 ring-black/5"
+                                                        <PopoverButton
+                                                            @click="
+                                                                handleShowStatusFilter(
+                                                                    order.order_option,
+                                                                    order.status,
+                                                                )
+                                                            "
+                                                            :class="
+                                                                open
+                                                                    ? 'text-white'
+                                                                    : 'text-white/90'
+                                                            "
+                                                            class="group hover:opacity-75 hover:cursor-pointer items-center rounded-md w-full flex justify-center bg-gray-800 px-3 py-2 text-base font-medium hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75"
                                                         >
-                                                            <div
-                                                                class="flex flex-col gap-2 bg-white p-3"
+                                                            <span>Set Status</span>
+                                                            <ChevronDownIcon
+                                                                :class="
+                                                                    open
+                                                                        ? 'text-gray-300'
+                                                                        : 'text-gray-300/70'
+                                                                "
+                                                                class="ml-2 h-5 w-5 transition duration-150 ease-in-out group-hover:text-gray-300/80"
+                                                            />
+                                                        </PopoverButton>
+
+                                                        <transition
+                                                            enter-active-class="transition duration-200 ease-out"
+                                                            enter-from-class="translate-y-1 opacity-0"
+                                                            enter-to-class="translate-y-0 opacity-100"
+                                                            leave-active-class="transition duration-150 ease-in"
+                                                            leave-from-class="translate-y-0 opacity-100"
+                                                            leave-to-class="translate-y-1 opacity-0"
+                                                        >
+                                                            <PopoverPanel
+                                                                class="absolute z-[9999] mt-2 w-full rounded-lg bg-white shadow-lg ring-1 ring-black/5"
                                                             >
-                                                                <h1
-                                                                    v-for="item in status"
-                                                                    :key="item.name"
-                                                                    @click="
-                                                                        handleStatusChange(
-                                                                            order.id,
-                                                                            item.tag,
-                                                                            close,
-                                                                        )
-                                                                    "
-                                                                    class="hover:cursor-pointer justify-center hover:bg-gray-800 hover:text-white flex items-center rounded-lg p-2 transition duration-150 ease-in-out focus:outline-none focus-visible:ring focus-visible:ring-orange-500/50"
+                                                                <div
+                                                                    class="flex flex-col gap-2 bg-white p-3"
                                                                 >
-                                                                    <div>
+                                                                    <h1
+                                                                        v-for="item in status.filter(
+                                                                            (s) =>
+                                                                                !(
+                                                                                    s.tag ===
+                                                                                        OrderStatus.COMPLETED &&
+                                                                                    !order.delivery_date
+                                                                                ),
+                                                                        )"
+                                                                        :key="item.name"
+                                                                        @click="
+                                                                            handleStatusChange(
+                                                                                order.id,
+                                                                                item.tag,
+                                                                                close,
+                                                                            )
+                                                                        "
+                                                                        :class="[
+                                                                            'hover:cursor-pointer justify-center flex items-center rounded-lg p-2 transition duration-150 ease-in-out focus:outline-none focus-visible:ring focus-visible:ring-orange-500/50',
+                                                                            item.tag ===
+                                                                            OrderStatus.COMPLETED
+                                                                                ? 'hover:bg-green-600 hover:text-white'
+                                                                                : item.tag ===
+                                                                                    OrderStatus.CANCELLED
+                                                                                  ? 'hover:bg-red-600 hover:text-white'
+                                                                                  : 'hover:bg-gray-800 hover:text-white',
+                                                                        ]"
+                                                                    >
                                                                         <p
                                                                             class="text-sm font-medium"
                                                                         >
@@ -435,20 +518,21 @@
                                                                                 item.name.toUpperCase()
                                                                             }}
                                                                         </p>
-                                                                    </div>
-                                                                </h1>
-                                                            </div>
-                                                        </div>
-                                                    </PopoverPanel>
-                                                </transition>
-                                            </Popover>
-                                        </div>
-                                    </PopoverPanel>
+                                                                    </h1>
+                                                                </div>
+                                                            </PopoverPanel>
+                                                        </transition>
+                                                    </Popover>
+                                                </div>
+                                            </div>
+                                        </PopoverPanel>
+                                    </teleport>
                                 </transition>
                             </Popover>
                         </div>
 
-                        <div v-else>
+                        <!-- ORDER STATUS OF USER -->
+                        <!-- <div v-else>
                             <h1
                                 class="text-center"
                                 :class="{
@@ -464,25 +548,25 @@
                                           : 'Order Status Unknown'
                                 }}
                             </h1>
-                        </div>
+                        </div> -->
                     </td>
                 </tr>
 
                 <!-- Empty state message -->
-                <tr
-                    v-if="
-                        orderQuery.data.value &&
-                        orderQuery.data.value.length === 0 &&
-                        !orderQuery.isLoading.value
-                    "
-                >
+                <tr v-if="orders?.data && orders?.data.length === 0 && !isLoading">
                     <td colspan="12" class="px-6 py-4 text-center">No orders found.</td>
                 </tr>
+
+                <PaginationControls
+                    :currentPage="orders.current_page"
+                    :lastPage="orders.last_page"
+                    @changePage="pagination.page = $event"
+                />
             </tbody>
         </table>
     </div>
 
-    <Loader v-if="orderQuery.isLoading.value && isOrderLoading" msg="Loading Orders..." />
+    <Loader v-if="isLoading && isOrderLoading" msg="Loading Orders..." />
 
     <Loader v-if="isStatusUpdating" msg="Updating Order Status..." />
 

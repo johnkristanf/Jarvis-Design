@@ -1,12 +1,6 @@
-import type { Notifications, Orders, OrderStatusType } from '@/types/order'
+import type { Notifications, OrderStatusType } from '@/types/order'
 import { apiService } from '../axios'
 
-export async function getAllOrders(): Promise<Orders[]> {
-    const respData = await apiService.get<Orders[]>('/api/get/orders');
-    console.log("respData orders: ", respData);
-    
-    return respData
-}
 
 export async function getAllOrderStatus(): Promise<OrderStatusType[]> {
     const respData = await apiService.get<OrderStatusType[]>('/api/get/order/status')

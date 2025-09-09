@@ -5,9 +5,9 @@
     import { ref, watch } from 'vue'
     import { FwbCard } from 'flowbite-vue'
     import { useQuery } from '@tanstack/vue-query'
-    import { getAllOrders } from '@/api/get/orders'
     import Loader from '@/components/Loader.vue'
     import type { Orders } from '@/types/order'
+    import { apiService } from '@/api/axios'
 
     const isOpenChatBox = ref<boolean>(false)
     const isOrderDetailsOpen = ref<boolean>(false)
@@ -16,7 +16,10 @@
 
     const orderQuery = useQuery({
         queryKey: ['orders'],
-        queryFn: getAllOrders,
+        queryFn: async () => {
+            const respData = await apiService.get<Orders[]>(`/api/get/orders`)
+            return respData
+        },
         enabled: true,
     })
 
@@ -93,7 +96,14 @@
             <CustomerChatBox :isOpen="isOpenChatBox" @close="isOpenChatBox = false" />
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 mt-5 pb-10 gap-5">
+        <div
+            class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 mt-5 pb-10 gap-5"
+            v-if="
+                !orderQuery.isLoading.value &&
+                orderQuery.data.value &&
+                orderQuery.data.value.length > 0
+            "
+        >
             <fwb-card
                 v-for="order in orderQuery.data.value"
                 :key="order.id"
@@ -109,7 +119,10 @@
                     </p>
                 </div>
             </fwb-card>
+        </div>
 
+        <div v-else class="h-[50vh] flex items-center justify-center">
+            <h1 class="text-gray-700 text-xl">No Order Found</h1>
         </div>
 
         <OrderDetailsModal

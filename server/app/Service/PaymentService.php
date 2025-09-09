@@ -5,6 +5,7 @@ namespace App\Service;
 use App\Models\Notifications;
 use App\Models\Orders;
 use App\Models\OrderStatus;
+use App\Traits\HandleAttachments;
 use Carbon\Carbon;
 use Exception;
 use GuzzleHttp\Exception\ConnectException;
@@ -17,6 +18,8 @@ use Illuminate\Support\Facades\Storage;
 
 class PaymentService
 {
+    use HandleAttachments;
+
     protected $client;
 
     public function __construct()
@@ -82,7 +85,7 @@ class PaymentService
             $intentResponseData = json_decode($intentRequest->getBody());
             $paymentIntentID = $intentResponseData->data->id;
 
-            Log::info('paymentIntentID: '.$paymentIntentID);
+            Log::info('paymentIntentID: ' . $paymentIntentID);
 
             return $paymentIntentID;
         } catch (RequestException $e) {
@@ -143,7 +146,7 @@ class PaymentService
             $paymentMethodResponseData = json_decode($paymentMethodRequest->getBody());
             $paymentMethodId = $paymentMethodResponseData->data->id;
 
-            Log::info('paymentMethodId: '.$paymentMethodId);
+            Log::info('paymentMethodId: ' . $paymentMethodId);
 
             return $paymentMethodId;
         } catch (RequestException $e) {
@@ -217,7 +220,7 @@ class PaymentService
         }
     }
 
-    public function allOrders()
+    public function allOrders($limit)
     {
         try {
 
@@ -247,28 +250,18 @@ class PaymentService
                 $query->where('user_id', '=', $authenticatedUser->id);
             }
 
-            $orders = $query->latest()->get();
-
-            $orders->transform(function ($order) {
-                $filePath = $order->own_design_url ?: $order->business_design_url;
-
-                $order->temp_url = $filePath
-                    ? Storage::disk('s3')->temporaryUrl($filePath, Carbon::now()->addMinutes(10))
-                    : null;
-
-                return $order;
-            });
-
-            return $orders;
+            $orders = $query->latest()->paginate($limit);
+            return $this->transformOrderDesignToS3Temp($orders);
+            
         } catch (QueryException $e) {
-            Log::error('Database Query Failed: '.$e->getMessage());
+            Log::error('Database Query Failed: ' . $e->getMessage());
 
             return response()->json([
                 'error' => 'Failed to retrieve all orders.',
                 'message' => $e->getMessage(),
             ], 500);
         } catch (\Exception $e) {
-            Log::error('An unexpected error occurred: '.$e->getMessage());
+            Log::error('An unexpected error occurred: ' . $e->getMessage());
 
             return response()->json([
                 'error' => 'An unexpected error occurred.',
@@ -285,14 +278,14 @@ class PaymentService
 
             return $orderStatus;
         } catch (QueryException $e) {
-            Log::error('Database Query Failed: '.$e->getMessage());
+            Log::error('Database Query Failed: ' . $e->getMessage());
 
             return response()->json([
                 'error' => 'Failed to retrieve preferred designs.',
                 'message' => $e->getMessage(),
             ], 500);
         } catch (\Exception $e) {
-            Log::error('An unexpected error occurred: '.$e->getMessage());
+            Log::error('An unexpected error occurred: ' . $e->getMessage());
 
             return response()->json([
                 'error' => 'An unexpected error occurred.',
@@ -317,14 +310,14 @@ class PaymentService
 
             return $order->id;
         } catch (QueryException $e) {
-            Log::error('Database Query Failed: '.$e->getMessage());
+            Log::error('Database Query Failed: ' . $e->getMessage());
 
             return response()->json([
                 'error' => 'Failed to update order status.',
                 'message' => $e->getMessage(),
             ], 500);
         } catch (\Exception $e) {
-            Log::error('An unexpected error occurred: '.$e->getMessage());
+            Log::error('An unexpected error occurred: ' . $e->getMessage());
 
             return response()->json([
                 'error' => 'An unexpected error occurred.',
@@ -351,14 +344,14 @@ class PaymentService
 
             return $notifications;
         } catch (QueryException $e) {
-            Log::error('Database Query Failed: '.$e->getMessage());
+            Log::error('Database Query Failed: ' . $e->getMessage());
 
             return response()->json([
                 'error' => 'Failed to fetch order notifications.',
                 'message' => $e->getMessage(),
             ], 500);
         } catch (\Exception $e) {
-            Log::error('An unexpected error occurred: '.$e->getMessage());
+            Log::error('An unexpected error occurred: ' . $e->getMessage());
 
             return response()->json([
                 'error' => 'An unexpected error occurred.',
@@ -377,14 +370,14 @@ class PaymentService
 
             return $notificationID;
         } catch (QueryException $e) {
-            Log::error('Database Query Failed: '.$e->getMessage());
+            Log::error('Database Query Failed: ' . $e->getMessage());
 
             return response()->json([
                 'error' => 'Failed to update order status.',
                 'message' => $e->getMessage(),
             ], 500);
         } catch (\Exception $e) {
-            Log::error('An unexpected error occurred: '.$e->getMessage());
+            Log::error('An unexpected error occurred: ' . $e->getMessage());
 
             return response()->json([
                 'error' => 'An unexpected error occurred.',
@@ -402,14 +395,14 @@ class PaymentService
 
             return 'success';
         } catch (QueryException $e) {
-            Log::error('Database Query Failed: '.$e->getMessage());
+            Log::error('Database Query Failed: ' . $e->getMessage());
 
             return response()->json([
                 'error' => 'Failed to update notifications.',
                 'message' => $e->getMessage(),
             ], 500);
         } catch (\Exception $e) {
-            Log::error('An unexpected error occurred: '.$e->getMessage());
+            Log::error('An unexpected error occurred: ' . $e->getMessage());
 
             return response()->json([
                 'error' => 'An unexpected error occurred.',

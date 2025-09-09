@@ -3,11 +3,13 @@
     import { useQuery } from '@tanstack/vue-query'
     import Loader from '../Loader.vue'
     import AttachMaterialsModal from './AttachMaterialsModal.vue'
-    import { reactive, ref } from 'vue'
+    import { reactive, ref, watch } from 'vue'
     import { OrderTypes } from '@/types/order'
     import type { Products } from '@/types/product'
     import AddDesignModal from './AddDesignModal.vue'
     import DeleteDialog from '../DeleteDialog..vue'
+    import PaginationControls from '../PaginationControls.vue'
+    import type { PaginatedResponse } from '@/types/pagination'
 
     const modals = reactive({
         show_attach_materials: false,
@@ -20,21 +22,32 @@
     const selectedProductName = ref<string>()
     const selectedDesignImages = ref<string[]>()
 
+    // PAGINATION REFS
+    const pagination = reactive({
+        page: 1,
+        limit: 5,
+    })
+
     // GET ALL PRE - MADE DESIGNS DATA QUERY
     const {
         isPending,
         isError,
         data: products,
         error,
+        refetch,
     } = useQuery({
-        queryKey: ['products'],
+        queryKey: ['products', pagination.page, pagination.limit],
         queryFn: async () => {
-            const respData = await apiService.get<Products[]>('/api/get/all/products')
+            const respData = await apiService.get<PaginatedResponse<Products>>(
+                `/api/get/all/products?page=${pagination.page}&limit=${pagination.limit}`,
+            )
             console.log('respData products: ', respData)
-
             return respData
         },
     })
+
+    // WATCH EVERY PAGE CHANGE
+    watch([pagination.page], () => refetch())
 
     // const handleAttachMaterialsOnDesign = (product_id: number) => {
     //     selectedProductID.value = product_id
@@ -45,7 +58,7 @@
         product_id: number,
         product_name: string,
         product_category: string,
-        design_images: string[]
+        design_images: string[],
     ) => {
         selectedProductCategory.value = product_category
         selectedProductID.value = product_id
@@ -68,9 +81,9 @@
                     <th scope="col" class="px-6 py-3">Action</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody v-if="products" >
                 <tr
-                    v-for="product in products"
+                    v-for="product in products.data"
                     :key="product.id"
                     class="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
                 >
@@ -95,7 +108,7 @@
                                     product.id,
                                     product.name,
                                     product.design_category.name,
-                                    product.design_images
+                                    product.design_images,
                                 )
                             "
                             class="text-gray-900 hover:underline"
@@ -117,6 +130,12 @@
                         />
                     </td>
                 </tr>
+
+                <PaginationControls
+                    :currentPage="products.current_page"
+                    :lastPage="products.last_page"
+                    @changePage="pagination.page = $event"
+                />
             </tbody>
         </table>
 

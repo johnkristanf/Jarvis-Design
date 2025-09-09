@@ -1,39 +1,61 @@
+<!-- eslint-disable @typescript-eslint/no-explicit-any -->
 <script lang="ts" setup>
-    import { getAllConversation } from '@/api/get/message'
+    import { getAllCustomers, getConversation } from '@/api/get/message'
     import { sendChatMessageApi } from '@/api/post/message'
     import { useFetchAuthenticatedUser } from '@/composables/useFetchAuthenticatedUser'
     import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
-    import { ref, watch } from 'vue'
-    import { ArrowUpOnSquareIcon, ChevronDoubleRightIcon, XMarkIcon } from '@heroicons/vue/20/solid'
-    import type { Conversation } from '@/types/message'
+    import { computed, ref, watch } from 'vue'
+    import {
+        ArrowUpOnSquareIcon,
+        ChevronDoubleRightIcon,
+        XMarkIcon,
+        DocumentDuplicateIcon,
+        EllipsisVerticalIcon,
+        PencilSquareIcon,
+        TrashIcon,
+    } from '@heroicons/vue/20/solid'
+
+    import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/vue'
+
     import Toast from 'primevue/toast'
     import { useToast } from 'primevue'
+    import echo from '@/services/echo'
+    import type { UpdateChat } from '@/types/message'
+    import { apiService } from '@/api/axios'
 
     const { authStore } = useFetchAuthenticatedUser()
     const queryClient = useQueryClient()
 
     // ALL CONVERSATION QUERY
-    const allConversationQuery = useQuery({
-        queryKey: ['all_conversation'],
-        queryFn: getAllConversation,
+
+    const allCustomersQuery = useQuery({
+        queryKey: ['all_customers'],
+        queryFn: getAllCustomers,
     })
 
     // track selected conversation
-    const selectedConversation = ref<Conversation>()
+    const selectedCustomerData = ref({
+        id: -1,
+        name: '',
+        email: '',
+    })
 
-    const selectConversation = (data: Conversation) => {
-        selectedConversation.value = data
+    const selectCustomerToChat = (user_id: number, name: string, email: string) => {
+        selectedCustomerData.value.id = user_id
+        selectedCustomerData.value.name = name
+        selectedCustomerData.value.email = email
     }
 
-    // PRE-SELECT 1st CONVERSATION
+    // PRE-SELECT 1st CUSTOMER
     watch(
-        () => allConversationQuery.data.value,
-        (conversations) => {
-            if (conversations && conversations.length > 0 && !selectedConversation.value) {
-                selectedConversation.value = conversations[0]
+        () => allCustomersQuery.data.value,
+        (customer) => {
+            if (customer && customer.length > 0) {
+                selectedCustomerData.value.id = customer[0].id
+                selectedCustomerData.value.name = customer[0].name
+                selectedCustomerData.value.email = customer[0].email
             }
         },
-        { immediate: true },
     )
 
     // Local state
@@ -45,24 +67,22 @@
     // SEND MESSAGE MUTATION
     const sendMessageMutation = useMutation({
         mutationFn: sendChatMessageApi,
-        onSuccess: () => {
-            console.log('SUCCESSSS')
-
-            // Refetch conversation messages
-            queryClient.invalidateQueries({
-                queryKey: ['conversation', selectedConversation.value?.id],
-            })
-
-            // Also refresh conversations list if needed
-            queryClient.invalidateQueries({ queryKey: ['all_conversation'] })
-            allConversationQuery.refetch()
-
+        onSuccess: async () => {
             messageContent.value = ''
             attachment.value = null
         },
         onError: (error) => {
             console.error('Message send failed:', error)
         },
+    })
+
+    const messagesQuery = useQuery({
+        queryKey: computed(() => ['admin_conversation', selectedCustomerData.value.id]),
+        queryFn: async () => {
+            if (!selectedCustomerData.value.id) return null
+            return await getConversation(selectedCustomerData.value.id)
+        },
+        enabled: computed(() => !!selectedCustomerData.value.id),
     })
 
     // Handle file selection
@@ -101,7 +121,6 @@
         if (!messageContent.value && !attachment.value) return // prevent empty submission
 
         console.log('message: ', messageContent.value)
-        console.log('selectedUserId: ', selectedConversation.value?.id)
         console.log('attachment: ', attachment.value)
 
         const formData = new FormData()
@@ -109,8 +128,8 @@
             formData.append('content', messageContent.value)
         }
 
-        if (selectedConversation.value?.user?.id) {
-            formData.append('user_id', selectedConversation.value?.user?.id.toString())
+        if (selectedCustomerData.value.id) {
+            formData.append('user_id', selectedCustomerData.value.id.toString())
         }
 
         if (attachment.value) {
@@ -118,6 +137,119 @@
         }
 
         sendMessageMutation.mutate(formData)
+    }
+
+    // WATCH FOR NEW CHAT EVENT
+    watch(
+        () => selectedCustomerData.value.id,
+        (newID) => {
+            if (newID) {
+                const channel = echo.channel(`chat.${newID}`)
+
+                // Debug channel subscription
+                channel.subscribed(() => {
+                    console.log('✅ Subscribed to channel: chat.' + newID)
+                })
+
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                channel.listen('.message.sent', (event: any) => {
+                    console.log('📨 Event data:', event.message)
+                    const eventMessage = event.message
+
+                    // 1. Optimistically update Vue Query cache
+                    queryClient.setQueryData(
+                        ['admin_conversation', eventMessage.conversation.user_id],
+                        (oldData: any) => {
+                            if (!oldData) {
+                                return {
+                                    ...eventMessage.conversation,
+                                    messages: [eventMessage.messages],
+                                }
+                            }
+
+                            return {
+                                ...oldData,
+                                messages: [...oldData.messages, eventMessage.messages],
+                            }
+                        },
+                    )
+
+                    // 2. Fetch updated data in the background
+                    queryClient.invalidateQueries({
+                        queryKey: ['admin_conversation', eventMessage.conversation.user_id],
+                    })
+                })
+            }
+        },
+    )
+
+    // DELETE MESSAGE MUTATION
+    const deleteMessageMutation = useMutation({
+        mutationFn: async (message_id: number) => {
+            const response = await apiService.delete<{ success: boolean; message: string }>(
+                `/api/delete/chat/${message_id}`,
+            )
+            console.log('response delete: ', response)
+            return response
+        },
+        onSuccess: async () => {
+            queryClient.invalidateQueries({
+                queryKey: ['admin_conversation', selectedCustomerData.value.id],
+            })
+        },
+        onError: (error) => {
+            console.error('Message send failed:', error)
+        },
+    })
+
+    // UPDATE MESSAGE MUTATION
+    const updateMessageMutation = useMutation({
+        mutationFn: async ({ message_id, content }: UpdateChat) => {
+            const response = await apiService.put(`/api/update/chat/${message_id}`, { content })
+            return response
+        },
+        onSuccess: async () => {
+            queryClient.invalidateQueries({
+                queryKey: ['admin_conversation', selectedCustomerData.value.id],
+            })
+        },
+        onError: (error) => {
+            console.error('Message update failed:', error)
+        },
+    })
+
+    const editingMessageId = ref<number | null>(null)
+    const editedContent = ref<string>('')
+
+    const handleEditMessage = (msg: any) => {
+        editingMessageId.value = msg.id
+        editedContent.value = msg.content
+    }
+
+    const handleUpdateMessage = async (message_id: number) => {
+        if (!editedContent.value.trim()) return
+
+        await updateMessageMutation.mutateAsync({
+            message_id,
+            content: editedContent.value,
+        })
+
+        // Reset edit state after successful update
+        editingMessageId.value = null
+        editedContent.value = ''
+    }
+
+    const handleCancelEdit = () => {
+        editingMessageId.value = null
+        editedContent.value = ''
+    }
+
+    const handleCopyMessage = async (content: string) => {
+        await navigator.clipboard.writeText(content)
+    }
+
+    const handleDeleteMessage = (message_id: number) => {
+        deleteMessageMutation.mutate(message_id)
     }
 </script>
 
@@ -138,20 +270,22 @@
 
                 <!-- loop conversations -->
                 <ul class="space-y-2 font-medium">
-                    <li v-for="convo in allConversationQuery.data.value ?? []" :key="convo.id">
+                    <li v-for="customer in allCustomersQuery.data.value ?? []" :key="customer.id">
                         <button
-                            @click="selectConversation(convo)"
+                            @click="
+                                selectCustomerToChat(customer.id, customer.name, customer.email)
+                            "
                             :class="[
                                 'w-full flex items-center p-2 text-left rounded-lg group',
-                                selectedConversation?.id === convo.id
+                                selectedCustomerData.id === customer.id
                                     ? 'bg-gray-100 dark:bg-gray-700'
                                     : 'text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700',
                             ]"
                         >
                             <img src="/user_icon.jpeg" class="h-7 mr-3 sm:h-8" alt="User avatar" />
                             <div class="flex flex-col text-sm">
-                                <h1>{{ convo.user?.name }}</h1>
-                                <h1 class="text-gray-400">{{ convo.user?.email }}</h1>
+                                <h1>{{ customer.name }}</h1>
+                                <h1 class="text-gray-400">{{ customer.email }}</h1>
                             </div>
                         </button>
                     </li>
@@ -161,14 +295,16 @@
 
         <!-- Chat messages -->
         <div class="relative flex-1">
-            <template v-if="selectedConversation">
+            <template v-if="messagesQuery">
                 <div class="flex flex-col h-full">
                     <!-- Chat Header -->
                     <div class="bg-gray-900 flex items-center font-medium h-18 pl-5">
                         <img src="/user_icon-removebg.png" class="h-12 mr-3" />
                         <div class="flex flex-col text-sm text-white">
-                            <h1>{{ selectedConversation.user?.name }}</h1>
-                            <h1 class="text-gray-400">{{ selectedConversation.user?.email }}</h1>
+                            <h1>{{ selectedCustomerData.name }}</h1>
+                            <h1 class="text-gray-400">
+                                {{ selectedCustomerData.email }}
+                            </h1>
                         </div>
                     </div>
 
@@ -177,7 +313,7 @@
                         class="flex-1 font-medium h-[70%] pt-5 px-5 pb-8 overflow-y-auto space-y-4"
                     >
                         <div
-                            v-for="msg in selectedConversation.messages"
+                            v-for="msg in messagesQuery.data.value?.messages"
                             :key="msg.id"
                             :class="[
                                 'flex',
@@ -197,14 +333,173 @@
                                 </div>
 
                                 <div
-                                    :class="[
-                                        'px-4 py-2 rounded-lg max-w-sm',
-                                        msg.sender_id === authStore.currentUser?.id
-                                            ? 'bg-blue-500 text-white'
-                                            : 'bg-gray-200 text-gray-800',
-                                    ]"
+                                    class="flex items-center gap-2"
+                                    :class="{
+                                        'flex-row-reverse':
+                                            msg.sender_id !== authStore.currentUser?.id,
+                                    }"
                                 >
-                                    {{ msg.content }}
+                                    <!-- Ellipsis Icon -->
+
+                                    <Menu as="div" class="relative inline-block text-left">
+                                        <div>
+                                            <MenuButton
+                                                class="inline-flex w-full justify-center rounded-md text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75"
+                                            >
+                                                <EllipsisVerticalIcon
+                                                    class="size-5 hover:opacity-75 hover:cursor-pointer"
+                                                />
+                                            </MenuButton>
+                                        </div>
+
+                                        <transition
+                                            enter-active-class="transition duration-100 ease-out"
+                                            enter-from-class="transform scale-95 opacity-0"
+                                            enter-to-class="transform scale-100 opacity-100"
+                                            leave-active-class="transition duration-75 ease-in"
+                                            leave-from-class="transform scale-100 opacity-100"
+                                            leave-to-class="transform scale-95 opacity-0"
+                                        >
+                                            <MenuItems
+                                                :class="[
+                                                    'absolute mt-2 w-56 divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-none transition',
+                                                    msg.sender_id === authStore.currentUser?.id
+                                                        ? 'right-0 origin-top-right' // Your messages → menu on LEFT side of bubble
+                                                        : 'left-0 origin-top-left', // Other user's messages → menu on RIGHT side of bubble
+                                                ]"
+                                            >
+                                                <div class="px-1 py-1">
+                                                    <MenuItem v-slot="{ active }">
+                                                        <button
+                                                            @click="handleCopyMessage(msg.content)"
+                                                            :class="[
+                                                                active
+                                                                    ? 'bg-gray-800 text-white cursor-pointer'
+                                                                    : 'text-gray-900',
+                                                                'group flex w-full items-center rounded-md px-2 py-2 text-sm',
+                                                            ]"
+                                                        >
+                                                            <DocumentDuplicateIcon
+                                                                :active="active"
+                                                                :class="[
+                                                                    'mr-2 h-5 w-5',
+                                                                    active
+                                                                        ? 'text-white'
+                                                                        : 'text-gray-900',
+                                                                ]"
+                                                                aria-hidden="true"
+                                                            />
+                                                            Copy
+                                                        </button>
+                                                    </MenuItem>
+                                                </div>
+
+                                                <div
+                                                    v-if="
+                                                        msg.sender_id === authStore.currentUser?.id
+                                                    "
+                                                    class="px-1 py-1"
+                                                >
+                                                    <MenuItem v-slot="{ active }">
+                                                        <button
+                                                            @click="handleEditMessage(msg)"
+                                                            :class="[
+                                                                active
+                                                                    ? 'bg-blue-600 text-white cursor-pointer'
+                                                                    : 'text-gray-900',
+                                                                'group flex w-full items-center rounded-md px-2 py-2 text-sm',
+                                                            ]"
+                                                        >
+                                                            <PencilSquareIcon
+                                                                :class="[
+                                                                    'mr-2 h-5 w-5',
+                                                                    active
+                                                                        ? 'text-white'
+                                                                        : 'text-blue-700',
+                                                                ]"
+                                                                aria-hidden="true"
+                                                            />
+                                                            Edit
+                                                        </button>
+                                                    </MenuItem>
+                                                </div>
+
+                                                <div
+                                                    v-if="
+                                                        msg.sender_id === authStore.currentUser?.id
+                                                    "
+                                                    class="px-1 py-1"
+                                                >
+                                                    <MenuItem v-slot="{ active }">
+                                                        <button
+                                                            @click="handleDeleteMessage(msg.id)"
+                                                            :class="[
+                                                                active
+                                                                    ? 'bg-red-600 text-white cursor-pointer'
+                                                                    : 'text-gray-900',
+                                                                'group flex w-full items-center rounded-md px-2 py-2 text-sm',
+                                                            ]"
+                                                        >
+                                                            <TrashIcon
+                                                                :class="[
+                                                                    'mr-2 h-5 w-5',
+                                                                    active
+                                                                        ? 'text-white'
+                                                                        : 'text-red-700',
+                                                                ]"
+                                                                aria-hidden="true"
+                                                            />
+                                                            Delete
+                                                        </button>
+                                                    </MenuItem>
+                                                </div>
+                                            </MenuItems>
+                                        </transition>
+                                    </Menu>
+
+                                    <!-- Message Bubble -->
+                                    <div
+                                        :class="[
+                                            'relative px-4 py-2 rounded-lg max-w-sm',
+                                            msg.sender_id === authStore.currentUser?.id
+                                                ? 'bg-blue-500 text-white'
+                                                : 'bg-gray-200 text-gray-800',
+                                        ]"
+                                    >
+                                        <!-- If message is being edited -->
+                                        <template v-if="editingMessageId === msg.id">
+                                            <!-- Cancel Button at Top Right -->
+                                            <button
+                                                @click="handleCancelEdit"
+                                                class="absolute top-2 right-2 px-1 py-1 text-white bg-red-800 hover:cursor-pointer hover:opacity-75 rounded-md"
+                                                title="Cancel Edit"
+                                            >
+                                                <XMarkIcon class="w-4 h-4" />
+                                            </button>
+
+                                            <!-- Editable Input -->
+                                            <input
+                                                v-model="editedContent"
+                                                class="px-2 py-1 rounded-md w-full text-white focus:outline-none"
+                                                @keyup.enter="handleUpdateMessage(msg.id)"
+                                            />
+
+                                            <!-- Save Button Below Input -->
+                                            <!-- <div class="mt-2">
+                                                        <button
+                                                            @click="handleUpdateMessage(msg.id)"
+                                                            class="bg-gray-900 hover:bg-gray-700 text-white px-1 py-1 rounded flex items-center gap-1"
+                                                        >
+                                                            <CheckIcon class="w-5 h-5" />
+                                                        </button>
+                                                    </div> -->
+                                        </template>
+
+                                        <!-- Otherwise, just show the message -->
+                                        <template v-else>
+                                            {{ msg.content }}
+                                        </template>
+                                    </div>
                                 </div>
                             </div>
                         </div>

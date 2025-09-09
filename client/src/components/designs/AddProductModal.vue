@@ -79,7 +79,6 @@
         queryKey: ['fabric-types'],
         queryFn: async () => {
             const respData = await apiService.get<FabricTypes[]>('/api/get/fabric/types')
-            console.log('respData fabric: ', respData)
             return respData
         },
     })

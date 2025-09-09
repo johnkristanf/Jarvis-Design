@@ -257,9 +257,14 @@
                                                                 'text-red-800 ':
                                                                     notif.status ===
                                                                     OrderStatus.CANCELLED,
+
+                                                                'text-blue-600 ':
+                                                                    notif.status ===
+                                                                    OrderStatus.FOR_DELIVERY,
+
                                                                 'text-green-800 ':
                                                                     notif.status ===
-                                                                    OrderStatus.APPROVED,
+                                                                    OrderStatus.COMPLETED,
                                                             }"
                                                         >
                                                             {{ notif.status.toUpperCase() }}

@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-    import Footer from '@/components/home/Footer.vue'
     import SideBar from '@/components/SideBar.vue'
     import { RouterView } from 'vue-router'
 </script>
@@ -9,13 +8,12 @@
         <SideBar />
     </aside>
 
-    <div class="p-4 sm:ml-64">
-        <div class="p-4 rounded-lg dark:border-gray-700 mt-14">
-            <main>
+    <div class="p-4  sm:ml-64">
+        <div class="p-4  rounded-lg dark:border-gray-700 mt-14">
+            <main >
                 <RouterView />
             </main>
         </div>
     </div>
 
-    <Footer />
 </template>

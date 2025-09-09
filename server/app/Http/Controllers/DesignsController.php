@@ -76,19 +76,20 @@ class DesignsController extends Controller
         return response()->json($designs, 200);
     }
 
-    public function getAllProducts()
+    public function getAllProducts(Request $request)
     {
+        $limit = $request->get('limit', 10);
         $products = Products::select('id', 'name', 'unit_price', 'category_id', 'fabric_quantity')
             ->with([
                 'design_category:id,name',
                 'designs:id,product_id,image_url',
             ])
             ->latest()
-            ->get();
+            ->paginate($limit);
 
 
         // Map each product and generate signed URLs for designs
-        $products = $products->map(function ($product) {
+        $products->getCollection()->transform(function ($product) {
             // Generate temporary URLs for each design's image
             $designImages = $product->designs->map(function ($design) {
                 if ($design->image_url && Storage::disk('s3')->exists($design->image_url)) {
@@ -98,7 +99,9 @@ class DesignsController extends Controller
                     );
                 }
                 return null;
-            })->filter()->values(); // Remove nulls if image doesn't exist
+            })
+                ->filter()
+                ->values(); // Remove nulls if image doesn't exist
 
             // Append design_images to product
             $product->design_images = $designImages;
@@ -108,6 +111,7 @@ class DesignsController extends Controller
 
             return $product;
         });
+
 
         return response()->json($products, 200);
     }
@@ -359,7 +363,7 @@ class DesignsController extends Controller
     public function destroy($id)
     {
         $product = Products::findOrFail($id);
-        
+
         // Loop through related designs and delete their images from S3
         foreach ($product->designs as $design) {
             if ($design->image_url && Storage::disk('s3')->exists($design->image_url)) {

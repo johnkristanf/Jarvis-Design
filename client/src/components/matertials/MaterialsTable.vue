@@ -11,6 +11,8 @@
 
     import EditMaterialsModal from './EditMaterialsModal.vue'
     import DeleteDialog from '../DeleteDialog..vue'
+    import type { PaginatedResponse } from '@/types/pagination'
+    import PaginationControls from '../PaginationControls.vue'
 
     // REF TOGGLER OF ADD NEW MATERIALS MODAL
     const modals = reactive({
@@ -18,16 +20,31 @@
         show_edit_materials_modal: false,
     })
 
-    // GET MATERIALS DATA QUERY
-    const { isPending, data: designMaterials } = useQuery({
-        queryKey: ['materials'],
-        queryFn: async () => {
-            const respData = await apiService.get<Material[]>('/api/get/materials')
-            console.log('designMaterials: ', respData)
+    const pagination = reactive({
+        page: 1,
+        limit: 5,
+    })
 
+    // GET MATERIALS DATA QUERY
+    const {
+        isPending,
+        data: designMaterials,
+        refetch,
+    } = useQuery({
+        queryKey: ['materials', pagination.page, pagination.limit],
+        queryFn: async () => {
+            console.log('pagination.page: ', pagination.page)
+            console.log('pagination.limit: ', pagination.limit)
+
+            const respData = await apiService.get<PaginatedResponse<Material>>(
+                `/api/get/materials?page=${pagination.page}&limit=${pagination.limit}`,
+            )
             return respData
         },
     })
+
+    // REFETCH WHEN PAGE CHANGES
+    watch([pagination.page], () => refetch())
 
     // PRIMEVUE TOAST FOR ALERT
     const toast = useToast()
@@ -35,57 +52,34 @@
     // REFERENCE FOR SELECT MATERIAL FOR EDIT
     const selectedMaterial = ref<Material>()
 
-    // ALERT RESTOCK SOUND
-    // const userHasInteracted = ref(false)
-    // const alertSound = new Audio('/sounds/alarm.mp3')
-
-    // CHECKS FOR REAL TIME UPDATE IF THERE ARE USER ORDERS THAT PAYS SUCCESSFULLY
-    // onMounted(() => {
-    //     const enableAudio = () => {
-    //         userHasInteracted.value = true
-    //         alertSound.play().then(() => alertSound.pause())
-    //         window.removeEventListener('click', enableAudio)
-    //     }
-
-    //     window.addEventListener('click', enableAudio)
-
-    //     echo.connector.pusher.connection.bind('connected', () => {
-    //         console.log('✅ Echo is connected to Reverb!')
-    //     })
-
-    //     echo.channel('payments').listen('.payment.successful', async (e: any) => {
-    //         console.log('Payment completed!', e)
-
-    //         // REFETCH MATERIALS EVERYTIME SOMEONE SUCCESSFULLY ORDERS
-    //         refetch()
-    //     })
-    // })
-
     const onShowEditMaterial = (material: Material) => {
         selectedMaterial.value = material
         modals.show_edit_materials_modal = true
     }
 
     // WATCH THE MATERIALS EVERY REFETCH TO CHECK IF THERE ARE ANY LOW STOCK MATERIALS
-    watch(designMaterials, (newMaterials) => {
-        console.log('refetcheddd')
+    watch(
+        () => designMaterials.value?.data,
+        (newMaterials) => {
+            if (newMaterials) {
+                const lowStockItems = newMaterials.filter(
+                    (material) => material.quantity <= material.reorder_level,
+                )
 
-        if (newMaterials) {
-            const lowStockItems = newMaterials.filter(
-                (material) => material.quantity <= material.reorder_level,
-            )
-
-            if (lowStockItems.length > 0) {
-                const materialNames = lowStockItems.map((m) => m.name).join(', ')
-                toast.add({
-                    severity: 'warn',
-                    summary: 'Low Stock Alert',
-                    detail: `The following fabric are low on stock: ${materialNames}`,
-                    closable: true,
-                })
+                if (lowStockItems.length > 0) {
+                    const materialNames = lowStockItems.map((m) => m.name).join(', ')
+                    toast.add({
+                        severity: 'warn',
+                        summary: 'Low Stock Alert',
+                        detail: `The following fabric are low on stock: ${materialNames}`,
+                        closable: true,
+                    })
+                }
             }
-        }
-    })
+        },
+
+        { immediate: true },
+    )
 </script>
 
 <template>
@@ -148,9 +142,9 @@
                     <th scope="col" class="px-6 py-3">Action</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody v-if="designMaterials && !isPending">
                 <tr
-                    v-for="material in designMaterials"
+                    v-for="material in designMaterials.data"
                     :key="material.id"
                     class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600"
                 >
@@ -168,7 +162,7 @@
                     </td>
 
                     <td class="px-6 py-4">{{ material.reorder_level }}</td>
-                    
+
                     <td class="px-6 py-6 flex gap-2">
                         <button
                             class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
@@ -183,6 +177,13 @@
                         />
                     </td>
                 </tr>
+
+                <!-- PAGINATION BUTTONS -->
+                <PaginationControls
+                    :currentPage="designMaterials.current_page"
+                    :lastPage="designMaterials.last_page"
+                    @changePage="pagination.page = $event"
+                />
             </tbody>
         </table>
     </div>

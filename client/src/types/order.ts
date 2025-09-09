@@ -3,9 +3,11 @@ import type { User } from './user'
 type OrderStatus = 'in_progress' | 'pick_up' | 'delivery' | 'completed'
 
 export const OrderStatus = {
-    PENDING: 'pending',
     CANCELLED: 'cancelled',
-    APPROVED: 'completed',
+    PENDING: 'pending',
+    FOR_DELIVERY: 'for_delivery',
+    FOR_PICKUP: 'for_pickup',
+    COMPLETED: 'completed',
 }
 
 export type OrderTypes = 'uploaded' | 'pre-made'
@@ -120,4 +122,22 @@ export type PlaceOrderData = {
     quantity: number
     color_id: number
     size_id: number
+}
+
+
+
+export interface Product {
+    id: number
+    name: string
+}
+
+export interface LatestOrders {
+    id: number
+    order_number: string
+    own_design_url: string | null
+    business_design_url: string | null
+    product_id: number
+    product: Product
+    status: string
+    temp_url?: string // optional because sometimes presigned URLs are not always included
 }

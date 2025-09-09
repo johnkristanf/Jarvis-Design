@@ -18,3 +18,17 @@ export interface Conversation {
   messages: Message[]
   created_at: string
 }
+
+
+export interface Customers {
+  id: number
+  name: string
+  email: string
+}
+
+
+
+export type UpdateChat = {
+  message_id: number
+  content: string
+}
