@@ -80,6 +80,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/get/all/convo', [ChatController::class, 'getAllConversation']);
     Route::get('/get/all/customers', [ChatController::class, 'getAllCustomers']);
 
+    Route::put('/update/chat/{messageID}', [ChatController::class, 'updateMessage']);
+    Route::delete('/delete/chat/{messageID}', [ChatController::class, 'deleteMessage']);
+
+
     // DASHBOARD PROTECTED ROUTE
     Route::get('/get/sales/report', [DashboardController::class, 'monthlySalesReport']);
     Route::get('/get/sales/category', [DashboardController::class, 'salesPerProductCategory']);

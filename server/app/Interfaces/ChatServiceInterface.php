@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Collection;
 
 interface ChatServiceInterface
 {
-    public function send(Message $message, $conversationUserID);
+    public function send(Message $message);
 
     public function createLoadMessage(array $data): Message;
 

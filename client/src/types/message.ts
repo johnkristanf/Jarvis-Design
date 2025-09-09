@@ -25,3 +25,10 @@ export interface Customers {
   name: string
   email: string
 }
+
+
+
+export type UpdateChat = {
+  message_id: number
+  content: string
+}

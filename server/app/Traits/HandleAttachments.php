@@ -26,6 +26,18 @@ trait HandleAttachments
         return $s3Key;
     }
 
+
+    public function deleteS3File($filePath)
+    {
+        if (!empty($filePath) && Storage::disk('s3')->exists($filePath)) {
+            Storage::disk('s3')->delete($filePath);
+            return [
+                'success' => true,
+                'message' => 'S3 File Deleted Successfully'
+            ];
+        }
+    }
+
     public function transformOrderDesignToS3Temp($orders)
     {
         $collection = ($orders instanceof LengthAwarePaginator || $orders instanceof Paginator)

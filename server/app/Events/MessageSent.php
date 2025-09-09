@@ -8,6 +8,7 @@ use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 
 class MessageSent implements ShouldBroadcastNow
 {
@@ -19,11 +20,10 @@ class MessageSent implements ShouldBroadcastNow
     public $message;
     public $conversationUserID;
 
-    public function __construct(Message $message, $conversationUserID)
+    public function __construct(Message $message)
     {
-
+        Log::info("message event: ", [$message]);
         $this->message = $message;
-        $this->conversationUserID = $conversationUserID;
     }
 
     /**
@@ -34,7 +34,7 @@ class MessageSent implements ShouldBroadcastNow
     public function broadcastOn(): array
     {
         return [
-            new Channel('chat.' . $this->conversationUserID),
+            new Channel('chat.' . $this->message->conversation->user_id),
         ];
     }
 
@@ -54,8 +54,8 @@ class MessageSent implements ShouldBroadcastNow
         return [
             'message' => [
                 'id' => $this->message->id,
-                'content' => $this->message->content,
-                'conversation_user_id' => $this->conversationUserID,
+                'messages' => $this->message,
+                'conversation' => $this->message->conversation,
                 'created_at' => $this->message->created_at->toISOString(),
             ],
         ];

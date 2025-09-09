@@ -3,12 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Interfaces\ChatServiceInterface;
+use App\Models\Message;
 use App\Models\Roles;
 use App\Models\User;
 use App\Traits\HandleAttachments;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 use Symfony\Component\HttpFoundation\Response;
 
 class ChatController extends Controller
@@ -24,6 +26,8 @@ class ChatController extends Controller
             'user_id' => 'required|numeric',
             'attachment' => 'nullable|file|max:2048',
         ]);
+
+        Log::info("validated chat: ", [$validated]);
 
         $conversation = $this->chat->findConversationByUserID(
             userID: $validated['user_id'],
@@ -70,7 +74,7 @@ class ChatController extends Controller
         }
 
         Log::info("conversation: ", [$conversation]);
-        $this->chat->send($message,  $conversation->user_id);
+        $this->chat->send($message);
 
         return response()->json([
             'message' => [
@@ -106,5 +110,75 @@ class ChatController extends Controller
         return User::select('id', 'name', 'email')
             ->where('role_id', '=', $userRoleID)
             ->get();
+    }
+
+
+    public function updateMessage(Request $request, $messageID)
+    {
+        $validator = Validator::make($request->all(), [
+            'content' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation Failed',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+
+        $message = Message::find($messageID);
+        if (!$message) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Message not found.',
+            ], 404);
+        }
+
+        $validated = $validator->validated();
+        $content = $validated['content'];
+
+        $message->update([
+            'content' => $content,
+            'updated_at' => now(),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Message updated successfully.',
+        ]);
+    }
+
+
+    public function deleteMessage($messageID)
+    {
+        $message = Message::find($messageID);
+        if (!$message) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Message not found.',
+            ], 404);
+        }
+
+
+        // Delete s3 file if exists
+        if ($message->attachment_url) {
+            $response = $this->deleteS3File($message->attachment_url);
+            if (!$response['success']) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to Delete S3 File Attachment',
+                ]);
+            }
+        }
+
+        // Delete the message
+        $message->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Message deleted successfully.',
+        ]);
     }
 }
