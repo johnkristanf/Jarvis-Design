@@ -1,14 +1,8 @@
 <script lang="ts" setup>
-    import { formatDate } from '@/helper/designs';
-import { formatDateWithTime, getStatusBadgeClass } from '@/helper/order'
+    import { formatDate } from '@/helper/designs'
+    import { getStatusBadgeClass } from '@/helper/order'
     import { OrderOptions, type Orders } from '@/types/order'
-    import {
-        TransitionRoot,
-        TransitionChild,
-        Dialog,
-        DialogPanel,
-        DialogTitle,
-    } from '@headlessui/vue'
+    import { TransitionRoot, TransitionChild, Dialog, DialogPanel, DialogTitle } from '@headlessui/vue'
 
     defineProps<{
         orderDetails: Orders
@@ -51,19 +45,12 @@ import { formatDateWithTime, getStatusBadgeClass } from '@/helper/order'
                             <!-- Header -->
                             <div class="bg-gray-900 text-white p-6 border-b border-gray-200">
                                 <div class="flex items-center justify-between">
-                                    <DialogTitle as="h2" class="text-xl font-bold">
-                                        Order Details
-                                    </DialogTitle>
+                                    <DialogTitle as="h2" class="text-xl font-bold">Order Details</DialogTitle>
                                     <button
                                         @click="handleCloseModal"
                                         class="text-white hover:text-gray-300 transition-colors"
                                     >
-                                        <svg
-                                            class="w-6 h-6"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path
                                                 stroke-linecap="round"
                                                 stroke-linejoin="round"
@@ -78,13 +65,9 @@ import { formatDateWithTime, getStatusBadgeClass } from '@/helper/order'
                             <!-- Content -->
                             <div class="p-6 max-h-96 overflow-y-auto">
                                 <!-- Order Header Info -->
-                                <div
-                                    class="grid grid-cols-2 gap-4 mb-6 pb-6 border-b border-gray-200"
-                                >
+                                <div class="grid grid-cols-2 gap-4 mb-6 pb-6 border-b border-gray-200">
                                     <div>
-                                        <h3
-                                            class="text-sm font-medium text-gray-600 uppercase tracking-wide"
-                                        >
+                                        <h3 class="text-sm font-medium text-gray-600 uppercase tracking-wide">
                                             Order Number
                                         </h3>
                                         <p class="text-lg font-bold text-black mt-1">
@@ -92,9 +75,7 @@ import { formatDateWithTime, getStatusBadgeClass } from '@/helper/order'
                                         </p>
                                     </div>
                                     <div>
-                                        <h3
-                                            class="text-sm font-medium text-gray-600 uppercase tracking-wide"
-                                        >
+                                        <h3 class="text-sm font-medium text-gray-600 uppercase tracking-wide">
                                             Status
                                         </h3>
                                         <div class="mt-1">
@@ -104,9 +85,7 @@ import { formatDateWithTime, getStatusBadgeClass } from '@/helper/order'
                                         </div>
                                     </div>
                                     <div>
-                                        <h3
-                                            class="text-sm font-medium text-gray-600 uppercase tracking-wide"
-                                        >
+                                        <h3 class="text-sm font-medium text-gray-600 uppercase tracking-wide">
                                             Created
                                         </h3>
                                         <p class="text-sm text-black mt-1">
@@ -114,9 +93,7 @@ import { formatDateWithTime, getStatusBadgeClass } from '@/helper/order'
                                         </p>
                                     </div>
                                     <div>
-                                        <h3
-                                            class="text-sm font-medium text-gray-600 uppercase tracking-wide"
-                                        >
+                                        <h3 class="text-sm font-medium text-gray-600 uppercase tracking-wide">
                                             Delivery Date
                                         </h3>
                                         <p class="text-sm text-black mt-1">
@@ -131,9 +108,7 @@ import { formatDateWithTime, getStatusBadgeClass } from '@/helper/order'
 
                                 <!-- Customer Info -->
                                 <div class="mb-6 pb-6 border-b border-gray-200">
-                                    <h3
-                                        class="text-lg font-semibold text-black mb-3 border-l-4 border-black pl-3"
-                                    >
+                                    <h3 class="text-lg font-semibold text-black mb-3 border-l-4 border-black pl-3">
                                         Customer Information
                                     </h3>
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -160,9 +135,7 @@ import { formatDateWithTime, getStatusBadgeClass } from '@/helper/order'
 
                                 <!-- Product Info -->
                                 <div class="mb-6 pb-6 border-b border-gray-200">
-                                    <h3
-                                        class="text-lg font-semibold text-black mb-3 border-l-4 border-black pl-3"
-                                    >
+                                    <h3 class="text-lg font-semibold text-black mb-3 border-l-4 border-black pl-3">
                                         Product Details
                                     </h3>
                                     <div class="flex gap-4">
@@ -172,9 +145,7 @@ import { formatDateWithTime, getStatusBadgeClass } from '@/helper/order'
                                             class="flex-shrink-0"
                                         >
                                             <img
-                                                :src="
-                                                    orderDetails.temp_url || orderDetails.image_path
-                                                "
+                                                :src="orderDetails.temp_url || orderDetails.image_path"
                                                 :alt="`Design ${orderDetails.design_id}`"
                                                 class="w-20 h-20 object-cover border-2 border-gray-300"
                                             />
@@ -195,8 +166,7 @@ import { formatDateWithTime, getStatusBadgeClass } from '@/helper/order'
                                                     <p class="text-sm text-gray-600">Option</p>
                                                     <p class="font-medium text-black">
                                                         {{
-                                                            orderDetails.order_option ===
-                                                            OrderOptions.DELIVERY
+                                                            orderDetails.order_option === OrderOptions.DELIVERY
                                                                 ? 'Delivery'
                                                                 : 'Pick-up'
                                                         }}
@@ -207,10 +177,7 @@ import { formatDateWithTime, getStatusBadgeClass } from '@/helper/order'
                                     </div>
 
                                     <!-- Sizes -->
-                                    <div
-                                        v-if="orderDetails.sizes && orderDetails.sizes.length > 0"
-                                        class="mt-4"
-                                    >
+                                    <div v-if="orderDetails.sizes && orderDetails.sizes.length > 0" class="mt-4">
                                         <p class="text-sm text-gray-600 mb-2">Sizes & Quantities</p>
                                         <div class="flex flex-wrap gap-2">
                                             <div
@@ -229,9 +196,7 @@ import { formatDateWithTime, getStatusBadgeClass } from '@/helper/order'
 
                                 <!-- Pricing -->
                                 <div class="mb-6">
-                                    <h3
-                                        class="text-lg font-semibold text-black mb-3 border-l-4 border-black pl-3"
-                                    >
+                                    <h3 class="text-lg font-semibold text-black mb-3 border-l-4 border-black pl-3">
                                         Pricing
                                     </h3>
                                     <div class="bg-gray-50 p-4 border border-gray-200">
@@ -261,11 +226,10 @@ import { formatDateWithTime, getStatusBadgeClass } from '@/helper/order'
                                         </div>
                                         <div class="border-t border-gray-300 pt-2 mt-2">
                                             <div class="flex justify-between items-center">
-                                                <span class="font-semibold text-black">
-                                                    Total Price:
-                                                </span>
+                                                <span class="font-semibold text-black">Total Price:</span>
                                                 <span class="font-bold text-xl text-black">
-                                                    ₱ {{ Math.floor(orderDetails.total_price).toLocaleString() }}
+                                                    ₱
+                                                    {{ Math.floor(orderDetails.total_price).toLocaleString() }}
                                                 </span>
                                             </div>
                                         </div>
@@ -274,9 +238,7 @@ import { formatDateWithTime, getStatusBadgeClass } from '@/helper/order'
 
                                 <!-- User Info (if available) -->
                                 <div v-if="orderDetails.user" class="mb-6">
-                                    <h3
-                                        class="text-lg font-semibold text-black mb-3 border-l-4 border-black pl-3"
-                                    >
+                                    <h3 class="text-lg font-semibold text-black mb-3 border-l-4 border-black pl-3">
                                         Account Information
                                     </h3>
                                     <div class="bg-gray-50 p-4 border border-gray-200">

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Events\PaymentSucessful;
+use App\Jobs\SendOrderConfirmation;
 use App\Models\Designs;
 use App\Models\Materials;
 use App\Models\Notifications;
@@ -17,6 +18,7 @@ use App\Traits\OrderTrait;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -152,7 +154,7 @@ class PaymentController extends Controller
                     'qrcode_img_src' => $qrcodeSrc,
                 ], 200);
             } else {
-                Log::error('Failed to generate QR Code: Incomplete response', $attachPaymentIntentResponseData);
+                Log::error('Failed to generate QR Code: Incomplete response', [$attachPaymentIntentResponseData]);
 
                 return response()->json(['error' => 'Failed to generate QR Code. Incomplete response from PayMongo.'], 500);
             }
@@ -310,88 +312,88 @@ class PaymentController extends Controller
             file: $request->file('payment_attachment')
         );
 
-        // Step 1: Create order first, without the design URL yet
-        $order = Orders::create([
-            'order_number' => $this->generateOrderNumber(),
-            'color' => $validated['color'],
-            'product_unit_price' => $validated['product_unit_price'],
-            'product_id' => $validated['product_id'],
-            'phone_number' => $validated['phone_number'],
-            'address' => $validated['address'],
-            'design_type' => $validated['design_type'],
-            'order_option' => $validated['order_option'],
-            'total_quantity' => $validated['total_quantity'],
-            'total_price' => $validated['total_price'],
-            'solo_quantity' => $validated['solo_quantity'] ?? null,
-            'business_design_url' => $validated['business_design_url'] ?? null,
-            'attachment_url' => $attachmentURL,
-            'user_id' => Auth::user()->id,
-        ]);
-
-        // Step 2: Handle own-design file upload (after Order is created)
-        if ($request->hasFile('own_design_file')) {
-            $attachmentURL = $this->uploadToS3(
-                root: 'orders',
-                sub: $order->id,
-                file: $request->file('own_design_file')
-            );
-
-            // Step 3: Update the order with the uploaded file's URL
-            $order->update([
-                'own_design_url' => $attachmentURL,
+        DB::transaction(function () use ($validated, $request, $attachmentURL, &$order) {
+            // Step 1: Create order first, without the design URL yet
+            $order = Orders::create([
+                'order_number' => $this->generateOrderNumber(),
+                'color' => $validated['color'],
+                'product_unit_price' => $validated['product_unit_price'],
+                'product_id' => $validated['product_id'],
+                'phone_number' => $validated['phone_number'],
+                'address' => $validated['address'],
+                'design_type' => $validated['design_type'],
+                'order_option' => $validated['order_option'],
+                'total_quantity' => $validated['total_quantity'],
+                'total_price' => $validated['total_price'],
+                'solo_quantity' => $validated['solo_quantity'] ?? null,
+                'business_design_url' => $validated['business_design_url'] ?? null,
+                'attachment_url' => $attachmentURL,
+                'user_id' => Auth::user()->id,
             ]);
-        }
 
-        // Step 4: Handle sizes (many-to-many pivot with quantity)
-        if (! empty($validated['sizes'])) {
-            foreach ($validated['sizes'] as $sizeId => $qty) {
-                if ($qty > 0) {
-                    $order->sizes()->attach($sizeId, ['quantity' => $qty]);
+            // Step 2: Handle own-design file upload (after Order is created)
+            if ($request->hasFile('own_design_file')) {
+                $attachmentURL = $this->uploadToS3(
+                    root: 'orders',
+                    sub: $order->id,
+                    file: $request->file('own_design_file')
+                );
+
+                // Step 3: Update the order with the uploaded file's URL
+                $order->update([
+                    'own_design_url' => $attachmentURL,
+                ]);
+            }
+
+            // Step 4: Handle sizes (many-to-many pivot with quantity)
+            if (! empty($validated['sizes'])) {
+                foreach ($validated['sizes'] as $sizeId => $qty) {
+                    if ($qty > 0) {
+                        $order->sizes()->attach($sizeId, ['quantity' => $qty]);
+                    }
                 }
             }
-        }
 
-        // Step 5: Deduct total quantity ordered in materials table
-        if (isset($validated['fabric_type_id']) && $validated['fabric_type_id']) {
+            // Step 5: Deduct total quantity ordered in materials table
+            if (isset($validated['fabric_type_id']) && $validated['fabric_type_id']) {
 
-            $fabric = Materials::findOrFail($validated['fabric_type_id']);
+                $fabric = Materials::findOrFail($validated['fabric_type_id']);
 
-            $totalOrderedQuantity = (int) $validated['total_quantity'];
-            $fabricUsedPerUnit = (float) $fabric->products()->pluck('fabric_quantity')->first();
+                $totalOrderedQuantity = (int) $validated['total_quantity'];
+                $fabricUsedPerUnit = (float) $fabric->products()->pluck('fabric_quantity')->first();
 
-            $totalQuantityDeduction = $totalOrderedQuantity * $fabricUsedPerUnit;
+                $totalQuantityDeduction = $totalOrderedQuantity * $fabricUsedPerUnit;
 
-            Log::info('FABRIC DATA: ', [
-                'fabric_type_id' => $validated['fabric_type_id'],
-                'totalDeduction' => $totalQuantityDeduction,
-                'fabric' => $fabric,
-            ]);
+                Log::info('FABRIC DATA: ', [
+                    'fabric_type_id' => $validated['fabric_type_id'],
+                    'totalDeduction' => $totalQuantityDeduction,
+                    'fabric' => $fabric,
+                ]);
 
-            if ($fabric->quantity >= $totalQuantityDeduction) {
-                $fabric->decrement('quantity', $totalQuantityDeduction);
-            } else {
-                // Handle insufficient stock (throw exception or return error)
-                throw new \Exception('Not enough material in stock.');
+                if ($fabric->quantity >= $totalQuantityDeduction) {
+                    $fabric->decrement('quantity', $totalQuantityDeduction);
+                } else {
+                    // Handle insufficient stock (throw exception or return error)
+                    throw new Exception('Not enough material in stock.');
+                }
+
+                // LOG ORDER
+                OrderLogs::create([
+                    'user_id' => Auth::user()->id,
+                    'order_id' => $order->id,
+                    'material_name' => $fabric->name,
+                    'unit' => $fabric->unit,
+                    'total_quantity_used' => $totalQuantityDeduction,
+                ]);
             }
 
-            // LOG ORDER
-            OrderLogs::create([
-                'user_id' => Auth::user()->id,
-                'order_id' => $order->id,
-                'material_name' => $fabric->name,
-                'unit' => $fabric->unit,
-                'total_quantity_used' => $totalQuantityDeduction,
-            ]);
-        }
 
+            // NOTFICATION
+            $this->paymentService->notifyUser($order->order_number, Auth::user()->id);
 
-
-        // NOTFICATION
-        Notifications::create([
-            'order_id' => $order->order_number,
-            'user_id' => Auth::user()->id,
-            'status' => 'pending',
-        ]);
+            // Email User Order
+            $this->paymentService->sendOrderConfirmationEmail($order);
+        });
 
         return response()->json(['message' => 'Order placed successfully', 'order_id' => $order->id]);
     }
