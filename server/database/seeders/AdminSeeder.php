@@ -9,16 +9,16 @@ use Illuminate\Support\Facades\Hash;
 
 class AdminSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
-    public function run(): void
-    {
+        /**
+         * Run the database seeds.
+         */
+        public function run(): void
+        {
 
-        $adminRoleID = Roles::where('name', 'admin')->first()->id;
-        $userRoleID = Roles::where('name', 'user')->first()->id;
+            $adminRoleID = Roles::where('name', 'admin')->first()->id;
+            $userRoleID = Roles::where('name', 'user')->first()->id;
 
-        User::firstOrCreate([
+            User::firstOrCreate([
             'name' => 'Administrator',
             'username' => 'admin@admin',
             'email' => 'admin@gmail.com',

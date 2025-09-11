@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Jobs\SendOrderConfirmation;
 use App\Models\Notifications;
 use App\Models\Orders;
 use App\Models\OrderStatus;
@@ -401,7 +402,7 @@ class PaymentService
                 'error' => 'Failed to update notifications.',
                 'message' => $e->getMessage(),
             ], 500);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('An unexpected error occurred: ' . $e->getMessage());
 
             return response()->json([
@@ -409,5 +410,22 @@ class PaymentService
                 'message' => $e->getMessage(),
             ], 500);
         }
+    }
+
+
+    public function sendOrderConfirmationEmail(Orders $orders)
+    {
+        $orders->load(['user']);
+        SendOrderConfirmation::dispatch($orders)->afterCommit();
+    }
+
+
+    public function notifyUser($orderNumber, $userID)
+    {
+        Notifications::create([
+            'order_id' => $orderNumber,
+            'user_id' => $userID,
+            'status' => 'pending',
+        ]);
     }
 }

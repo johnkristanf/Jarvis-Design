@@ -1,0 +1,3 @@
+<div>
+    Orders: {{ $orders }}
+</div>
