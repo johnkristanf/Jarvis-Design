@@ -11,14 +11,7 @@
         Legend,
     } from 'chart.js'
 
-    import {
-        FwbTable,
-        FwbTableBody,
-        FwbTableCell,
-        FwbTableHead,
-        FwbTableHeadCell,
-        FwbTableRow,
-    } from 'flowbite-vue'
+    import { FwbTable, FwbTableBody, FwbTableCell, FwbTableHead, FwbTableHeadCell, FwbTableRow } from 'flowbite-vue'
 
     import { Bar, Line } from 'vue-chartjs'
     import type { ChartOptions } from 'chart.js'
@@ -26,18 +19,10 @@
     import { apiService } from '@/api/axios'
     import type { SalesReport } from '@/types/dashboard'
     import { type LatestOrders } from '@/types/order'
-import StatusBadge from '@/components/orders/StatusBadge.vue'
+    import StatusBadge from '@/components/orders/StatusBadge.vue'
+    import { ArrowDownTrayIcon } from '@heroicons/vue/20/solid'
 
-    ChartJS.register(
-        CategoryScale,
-        LinearScale,
-        PointElement,
-        LineElement,
-        Title,
-        Tooltip,
-        Legend,
-        BarElement,
-    )
+    ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, BarElement)
 
     // SALES PER CATEGORY BAR CHART DATA
     const { data: salePerProductCategory } = useQuery({
@@ -82,10 +67,45 @@ import StatusBadge from '@/components/orders/StatusBadge.vue'
         queryKey: ['latest-orders'],
         queryFn: async () => {
             const respData = await apiService.get<LatestOrders[]>('/api/get/latest/orders')
-            console.log('respData 33434: ', respData)
             return respData
         },
     })
+
+    // DOWNLOAD MONTHLY REPORT
+    const downloadMonthlyReport = async () => {
+        try {
+            const response = await apiService.get('/api/get/reports/monthly-sales', {
+                responseType: 'blob',
+            })
+
+            const url = window.URL.createObjectURL(new Blob([response]))
+            const link = document.createElement('a')
+            link.href = url
+            link.setAttribute('download', 'monthly_sales.xlsx')
+            document.body.appendChild(link)
+            link.click()
+        } catch (error) {
+            console.error('Download Report Error: ', error)
+        }
+    }
+
+    // DOWNLOAD REPORT PER CATEGORY
+    const downloadReportPerCategory = async () => {
+        try {
+            const response = await apiService.get('/api/get/reports/category-sales', {
+                responseType: 'blob',
+            })
+
+            const url = window.URL.createObjectURL(new Blob([response]))
+            const link = document.createElement('a')
+            link.href = url
+            link.setAttribute('download', 'sales_per_category.xlsx')
+            document.body.appendChild(link)
+            link.click()
+        } catch (error) {
+            console.error('Download Report Error: ', error)
+        }
+    }
 </script>
 
 <template>
@@ -99,6 +119,12 @@ import StatusBadge from '@/components/orders/StatusBadge.vue'
 
         <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
             <div class="h-[300px] rounded-md p-3">
+                <div class="flex justify-end">
+                    <button @click="downloadMonthlyReport">
+                        <ArrowDownTrayIcon class="size-6 hover:cursor-pointer hover:opacity-75" />
+                    </button>
+                </div>
+
                 <Line
                     v-if="monthlySalesReport"
                     id="my-chart-id"
@@ -108,6 +134,12 @@ import StatusBadge from '@/components/orders/StatusBadge.vue'
             </div>
 
             <div class="h-[300px] rounded-md p-3">
+                <div class="flex justify-end">
+                    <button @click="downloadReportPerCategory">
+                        <ArrowDownTrayIcon class="size-6 hover:cursor-pointer hover:opacity-75" />
+                    </button>
+                </div>
+
                 <Bar
                     v-if="salePerProductCategory"
                     id="my-chart-id"
@@ -139,7 +171,7 @@ import StatusBadge from '@/components/orders/StatusBadge.vue'
                             </fwb-table-cell>
                             <fwb-table-cell>{{ order.product.name }}</fwb-table-cell>
                             <fwb-table-cell>
-                               <StatusBadge :status="order.status"/>
+                                <StatusBadge :status="order.status" />
                             </fwb-table-cell>
                         </fwb-table-row>
                     </fwb-table-body>

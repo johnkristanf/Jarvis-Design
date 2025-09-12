@@ -89,6 +89,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/get/sales/category', [DashboardController::class, 'salesPerProductCategory']);
     Route::get('/get/latest/orders', [DashboardController::class, 'latestOrders']);
 
+    // REPORT GENERATION
+    Route::get('/get/reports/monthly-sales', [DashboardController::class, 'downloadMonthlySales']);
+    Route::get('/get/reports/category-sales', [DashboardController::class, 'downloadCategorySales']);
+
 
 });
 
