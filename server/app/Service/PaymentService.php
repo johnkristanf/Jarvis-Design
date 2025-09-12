@@ -377,7 +377,7 @@ class PaymentService
                 'error' => 'Failed to update order status.',
                 'message' => $e->getMessage(),
             ], 500);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('An unexpected error occurred: ' . $e->getMessage());
 
             return response()->json([

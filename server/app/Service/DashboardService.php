@@ -11,7 +11,7 @@ class DashboardService
 {
     use SalesTrait, HandleAttachments;
 
-    public function getMonthlySalesReport()
+    public function getMonthlySalesReport($isChartFiltered = true)
     {
         $monthlySales = DB::table('orders')
             ->select(
@@ -25,16 +25,21 @@ class DashboardService
             ->groupBy('month_name', 'month_number')
             ->orderBy('month_number', 'asc')
             ->get();
+            
+        if($isChartFiltered){
+            return $this->filterSalesReportForChart(
+                sales: $monthlySales,
+                label: 'Monthly Sales Report',
+                category: 'month_name'
+            );
+        }
 
-        return $this->filterSalesReportForChart(
-            sales: $monthlySales,
-            label: 'Monthly Sales Report',
-            category: 'month_name'
-        );
+        return $monthlySales;
+        
     }
 
 
-    public function getSalesPerProductCategory()
+    public function getSalesPerProductCategory($isChartFiltered = true)
     {
         $salesPerProductCategory = DB::table('orders')
             ->select(
@@ -51,12 +56,16 @@ class DashboardService
             ->orderByDesc('total_sales')
             ->get();
 
+       
+        if($isChartFiltered){
+            return $this->filterSalesReportForChart(
+                sales: $salesPerProductCategory,
+                label: 'Sales Per Product',
+                category: 'category_name'
+            );
+        }
 
-        return $this->filterSalesReportForChart(
-            sales: $salesPerProductCategory,
-            label: 'Sales Per Product',
-            category: 'category_name'
-        );
+        return $salesPerProductCategory;
     }
 
     public function getLatestOrder()
