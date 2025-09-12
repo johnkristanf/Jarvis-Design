@@ -74,7 +74,7 @@
     // DOWNLOAD MONTHLY REPORT
     const downloadMonthlyReport = async () => {
         try {
-            const response = await apiService.get('/api/get/reports/monthly-sales', {
+            const response = await apiService.get<Blob>('/api/get/reports/monthly-sales', {
                 responseType: 'blob',
             })
 
@@ -92,7 +92,7 @@
     // DOWNLOAD REPORT PER CATEGORY
     const downloadReportPerCategory = async () => {
         try {
-            const response = await apiService.get('/api/get/reports/category-sales', {
+            const response = await apiService.get<Blob>('/api/get/reports/category-sales', {
                 responseType: 'blob',
             })
 
