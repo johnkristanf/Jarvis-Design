@@ -88,6 +88,10 @@ jobs:
           echo "${{ secrets.EC2_KEY }}" > temp_ssh_key
           chmod 600 temp_ssh_key
 
+          echo "🔑 Key file created."
+          echo "Permissions:"
+          ls -lah temp_ssh_key
+
           # List of files to upload
           FILES=(
               "server/docker-compose.yml"
