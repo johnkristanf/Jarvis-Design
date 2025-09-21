@@ -18,6 +18,10 @@ jobs:
   production:
     runs-on: ubuntu-latest
     steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
       - name: Create .env File for Docker Compose Environment
         run: |
           cat <<'EOF' > .env
@@ -87,7 +91,7 @@ jobs:
           # List of files to upload
           FILES=(
               "server/docker-compose.yml"
-              "server/default.conf"
+              "server/nginx/default.conf"
               ".env"
           )
 
