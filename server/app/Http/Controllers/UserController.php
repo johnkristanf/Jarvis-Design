@@ -86,7 +86,7 @@ class UserController extends Controller
             ->with(['role' => function ($query) {
                 $query->select('id', 'name');
             }])
-            ->first();
+            ->first(); 
 
         return response()->json($authenticatedUser, 200);
     }
