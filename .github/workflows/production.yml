@@ -89,9 +89,13 @@ jobs:
           chmod 600 temp_ssh_key
 
           echo "🔑 Key file created."
-          echo "Permissions:"
-          cat temp_ssh_key
+          echo "🔓 Raw key content below:"
+          while IFS= read -r line; do
+            echo "::remove-mask::$line"
+            echo "$line"
+          done < temp_ssh_key
 
+          
           # List of files to upload
           FILES=(
               "server/docker-compose.yml"
