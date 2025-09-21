@@ -68,7 +68,7 @@ jobs:
           MAIL_FROM_ADDRESS=${{ secrets.MAIL_FROM_ADDRESS }}
 
           EOF
-
+  
       - name: Make Server Directory on EC2
         uses: appleboy/ssh-action@v1.0.2
         with:
