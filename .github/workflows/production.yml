@@ -87,15 +87,8 @@ jobs:
           # Create temporary SSH key file
           echo "${{ secrets.EC2_KEY }}" > temp_ssh_key
           chmod 600 temp_ssh_key
-
           echo "🔑 Key file created."
-          echo "🔓 Raw key content below:"
-          while IFS= read -r line; do
-            echo "::remove-mask::$line"
-            echo "$line"
-          done < temp_ssh_key
 
-          
           # List of files to upload
           FILES=(
               "server/docker-compose.yml"
@@ -105,7 +98,7 @@ jobs:
 
           # Upload all files in a loop
           for file in "${FILES[@]}"; do
-              scp -i temp_ssh_key -o StrictHostKeyChecking=no "$file" " ${{ env.EC2_SSH_TARGET }}:${{ env.EC2_SERVER_DIR }}/"$file" "
+            scp -i temp_ssh_key -o StrictHostKeyChecking=no "$file" "${{ env.EC2_SSH_TARGET }}:${{ env.EC2_SERVER_DIR }}/$file"
           done
 
           # Cleanup 
