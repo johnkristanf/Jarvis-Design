@@ -14,21 +14,18 @@ env:
   DOCKER_REPO_URL: https://download.docker.com/linux/ubuntu
   DOCKER_REPO_LIST: /etc/apt/sources.list.d/docker.list
 
-
 jobs:
   production:
     runs-on: ubuntu-latest
-
-    # TANAN NAKA LOCALHOST ANG VALUE USABA TO PRODUCTION DOMAIN INIG HUMAN PALIT
     steps:
       - name: Create .env File for Docker Compose Environment
         run: |
           cat <<'EOF' > .env
-          APP_NAME=${{ secrets.APP_NAME }}
+          APP_NAME="Jarvis Designs"
           APP_KEY=${{ secrets.APP_KEY }}
-          APP_URL=http://localhost:8000
+          APP_URL=https://api.jarvis-designs.it.com
 
-          APP_TIMEZONE='Asia/Manila'
+          APP_TIMEZONE="Asia/Manila"
           APP_ENV=production
           APP_DEBUG=false
 
@@ -42,28 +39,35 @@ jobs:
           LOG_CHANNEL=stack
           LOG_LEVEL=error
 
-          SANCTUM_STATEFUL_DOMAINS=localhost:3000,localhost
+          SANCTUM_STATEFUL_DOMAINS=jarvis-designs.it.com,www.jarvis-designs.it.com
           SESSION_DOMAIN=${{ secrets.SESSION_DOMAIN }}
 
-          SESSION_DRIVER=${{ secrets.SESSION_DRIVER }}
-          SESSION_SAME_SITE=${{ secrets.SESSION_SAME_SITE }}
-          SESSION_SECURE_COOKIE=${{ secrets.SESSION_SECURE_COOKIE }}
+          SESSION_DRIVER=database
+          SESSION_SAME_SITE=None
+          SESSION_SECURE_COOKIE=true
+
+
+          AWS_ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID }}
+          AWS_DEFAULT_REGION="ap-southeast-1"
+          AWS_BUCKET="jarvis-designs"
+
+          SQS_PREFIX=https://sqs.ap-southeast-1.amazonaws.com/${{ secrets.AWS_ACCOUNT_ID }}
+          SQS_QUEUE=JarvisOrderQueue
+
 
           MAIL_MAILER=smtp
           MAIL_HOST=smtp.gmail.com
           MAIL_PORT=587
-          
+
           MAIL_ENCRYPTION=tls
           MAIL_FROM_NAME="${APP_NAME}"
-          EMAIL_VERIFICATION_URL=http://localhost:3000/email/verified
-
+          EMAIL_VERIFICATION_URL="${APP_URL}/email/verified"
 
           MAIL_USERNAME=${{ secrets.MAIL_USERNAME }}
           MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}
           MAIL_FROM_ADDRESS=${{ secrets.MAIL_FROM_ADDRESS }}
 
           EOF
-
 
       - name: Make Server Directory on EC2
         uses: appleboy/ssh-action@v1.0.2
@@ -74,30 +78,26 @@ jobs:
           script: |
             mkdir -p ${{ env.EC2_SERVER_DIR }}
 
-
-
       - name: Upload files to EC2 using native SCP
         run: |
-            # Create temporary SSH key file
-            echo "${{ secrets.EC2_KEY }}" > temp_ssh_key
-            chmod 600 temp_ssh_key
+          # Create temporary SSH key file
+          echo "${{ secrets.EC2_KEY }}" > temp_ssh_key
+          chmod 600 temp_ssh_key
 
-            # List of files to upload
-            FILES=(
-                "server/docker-compose.yml"
-                "server/default.conf"
-                ".env"
-            )
+          # List of files to upload
+          FILES=(
+              "server/docker-compose.yml"
+              "server/default.conf"
+              ".env"
+          )
 
-            # Upload all files in a loop
-            for file in "${FILES[@]}"; do
-                scp -i temp_ssh_key -o StrictHostKeyChecking=no "$file" " ${{ env.EC2_SSH_TARGET }}:${{ env.EC2_SERVER_DIR }}/"$file" "
-            done
+          # Upload all files in a loop
+          for file in "${FILES[@]}"; do
+              scp -i temp_ssh_key -o StrictHostKeyChecking=no "$file" " ${{ env.EC2_SSH_TARGET }}:${{ env.EC2_SERVER_DIR }}/"$file" "
+          done
 
-            # Cleanup 
-            rm -rf temp_ssh_key
-
-
+          # Cleanup 
+          rm -rf temp_ssh_key
 
       - name: Install Docker and Docker Compose inside EC2
         uses: appleboy/ssh-action@v1.0.2
@@ -136,8 +136,6 @@ jobs:
               sudo apt-get install -y docker-compose-plugin
             fi
 
-
-
       - name: Setup Certbot Certificates
         uses: appleboy/ssh-action@v1.0.2
         with:
@@ -175,8 +173,6 @@ jobs:
 
             # (Optional) Check renewal schedule
             sudo systemctl list-timers | grep certbot || true
-
-
 
       - name: 🚀 Deploy on EC2 via SSH
         uses: appleboy/ssh-action@v1.0.2

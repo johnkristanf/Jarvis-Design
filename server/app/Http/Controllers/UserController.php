@@ -93,7 +93,6 @@ class UserController extends Controller
 
     public function update(Request $request)
     {
-        Log::info('ENDPOINT HIT');
         $user = $request->user();
 
         $validated = $request->validate([
