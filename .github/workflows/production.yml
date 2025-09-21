@@ -98,11 +98,14 @@ jobs:
 
           # Upload all files in a loop
           for file in "${FILES[@]}"; do
-            # Remove leading "server/" if it exists
-            target_path="${file#server/}"
+            # Strip "server/" prefix if it exists
+            target_file="${file#server/}"
+
+            # Strip "nginx/" too if it exists
+            target_file="${target_file#nginx/}"
 
             # Upload file to EC2 inside EC2_SERVER_DIR
-            scp -i temp_ssh_key -o StrictHostKeyChecking=no "$file" "${{ env.EC2_SSH_TARGET }}:${{ env.EC2_SERVER_DIR }}/$target_path"
+            scp -i temp_ssh_key -o StrictHostKeyChecking=no "$file" "${{ env.EC2_SSH_TARGET }}:${{ env.EC2_SERVER_DIR }}/$target_file"
           done
 
           # Cleanup 
