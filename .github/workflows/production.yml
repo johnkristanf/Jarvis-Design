@@ -90,7 +90,7 @@ jobs:
 
           echo "🔑 Key file created."
           echo "Permissions:"
-          ls -lah temp_ssh_key
+          cat temp_ssh_key
 
           # List of files to upload
           FILES=(
