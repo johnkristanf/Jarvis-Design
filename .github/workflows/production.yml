@@ -1,7 +1,10 @@
 name: Jarvis Design Deployment
 
 on:
-  push:
+  workflow_run:
+    workflows: ["Jarvis Designs Image Build"]
+    types:
+      - completed
     branches:
       - production
 
