@@ -19,10 +19,7 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => [
-        'https://jarvis-designs.it.com',
-        'https://www.jarvis-designs.it.com',
-    ],
+    'allowed_origins' => ['https://jarvis-designs.it.com'],
 
     'allowed_origins_patterns' => [],
 
