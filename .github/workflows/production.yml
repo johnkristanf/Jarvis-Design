@@ -35,8 +35,7 @@ jobs:
 
   production:
     runs-on: ubuntu-latest
-
-    # Only run when the build workflow succeeded
+    needs: build
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
