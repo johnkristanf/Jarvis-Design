@@ -7,7 +7,10 @@ echo "🚀 Starting Laravel Deployment Tasks..."
 echo "Composer Version:"
 composer --version
 
-# Install Composer dependencies
+
+echo "Clearing Composer cache..."
+composer clear-cache
+
 echo "Installing Composer dependencies..."
 composer install --no-interaction --no-dev --optimize-autoloader
 
