@@ -19,7 +19,10 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['http://localhost:3000'],
+    'allowed_origins' => [
+        'https://jarvis-designs.it.com',
+        'https://www.jarvis-designs.it.com',
+    ],
 
     'allowed_origins_patterns' => [],
 
