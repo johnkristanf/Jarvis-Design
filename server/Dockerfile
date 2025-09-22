@@ -4,18 +4,21 @@ FROM php:8.2-fpm
 # Install dependencies
 RUN apt-get update && apt-get install -y \
     curl unzip zip nano \
-    libpng-dev libjpeg-dev libfreetype6-dev libwebp-dev \
+    libpng-dev libjpeg-dev libfreetype6-dev libwebp-dev libgd-dev \
     libonig-dev libxml2-dev libzip-dev libpq-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
     && docker-php-ext-install \
         pdo \
+        pdo_mysql \
         pdo_pgsql \
         mbstring \
         zip \
         exif \
         pcntl \
         gd \
-        xml
+        xml \
+    && docker-php-ext-enable gd
+
     
 # Install Composer
 COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer
