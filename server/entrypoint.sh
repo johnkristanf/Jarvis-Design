@@ -7,7 +7,6 @@ echo "🚀 Starting Laravel Deployment Tasks..."
 echo "Composer Version:"
 composer --version
 
-
 echo "Clearing Composer cache..."
 composer clear-cache
 

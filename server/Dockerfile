@@ -26,12 +26,6 @@ COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer
 # Set working directory
 WORKDIR /var/www
 
-# Copy composer files first
-COPY composer.json composer.lock ./
-
-# Install dependencies (this will verify extensions work)
-RUN composer install --no-dev --no-scripts --no-autoloader
-
 # Copy the rest of the application
 COPY . .
 
