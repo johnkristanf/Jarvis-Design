@@ -27,6 +27,7 @@ COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer
 WORKDIR /var/www
 
 # Copy the rest of the application
+COPY php-fpm.conf /usr/local/etc/php-fpm.d/www.conf
 COPY . .
 
 # Set permissions
