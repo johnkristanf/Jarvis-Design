@@ -1,12 +1,9 @@
 name: Jarvis Design Deployment
 
 on:
-  workflow_run:
-    workflows: ["Jarvis_Design_Image_Build"]
-    types:
-      - completed
-    branches:
-      - production
+    push:
+      branches:
+        - production
 
 env:
   EC2_SERVER_DIR: /home/${{ secrets.EC2_USER }}/server
@@ -18,13 +15,30 @@ env:
   DOCKER_REPO_LIST: /etc/apt/sources.list.d/docker.list
 
 jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker Image
+        run: docker build -t johnkristan/jarvis-designs:latest ./server  -f ./server/Dockerfile
+
+      - name: 🔐 Login to Docker Hub
+        run: echo "${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
+
+      - name: Push Docker Image to Docker Hub
+        run: docker push johnkristan/jarvis-designs:latest
+
   production:
     runs-on: ubuntu-latest
 
     # Only run when the build workflow succeeded
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
-
       - name: Checkout repository
         uses: actions/checkout@v3
 
@@ -78,7 +92,7 @@ jobs:
           MAIL_FROM_ADDRESS=${{ secrets.MAIL_FROM_ADDRESS }}
 
           EOF
-  
+
       - name: Make Server Directory on EC2
         uses: appleboy/ssh-action@v1.0.2
         with:
@@ -189,7 +203,6 @@ jobs:
 
             # (Optional) Check renewal schedule
             sudo systemctl list-timers | grep certbot || true
-
 
       - name: 🚀 Deploy on EC2 via SSH
         uses: appleboy/ssh-action@v1.0.2

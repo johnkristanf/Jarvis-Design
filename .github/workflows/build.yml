@@ -2,7 +2,7 @@ name: Jarvis_Design_Image_Build
 on:
   push:
     branches:
-      - production
+      - main
 
 jobs:
   build:
