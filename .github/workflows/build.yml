@@ -1,5 +1,4 @@
-name: Jarvis Designs Image Build
-
+name: Jarvis_Design_Image_Build
 on:
   push:
     branches:

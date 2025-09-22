@@ -2,7 +2,7 @@ name: Jarvis Design Deployment
 
 on:
   workflow_run:
-    workflows: ["Jarvis Designs Image Build"]
+    workflows: ["Jarvis_Design_Image_Build"]
     types:
       - completed
     branches:
@@ -20,6 +20,9 @@ env:
 jobs:
   production:
     runs-on: ubuntu-latest
+
+    # Only run when the build workflow succeeded
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
 
       - name: Checkout repository
