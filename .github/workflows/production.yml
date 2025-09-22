@@ -173,7 +173,7 @@ jobs:
               --agree-tos \
               --redirect \
               -m ${{ secrets.CERTBOT_EMAIL }} \
-              -d ${{ secrets.CERTBOT_DOMAIN }} -d ${{ secrets.CERTBOT_SUB_DOMAIN }}
+              -d ${{ secrets.API_DOMAIN }}
 
             # Enable auto-renewal timer
             sudo systemctl enable snap.certbot.renew.service
