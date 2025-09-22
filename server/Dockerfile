@@ -29,9 +29,6 @@ WORKDIR /var/www
 # Copy the rest of the application
 COPY . .
 
-# Complete the composer setup
-RUN composer dump-autoload --optimize
-
 # Set permissions
 RUN chown -R www-data:www-data storage bootstrap/cache
 RUN chmod -R 775 storage bootstrap/cache 
