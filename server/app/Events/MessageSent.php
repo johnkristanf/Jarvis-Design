@@ -22,7 +22,6 @@ class MessageSent implements ShouldBroadcastNow
 
     public function __construct(Message $message)
     {
-        Log::info("message event: ", [$message]);
         $this->message = $message;
     }
 

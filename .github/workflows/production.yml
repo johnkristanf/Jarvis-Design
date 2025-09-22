@@ -44,7 +44,7 @@ jobs:
           LOG_LEVEL=error
 
           SANCTUM_STATEFUL_DOMAINS=jarvis-designs.it.com,www.jarvis-designs.it.com
-          SESSION_DOMAIN=${{ secrets.SESSION_DOMAIN }}
+          SESSION_DOMAIN=.jarvis-designs.it.com
 
           SESSION_DRIVER=database
           SESSION_SAME_SITE=None
