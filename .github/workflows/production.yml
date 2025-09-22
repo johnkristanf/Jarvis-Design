@@ -92,7 +92,7 @@ jobs:
           # List of files to upload
           FILES=(
               "server/docker-compose.yml"
-              "server/nginx/default.conf"
+              "server/default.conf"
               ".env"
           )
 
@@ -100,9 +100,6 @@ jobs:
           for file in "${FILES[@]}"; do
             # Strip "server/" prefix if it exists
             target_file="${file#server/}"
-
-            # Strip "nginx/" too if it exists
-            target_file="${target_file#nginx/}"
 
             # Upload file to EC2 inside EC2_SERVER_DIR
             scp -i temp_ssh_key -o StrictHostKeyChecking=no "$file" "${{ env.EC2_SSH_TARGET }}:${{ env.EC2_SERVER_DIR }}/$target_file"
@@ -171,7 +168,7 @@ jobs:
               sudo ln -s /snap/bin/certbot /usr/bin/certbot
             fi
 
-            sudo certbot --nginx \
+            sudo certbot certonly --standalone  \
               --non-interactive \
               --agree-tos \
               --redirect \
@@ -185,6 +182,7 @@ jobs:
 
             # (Optional) Check renewal schedule
             sudo systemctl list-timers | grep certbot || true
+
 
       - name: 🚀 Deploy on EC2 via SSH
         uses: appleboy/ssh-action@v1.0.2

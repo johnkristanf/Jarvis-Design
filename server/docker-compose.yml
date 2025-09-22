@@ -18,9 +18,9 @@ services:
             - "80:80"
             - "443:443"
         volumes:
-            - /etc/letsencrypt/live/expenseproapi.notenexus.it.com:/etc/letsencrypt/live/expenseproapi.notenexus.it.com:ro
-            - /etc/letsencrypt/archive/expenseproapi.notenexus.it.com:/etc/letsencrypt/archive/expenseproapi.notenexus.it.com:ro
-            - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+            - /etc/letsencrypt/live/api.jarvis-designs.it.com:/etc/letsencrypt/live/api.jarvis-designs.it.com:ro
+            - /etc/letsencrypt/archive/api.jarvis-designs.it.com:/etc/letsencrypt/archive/api.jarvis-designs.it.com:ro
+            - ./default.conf:/etc/nginx/conf.d/default.conf:ro
         networks:
             - app-network
 
