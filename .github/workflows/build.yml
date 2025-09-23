@@ -1,6 +1,6 @@
 name: Jarvis_Design_Image_Build
 on:
-  push:
+  pull_request:
     branches:
       - main
 
