@@ -18,20 +18,25 @@ class AdminSeeder extends Seeder
             $adminRoleID = Roles::where('name', 'admin')->first()->id;
             $userRoleID = Roles::where('name', 'user')->first()->id;
 
-            User::firstOrCreate([
-            'name' => 'Administrator',
-            'username' => 'admin@admin',
-            'email' => 'admin@gmail.com',
-            'password' => Hash::make('admin123'),
-            'role_id' => $adminRoleID,
-        ]);
+            // Check by email to prevent duplicates
+            User::firstOrCreate(
+                ['email' => 'admin@gmail.com'], // Search criteria
+                [
+                    'name' => 'Administrator',
+                    'username' => 'admin@admin',
+                    'password' => Hash::make('admin123'),
+                    'role_id' => $adminRoleID,
+                ]
+            );
 
-        User::firstOrCreate([
-            'name' => 'John Kristan Torremocha',
-            'username' => 'jake',
-            'email' => 'johnkristan01@gmail.com',
-            'password' => Hash::make('jkgwapo123'),
-            'role_id' => $userRoleID,
-        ]);
+            User::firstOrCreate(
+                ['email' => 'johnkristan01@gmail.com'], // Search criteria
+                [
+                    'name' => 'John Kristan Torremocha',
+                    'username' => 'jake',
+                    'password' => Hash::make('jkgwapo123'),
+                    'role_id' => $userRoleID,
+                ]
+            );
     }
 }
