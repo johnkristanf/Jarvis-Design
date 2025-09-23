@@ -2,6 +2,12 @@
 import Echo from 'laravel-echo'
 import Pusher from 'pusher-js'
 
+declare global {
+    interface Window {
+        Pusher: typeof Pusher
+    }
+}
+
 window.Pusher = Pusher
 
 const echo = new Echo({
@@ -16,9 +22,7 @@ const echo = new Echo({
     //     enabledTransports: ['ws', 'wss'],
     //     cluster: import.meta.env.VITE_REVERB_APP_CLUSTER || 'mt1',
     // }),
-
 })
-
 
 // Test connection events
 echo.connector.pusher.connection.bind('connected', () => {
