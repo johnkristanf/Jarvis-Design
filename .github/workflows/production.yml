@@ -70,10 +70,19 @@ jobs:
           SESSION_SECURE_COOKIE=true
 
 
+          BROADCAST_CONNECTION=pusher
+          PUSHER_APP_ID="2054956"
+          PUSHER_APP_KEY="984a5acea79fffc12520"
+          PUSHER_APP_SECRET="1a4c55fed614e0fb4076"
+          PUSHER_APP_CLUSTER="ap1"
+
+
+
           AWS_ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID }}
           AWS_DEFAULT_REGION="ap-southeast-1"
           AWS_BUCKET="jarvis-designs"
 
+          QUEUE_CONNECTION=sqs
           SQS_PREFIX=https://sqs.ap-southeast-1.amazonaws.com/${{ secrets.AWS_ACCOUNT_ID }}
           SQS_QUEUE=JarvisOrderQueue
 

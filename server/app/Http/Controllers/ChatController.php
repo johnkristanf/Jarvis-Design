@@ -27,8 +27,6 @@ class ChatController extends Controller
             'attachment' => 'nullable|file|max:2048',
         ]);
 
-        Log::info("validated chat: ", [$validated]);
-
         $conversation = $this->chat->findConversationByUserID(
             userID: $validated['user_id'],
             eagerLoad: false
@@ -73,7 +71,6 @@ class ChatController extends Controller
             ]);
         }
 
-        Log::info("conversation: ", [$conversation]);
         $this->chat->send($message);
 
         return response()->json([
