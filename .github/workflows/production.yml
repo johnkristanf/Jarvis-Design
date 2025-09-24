@@ -84,7 +84,7 @@ jobs:
 
           QUEUE_CONNECTION=sqs
           SQS_PREFIX=https://sqs.ap-southeast-1.amazonaws.com/${{ secrets.AWS_ACCOUNT_ID }}
-          SQS_QUEUE=jarvis-designs-order
+          SQS_QUEUE=jarvis-designs-order.fifo
 
 
           MAIL_MAILER=smtp
