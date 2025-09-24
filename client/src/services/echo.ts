@@ -15,13 +15,6 @@ const echo = new Echo({
     key: import.meta.env.VITE_PUSHER_APP_KEY,
     cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
     forceTLS: true,
-    // client: new Pusher(import.meta.env.VITE_PUSHER_APP_KEY, {
-    //     wsHost: import.meta.env.VITE_REVERB_HOST ,
-    //     wsPort: import.meta.env.VITE_REVERB_PORT ,
-    //     forceTLS: true,
-    //     enabledTransports: ['ws', 'wss'],
-    //     cluster: import.meta.env.VITE_REVERB_APP_CLUSTER || 'mt1',
-    // }),
 })
 
 // Test connection events
