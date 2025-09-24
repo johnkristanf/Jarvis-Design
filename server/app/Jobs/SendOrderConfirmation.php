@@ -29,8 +29,6 @@ class SendOrderConfirmation implements ShouldQueue
      */
     public function handle(): void
     {
-        Log::info("Orders: ", [$this->orders]);
         Mail::to($this->orders->user->email)->send(new OrderConfirmationEmail(orders: $this->orders));
-
     }
 }
