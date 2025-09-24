@@ -416,10 +416,7 @@ class PaymentService
     public function sendOrderConfirmationEmail(Orders $orders)
     {
         $orders->load(['user']);
-        $job = new SendOrderConfirmation($orders);
-        $job->messageGroupId = 'order-emails-' . $orders->order_number;
-
-        dispatch($job)->afterCommit();
+        SendOrderConfirmation::dispatch($orders)->afterCommit();
     }
 
 

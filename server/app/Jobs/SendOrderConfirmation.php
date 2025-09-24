@@ -16,12 +16,14 @@ class SendOrderConfirmation implements ShouldQueue
 {
     use InteractsWithQueue, Queueable, SerializesModels;
 
+    public $messageGroupId;
+
     /**
      * Create a new job instance.
      */
     public function __construct(public Orders $orders)
     {
-        //
+        $this->messageGroupId = 'order-emails-' . $this->orders->order_number;
     }
 
     /**
