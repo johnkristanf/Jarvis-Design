@@ -392,7 +392,7 @@ class PaymentController extends Controller
             $this->paymentService->notifyUser($order->order_number, Auth::user()->id);
 
             // Email User Order
-            // $this->paymentService->sendOrderConfirmationEmail($order);
+            $this->paymentService->sendOrderConfirmationEmail($order);
         });
 
         return response()->json(['message' => 'Order placed successfully', 'order_id' => $order->id]);
