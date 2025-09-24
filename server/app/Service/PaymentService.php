@@ -416,7 +416,7 @@ class PaymentService
     public function sendOrderConfirmationEmail(Orders $orders)
     {
         $orders->load(['user']);
-        SendOrderConfirmation::dispatch($orders)->onGroup("order-emails-{$orders->order_number}");
+        SendOrderConfirmation::dispatch($orders)->afterCommit();
     }
 
 
