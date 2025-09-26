@@ -7,7 +7,7 @@ on:
 
 env:
   EC2_SERVER_DIR: /home/${{ secrets.EC2_USER }}/server
-  EC2_SSH_TARGET: ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}
+  EC2_SSH_ADDRESS: ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}
 
   DOCKER_GPG_URL: https://download.docker.com/linux/ubuntu/gpg
   DOCKER_GPG_PATH: /etc/apt/keyrings/docker.gpg
@@ -41,68 +41,26 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Create .env File for Docker Compose Environment
-        run: |
-          cat <<'EOF' > .env
-          APP_NAME="Jarvis Designs"
-          APP_KEY=${{ secrets.APP_KEY }}
-          APP_URL=https://api.jarvis-designs.it.com
+      - name: Create Environment Variable for EC2
+        uses: ./.github/actions/config-env
+        with:
+          app_key: ${{ secrets.APP_KEY }}
+          db_connection: ${{ secrets.DB_CONNECTION }}
+          db_database: ${{ secrets.DB_DATABASE }}
+          db_host: ${{ secrets.DB_HOST }}
+          db_password: ${{ secrets.DB_PASSWORD }}
+          db_port: ${{ secrets.DB_PORT }}
+          db_username: ${{ secrets.DB_USERNAME }}
+          pusher_app_id: ${{ secrets.PUSHER_APP_ID }}
+          pusher_app_key: ${{ secrets.PUSHER_APP_KEY }}
+          pusher_app_secret: ${{ secrets.PUSHER_APP_SECRET }}
+          aws_account_id: ${{ secrets.AWS_ACCOUNT_ID }}
+          mail_username: ${{ secrets.MAIL_USERNAME }}
+          mail_password: ${{ secrets.MAIL_PASSWORD }}
+          mail_from_address: ${{ secrets.MAIL_FROM_ADDRESS }}
+          sentry_laravel_dsn: ${{ secrets.SENTRY_LARAVEL_DSN }}
+          sentry_traces_sample_rate: ${{ secrets.SENTRY_TRACES_SAMPLE_RATE }}
 
-          APP_TIMEZONE="Asia/Manila"
-          APP_ENV=production
-          APP_DEBUG=false
-
-          DB_CONNECTION=${{ secrets.DB_CONNECTION }}
-          DB_DATABASE=${{ secrets.DB_DATABASE }}
-          DB_HOST=${{ secrets.DB_HOST }}
-          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-          DB_PORT=${{ secrets.DB_PORT }}
-          DB_USERNAME=${{ secrets.DB_USERNAME }}
-
-          LOG_CHANNEL=stack
-          LOG_LEVEL=error
-
-          SANCTUM_STATEFUL_DOMAINS=jarvis-designs.it.com,www.jarvis-designs.it.com
-          SESSION_DOMAIN=.jarvis-designs.it.com
-
-          SESSION_DRIVER=database
-          SESSION_SAME_SITE=None
-          SESSION_SECURE_COOKIE=true
-
-          
-          BROADCAST_CONNECTION=pusher
-          PUSHER_APP_ID=${{ secrets.PUSHER_APP_ID }}
-          PUSHER_APP_KEY=${{ secrets.PUSHER_APP_KEY }}
-          PUSHER_APP_SECRET=${{ secrets.PUSHER_APP_SECRET }}
-          PUSHER_APP_CLUSTER="ap1"
-
-
-
-          AWS_ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID }}
-          AWS_DEFAULT_REGION="ap-southeast-1"
-          AWS_BUCKET="jarvis-designs"
-
-          QUEUE_CONNECTION=sqs
-          SQS_PREFIX=https://sqs.ap-southeast-1.amazonaws.com/${{ secrets.AWS_ACCOUNT_ID }}
-          SQS_QUEUE="jarvis-designs-order"
-
-
-          MAIL_MAILER=smtp
-          MAIL_HOST=smtp.gmail.com
-          MAIL_PORT=587
-
-          MAIL_ENCRYPTION=tls
-          MAIL_FROM_NAME="${APP_NAME}"
-          EMAIL_VERIFICATION_URL="${APP_URL}/email/verified"
-
-          MAIL_USERNAME=${{ secrets.MAIL_USERNAME }}
-          MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}
-          MAIL_FROM_ADDRESS=${{ secrets.MAIL_FROM_ADDRESS }}
-
-          SENTRY_LARAVEL_DSN=${{ secrets.SENTRY_LARAVEL_DSN }}
-          SENTRY_TRACES_SAMPLE_RATE=${{ secrets.SENTRY_TRACES_SAMPLE_RATE }}
-
-          EOF
 
       - name: Make Server Directory on EC2
         uses: appleboy/ssh-action@v1.0.2
@@ -113,33 +71,15 @@ jobs:
           script: |
             mkdir -p ${{ env.EC2_SERVER_DIR }}
 
+
       - name: Upload files to EC2 using native SCP
-        run: |
-          # Create temporary SSH key file
-          echo "${{ secrets.EC2_KEY }}" > temp_ssh_key
-          chmod 600 temp_ssh_key
-          echo "🔑 Key file created."
-
-          # List of files to upload
-          FILES=(
-              "server/docker-compose.yml"
-              "server/default.conf"
-              ".env"
-          )
-
-          # Upload all files in a loop
-          for file in "${FILES[@]}"; do
-
-            # Strip "server/" prefix if it exists
-            target_file="${file#server/}"
-
-            # Upload file to EC2 inside EC2_SERVER_DIR
-            scp -i temp_ssh_key -o StrictHostKeyChecking=no "$file" "${{ env.EC2_SSH_TARGET }}:${{ env.EC2_SERVER_DIR }}/$target_file"
-          done
-
-          # Cleanup 
-          rm -rf temp_ssh_key
-
+        uses: ./.github/actions/upload-config-files
+        with:
+          ec2_secret_key: ${{ secrets.EC2_KEY }}
+          ec2_ssh_address: ${{ env.EC2_SSH_ADDRESS }}
+          ec2_server_directory: ${{ env.EC2_SERVER_DIR }}
+          files_to_upload: 'server/docker-compose.yml server/default.conf .env'
+         
       - name: Install Docker and Docker Compose inside EC2
         uses: appleboy/ssh-action@v1.0.2
         with:
@@ -214,6 +154,7 @@ jobs:
 
             # (Optional) Check renewal schedule
             sudo systemctl list-timers | grep certbot || true
+
 
       - name: 🚀 Deploy on EC2 via SSH
         uses: appleboy/ssh-action@v1.0.2

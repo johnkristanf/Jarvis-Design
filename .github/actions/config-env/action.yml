@@ -1,0 +1,113 @@
+name: Configure Environment Variables
+description: Load Environment Variables for EC2
+
+inputs:
+  app_key:
+    description: "Laravel application key"
+    required: true
+  db_connection:
+    description: "Database connection driver (e.g., mysql, pgsql)"
+    required: true
+  db_database:
+    description: "Database name"
+    required: true
+  db_host:
+    description: "Database host endpoint"
+    required: true
+  db_password:
+    description: "Database password"
+    required: true
+  db_port:
+    description: "Database port (e.g., 3306 for MySQL, 5432 for PostgreSQL)"
+    required: true
+  db_username:
+    description: "Database username"
+    required: true
+  pusher_app_id:
+    description: "Pusher application ID for broadcasting"
+    required: true
+  pusher_app_key:
+    description: "Pusher application key"
+    required: true
+  pusher_app_secret:
+    description: "Pusher application secret"
+    required: true
+  aws_account_id:
+    description: "AWS Account ID where the resources are provisioned"
+    required: true
+  mail_username:
+    description: "Mail server username (SMTP authentication)"
+    required: true
+  mail_password:
+    description: "Mail server password (SMTP authentication)"
+    required: true
+  mail_from_address:
+    description: "Email address used as the 'from' sender"
+    required: true
+  sentry_laravel_dsn:
+    description: "Sentry DSN for Laravel error monitoring"
+    required: true
+  sentry_traces_sample_rate:
+    description: "Sentry traces sample rate for performance monitoring"
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Write .env file
+      shell: bash
+      run: |
+        cat <<'EOF' > .env
+          APP_NAME="Jarvis Designs"
+          APP_KEY=${{ inputs.app_key }}
+          APP_URL=https://api.jarvis-designs.it.com
+
+          APP_TIMEZONE="Asia/Manila"
+          APP_ENV=production
+          APP_DEBUG=false
+
+          DB_CONNECTION=${{ inputs.db_connection }}
+          DB_DATABASE=${{ inputs.db_database }}
+          DB_HOST=${{ inputs.db_host }}
+          DB_PASSWORD=${{ inputs.db_password }}
+          DB_PORT=${{ inputs.db_port }}
+          DB_USERNAME=${{ inputs.db_username }}
+
+          LOG_CHANNEL=stack
+          LOG_LEVEL=error
+
+          SANCTUM_STATEFUL_DOMAINS=jarvis-designs.it.com,www.jarvis-designs.it.com
+          SESSION_DOMAIN=.jarvis-designs.it.com
+
+          SESSION_DRIVER=database
+          SESSION_SAME_SITE=None
+          SESSION_SECURE_COOKIE=true
+
+          BROADCAST_CONNECTION=pusher
+          PUSHER_APP_ID=${{ inputs.pusher_app_id }}
+          PUSHER_APP_KEY=${{ inputs.pusher_app_key }}
+          PUSHER_APP_SECRET=${{ inputs.pusher_app_secret }}
+          PUSHER_APP_CLUSTER="ap1"
+
+          AWS_ACCOUNT_ID=${{ inputs.aws_account_id }}
+          AWS_DEFAULT_REGION="ap-southeast-1"
+          AWS_BUCKET="jarvis-designs"
+
+          QUEUE_CONNECTION=sqs
+          SQS_PREFIX=https://sqs.ap-southeast-1.amazonaws.com/${{ inputs.aws_account_id }}
+          SQS_QUEUE="jarvis-designs-order"
+
+          MAIL_MAILER=smtp
+          MAIL_HOST=smtp.gmail.com
+          MAIL_PORT=587
+          MAIL_ENCRYPTION=tls
+          MAIL_FROM_NAME="${APP_NAME}"
+          EMAIL_VERIFICATION_URL="${APP_URL}/email/verified"
+
+          MAIL_USERNAME=${{ inputs.mail_username }}
+          MAIL_PASSWORD=${{ inputs.mail_password }}
+          MAIL_FROM_ADDRESS=${{ inputs.mail_from_address }}
+
+          SENTRY_LARAVEL_DSN=${{ inputs.sentry_laravel_dsn }}
+          SENTRY_TRACES_SAMPLE_RATE=${{ inputs.sentry_traces_sample_rate }}
+        EOF
