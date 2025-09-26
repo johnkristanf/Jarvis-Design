@@ -15,11 +15,13 @@
     import { useFetchAuthenticatedUser } from '@/composables/useFetchAuthenticatedUser'
     import { computed, onMounted, ref } from 'vue'
     import { Drawer } from 'primevue'
-    import { OrderStatus } from '@/types/order'
     import { useMutation, useQuery } from '@tanstack/vue-query'
     import { getAllOrderNotifications } from '@/api/get/orders'
     import { formateNotificationTimeAgo } from '@/helper/designs'
     import { updateNotificationAsRead, updateNotificationAsReadAll } from '@/api/put/notifications'
+    import StatusBadge from './orders/StatusBadge.vue'
+    import OrderMessages from './orders/OrderMessages.vue'
+    import OrderDate from './orders/OrderDate.vue'
 
     const route = useRoute()
     const router = useRouter()
@@ -31,13 +33,11 @@
         { name: 'Home', to: '/home' },
         { name: 'Designs', to: '/designs' },
         { name: 'Orders', to: '/orders' },
-        // { name: 'Message', to: '/message' },
         { name: 'FAQ', to: '/faq' },
     ]
 
     const userNavigation = [
         { name: 'Your Profile', onclick: () => router.push('/profile') },
-        { name: 'Settings', href: '#' },
         {
             name: 'Sign Out',
             onclick: async () => {
@@ -74,7 +74,6 @@
     // MAP ALL UNREAD NOTIFICATION
     const unreadNotificationsCount = computed(() => {
         if (!notificationsQuery.data.value) return 0
-
         return notificationsQuery.data.value.filter((notification) => !notification.is_read).length
     })
 
@@ -101,7 +100,7 @@
     }
 
     onMounted(() => {
-        console.log('notificationsQuery.data.value: ', notificationsQuery.data.value)
+        console.log('notificationsQuery.data.value 123: ', notificationsQuery.data.value)
     })
 </script>
 
@@ -111,10 +110,7 @@
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="flex h-16 items-center">
                     <div class="flex items-center justify-between w-full">
-                        <a
-                            href="/"
-                            class="text-white text-3xl hover:cursor-pointer hover:opacity-75"
-                        >
+                        <a href="/" class="text-white text-3xl hover:cursor-pointer hover:opacity-75">
                             Jarvis
                             <span class="text-yellow-600">Designs</span>
                         </a>
@@ -164,9 +160,7 @@
                             <div class="ml-6 flex items-baseline space-x-4">
                                 <router-link
                                     v-for="item in navigation.filter(
-                                        (nav) =>
-                                            !['Orders', 'Message'].includes(nav.name) ||
-                                            authStore.currentUser,
+                                        (nav) => !['Orders', 'Message'].includes(nav.name) || authStore.currentUser,
                                     )"
                                     :key="item.name"
                                     :to="item.to"
@@ -231,52 +225,37 @@
                                                 v-bind:key="notif.id"
                                                 @click="handleReadNotification(notif.id)"
                                                 :class="[
-                                                    'flex items-center gap-3 p-3 ',
+                                                    'flex items-center gap-3 p-6 ',
                                                     !notif.is_read
                                                         ? 'bg-gray-200 hover:cursor-pointer hover:bg-gray-300'
                                                         : 'bg-white',
                                                 ]"
                                             >
-                                                <img
-                                                    class="w-10 h-10 rounded-full"
-                                                    src="https://flowbite.com/docs/images/people/profile-picture-5.jpg"
-                                                    alt="user photo"
-                                                />
-
                                                 <div class="flex flex-col text-sm gap-1">
-                                                    <h1>Order ID: {{ notif.order_id }}</h1>
+                                                    <OrderMessages
+                                                        :status="notif.orders.status"
+                                                        :product_name="notif.orders.product?.name"
+                                                    />
 
-                                                    <span>
-                                                        Status:
-
-                                                        <span
-                                                            :class="{
-                                                                'text-yellow-800 ':
-                                                                    notif.status ===
-                                                                    OrderStatus.PENDING,
-                                                                'text-red-800 ':
-                                                                    notif.status ===
-                                                                    OrderStatus.CANCELLED,
-
-                                                                'text-blue-600 ':
-                                                                    notif.status ===
-                                                                    OrderStatus.FOR_DELIVERY,
-
-                                                                'text-green-800 ':
-                                                                    notif.status ===
-                                                                    OrderStatus.COMPLETED,
-                                                            }"
-                                                        >
-                                                            {{ notif.status.toUpperCase() }}
+                                                    <span class="mt-5">
+                                                        Order Number:
+                                                        <span>
+                                                            {{ notif.orders.order_number }}
                                                         </span>
                                                     </span>
 
-                                                    <p class="text-[10px]">
-                                                        {{
-                                                            formateNotificationTimeAgo(
-                                                                notif.created_at,
-                                                            )
-                                                        }}
+                                                    <span>
+                                                        Status:
+                                                        <StatusBadge :status="notif.status" />
+                                                    </span>
+
+                                                    <OrderDate
+                                                        :delivery_date="notif.orders.delivery_date"
+                                                        :status="notif.status"
+                                                    />
+
+                                                    <p class="text-[10px] mt-1">
+                                                        {{ formateNotificationTimeAgo(notif.created_at) }}
                                                     </p>
                                                 </div>
                                             </div>
@@ -298,11 +277,7 @@
                                         v-if="unreadNotificationsCount > 0"
                                         class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full min-w-5 h-5 flex items-center justify-center px-1"
                                     >
-                                        {{
-                                            unreadNotificationsCount > 99
-                                                ? '99+'
-                                                : unreadNotificationsCount
-                                        }}
+                                        {{ unreadNotificationsCount > 99 ? '99+' : unreadNotificationsCount }}
                                     </span>
                                 </button>
 
@@ -312,10 +287,7 @@
                                             class="relative flex items-center rounded-full bg-gray-800 text-sm focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800 focus:outline-hidden"
                                         >
                                             <span class="sr-only">Open user menu</span>
-                                            <UserIcon
-                                                class="size-8 text-white"
-                                                aria-hidden="true"
-                                            />
+                                            <UserIcon class="size-8 text-white" aria-hidden="true" />
                                         </MenuButton>
                                     </div>
 
@@ -330,9 +302,7 @@
                                         <MenuItems
                                             class="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black/5 focus:outline-hidden"
                                         >
-                                            <div
-                                                class="flex flex-col font-medium mb-3 border-b border-gray-300 p-3"
-                                            >
+                                            <div class="flex flex-col font-medium mb-3 border-b border-gray-300 p-3">
                                                 <h1 class="truncate">
                                                     {{ authStore.currentUser.name }}
                                                 </h1>
@@ -347,7 +317,6 @@
                                                 v-slot="{ active }"
                                             >
                                                 <a
-                                                    :href="item.href"
                                                     @click="
                                                         () => {
                                                             item.onclick?.()
@@ -388,6 +357,7 @@
                             </div>
                             <button
                                 type="button"
+                                @click="visibleRight = true"
                                 class="relative ml-auto shrink-0 rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800 focus:outline-hidden"
                             >
                                 <span class="absolute -inset-1.5" />
@@ -399,11 +369,7 @@
                                     v-if="unreadNotificationsCount > 0"
                                     class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full min-w-5 h-5 flex items-center justify-center px-1"
                                 >
-                                    {{
-                                        unreadNotificationsCount > 99
-                                            ? '99+'
-                                            : unreadNotificationsCount
-                                    }}
+                                    {{ unreadNotificationsCount > 99 ? '99+' : unreadNotificationsCount }}
                                 </span>
                             </button>
                         </div>
@@ -413,7 +379,6 @@
                                 v-for="item in userNavigation"
                                 :key="item.name"
                                 as="a"
-                                :href="item.href"
                                 @click="
                                     () => {
                                         item.onclick?.()
@@ -464,9 +429,7 @@
                         </router-link>
                     </div>
 
-                    <div v-else-if="isLoading" class="px-2 py-2 text-gray-400">
-                        Loading authentication links...
-                    </div>
+                    <div v-else-if="isLoading" class="px-2 py-2 text-gray-400">Loading authentication links...</div>
                 </div>
             </DisclosurePanel>
         </Disclosure>

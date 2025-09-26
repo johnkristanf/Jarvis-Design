@@ -51,12 +51,11 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // PROTECTED ORDERS ROUTE
     Route::get('/get/orders', [PaymentController::class, 'getAllOrders']);
-    Route::get('/get/order/status', [PaymentController::class, 'getAllOrderStatus']);
     Route::put('/update/order/status', [PaymentController::class, 'updateOrderStatus']);
     Route::post('/set/order/date', [PaymentController::class, 'setOrderDate']);
 
     Route::get('/get/order/logs', [PaymentController::class, 'getOrderLogs']);
-    Route::get('/get/order/notifications', [PaymentController::class, 'getAllOrderNotifications']);
+    Route::get('/get/order/notifications', [PaymentController::class, 'orderNotificationsPerUser']);
 
     // PROTECTED NOTIFICATION ROUTE
     Route::put('/notification/read', [PaymentController::class, 'updateNotificationAsRead']);
@@ -71,7 +70,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::delete('/delete/material/{id}', [MaterialsController::class, 'destroy']);
 
     // PROTECTED ORDER ROUTE
-    // Route::post('/place/order', [PaymentController::class, 'OLDplaceOrder']);
     Route::post('/place/order', [PaymentController::class, 'placeOrder']);
 
     // PROTECTED MESSAGE ROUTE
@@ -99,6 +97,3 @@ Route::middleware(['auth:sanctum'])->group(function () {
 // TEST AUTOMATED DEDUCTION UPON ORDER
 Route::get('/test/order', [PaymentController::class, 'testOrder']);
 
-// PAYMONGO PAYMENT ROUTE
-Route::get('/trigger-curl', [PaymentController::class, 'triggerCreateTestPaymongoResource']);
-Route::post('/paymongo/webhook', [PaymentController::class, 'handleWebhook']);
