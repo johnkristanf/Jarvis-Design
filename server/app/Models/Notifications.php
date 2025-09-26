@@ -7,4 +7,15 @@ use Illuminate\Database\Eloquent\Model;
 class Notifications extends Model
 {
     protected $guarded = ['id'];
+
+
+    public function orders()
+    {
+        return $this->belongsTo(Orders::class, 'order_id');
+    }
+
+    public function users()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 }

@@ -2,32 +2,46 @@
     import CustomerChatBox from '@/components/message/CustomerChatBox.vue'
     import OrderDetailsModal from '@/components/orders/OrderDetailsModal.vue'
     import { ChatBubbleLeftRightIcon } from '@heroicons/vue/20/solid'
-    import { ref, watch } from 'vue'
+    import { onMounted, ref, watch } from 'vue'
     import { FwbCard } from 'flowbite-vue'
     import { useQuery } from '@tanstack/vue-query'
     import Loader from '@/components/Loader.vue'
     import type { Orders } from '@/types/order'
     import { apiService } from '@/api/axios'
+    import type { PaginatedResponse } from '@/types/pagination'
+    import { useToast } from 'primevue'
 
     const isOpenChatBox = ref<boolean>(false)
     const isOrderDetailsOpen = ref<boolean>(false)
     const orderDetails = ref<Orders>()
-    const isOrderLoading = ref<boolean>(true)
+    const toast = useToast()
 
-    const orderQuery = useQuery({
+    const {
+        data: orders,
+        isLoading,
+        error,
+    } = useQuery({
         queryKey: ['orders'],
         queryFn: async () => {
-            const respData = await apiService.get<Orders[]>(`/api/get/orders`)
+            const respData = await apiService.get<PaginatedResponse<Orders>>(`/api/get/orders`)
             return respData
         },
         enabled: true,
     })
 
+    onMounted(() => {
+        console.log('orders:', orders)
+    })
+
     watch(
-        () => orderQuery.error,
+        () => error,
         (err) => {
             if (err) {
-                isOrderLoading.value = false
+                toast.add({
+                    severity: 'error',
+                    summary: 'Error loading orders, please check your internet connection and try again',
+                    life: 3000,
+                })
             }
         },
     )
@@ -41,22 +55,15 @@
 <template>
     <div class="card mt-5 p-8">
         <div class="flex items-center justify-between">
-            <h2 class="text-2xl font-bold tracking-tight text-gray-900">
-                Orders & Shipping Details
-            </h2>
+            <h2 class="text-2xl font-bold tracking-tight text-gray-900">Orders & Shipping Details</h2>
 
             <!-- SEARCH INPUT MUST AUTO FETCH ONCHANGE -->
             <div class="flex items-center hover:cursor-pointer hover:opacity-75">
-                <label
-                    for="default-search"
-                    class="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white"
-                >
+                <label for="default-search" class="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">
                     Search
                 </label>
                 <div class="relative">
-                    <div
-                        class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none"
-                    >
+                    <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
                         <svg
                             class="w-4 h-4 text-gray-500 dark:text-gray-400"
                             aria-hidden="true"
@@ -98,14 +105,10 @@
 
         <div
             class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 mt-5 pb-10 gap-5"
-            v-if="
-                !orderQuery.isLoading.value &&
-                orderQuery.data.value &&
-                orderQuery.data.value.length > 0
-            "
+            v-if="!isLoading && orders && orders.data.length > 0"
         >
             <fwb-card
-                v-for="order in orderQuery.data.value"
+                v-for="order in orders.data"
                 :key="order.id"
                 :img-alt="order.name"
                 :img-src="order.temp_url"
@@ -121,7 +124,10 @@
             </fwb-card>
         </div>
 
-        <div v-else class="h-[50vh] flex items-center justify-center">
+        <div
+            v-else-if="!isLoading && orders && orders.data.length === 0"
+            class="h-[50vh] flex items-center justify-center"
+        >
             <h1 class="text-gray-700 text-xl">No Order Found</h1>
         </div>
 
@@ -131,6 +137,6 @@
             :orderDetails="orderDetails"
             @close="isOrderDetailsOpen = false"
         />
-        <Loader v-if="orderQuery.isLoading.value && isOrderLoading" msg="Loading Orders..." />
+        <Loader v-if="isLoading" msg="Loading Orders..." />
     </div>
 </template>

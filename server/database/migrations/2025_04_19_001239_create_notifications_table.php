@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('notifications', function (Blueprint $table) {
             $table->id();
-            $table->string('order_id');
+            $table->foreignId('order_id')->constrained('orders')->onDelete('cascade');
             $table->boolean('is_read')->default(false);
-            $table->foreignId('status_id')->constrained('order_status');
+            $table->string('status');
             $table->foreignId('user_id')->constrained('users');
             $table->timestamps();
         });

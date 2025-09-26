@@ -151,15 +151,7 @@
                                 </p>
                             </div>
                             <ul class="py-1" role="none">
-                                <li>
-                                    <RouterLink
-                                        to="/admin/designs"
-                                        class="w-full text-center block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-black"
-                                        role="menuitem"
-                                    >
-                                        Settings
-                                    </RouterLink>
-                                </li>
+                                
 
                                 <li>
                                     <button

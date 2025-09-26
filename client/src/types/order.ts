@@ -74,6 +74,7 @@ export type Orders = {
     delivery_date: string | null
 
     user?: User
+    product?: Product
     sizes: Size[]
 }
 
@@ -91,6 +92,7 @@ export type Notifications = {
     id: number
     order_id: string
     is_read: boolean
+    orders: Orders
     status: OrderStatus
     created_at: string
 }
