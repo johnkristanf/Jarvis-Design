@@ -22,10 +22,14 @@ class ChatController extends Controller
     public function sendChat(Request $request)
     {
         $validated = $request->validate([
-            'content' => 'required|string',
+            'content' => 'nullable|string',
             'user_id' => 'required|numeric',
             'attachment' => 'nullable|file|max:2048',
         ]);
+
+        Log::info("validated: ", [$validated]);
+
+        
 
         $conversation = $this->chat->findConversationByUserID(
             userID: $validated['user_id'],
@@ -34,9 +38,10 @@ class ChatController extends Controller
 
         $message = null;
         $attachmentURL = null;
+        $content = trim($validated['content'] ?? '') ?: null;
 
         if ($conversation && $conversation->id) {
-
+            Log::info("EXITS");
             if ($request->hasFile('attachment')) {
                 $attachmentURL = $this->uploadToS3(
                     root: 'conversation',
@@ -46,12 +51,13 @@ class ChatController extends Controller
             }
 
             $message = $this->chat->createLoadMessage([
-                'content' => $validated['content'],
+                'content' => $content,
                 'attachment_url' => $attachmentURL,
                 'sender_id' => Auth::id(),
                 'conversation_id' => $conversation->id,
             ]);
         } else {
+            Log::info("NOPE EXITS");
 
             $conversation = $this->chat->createLoadConversation(userID: $validated['user_id']);
 
@@ -64,7 +70,7 @@ class ChatController extends Controller
             }
 
             $message = $this->chat->createLoadMessage([
-                'content' => $validated['content'],
+                'content' => $content,
                 'attachment_url' => $attachmentURL,
                 'sender_id' => Auth::id(),
                 'conversation_id' => $conversation->id, // or handle new conversation

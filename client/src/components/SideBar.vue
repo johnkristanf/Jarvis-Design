@@ -1,11 +1,12 @@
 <script lang="ts" setup>
     import { useFetchAuthenticatedUser } from '@/composables/useFetchAuthenticatedUser'
     import { ref } from 'vue'
-    import { RouterLink } from 'vue-router'
+    import { RouterLink, useRouter } from 'vue-router'
     import { apiService } from '@/api/axios'
     import Loader from './Loader.vue'
 
     const isLoggingOut = ref<boolean>(false)
+    const router = useRouter()
 
     // LOAD THE REAL USER IN THE NAVBAR LATER ON
     const { authStore, isLoading } = useFetchAuthenticatedUser()
@@ -74,12 +75,14 @@
             window.location.href = '/'
         }
     }
+
+    const handleRedirectProfile = () => {
+        router.push('/admin/profile')
+    }
 </script>
 
 <template>
-    <nav
-        class="fixed top-0 z-50 w-full bg-gray-900 border-b border-gray-500 dark:bg-gray-800 dark:border-gray-700"
-    >
+    <nav class="fixed top-0 z-50 w-full bg-gray-900 border-b border-gray-500 dark:bg-gray-800 dark:border-gray-700">
         <div class="px-3 py-3 lg:px-5 lg:pl-3">
             <div class="flex items-center justify-between">
                 <div class="flex items-center justify-start rtl:justify-end">
@@ -126,11 +129,11 @@
                                 data-dropdown-toggle="dropdown-user"
                             >
                                 <span class="sr-only">Open user menu</span>
-                                <img
-                                    class="w-8 h-8 rounded-full"
-                                    src="../assets/img/admin-icon.png"
-                                    alt="Admin Photo"
-                                />
+                                <div v-if="authStore.user?.name" class="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center">
+                                    <span class="text-2xl font-bold text-white">
+                                        {{ authStore.user?.name?.charAt(0)?.toUpperCase() }}
+                                    </span>
+                                </div>
                             </button>
                         </div>
 
@@ -143,19 +146,24 @@
                                 <p class="text-sm text-gray-900 dark:text-black" role="none">
                                     {{ authStore.user?.name }}
                                 </p>
-                                <p
-                                    class="text-sm font-medium text-gray-900 truncate dark:text-gray-300"
-                                    role="none"
-                                >
+                                <p class="text-sm font-medium text-gray-900 truncate dark:text-gray-300" role="none">
                                     {{ authStore.user?.username }}
                                 </p>
                             </div>
                             <ul class="py-1" role="none">
-                                
+                                <li>
+                                    <button
+                                        @click="handleRedirectProfile"
+                                        class="w-full block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-black"
+                                        role="menuitem"
+                                    >
+                                        Profile
+                                    </button>
+                                </li>
 
                                 <li>
                                     <button
-                                        @click="handleSignOut()"
+                                        @click="handleSignOut"
                                         class="w-full block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-black"
                                         role="menuitem"
                                     >

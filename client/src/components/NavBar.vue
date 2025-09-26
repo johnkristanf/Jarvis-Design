@@ -287,7 +287,13 @@
                                             class="relative flex items-center rounded-full bg-gray-800 text-sm focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800 focus:outline-hidden"
                                         >
                                             <span class="sr-only">Open user menu</span>
-                                            <UserIcon class="size-8 text-white" aria-hidden="true" />
+                                            <div
+                                                class="w-9 h-9 bg-gray-800 rounded-full flex items-center justify-center"
+                                            >
+                                                <span class="text-2xl font-bold text-white">
+                                                    {{ authStore.user?.name?.charAt(0)?.toUpperCase() || 'U' }}
+                                                </span>
+                                            </div>
                                         </MenuButton>
                                     </div>
 

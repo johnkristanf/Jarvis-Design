@@ -15,8 +15,8 @@ import AdminMatertialsView from '@/views/admin/AdminMatertialsView.vue'
 import AdminMessageView from '@/views/admin/AdminMessageView.vue'
 import EmailVerificationView from '@/views/users/EmailVerificationView.vue'
 import VerifiedEmail from '@/views/users/VerifiedEmail.vue'
-import Profile from '@/views/users/Profile.vue'
-// import MessageView from '@/views/users/MessageView.vue'
+import AccountProfile from '@/views/users/AccountProfile.vue'
+import AdminAccountProfileView from '@/views/admin/AdminAccountProfileView.vue'
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -78,7 +78,7 @@ const router = createRouter({
 
                 {
                     path: 'profile',
-                    component: Profile,
+                    component: AccountProfile,
                 },
             ],
         },
@@ -112,6 +112,11 @@ const router = createRouter({
                 {
                     path: 'message',
                     component: AdminMessageView,
+                },
+
+                {
+                    path: 'profile',
+                    component: AdminAccountProfileView,
                 },
             ],
         },

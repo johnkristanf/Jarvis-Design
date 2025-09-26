@@ -10,21 +10,6 @@ class Message extends Model
 {
     protected $guarded = ['id'];
 
-    protected $appends = ['attachment_temp_url'];
-
-    public function getAttachmentTempUrlAttribute(): ?string
-    {
-        if (! $this->attachment_url) {
-            return null;
-        }
-
-        // Generate signed URL (valid for 5 minutes by default)
-        return Storage::disk('s3')->temporaryUrl(
-            $this->attachment_url,
-            now()->addMinutes(5)
-        );
-    }
-
     public function conversation(): BelongsTo
     {
         return $this->belongsTo(Conversation::class, 'conversation_id');
@@ -33,5 +18,10 @@ class Message extends Model
     public function sender(): BelongsTo
     {
         return $this->belongsTo(User::class, 'sender_id');
+    }
+
+    public function message_attachments()
+    {
+        return $this->hasMany(MessageAttachment::class, 'message_id');
     }
 }

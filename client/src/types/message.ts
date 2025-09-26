@@ -3,12 +3,17 @@ import type { User } from "./user"
 export interface Message {
   id: number
   content: string
-  attachment_url: string | null
-  attachment_temp_url: string | null
   sender_id: number
+  message_attachments: MessageAttachment[]
   conversation_id: number
   created_at: string
   updated_at: string
+}
+
+interface MessageAttachment {
+  id: number
+  attachment_url: string
+  attachment_temp_url: string
 }
 
 

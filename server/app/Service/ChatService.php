@@ -6,6 +6,7 @@ use App\Events\MessageSent;
 use App\Interfaces\ChatServiceInterface;
 use App\Models\Conversation;
 use App\Models\Message;
+use App\Models\MessageAttachment;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -26,14 +27,7 @@ class ChatService implements ChatServiceInterface
     public function createLoadMessage(array $data): Message
     {
         return DB::transaction(function () use ($data) {
-            // If there is an attachment, we create a separate message first
-            if (!empty($data['attachment_url'])) {
-                Message::create([
-                    'attachment_url'   => $data['attachment_url'],
-                    'sender_id'       => $data['sender_id'],
-                    'conversation_id' => $data['conversation_id'],
-                ]);
-            }
+            Log::info("data here: ", [$data]);
 
             // Main message creation
             $message = Message::create([
@@ -42,9 +36,16 @@ class ChatService implements ChatServiceInterface
                 'conversation_id' => $data['conversation_id'],
             ]);
 
+            // Insert message attachment, if there are any
+            if (isset($data['attachment_url'])) {
+                MessageAttachment::create([
+                    'attachment_url'   => $data['attachment_url'],
+                    'message_id'       => $message->id,
+                ]);
+            }
+
             // Load sender and conversation relationships
             $message->load(['sender', 'conversation']);
-
             return $message;
         });
     }
@@ -64,7 +65,8 @@ class ChatService implements ChatServiceInterface
         if ($eagerLoad) {
             $query->with([
                 'messages' => function ($q) {
-                    $q->orderBy('created_at', 'asc'); // ✅ Use created_at, not updated_at
+                    $q->orderBy('created_at', 'asc')
+                        ->with('message_attachments'); // ✅ Use created_at, not updated_at
                 },
                 'user:id,name,email'
             ]);
@@ -76,7 +78,7 @@ class ChatService implements ChatServiceInterface
     {
         return Conversation::select('id', 'user_id')
             ->with([
-                'messages',
+                'messages.message_attachments',
                 'user' => function ($query) {
                     $query->select('id', 'name', 'email');
                 },

@@ -11,10 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tracking_timelines', function (Blueprint $table) {
+        Schema::create('message_attachments', function (Blueprint $table) {
             $table->id();
-            $table->string('status');
-            $table->foreignId('order_tracking_id')->constrained('order_tracking')->onDelete('cascade');
+            $table->foreignId('message_id')->constrained('messages')->onDelete('cascade');
+            $table->string('attachment_url');
             $table->timestamps();
         });
     }
@@ -24,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('tracking_timelines');
+        Schema::dropIfExists('message_attachments');
     }
 };

@@ -36,8 +36,4 @@ class Orders extends Model
             ->withTimestamps();
     }
 
-    public function order_tracking(): HasMany
-    {
-        return $this->hasMany(OrderTracking::class, 'order_id');
-    }
 }

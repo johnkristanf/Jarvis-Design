@@ -1,10 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { fetchUserData } from '@/api/get/user-data'
 import { useAuthStore } from '@/stores/user'
 import { onMounted, ref } from 'vue'
 
 export const useFetchAuthenticatedUser = () => {
-    const isLoading = ref(true)
-    const authStore = useAuthStore()
+    const isLoading = ref();
+    const authStore = useAuthStore();
 
     const userDataFetch = async () => {
         isLoading.value = true
