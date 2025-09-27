@@ -29,6 +29,12 @@ class Orders extends Model
         return $this->belongsTo(Products::class, 'product_id');
     }
 
+
+    public function order_payments()
+    {
+        return $this->hasMany(OrderPayment::class, 'order_id');
+    }
+
     public function sizes(): BelongsToMany
     {
         return $this->belongsToMany(Sizes::class, 'order_quantity_size', 'order_id', 'size_id')

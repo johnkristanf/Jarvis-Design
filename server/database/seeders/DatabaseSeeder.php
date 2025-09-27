@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             OrderStatusSeeder::class,
             MaterialsCategorySeeder::class,
             DesignCategorySeeder::class,
+            PaymentMethodsSeeder::class
 
             // FOR TESTING USE CASE ONLY:
             // MaterialsSeeder::class,
