@@ -15,7 +15,6 @@ class ChatService implements ChatServiceInterface
 {
     public function send(Message $message)
     {
-
         try {
             broadcast(new MessageSent($message));
         } catch (\Exception $e) {

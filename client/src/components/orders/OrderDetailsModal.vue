@@ -3,6 +3,7 @@
     import { getStatusBadgeClass } from '@/helper/order'
     import { OrderOptions, type Orders } from '@/types/order'
     import { TransitionRoot, TransitionChild, Dialog, DialogPanel, DialogTitle } from '@headlessui/vue'
+    import StatusBadge from './StatusBadge.vue'
 
     defineProps<{
         orderDetails: Orders
@@ -79,9 +80,7 @@
                                             Status
                                         </h3>
                                         <div class="mt-1">
-                                            <span :class="getStatusBadgeClass(orderDetails.status)">
-                                                {{ orderDetails.status.toUpperCase() }}
-                                            </span>
+                                            <StatusBadge :status="orderDetails.status" />
                                         </div>
                                     </div>
                                     <div>
@@ -94,7 +93,11 @@
                                     </div>
                                     <div>
                                         <h3 class="text-sm font-medium text-gray-600 uppercase tracking-wide">
-                                            Delivery Date
+                                            {{
+                                                orderDetails.order_option === OrderOptions.DELIVERY
+                                                    ? 'Delivery Date'
+                                                    : 'Pick-up Date'
+                                            }}
                                         </h3>
                                         <p class="text-sm text-black mt-1">
                                             {{

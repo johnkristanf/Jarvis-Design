@@ -6,6 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class OrderPayment extends Model
 {
+    const IN_REVIEW = 'in_review';
+    const PARTIALLY_PAID = 'partially_paid';
+    const FULLY_PAID = 'fully_paid';
+
     protected $guarded = ['id'];
 
     public function orders()

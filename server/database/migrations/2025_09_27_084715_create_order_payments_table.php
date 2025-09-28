@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('order_payments', function (Blueprint $table) {
             $table->id();
+            $table->string('payment_number')->unique();
             $table->foreignId('payment_method_id')->constrained('payment_methods');
             $table->foreignId('order_id')->constrained('orders');
             $table->decimal('amount_applied', 10, 2)->default(0);

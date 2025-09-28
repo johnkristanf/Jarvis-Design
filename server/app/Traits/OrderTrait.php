@@ -8,4 +8,10 @@ trait OrderTrait
     {
         return 'ORD-'.date('Ymd').'-'.strtoupper(uniqid());
     }
+
+
+    public function generatePaymentNumber(): string
+    {
+        return 'PAY-'.date('Ymd').'-'.strtoupper(uniqid());
+    }
 }

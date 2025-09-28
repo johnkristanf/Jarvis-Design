@@ -8,7 +8,6 @@ use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Log;
 
 class MessageSent implements ShouldBroadcastNow
 {
@@ -18,8 +17,6 @@ class MessageSent implements ShouldBroadcastNow
      * Create a new event instance.
      */
     public $message;
-    public $conversationUserID;
-
     public function __construct(Message $message)
     {
         $this->message = $message;

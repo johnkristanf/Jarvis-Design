@@ -93,7 +93,7 @@
                             </div>
 
                             <p class="text-sm text-center my-5">
-                                <strong>Note:</strong>
+                                <strong class="text-lg">Note:</strong>
                                 <br />
                                 A minimum payment of
                                 <strong>50% of the total amount</strong>

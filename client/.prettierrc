@@ -3,9 +3,9 @@
     "singleQuote": true,
     "htmlWhitespaceSensitivity": "ignore",
     "vueIndentScriptAndStyle": true,
-    "tabWidth": 4,
+    "tabWidth": 3,
     "useTabs": false,
     "bracketSameLine": false,
-    "printWidth": 120
+    "printWidth": 150
   }
   

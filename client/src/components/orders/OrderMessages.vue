@@ -5,7 +5,6 @@
         status: string
         product_name: string | undefined
     }>()
-
 </script>
 <template>
     <span v-if="status === OrderStatus.PENDING">
@@ -14,13 +13,18 @@
         </span>
         is pending and will be reviewed soon.
     </span>
+
+    <span v-else-if="status === OrderStatus.IN_PROGRESS">
+        {{ product_name }} is currently being crafted and prepared. We’ll notify you once it’s ready for delivery or
+        pickup.
+    </span>
+
     <span v-else-if="status === OrderStatus.FOR_DELIVERY">
         {{ product_name }} is now out for delivery. Please prepare to receive it.
     </span>
 
     <span v-else-if="status === OrderStatus.FOR_PICKUP">
-        {{ product_name }} is ready for pick-up. Please visit the store to collect it at your scheduled
-        time.
+        {{ product_name }} is ready for pick-up. Please visit the store to collect it at your scheduled time.
     </span>
 
     <span v-else-if="status === OrderStatus.COMPLETED">

@@ -5,6 +5,7 @@ type OrderStatus = 'in_progress' | 'pick_up' | 'delivery' | 'completed'
 export const OrderStatus = {
     CANCELLED: 'cancelled',
     PENDING: 'pending',
+    IN_PROGRESS: 'in_progress',
     FOR_DELIVERY: 'for_delivery',
     FOR_PICKUP: 'for_pickup',
     COMPLETED: 'completed',
@@ -125,8 +126,6 @@ export type PlaceOrderData = {
     color_id: number
     size_id: number
 }
-
-
 
 export interface Product {
     id: number

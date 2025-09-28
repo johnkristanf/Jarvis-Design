@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreOrderRequest;
 use App\Models\Materials;
 use App\Models\OrderLogs;
 use App\Models\Orders;
@@ -12,6 +13,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class PaymentController extends Controller
 {
@@ -108,36 +110,12 @@ class PaymentController extends Controller
         ], 200);
     }
 
-    public function placeOrder(Request $request)
+    public function placeOrder(StoreOrderRequest $request)
     {
-        $validated = $request->validate([
-            'color' => 'required|string',
-            'phone_number' => 'required|string',
-            'product_unit_price' => 'required|numeric',
-            'product_id' => 'required|numeric',
-            'address' => 'required|string',
-            'design_type' => 'required|in:own-design,business-design,ai-generation',
-            'order_option' => 'required|string',
-            'total_quantity' => 'required|numeric|min:1',
-            'total_price' => 'required|numeric|min:1',
-            'fabric_type_id' => 'nullable|numeric',
-            'solo_quantity' => 'nullable|numeric',
-            'sizes' => 'nullable|array',
-            'sizes.*' => 'nullable|numeric|min:0',
-            'own_design_file' => 'nullable|file',
-            'business_design_url' => 'nullable|string',
-            'payment_attachment' => 'required|file',
+        $validated = $request->validated();
+        Log::info("validated order: ", [$validated]);
 
-        ]);
-
-        // UPLOAD THE PAYMENT ATTACHMENT TO S3
-        $attachmentURL = $this->uploadToS3(
-            root: 'payment',
-            sub: Auth::id(),
-            file: $request->file('payment_attachment')
-        );
-
-        DB::transaction(function () use ($validated, $request, $attachmentURL, &$order) {
+        $order = DB::transaction(function () use ($validated, $request) {
             // Step 1: Create order first, without the design URL yet
             $order = Orders::create([
                 'order_number' => $this->generateOrderNumber(),
@@ -152,7 +130,6 @@ class PaymentController extends Controller
                 'total_price' => $validated['total_price'],
                 'solo_quantity' => $validated['solo_quantity'] ?? null,
                 'business_design_url' => $validated['business_design_url'] ?? null,
-                'attachment_url' => $attachmentURL,
                 'user_id' => Auth::user()->id,
             ]);
 
@@ -206,13 +183,22 @@ class PaymentController extends Controller
                 ]);
             }
 
-
-            // NOTFICATION
-            $this->paymentService->notifyUser($order->id, Auth::user()->id, Orders::PENDING);
-
-            // Email User Order
-            // $this->paymentService->sendOrderConfirmationEmail($order);
+            return $order;
         });
+
+        // BACKGROUND QUEUE JOBS
+
+        // Process payment
+        if(isset($validated['payment_attachment'])){
+            Log::info("payment_attachment: ", [$validated['payment_attachment']]);
+            $this->paymentService->processPayment($order->id, $request->file('payment_attachment'));
+        }
+
+        // NOTFICATION
+        $this->paymentService->notifyUser($order, Auth::user()->id, Orders::PENDING);
+
+        // Email User Order
+        $this->paymentService->sendOrderConfirmationEmail($order);
 
         return response()->json(['message' => 'Order placed successfully', 'order_id' => $order->id]);
     }

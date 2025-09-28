@@ -16,13 +16,12 @@ class SendOrderConfirmation implements ShouldQueue
 {
     use InteractsWithQueue, Queueable, SerializesModels;
 
-
     /**
      * Create a new job instance.
      */
     public function __construct(public Orders $orders)
     {
-        // 
+        //
     }
 
     /**

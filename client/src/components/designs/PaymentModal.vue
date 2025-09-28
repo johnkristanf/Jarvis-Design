@@ -96,7 +96,7 @@
                 life: 2000,
             })
 
-            queryClient.invalidateQueries({ queryKey: ['orders', 'order_notifications'] })
+            queryClient.invalidateQueries({ queryKey: ['orders'] })
 
             setTimeout(() => {
                 handleCloseModal()

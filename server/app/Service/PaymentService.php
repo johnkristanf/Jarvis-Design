@@ -2,11 +2,17 @@
 
 namespace App\Service;
 
+use App\Events\NotifyOrderStatus;
+use App\Jobs\ProcessPayment;
 use App\Jobs\SendOrderConfirmation;
 use App\Models\Notifications;
+use App\Models\OrderPayment;
 use App\Models\Orders;
 use App\Models\OrderStatus;
+use App\Models\PaymentAttachment;
+use App\Models\PaymentMethod;
 use App\Traits\HandleAttachments;
+use App\Traits\OrderTrait;
 use Carbon\Carbon;
 use Exception;
 use GuzzleHttp\Exception\ConnectException;
@@ -19,7 +25,7 @@ use Illuminate\Support\Facades\Storage;
 
 class PaymentService
 {
-    use HandleAttachments;
+    use HandleAttachments, OrderTrait;
 
     protected $client;
 
@@ -59,7 +65,7 @@ class PaymentService
 
             $orders = $query->latest()->paginate($limit);
             return $this->transformOrderDesignToS3Temp($orders);
-            
+
     }
 
 
@@ -101,27 +107,25 @@ class PaymentService
 
     public function updateAllNotificationsAsRead()
     {
-        try {
-            Notifications::where('is_read', false)->update([
-                'is_read' => true,
-            ]);
+        Notifications::where('is_read', false)->update([
+            'is_read' => true,
+        ]);
 
-            return 'success';
-        } catch (QueryException $e) {
-            Log::error('Database Query Failed: ' . $e->getMessage());
+        return 'success';
+    }
 
-            return response()->json([
-                'error' => 'Failed to update notifications.',
-                'message' => $e->getMessage(),
-            ], 500);
-        } catch (Exception $e) {
-            Log::error('An unexpected error occurred: ' . $e->getMessage());
 
-            return response()->json([
-                'error' => 'An unexpected error occurred.',
-                'message' => $e->getMessage(),
-            ], 500);
-        }
+    public function processPayment($orderID, $paymentAttachmentFile)
+    {
+        $paymentAttachmentURL = $this->uploadToS3(
+            root: 'payment',
+            sub: Auth::id(),
+            file: $paymentAttachmentFile
+        );
+
+        Log::info("paymentAttachmentURL: ", [$paymentAttachmentURL]);
+
+        ProcessPayment::dispatch($orderID, $paymentAttachmentURL)->afterCommit();
     }
 
 
@@ -132,12 +136,21 @@ class PaymentService
     }
 
 
-    public function notifyUser($orderID, $userID, $status)
+    public function notifyUser($orders, $userID, $status)
     {
-        Notifications::create([
-            'order_id' => $orderID,
-            'user_id' => $userID,
-            'status' => $status,
-        ]);
+
+        try {
+            $notification = Notifications::create([
+                'order_id' => $orders->id,
+                'user_id' => $userID,
+                'status' => $status,
+            ]);
+
+            broadcast(new NotifyOrderStatus($orders, $notification));
+
+        } catch (\Exception $e) {
+            Log::error('Broadcast exception: ' . $e->getMessage());
+            Log::error('Stack trace: ' . $e->getTraceAsString());
+        }
     }
 }
