@@ -16,6 +16,8 @@ interface ApiError {
 }
 
 async function handleRequest<T>(promise: Promise<AxiosResponse<T>>): Promise<T> {
+    const isProd = import.meta.env.VITE_ENVIRONMENT === 'production'
+
     try {
         const response = await promise
         return response.data
@@ -38,19 +40,24 @@ async function handleRequest<T>(promise: Promise<AxiosResponse<T>>): Promise<T> 
             // }
 
             // You might want to log the full error object in a non-production environment
-            console.error('API Error (Axios):', error)
+            if (!isProd) {
+                console.error('API Error (Axios):', error)
+            }
         } else if (error instanceof Error) {
             apiError = {
                 message: error.message || 'An unexpected error occurred.',
             }
 
-            console.error('API Error (General):', error)
+            if (!isProd) {
+                console.error('API Error (General):', error)
+            }
         } else {
             apiError = {
                 message: 'An unknown error occurred.',
             }
-
-            console.error('API Error (Unknown):', error)
+            if (!isProd) {
+                console.error('API Error (Unknown):', error)
+            }
         }
 
         throw apiError
