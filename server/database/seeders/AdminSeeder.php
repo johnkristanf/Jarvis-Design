@@ -20,10 +20,10 @@ class AdminSeeder extends Seeder
 
             // Check by email to prevent duplicates
             User::firstOrCreate(
-                ['email' => 'admin@gmail.com'], // Search criteria
+                ['email' => 'jarvisdesigns01@gmail.com'], // Search criteria
                 [
-                    'name' => 'Administrator',
-                    'username' => 'admin@admin',
+                    'name' => 'Jarvis Designs',
+                    'username' => 'jarvisdesigns',
                     'password' => Hash::make('admin123'),
                     'role_id' => $adminRoleID,
                 ]
@@ -34,7 +34,7 @@ class AdminSeeder extends Seeder
                 [
                     'name' => 'John Kristan Torremocha',
                     'username' => 'jake',
-                    'password' => Hash::make('jkgwapo123'),
+                    'password' => Hash::make('123456789'),
                     'role_id' => $userRoleID,
                 ]
             );

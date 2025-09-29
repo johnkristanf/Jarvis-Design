@@ -26,15 +26,12 @@ async function handleRequest<T>(promise: Promise<AxiosResponse<T>>): Promise<T> 
             const status = error.response?.status
 
             apiError = {
-                message:
-                    error.response?.data?.message ||
-                    error.message ||
-                    'An unexpected error occurred.',
+                message: error.response?.data?.message || error.message || 'An unexpected error occurred.',
                 statusCode: status,
             }
 
             // IF AUTHENTICATED ERROR HAPPENS POP UP A MODAL SAYS YOU ARE LOGGED OUT DUE TO INACTIVITY
-            
+
             // if (status === 401 || status === 404) {
             //     console.warn('Redirecting due to auth/404 error')
             //     window.location.href = '/'
@@ -42,7 +39,6 @@ async function handleRequest<T>(promise: Promise<AxiosResponse<T>>): Promise<T> 
 
             // You might want to log the full error object in a non-production environment
             console.error('API Error (Axios):', error)
-
         } else if (error instanceof Error) {
             apiError = {
                 message: error.message || 'An unexpected error occurred.',
@@ -62,18 +58,18 @@ async function handleRequest<T>(promise: Promise<AxiosResponse<T>>): Promise<T> 
 }
 
 const get = <T>(url: string, config?: object): Promise<T> => handleRequest(api.get<T>(url, config))
-const post = <T>(url: string, data?: any, config?: object): Promise<T> =>
-    handleRequest(api.post<T>(url, data, config))
+const post = <T>(url: string, data?: any, config?: object): Promise<T> => handleRequest(api.post<T>(url, data, config))
 
-const put = <T>(url: string, data?: any, config?: object): Promise<T> =>
-    handleRequest(api.put<T>(url, data, config))
+const put = <T>(url: string, data?: any, config?: object): Promise<T> => handleRequest(api.put<T>(url, data, config))
 
-const del = <T>(url: string, config?: object): Promise<T> =>
-    handleRequest(api.delete<T>(url, config))
+const patch = <T>(url: string, data?: any, config?: object): Promise<T> => handleRequest(api.patch<T>(url, data, config))
+
+const del = <T>(url: string, config?: object): Promise<T> => handleRequest(api.delete<T>(url, config))
 
 export const apiService = {
     get,
     post,
     put,
+    patch,
     delete: del,
 }

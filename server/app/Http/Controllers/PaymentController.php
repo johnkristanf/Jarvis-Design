@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreOrderRequest;
 use App\Models\Materials;
 use App\Models\OrderLogs;
+use App\Models\OrderPayment;
 use App\Models\Orders;
 use App\Service\PaymentService;
 use App\Traits\HandleAttachments;
@@ -113,8 +114,6 @@ class PaymentController extends Controller
     public function placeOrder(StoreOrderRequest $request)
     {
         $validated = $request->validated();
-        Log::info("validated order: ", [$validated]);
-
         $order = DB::transaction(function () use ($validated, $request) {
             // Step 1: Create order first, without the design URL yet
             $order = Orders::create([
@@ -190,7 +189,6 @@ class PaymentController extends Controller
 
         // Process payment
         if(isset($validated['payment_attachment'])){
-            Log::info("payment_attachment: ", [$validated['payment_attachment']]);
             $this->paymentService->processPayment($order->id, $request->file('payment_attachment'));
         }
 
@@ -215,4 +213,71 @@ class PaymentController extends Controller
 
         return response()->json($orderLogs);
     }
+
+    public function paymentsByOrderID($orderID)
+    {
+        $payments = OrderPayment::with([
+            'payment_methods:id,name', 
+            'payment_attachments:id,order_payment_id,url'
+        ])
+        ->where('order_id', $orderID)
+        ->get();
+
+        Log::info("payments: ", [$payments]);
+        return response()->json($payments);
+    }
+
+
+    public function updatePayment($paymentID, Request $request)
+    {
+        $validated = $request->validate([
+            'amount_applied' => 'required|numeric'
+        ]);
+
+        $payment = OrderPayment::with([
+            'orders:id,total_price' 
+        ])->findOrFail($paymentID);
+
+
+        // Calculate current total paid amount on a specific order
+        $currentTotalAmount = OrderPayment::where('order_id', $payment->order_id)
+            ->sum('amount_applied');
+
+        Log::info("currentTotalAmount: ", [$currentTotalAmount]);
+
+        // Add the new amount to get the projected total
+        $projectedTotal = $currentTotalAmount + $validated['amount_applied'];
+        $orderTotalPrice = $payment->orders->total_price;
+
+        Log::info("projectedTotal: ", [$projectedTotal]);
+        Log::info("orderTotalPrice: ", [$orderTotalPrice]);
+
+
+
+         // Determine status
+        if ($projectedTotal >= $orderTotalPrice) {
+            $newStatus = OrderPayment::FULLY_PAID;
+        } elseif ($projectedTotal > 0) {
+            $newStatus = OrderPayment::PARTIALLY_PAID;
+        } else {
+            $newStatus = OrderPayment::IN_REVIEW;
+        }
+
+        Log::info("newStatus: ", [$newStatus]);
+
+
+        // Update the payment
+        $payment->update([
+            'amount_applied' => $validated['amount_applied'],
+            'status' => $newStatus
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'payment' => $payment->fresh(),
+            'total_applied' => $projectedTotal,
+            'order_total' => $orderTotalPrice
+        ]);
+    }
 }
+ 

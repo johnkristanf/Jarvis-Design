@@ -1,3 +1,35 @@
+export type PaymentStatus = 'in_review' | 'partially_paid' | 'fully_paid'
+
+export interface Payment {
+    id: number
+    order_id: number
+    payment_method_id: number
+    payment_number: string
+    amount_applied: number
+    payment_attachments: PaymentAttachments
+    payment_methods: PaymentMethods
+    status: PaymentStatus
+    created_at: string
+    updated_at: string
+}
+
+export interface PaymentAttachments {
+    id: number
+    order_payment_id: number
+    temp_url: string
+    url: string
+}
+
+export interface PaymentMethods {
+    id: number
+    name: string
+}
+
+export interface UpdatePaymentPayload {
+    id: number
+    amount: number
+}
+
 export type ProceedPaymentData = {
     order_option: string
     price: number

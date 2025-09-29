@@ -18,6 +18,11 @@ class Orders extends Model
 
     protected $guarded = ['id'];
 
+
+    protected $casts = [
+        'total_price' => 'float', 
+    ];
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');

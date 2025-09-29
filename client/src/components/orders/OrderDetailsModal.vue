@@ -1,6 +1,5 @@
 <script lang="ts" setup>
     import { formatDate } from '@/helper/designs'
-    import { getStatusBadgeClass } from '@/helper/order'
     import { OrderOptions, type Orders } from '@/types/order'
     import { TransitionRoot, TransitionChild, Dialog, DialogPanel, DialogTitle } from '@headlessui/vue'
     import StatusBadge from './StatusBadge.vue'

@@ -123,8 +123,6 @@ class PaymentService
             file: $paymentAttachmentFile
         );
 
-        Log::info("paymentAttachmentURL: ", [$paymentAttachmentURL]);
-
         ProcessPayment::dispatch($orderID, $paymentAttachmentURL)->afterCommit();
     }
 
@@ -148,7 +146,7 @@ class PaymentService
 
             broadcast(new NotifyOrderStatus($orders, $notification));
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Broadcast exception: ' . $e->getMessage());
             Log::error('Stack trace: ' . $e->getTraceAsString());
         }

@@ -12,6 +12,11 @@ class OrderPayment extends Model
 
     protected $guarded = ['id'];
 
+    protected $casts = [
+        'amount_applied' => 'float', // or 'decimal:2' for precision
+    ];
+   
+
     public function orders()
     {
         return $this->belongsTo(Orders::class, 'order_id');
@@ -24,6 +29,6 @@ class OrderPayment extends Model
 
     public function payment_attachments()
     {
-        return $this->hasMany(PaymentAttachment::class, 'order_payment_id');
+        return $this->hasOne(PaymentAttachment::class, 'order_payment_id');
     }
 }

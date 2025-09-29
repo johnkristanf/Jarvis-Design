@@ -44,8 +44,6 @@ class ProcessPayment implements ShouldQueue
             'status'            => OrderPayment::IN_REVIEW,
         ]);
 
-        Log::info("orderPayment: ", [$orderPayment]);
-
         // Attach proof of payment
         PaymentAttachment::create([
             'url'             => $this->paymentAttachmentURL,

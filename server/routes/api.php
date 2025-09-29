@@ -92,8 +92,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/get/reports/category-sales', [DashboardController::class, 'downloadCategorySales']);
 
 
+    // PROTECTED PAYMENT ROUTES
+    Route::get('/get/payments/{orderID}', [PaymentController::class, 'paymentsByOrderID']);
+    Route::patch('/update/payment/{paymentID}', [PaymentController::class, 'updatePayment']);
+
 });
-
-// TEST AUTOMATED DEDUCTION UPON ORDER
-Route::get('/test/order', [PaymentController::class, 'testOrder']);
-
