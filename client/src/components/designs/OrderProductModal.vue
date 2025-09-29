@@ -1,18 +1,8 @@
 <script lang="ts" setup>
     import { ref, computed, watch, onMounted } from 'vue'
-    import {
-        Dialog,
-        DialogPanel,
-        DialogTitle,
-        TransitionChild,
-        TransitionRoot,
-    } from '@headlessui/vue'
+    import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue'
 
-    import {
-        sublimationProductCategories,
-        type BusinessProductDesign,
-        type Product,
-    } from '@/types/design'
+    import { sublimationProductCategories, type BusinessProductDesign, type Product } from '@/types/design'
 
     import type { PropType } from 'vue'
     import { useProductAttributes } from '@/composables/useProductAttribute'
@@ -33,11 +23,6 @@
             type: Object as PropType<Product>,
             required: true,
         },
-    })
-
-    onMounted(() => {
-        console.log('categoryName: ', props.categoryName)
-        console.log('product: ', props.product)
     })
 
     const { sizes, loadingSizes } = useProductAttributes()
@@ -93,24 +78,14 @@
     }
 
     // FILTER SELECTED PRODUCT CATEGORY IF NEEDED THE SIZES INPUT (IF MUGS SELECTED THEREFORE NO SIZES IS AVAILABLE)
-    const shouldIncludeSizes = computed(() =>
-        sublimationProductCategories.includes(props.categoryName ?? ''),
-    )
+    const shouldIncludeSizes = computed(() => sublimationProductCategories.includes(props.categoryName ?? ''))
 
     const openAIDesignModal = () => {
         formData.value.designType = 'ai-generation'
         emit('openAIDesigns')
     }
 
-    const openQrCodePaymentModal = (
-        product_name: string,
-        total_quantity: number,
-        total_price: number,
-    ) => {
-        console.log('product_name: ', product_name)
-        console.log('total_quantity: ', total_quantity)
-        console.log('total_price: ', total_price)
-
+    const openQrCodePaymentModal = (product_name: string, total_quantity: number, total_price: number) => {
         qrCodePaymentData.value = {
             product_name,
             total_quantity,
@@ -123,10 +98,7 @@
     // FETCH UPLOADED BUSINESS DESIGNS
     const fetchBusinessDesigns = async (product_id: number) => {
         isLoadingBusinessDesigns.value = true
-        const designs = await apiService.get<BusinessProductDesign[]>(
-            `/api/get/bussiness_designs/${product_id}`,
-        )
-        console.log('designs: ', designs)
+        const designs = await apiService.get<BusinessProductDesign[]>(`/api/get/bussiness_designs/${product_id}`)
         businessProductDesign.value = designs
         isLoadingBusinessDesigns.value = false
     }
@@ -168,28 +140,20 @@
     }
 
     // TOTAL QUANTITY FOR MULTIPLE SIZES
-    const totalQuantityForMultiSizes = computed(() =>
-        Object.values(formData.value.quantityPerSize).reduce((acc, qty) => acc + (qty || 0), 0),
-    )
+    const totalQuantityForMultiSizes = computed(() => Object.values(formData.value.quantityPerSize).reduce((acc, qty) => acc + (qty || 0), 0))
 
     // TOTAL PRICE FOR MULTI SIZES
-    const totalPriceForMultiSizes = computed(
-        () => totalQuantityForMultiSizes.value * Number(props.product.unit_price),
-    )
+    const totalPriceForMultiSizes = computed(() => totalQuantityForMultiSizes.value * Number(props.product.unit_price))
 
     // FINAL TOTAL QUANTITY THAT CATCHES CATEGORY THAT HAS
     // MULTI SIZES (BASKET APPAREL) AND SOLO (MUGS, LANYARD, etc..)
     const totalQuantity = computed(() => {
-        return shouldIncludeSizes.value
-            ? totalQuantityForMultiSizes.value
-            : (formData.value.solo_quantity ?? 0)
+        return shouldIncludeSizes.value ? totalQuantityForMultiSizes.value : (formData.value.solo_quantity ?? 0)
     })
 
     // FINAL TOTAL PRICE THAT CATCHES CATEGORY THAT HAS MULTI SIZES AND SOLO
     const totalPrice = computed(() => {
-        return shouldIncludeSizes.value
-            ? totalPriceForMultiSizes.value
-            : (formData.value.solo_quantity ?? 0) * Number(props.product.unit_price ?? 0)
+        return shouldIncludeSizes.value ? totalPriceForMultiSizes.value : (formData.value.solo_quantity ?? 0) * Number(props.product.unit_price ?? 0)
     })
 
     // PLACE ORDER MUTATION
@@ -237,14 +201,14 @@
                 return
             }
 
-            if (err.message == 'Network Error'){
-                 toast.add({
+            if (err.message == 'Network Error') {
+                toast.add({
                     severity: 'error',
                     summary: 'Check your internet connection and try again',
                     life: 3000,
                 })
 
-                return;
+                return
             }
 
             toast.add({
@@ -264,14 +228,11 @@
 
         // Design validation
         if (formData.value.designType === 'own-design' && !formData.value.ownDesignFile) return true
-        if (formData.value.designType === 'business-design' && !formData.value.businessDesignURL)
-            return true
+        if (formData.value.designType === 'business-design' && !formData.value.businessDesignURL) return true
 
         // Quantity validation
         if (shouldIncludeSizes.value) {
-            const hasQuantity = Object.values(formData.value.quantityPerSize).some(
-                (qty) => Number(qty) > 0,
-            )
+            const hasQuantity = Object.values(formData.value.quantityPerSize).some((qty) => Number(qty) > 0)
             if (!hasQuantity) return true
         } else {
             if (!formData.value.solo_quantity || formData.value.solo_quantity <= 0) return true
@@ -313,8 +274,7 @@
 
     const swatchColor = computed<string | null>(() => {
         // If custom, use the free-text input; otherwise the selected option label
-        const candidate =
-            selectedOption.value === 'custom' ? formData.value.color : selectedOption.value
+        const candidate = selectedOption.value === 'custom' ? formData.value.color : selectedOption.value
 
         if (!candidate) return null
         if (colorPalette[candidate]) return colorPalette[candidate]
@@ -322,17 +282,7 @@
         return null
     })
 
-    const colorOptions = [
-        'Red',
-        'Blue',
-        'Green',
-        'Yellow',
-        'Black',
-        'Sunset Blaze',
-        'Tropical Punch',
-        'Ocean Wave',
-        'Aqua Breeze',
-    ]
+    const colorOptions = ['Red', 'Blue', 'Green', 'Yellow', 'Black', 'Sunset Blaze', 'Tropical Punch', 'Ocean Wave', 'Aqua Breeze']
 
     const colorPalette: Record<string, string> = {
         Red: '#FF0000',
@@ -374,9 +324,7 @@
                         <DialogPanel
                             class="w-[600px] h-[30rem] max-w-5xl transform overflow-y-auto bg-white p-6 text-left align-middle shadow-xl transition-all"
                         >
-                            <DialogTitle as="h1" class="text-2xl text-gray-900">
-                                Product Order Details
-                            </DialogTitle>
+                            <DialogTitle as="h1" class="text-2xl text-gray-900">Product Order Details</DialogTitle>
 
                             <div class="space-y-7">
                                 <!-- T-shirt Section -->
@@ -397,24 +345,25 @@
                                         </p>
                                     </div>
 
-                                    <!-- Color Input -->
+                                    <!-- Phone Number Input -->
                                     <div class="mb-8">
-                                        <label class="block text-sm text-gray-600 mb-1">
-                                            Phone Number:
-                                        </label>
-                                        <input
-                                            v-model="formData.phone_number"
-                                            type="number"
-                                            placeholder="Enter Phone Number"
-                                            class="w-full px-3 py-2 border font-medium border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
-                                        />
+                                        <label class="block text-sm text-gray-600 mb-1">Phone Number:</label>
+                                        <div class="flex items-center">
+                                            <span class="px-3 py-2 bg-gray-100 border border-r-0 border-gray-300 rounded-l-md text-gray-700">
+                                                +63
+                                            </span>
+                                            <input
+                                                v-model="formData.phone_number"
+                                                type="tel"
+                                                placeholder="9XXXXXXXXX"
+                                                class="w-full px-3 py-2 border font-medium border-gray-300 rounded-r-md focus:outline-none focus:ring-2 focus:ring-gray-500"
+                                            />
+                                        </div>
                                     </div>
 
-                                    <!-- Color Input -->
+                                    <!-- Full Address Input -->
                                     <div class="mb-8">
-                                        <label class="block text-sm text-gray-600 mb-1">
-                                            Full Address:
-                                        </label>
+                                        <label class="block text-sm text-gray-600 mb-1">Full Address:</label>
                                         <input
                                             v-model="formData.address"
                                             type="text"
@@ -425,9 +374,7 @@
 
                                     <!-- Color Input -->
                                     <div class="mb-8">
-                                        <label class="block text-sm text-gray-600 mb-1">
-                                            Color:
-                                        </label>
+                                        <label class="block text-sm text-gray-600 mb-1">Color:</label>
                                         <div class="flex gap-2">
                                             <!-- Select Dropdown -->
                                             <select
@@ -435,11 +382,7 @@
                                                 class="w-1/3 px-3 py-2 border font-medium border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
                                             >
                                                 <option value="">-- Select --</option>
-                                                <option
-                                                    v-for="color in colorOptions"
-                                                    :key="color"
-                                                    :value="color"
-                                                >
+                                                <option v-for="color in colorOptions" :key="color" :value="color">
                                                     {{ color }}
                                                 </option>
                                                 <option value="custom">Custom</option>
@@ -451,11 +394,7 @@
                                                 :style="{
                                                     backgroundColor: swatchColor || 'transparent',
                                                 }"
-                                                :title="
-                                                    swatchColor
-                                                        ? `Preview: ${swatchColor}`
-                                                        : 'No color selected/invalid color'
-                                                "
+                                                :title="swatchColor ? `Preview: ${swatchColor}` : 'No color selected/invalid color'"
                                             ></div>
 
                                             <!-- Free Text Input -->
@@ -479,9 +418,7 @@
 
                                     <!-- Quantity for fixed price -->
                                     <div v-if="!shouldIncludeSizes" class="mb-8">
-                                        <label class="block text-sm text-gray-600 mb-1">
-                                            Quantity:
-                                        </label>
+                                        <label class="block text-sm text-gray-600 mb-1">Quantity:</label>
                                         <input
                                             v-model="formData.solo_quantity"
                                             type="number"
@@ -492,18 +429,9 @@
 
                                     <!-- Sizes and Quantities as OTP-like inputs -->
                                     <div v-if="shouldIncludeSizes" class="mb-8">
-                                        <label class="block text-sm text-gray-600 mb-2">
-                                            Size Quantities:
-                                        </label>
-                                        <div
-                                            class="grid grid-cols-4 gap-2"
-                                            v-if="Array.isArray(sizes) && !loadingSizes"
-                                        >
-                                            <div
-                                                v-for="size in sizes"
-                                                :key="size.id"
-                                                class="flex flex-col items-center"
-                                            >
+                                        <label class="block text-sm text-gray-600 mb-2">Size Quantities:</label>
+                                        <div class="grid grid-cols-4 gap-2" v-if="Array.isArray(sizes) && !loadingSizes">
+                                            <div v-for="size in sizes" :key="size.id" class="flex flex-col items-center">
                                                 <span class="text-xs text-gray-700 mb-1">
                                                     {{ size.name }}
                                                 </span>
@@ -511,9 +439,7 @@
                                                     type="number"
                                                     min="0"
                                                     class="w-14 text-center font-medium px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
-                                                    v-model.number="
-                                                        formData.quantityPerSize[size.id]
-                                                    "
+                                                    v-model.number="formData.quantityPerSize[size.id]"
                                                 />
                                             </div>
                                         </div>
@@ -527,23 +453,15 @@
 
                                 <!-- ORDER OPTION -->
                                 <div class="mb-8">
-                                    <label class="block text-sm text-gray-600 mb-1">
-                                        Order Option:
-                                    </label>
+                                    <label class="block text-sm text-gray-600 mb-1">Order Option:</label>
                                     <div class="mt-4 w-full">
-                                        <ListSelectBox
-                                            v-model="formData.orderOption"
-                                            :options="orderOptions"
-                                            displayKey="tag"
-                                        />
+                                        <ListSelectBox v-model="formData.orderOption" :options="orderOptions" displayKey="tag" />
                                     </div>
                                 </div>
 
                                 <!-- Design Selection Buttons -->
                                 <div class="mb-4">
-                                    <label class="block text-sm text-gray-600 mb-2">
-                                        Design Options:
-                                    </label>
+                                    <label class="block text-sm text-gray-600 mb-2">Design Options:</label>
                                     <div class="flex gap-2 flex-wrap">
                                         <button
                                             @click="formData.designType = 'own-design'"
@@ -583,26 +501,16 @@
 
                                 <!-- Design Upload/Input Area -->
                                 <div class="mb-6" v-if="formData.designType != 'ai-generation'">
-                                    <div
-                                        class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center bg-gray-50"
-                                    >
+                                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center bg-gray-50">
                                         <!-- Own Design -->
                                         <div v-if="formData.designType === 'own-design'">
-                                            <p class="text-sm text-gray-600 mb-3">
-                                                Upload your own design
-                                            </p>
-                                            <input
-                                                @change="handleFileUpload"
-                                                type="file"
-                                                accept="image/*"
-                                            />
+                                            <p class="text-sm text-gray-600 mb-3">Upload your own design</p>
+                                            <input @change="handleFileUpload" type="file" accept="image/*" />
                                         </div>
 
                                         <!-- Business Design -->
                                         <div v-else-if="formData.designType === 'business-design'">
-                                            <p class="text-sm text-gray-600 mb-3">
-                                                Browse business design templates
-                                            </p>
+                                            <p class="text-sm text-gray-600 mb-3">Browse business design templates</p>
 
                                             <div class="grid grid-cols-3 gap-3">
                                                 <div
@@ -616,16 +524,12 @@
                                                     ]"
                                                     @click="
                                                         () => {
-                                                            if (
-                                                                selectedBusinessDesignId ===
-                                                                design.id
-                                                            ) {
+                                                            if (selectedBusinessDesignId === design.id) {
                                                                 selectedBusinessDesignId = null
                                                                 formData.businessDesignURL = ''
                                                             } else {
                                                                 selectedBusinessDesignId = design.id
-                                                                formData.businessDesignURL =
-                                                                    design.image_url
+                                                                formData.businessDesignURL = design.image_url
                                                             }
                                                         }
                                                     "
@@ -636,9 +540,7 @@
                                                         class="w-full h-full object-cover mb-3 hover:cursor-pointer"
                                                     />
                                                     <div
-                                                        v-if="
-                                                            selectedBusinessDesignId === design.id
-                                                        "
+                                                        v-if="selectedBusinessDesignId === design.id"
                                                         class="absolute top-1 right-1 bg-gray-800 text-white text-xs px-2 py-1 rounded-full"
                                                     >
                                                         Selected
@@ -647,9 +549,7 @@
                                             </div>
 
                                             <div v-if="isLoadingBusinessDesigns">
-                                                <h1 class="text-center">
-                                                    Loading business designs...
-                                                </h1>
+                                                <h1 class="text-center">Loading business designs...</h1>
                                             </div>
                                         </div>
                                     </div>
@@ -658,9 +558,7 @@
                                 <!-- Price Display -->
 
                                 <div class="mb-4">
-                                    <label class="block text-sm text-gray-600 mb-2">
-                                        Pricing Details:
-                                    </label>
+                                    <label class="block text-sm text-gray-600 mb-2">Pricing Details:</label>
 
                                     <div class="mb-4 bg-gray-400 text-white rounded-md p-3">
                                         <div class="flex justify-between text-md mb-1">
@@ -682,13 +580,7 @@
                                 <!-- Place Order Button -->
                                 <button
                                     :disabled="isFormInvalid"
-                                    @click="
-                                        openQrCodePaymentModal(
-                                            props.product.name,
-                                            totalQuantity,
-                                            totalPrice,
-                                        )
-                                    "
+                                    @click="openQrCodePaymentModal(props.product.name, totalQuantity, totalPrice)"
                                     :class="[
                                         'w-full font-medium py-3 px-4 rounded-md transition-colors duration-200',
                                         isFormInvalid

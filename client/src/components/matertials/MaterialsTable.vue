@@ -1,7 +1,6 @@
 <script lang="ts" setup>
     import { reactive, ref, watch } from 'vue'
     import AddMaterialsModal from './AddMaterialsModal.vue'
-    import { PlusIcon } from '@heroicons/vue/20/solid'
     import { useQuery } from '@tanstack/vue-query'
     import { apiService } from '@/api/axios'
     import type { Material } from '@/types/materials'
@@ -13,6 +12,7 @@
     import DeleteDialog from '../DeleteDialog..vue'
     import type { PaginatedResponse } from '@/types/pagination'
     import PaginationControls from '../PaginationControls.vue'
+    import AddNewButton from '../AddNewButton.vue'
 
     // REF TOGGLER OF ADD NEW MATERIALS MODAL
     const modals = reactive({
@@ -36,9 +36,7 @@
             console.log('pagination.page: ', pagination.page)
             console.log('pagination.limit: ', pagination.limit)
 
-            const respData = await apiService.get<PaginatedResponse<Material>>(
-                `/api/get/materials?page=${pagination.page}&limit=${pagination.limit}`,
-            )
+            const respData = await apiService.get<PaginatedResponse<Material>>(`/api/get/materials?page=${pagination.page}&limit=${pagination.limit}`)
             return respData
         },
     })
@@ -62,9 +60,7 @@
         () => designMaterials.value?.data,
         (newMaterials) => {
             if (newMaterials) {
-                const lowStockItems = newMaterials.filter(
-                    (material) => material.quantity <= material.reorder_level,
-                )
+                const lowStockItems = newMaterials.filter((material) => material.quantity <= material.reorder_level)
 
                 if (lowStockItems.length > 0) {
                     const materialNames = lowStockItems.map((m) => m.name).join(', ')
@@ -85,22 +81,13 @@
 <template>
     <div class="relative overflow-x-auto">
         <div class="flex justify-end gap-3 pb-3">
-            <button
-                @click="modals.show_add_materials_modal = true"
-                type="button"
-                class="w-[20%] flex items-center justify-center gap-1 px-3 py-2 text-sm font-medium text-center text-white bg-gray-900 rounded-lg hover:opacity-75 hover:cursor-pointer"
-            >
-                <PlusIcon class="size-6" />
-                Add New Fabric
-            </button>
+            <AddNewButton message="Add New Fabric" widthClass="w-[20%]" @action="modals.show_add_materials_modal = true" />
 
             <!-- SEARCH FIELD -->
             <div class="dark:bg-gray-900">
                 <label for="table-search" class="sr-only">Search</label>
                 <div class="relative mt-1">
-                    <div
-                        class="absolute inset-y-0 rtl:inset-r-0 start-0 flex items-center ps-3 pointer-events-none"
-                    >
+                    <div class="absolute inset-y-0 rtl:inset-r-0 start-0 flex items-center ps-3 pointer-events-none">
                         <svg
                             class="w-4 h-4 text-gray-500 dark:text-gray-400"
                             aria-hidden="true"
@@ -127,12 +114,8 @@
             </div>
         </div>
 
-        <table
-            class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 mt-6"
-        >
-            <thead
-                class="text-xs uppercase bg-gray-800 text-white dark:bg-gray-700 dark:text-gray-400"
-            >
+        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 mt-6">
+            <thead class="text-xs uppercase bg-gray-800 text-white dark:bg-gray-700 dark:text-gray-400">
                 <tr>
                     <!-- <th scope="col" class="px-6 py-3">Material Category</th> -->
                     <th scope="col" class="px-6 py-3">Fabric Name</th>
@@ -152,29 +135,17 @@
                     <td class="px-6 py-4">{{ material.name }}</td>
                     <td class="px-6 py-4">{{ material.unit }}</td>
 
-                    <td
-                        :class="[
-                            material.quantity <= material.reorder_level ? 'text-red-900' : '',
-                            'px-6 py-4',
-                        ]"
-                    >
+                    <td :class="[material.quantity <= material.reorder_level ? 'text-red-900' : '', 'px-6 py-4']">
                         {{ material.quantity }}
                     </td>
 
                     <td class="px-6 py-4">{{ material.reorder_level }}</td>
 
                     <td class="px-6 py-6 flex gap-2">
-                        <button
-                            class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
-                            @click="onShowEditMaterial(material)"
-                        >
+                        <button class="font-medium text-blue-600 dark:text-blue-500 hover:underline" @click="onShowEditMaterial(material)">
                             Edit
                         </button>
-                        <DeleteDialog
-                            :selectedID="material.id"
-                            endpoint_url="/api/delete/material"
-                            query_key="materials"
-                        />
+                        <DeleteDialog :selectedID="material.id" endpoint_url="/api/delete/material" query_key="materials" />
                     </td>
                 </tr>
 

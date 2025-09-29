@@ -66,6 +66,11 @@ class User extends Authenticatable
         return $this->hasRole('admin');
     }
 
+    public function order_payments()
+    {
+        return $this->hasMany(OrderPayment::class, 'user_id');
+    }
+
     public function orders(): HasMany
     {
         return $this->hasMany(Orders::class, 'user_id');

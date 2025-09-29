@@ -2,7 +2,7 @@
     import CustomerChatBox from '@/components/message/CustomerChatBox.vue'
     import OrderDetailsModal from '@/components/orders/OrderDetailsModal.vue'
     import { ChatBubbleLeftRightIcon } from '@heroicons/vue/20/solid'
-    import { onMounted, ref, watch } from 'vue'
+    import { ref, watch } from 'vue'
     import { FwbCard } from 'flowbite-vue'
     import { useQuery } from '@tanstack/vue-query'
     import Loader from '@/components/Loader.vue'
@@ -24,13 +24,11 @@
         queryKey: ['orders'],
         queryFn: async () => {
             const respData = await apiService.get<PaginatedResponse<Orders>>(`/api/get/orders`)
+            console.log('respData: ', respData)
+
             return respData
         },
         enabled: true,
-    })
-
-    onMounted(() => {
-        console.log('orders:', orders)
     })
 
     watch(
@@ -59,9 +57,7 @@
 
             <!-- SEARCH INPUT MUST AUTO FETCH ONCHANGE -->
             <div class="flex items-center hover:cursor-pointer hover:opacity-75">
-                <label for="default-search" class="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">
-                    Search
-                </label>
+                <label for="default-search" class="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">Search</label>
                 <div class="relative">
                     <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
                         <svg
@@ -103,10 +99,7 @@
             <CustomerChatBox :isOpen="isOpenChatBox" @close="isOpenChatBox = false" />
         </div>
 
-        <div
-            class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 mt-5 pb-10 gap-5"
-            v-if="!isLoading && orders && orders.data.length > 0"
-        >
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 mt-5 pb-10 gap-5" v-if="!isLoading && orders && orders.data.length > 0">
             <fwb-card
                 v-for="order in orders.data"
                 :key="order.id"
@@ -124,19 +117,11 @@
             </fwb-card>
         </div>
 
-        <div
-            v-else-if="!isLoading && orders && orders.data.length === 0"
-            class="h-[50vh] flex items-center justify-center"
-        >
+        <div v-else-if="!isLoading && orders && orders.data.length === 0" class="h-[50vh] flex items-center justify-center">
             <h1 class="text-gray-700 text-xl">No Order Found</h1>
         </div>
 
-        <OrderDetailsModal
-            v-if="orderDetails"
-            :isOpen="isOrderDetailsOpen"
-            :orderDetails="orderDetails"
-            @close="isOrderDetailsOpen = false"
-        />
+        <OrderDetailsModal v-if="orderDetails" :isOpen="isOrderDetailsOpen" :orderDetails="orderDetails" @close="isOrderDetailsOpen = false" />
         <Loader v-if="isLoading" msg="Loading Orders..." />
     </div>
 </template>

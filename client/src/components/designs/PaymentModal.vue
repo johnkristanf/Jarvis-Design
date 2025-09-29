@@ -2,13 +2,7 @@
     import { apiService } from '@/api/axios'
     import type { OrderTypes, PlaceOrderData } from '@/types/order'
     import { type DesignAttribute, type ProceedPaymentData } from '@/types/payment'
-    import {
-        TransitionRoot,
-        TransitionChild,
-        Dialog,
-        DialogPanel,
-        DialogTitle,
-    } from '@headlessui/vue'
+    import { TransitionRoot, TransitionChild, Dialog, DialogPanel, DialogTitle } from '@headlessui/vue'
     import { useMutation, useQueryClient } from '@tanstack/vue-query'
     import { ref } from 'vue'
 
@@ -171,20 +165,11 @@
                         <DialogPanel
                             class="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 mb-8 text-left align-middle shadow-xl transition-all"
                         >
-                            <DialogTitle
-                                as="h3"
-                                class="text-lg font-medium leading-6 text-gray-900"
-                            >
-                                Scan Gcash QR Code
-                            </DialogTitle>
+                            <DialogTitle as="h3" class="text-lg font-medium leading-6 text-gray-900">Scan Gcash QR Code</DialogTitle>
 
                             <div class="mt-2">
-                                <p class="text-sm text-gray-500">
-                                    Item Name: {{ paymentData.name }}
-                                </p>
-                                <p class="text-sm text-gray-500">
-                                    Quantity: {{ attributeData.quantity }}
-                                </p>
+                                <p class="text-sm text-gray-500">Item Name: {{ paymentData.name }}</p>
+                                <p class="text-sm text-gray-500">Quantity: {{ attributeData.quantity }}</p>
                                 <p class="text-sm text-gray-500">
                                     Total Price: ₱{{
                                         new Intl.NumberFormat('en-PH', {
@@ -196,8 +181,7 @@
                                 <p class="text-sm text-center my-5">
                                     Note:
                                     <br />
-                                    Please ensure you pay the exact amount. Orders with incorrect
-                                    payments will not be processed.
+                                    Please ensure you pay the exact amount. Orders with incorrect payments will not be processed.
                                 </p>
                             </div>
 
@@ -209,11 +193,7 @@
                             </div> -->
 
                             <div class="mt-5 flex flex-col items-center justify-center">
-                                <img
-                                    src="/jarvis-gcash-qr.webp"
-                                    alt="Generated QR CODE"
-                                    width="300"
-                                />
+                                <img src="/jarvis-gcash-qr.webp" alt="Generated QR CODE" width="300" />
 
                                 <h1 class="text-gray-500">Name: JA**N S.</h1>
                             </div>
@@ -228,9 +208,7 @@
                                     <p>Screenshot of Payment Confirmation</p>
                                 </div>
 
-                                <div
-                                    class="mt-4 border-2 border-dashed border-gray-300 rounded-md p-6 flex flex-col items-center justify-center"
-                                >
+                                <div class="mt-4 border-2 border-dashed border-gray-300 rounded-md p-6 flex flex-col items-center justify-center">
                                     <div class="flex items-center justify-center">
                                         <svg
                                             xmlns="http://www.w3.org/2000/svg"
@@ -249,18 +227,11 @@
                                     </div>
 
                                     <div class="mt-4 text-center">
-                                        <p class="text-sm text-gray-600">
-                                            Drag and drop files to here to upload
-                                        </p>
+                                        <p class="text-sm text-gray-600">Drag and drop files to here to upload</p>
                                         <p class="text-xs text-gray-500 mt-1">or</p>
                                     </div>
 
-                                    <input
-                                        ref="fileInput"
-                                        type="file"
-                                        accept="image/*"
-                                        class="hidden"
-                                    />
+                                    <input ref="fileInput" type="file" accept="image/*" class="hidden" />
 
                                     <button
                                         type="button"

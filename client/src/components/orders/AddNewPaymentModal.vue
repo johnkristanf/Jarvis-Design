@@ -1,6 +1,8 @@
 <script lang="ts" setup>
+    import { apiService } from '@/api/axios'
     import type { QrCodePaymentData } from '@/types/order'
     import { TransitionRoot, TransitionChild, Dialog, DialogPanel, DialogTitle } from '@headlessui/vue'
+    import { useMutation, useQueryClient } from '@tanstack/vue-query'
     import { ref } from 'vue'
     import { useToast } from 'primevue/usetoast'
 
@@ -9,10 +11,11 @@
     }>()
 
     // MODAL EMITS
-    const emit = defineEmits(['close', 'place_order', 'fileSelected'])
-    const handleCloseModal = () => emit('close')
-    const handleTriggerPlaceOrder = () => emit('place_order')
-    const toast = useToast();
+    const emit = defineEmits(['closeModal'])
+    const handleCloseModal = () => emit('closeModal')
+
+    const queryClient = useQueryClient()
+    const toast = useToast()
 
     const file = ref<File | null>(null)
     const fileInput = ref<HTMLInputElement | null>(null)
@@ -40,8 +43,6 @@
 
             file.value = selectedFile
             previewUrl.value = URL.createObjectURL(selectedFile)
-
-            emit('fileSelected', file.value)
         }
     }
 
@@ -49,7 +50,47 @@
         file.value = null
         previewUrl.value = null
         if (fileInput.value) fileInput.value.value = '' // reset input
-        emit('fileSelected', null)
+    }
+
+    // ADD NEW PAYMENT MUTATION
+    const paymentMutation = useMutation({
+        mutationFn: async (data: FormData) => {
+            const respData = await apiService.post('/api/add/payment', data)
+            return respData
+        },
+        onSuccess: (response) => {
+            console.log('response add payment: ', response)
+            toast.add({
+                severity: 'success',
+                summary: 'Payment Added Successfully',
+                life: 1500,
+            })
+
+            setTimeout(() => {
+                queryClient.invalidateQueries({ queryKey: ['orders'] })
+                handleCloseModal()
+            }, 1500)
+        },
+
+        onError: (error) => {
+            console.error('Error adding new payment:', error)
+
+            toast.add({
+                severity: 'error',
+                summary: 'Adding new payment failed, please try again.',
+                life: 1500,
+            })
+        },
+    })
+
+    const handleAddPayment = () => {
+        if (props.paymentData?.order_id && file.value) {
+            const formData = new FormData()
+            formData.append('order_id', String(props.paymentData.order_id))
+            formData.append('payment_attachment', file.value)
+
+            paymentMutation.mutate(formData)
+        }
     }
 </script>
 
@@ -82,12 +123,12 @@
                         <DialogPanel
                             class="w-[800px] max-w-5xl transform overflow-hidden rounded-2xl bg-white p-6 mb-8 text-left align-middle shadow-xl transition-all"
                         >
-                            <DialogTitle as="h3" class="text-lg font-medium leading-6 text-gray-900">Scan Gcash QR Code</DialogTitle>
+                            <DialogTitle as="h3" class="text-lg font-medium leading-6 text-gray-900">Scan Gcash QR Code 213123123</DialogTitle>
 
                             <div class="mt-2">
-                                <p class="text-sm text-gray-500">Product Name: {{ props.paymentData?.product_name }}</p>
-                                <p class="text-sm text-gray-500">Quantity: {{ props.paymentData?.total_quantity }}</p>
-                                <p class="text-sm text-gray-500">Total Price: ₱{{ props.paymentData?.total_price }}</p>
+                                <p class="text-sm text-gray-500">Product Name: {{ paymentData?.product_name }}</p>
+                                <p class="text-sm text-gray-500">Quantity: {{ paymentData?.total_quantity }}</p>
+                                <p class="text-sm text-gray-500">Total Price: ₱{{ paymentData?.total_price }}</p>
                             </div>
 
                             <p class="text-sm text-center my-5">
@@ -163,13 +204,13 @@
                                 <button
                                     type="button"
                                     :disabled="!file"
-                                    @click="handleTriggerPlaceOrder"
+                                    @click="handleAddPayment"
                                     :class="[
                                         'inline-flex justify-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2',
                                         !file ? 'bg-gray-400 hover:cursor-not-allowed' : 'bg-gray-900 hover:opacity-75 hover:cursor-pointer ',
                                     ]"
                                 >
-                                    Place Order
+                                    Add Payment
                                 </button>
                             </div>
                         </DialogPanel>

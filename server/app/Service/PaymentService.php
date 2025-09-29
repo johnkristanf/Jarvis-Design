@@ -37,7 +37,21 @@ class PaymentService
     public function allOrders($limit)
     {
 
-            $query = Orders::with(['user:id,name,email', 'sizes'])
+            $query = Orders::with([
+                'user:id,name,email',
+                'sizes',
+                'product:id,name',
+                'order_payments' => function ($q) {
+                    $q->select([
+                        'id',
+                        'payment_number',
+                        'payment_method_id',
+                        'order_id',
+                        'amount_applied',
+                        'status',
+                    ])->with(['payment_attachments:id,order_payment_id,url', 'payment_methods:id,name']); // ✅ include payment method details
+                },
+            ])
                 ->select([
                     'id',
                     'order_number',
@@ -55,6 +69,7 @@ class PaymentService
                     'status',
                     'delivery_date',
                     'user_id',
+                    'product_id',
                     'created_at',
                 ]);
 
@@ -123,7 +138,9 @@ class PaymentService
             file: $paymentAttachmentFile
         );
 
-        ProcessPayment::dispatch($orderID, $paymentAttachmentURL)->afterCommit();
+        Log::info("Auth::user()->id: ", [Auth::user()->id]);
+
+        ProcessPayment::dispatch(Auth::user()->id, $orderID, $paymentAttachmentURL)->afterCommit();
     }
 
 
@@ -150,5 +167,24 @@ class PaymentService
             Log::error('Broadcast exception: ' . $e->getMessage());
             Log::error('Stack trace: ' . $e->getTraceAsString());
         }
+    }
+
+    public function createAndLoadOrderPayment($paymentMethodID, $orderID, $userID, $attachmentURL)
+    {
+        $orderPayment = OrderPayment::create([
+            'payment_number'    => $this->generatePaymentNumber(),
+            'payment_method_id' => $paymentMethodID,
+            'order_id'          => $orderID,
+            'user_id'           => $userID,
+            'amount_applied'    => 0, // admin updates later
+            'status'            => OrderPayment::IN_REVIEW,
+        ]);
+
+        PaymentAttachment::create([
+            'order_payment_id' => $orderPayment->id,
+            'url'      => $attachmentURL,
+        ]);
+
+        return $orderPayment;
     }
 }

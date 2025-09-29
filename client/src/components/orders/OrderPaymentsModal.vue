@@ -1,12 +1,13 @@
 <!-- eslint-disable @typescript-eslint/no-explicit-any -->
 <script lang="ts" setup>
     import { apiService } from '@/api/axios'
-    import { formatDateWithTime, getStatusBadgeClass, getStatusLabel } from '@/helper/order'
+    import { formatDateWithTime } from '@/helper/order'
     import type { Payment, UpdatePaymentPayload } from '@/types/payment'
     import { Dialog, DialogPanel } from '@headlessui/vue'
     import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
     import { ref, watch } from 'vue'
     import PaymentAttachmentPopOver from './PaymentAttachmentPopOver.vue'
+    import PaymentStatusBadge from './PaymentStatusBadge.vue'
 
     const props = defineProps<{
         orderID: number
@@ -155,10 +156,7 @@
                                     </div>
 
                                     <div class="flex items-center gap-2">
-                                        <span :class="getStatusBadgeClass(payment.status)" class="px-3 py-1 rounded-md text-xs font-medium border">
-                                            {{ getStatusLabel(payment.status) }}
-                                        </span>
-
+                                        <PaymentStatusBadge :status="payment.status" />
                                         <PaymentAttachmentPopOver :paymentAttachmentURL="payment.payment_attachments.temp_url" />
                                     </div>
                                 </div>

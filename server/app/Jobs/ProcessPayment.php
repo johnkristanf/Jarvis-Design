@@ -8,20 +8,23 @@ use App\Models\PaymentMethod;
 use App\Traits\OrderTrait;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 class ProcessPayment implements ShouldQueue
 {
     use Queueable, OrderTrait;
 
+    protected $userID;
     protected $orderID;
     protected $paymentAttachmentURL;
 
     /**
      * Create a new job instance.
      */
-    public function __construct($orderID, $paymentAttachmentURL)
+    public function __construct($userID, $orderID, $paymentAttachmentURL)
     {
+        $this->userID = $userID;
         $this->orderID = $orderID;
         $this->paymentAttachmentURL = $paymentAttachmentURL;
     }
@@ -40,6 +43,7 @@ class ProcessPayment implements ShouldQueue
             'payment_number'    => $this->generatePaymentNumber(),
             'payment_method_id' => $paymentMethodID,
             'order_id'          => $this->orderID,
+            'user_id'           => $this->userID,
             'amount_applied'    => 0, // admin updates later
             'status'            => OrderPayment::IN_REVIEW,
         ]);

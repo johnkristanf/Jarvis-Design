@@ -130,9 +130,7 @@
             </TransitionChild>
 
             <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
-                <div
-                    class="flex min-h-full items-stretch justify-center text-center md:items-center md:px-2 lg:px-4"
-                >
+                <div class="flex min-h-full items-stretch justify-center text-center md:items-center md:px-2 lg:px-4">
                     <TransitionChild
                         as="template"
                         enter="ease-out duration-300"
@@ -142,9 +140,7 @@
                         leave-from="opacity-100 translate-y-0 md:scale-100"
                         leave-to="opacity-0 translate-y-4 md:translate-y-0 md:scale-95"
                     >
-                        <DialogPanel
-                            class="flex w-full transform text-left text-base transition md:my-8 md:max-w-2xl md:px-4 lg:max-w-4xl"
-                        >
+                        <DialogPanel class="flex w-full transform text-left text-base transition md:my-8 md:max-w-2xl md:px-4 lg:max-w-4xl">
                             <div
                                 class="relative flex w-full items-center overflow-hidden mb-16 bg-white px-4 pt-14 pb-8 shadow-2xl sm:px-6 sm:pt-8 md:p-6 lg:p-8"
                             >
@@ -169,34 +165,23 @@
                                         </h2> -->
 
                                         <section aria-labelledby="information-heading" class="mt-2">
-                                            <h3 id="information-heading" class="sr-only">
-                                                Design Information
-                                            </h3>
+                                            <h3 id="information-heading" class="sr-only">Design Information</h3>
                                             <!-- <p class="text-2xl text-gray-900">
                                                 ₱ {{ props.design.price }}
                                             </p> -->
                                         </section>
 
                                         <section aria-labelledby="options-heading" class="mt-10">
-                                            <h3 id="options-heading" class="sr-only">
-                                                design options
-                                            </h3>
+                                            <h3 id="options-heading" class="sr-only">design options</h3>
 
                                             <form>
-                                                <div
-                                                    class="flex flex-col items-center justify-center"
-                                                >
+                                                <div class="flex flex-col items-center justify-center">
                                                     <h1 class="text-2xl">{{ props.category }}</h1>
                                                 </div>
 
                                                 <!-- FABRIC TYPE FIELD -->
-                                                <fieldset
-                                                    v-if="hasFabricOptions"
-                                                    class="mt-10 w-full"
-                                                >
-                                                    <label for="fabric" class="block text-md mb-2">
-                                                        Fabric Type
-                                                    </label>
+                                                <fieldset v-if="hasFabricOptions" class="mt-10 w-full">
+                                                    <label for="fabric" class="block text-md mb-2">Fabric Type</label>
                                                     <select
                                                         id="fabric"
                                                         class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
@@ -208,10 +193,7 @@
                                                 </fieldset>
 
                                                 <!-- COLOR FIELD -->
-                                                <fieldset
-                                                    class="mt-10 w-full"
-                                                    aria-label="Select quantity"
-                                                >
+                                                <fieldset class="mt-10 w-full" aria-label="Select quantity">
                                                     <div class="flex items-center justify-between">
                                                         <div class="text-md">Color</div>
                                                     </div>
@@ -226,35 +208,20 @@
 
                                                 <div class="flex gap-3">
                                                     <!-- SIZES FIELD -->
-                                                    <fieldset
-                                                        v-if="sizes && !loadingSizes"
-                                                        class="mt-10"
-                                                        aria-label="Choose a color"
-                                                    >
-                                                        <div
-                                                            class="flex items-center justify-between"
-                                                        >
+                                                    <fieldset v-if="sizes && !loadingSizes" class="mt-10" aria-label="Choose a color">
+                                                        <div class="flex items-center justify-between">
                                                             <div class="text-md">Sizes</div>
                                                         </div>
 
                                                         <div class="mt-4 w-full">
-                                                            <ListSelectBox
-                                                                :options="sizes"
-                                                                :modelValue="selectedSize"
-                                                                displayKey="name"
-                                                            />
+                                                            <ListSelectBox :options="sizes" :modelValue="selectedSize" displayKey="name" />
                                                         </div>
                                                     </fieldset>
 
                                                     <!-- QUANTITY FIELD -->
 
-                                                    <fieldset
-                                                        class="mt-10 w-1/2"
-                                                        aria-label="Select quantity"
-                                                    >
-                                                        <div
-                                                            class="flex items-center justify-between"
-                                                        >
+                                                    <fieldset class="mt-10 w-1/2" aria-label="Select quantity">
+                                                        <div class="flex items-center justify-between">
                                                             <div class="text-md">Quantity</div>
                                                         </div>
 
@@ -271,22 +238,13 @@
                                                     <!-- ADD BOTH QUANTITY AND SIZE -->
 
                                                     <div class="w-1/4 flex items-end">
-                                                        <fwb-button
-                                                            class="w-full !text-gray-900 hover:cursor-pointer"
-                                                            color="light"
-                                                        >
-                                                            Add
-                                                        </fwb-button>
+                                                        <fwb-button class="w-full !text-gray-900 hover:cursor-pointer" color="light">Add</fwb-button>
                                                     </div>
                                                 </div>
 
                                                 <!-- ORDER TYPES -->
 
-                                                <fieldset
-                                                    v-if="orderOptions"
-                                                    class="mt-10"
-                                                    aria-label="Choose a color"
-                                                >
+                                                <fieldset v-if="orderOptions" class="mt-10" aria-label="Choose a color">
                                                     <div class="flex items-center justify-between">
                                                         <div class="text-md">Order Options</div>
                                                     </div>
@@ -294,11 +252,7 @@
                                                     <!-- DESIGN STATUS SELECT ELEMENT -->
 
                                                     <div class="mt-4 w-full">
-                                                        <ListSelectBox
-                                                            v-model="selectedOrderType"
-                                                            :options="orderOptions"
-                                                            displayKey="tag"
-                                                        />
+                                                        <ListSelectBox v-model="selectedOrderType" :options="orderOptions" displayKey="tag" />
                                                     </div>
 
                                                     <!-- END OF DESIGN STATUS SELECT ELEMENT -->
@@ -327,14 +281,9 @@
 
                                                 <!-- END OF DESIGN STATUS SELECT ELEMENT -->
 
-                                                <div
-                                                    class="w-full flex items-center"
-                                                    v-if="loadingColors"
-                                                >
+                                                <div class="w-full flex items-center" v-if="loadingColors">
                                                     <h1>Loading Colors...</h1>
-                                                    <ProgressSpinner
-                                                        :pt="{ root: { style: { width: '40px' } } }"
-                                                    />
+                                                    <ProgressSpinner :pt="{ root: { style: { width: '40px' } } }" />
                                                 </div>
 
                                                 <!-- SIZES -->

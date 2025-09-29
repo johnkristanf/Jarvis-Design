@@ -42,6 +42,8 @@
         queryKey: ['orders', pagination.page, pagination.limit],
         queryFn: async () => {
             const respData = await apiService.get<PaginatedResponse<Orders>>(`/api/get/orders?page=${pagination.page}&limit=${pagination.limit}`)
+            console.log('respData: ', respData)
+
             return respData
         },
         enabled: true,
@@ -253,6 +255,8 @@
                     </th> -->
                     <th scope="col" class="px-6 py-3">Order No.</th>
 
+                    <th scope="col" class="px-6 py-3">Product name</th>
+
                     <th scope="col" class="px-16 py-3">
                         <span>Design</span>
                     </th>
@@ -286,6 +290,9 @@
                         {{ order.order_number }}
                     </td>
 
+                    <td class="px-6 py-4 font-semibold text-gray-900 dark:text-white">
+                        {{ order.product?.name }}
+                    </td>
                     <!-- <td class="p-4">
                         <button
                             @click="handleOpenUploadedImagesModal(order.design_id)"

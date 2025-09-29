@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained('users');
             $table->foreignId('order_id')->constrained('orders');
-            $table->string('material_name')->constrained('orders');
+            $table->string('material_name');
             $table->string('unit');
             $table->unsignedInteger('total_quantity_used');
             $table->timestamps();

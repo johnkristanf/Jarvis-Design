@@ -35,6 +35,7 @@ export type QrCodePaymentData = {
     product_name: string
     total_quantity: number
     total_price: number
+    order_id?: number
 }
 
 export interface SizePivot {

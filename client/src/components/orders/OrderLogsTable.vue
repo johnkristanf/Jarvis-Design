@@ -1,56 +1,52 @@
 <script lang="ts" setup>
-    import DataTable from 'primevue/datatable'
-    import Column from 'primevue/column'
     import { useQuery } from '@tanstack/vue-query'
     import { apiService } from '@/api/axios'
     import type { OrderLogs } from '@/types/order'
 
-    const {
-        isPending,
-        isError,
-        data: orderLogs,
-        error,
-    } = useQuery({
+    const { data: orderLogs } = useQuery({
         queryKey: ['order_logs'],
         queryFn: async () => {
             const respData = await apiService.get<OrderLogs[]>('/api/get/order/logs')
-            console.log('respData order logs: ', respData)
             return respData
         },
     })
 </script>
 
 <template>
-    <DataTable
-        :value="orderLogs"
-        tableStyle="min-width: 10rem"
-        :lazy="true"
-        class="custom-table"
-        :pt="{
-            thead: { class: 'my-custom-header' }, // Change from header to thead
-            headerCell: { class: 'my-custom-header-cell' } // Add this for the cells
-        }"
-    >
-        <Column field="users.name" header="User Name" />
-        <Column field="material_name" header="Material Name" />
-        <Column field="total_quantity_used" header="Total Quantity Used" />
-        <Column field="unit" header="Unit" />
-    </DataTable>
+    <div class="overflow-x-auto mt-8 sm:rounded-lg">
+        <table class="min-w-full border border-gray-300 rounded-md text-sm">
+            <thead class="bg-gray-900 text-white">
+                <tr>
+                    <th class="px-4 py-2 text-left">User Name</th>
+                    <th class="px-4 py-2 text-left">Material Name</th>
+                    <th class="px-4 py-2 text-left">Total Quantity Used</th>
+                    <th class="px-4 py-2 text-left">Unit</th>
+                </tr>
+            </thead>
+
+            <!-- ✅ Data found -->
+            <tbody v-if="orderLogs && orderLogs.length > 0">
+                <tr v-for="(log, index) in orderLogs" :key="index" class="border-t border-gray-200 hover:bg-gray-50">
+                    <td class="px-4 py-2">{{ log.users?.name }}</td>
+                    <td class="px-4 py-2">{{ log.material_name }}</td>
+                    <td class="px-4 py-2">{{ log.total_quantity_used }}</td>
+                    <td class="px-4 py-2">{{ log.unit }}</td>
+                </tr>
+            </tbody>
+
+            <!-- ✅ Not found -->
+            <tbody v-else-if="orderLogs && orderLogs.length === 0">
+                <tr>
+                    <td colspan="4" class="text-center py-4 text-gray-500">No logs found.</td>
+                </tr>
+            </tbody>
+
+            <!-- ✅ Still loading -->
+            <tbody v-else>
+                <tr>
+                    <td colspan="4" class="text-center py-4 text-gray-500">Loading...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 </template>
-
-<style>
-    .custom-table {
-        margin-top: 2rem;
-    }
-
-    /* More specific selectors to ensure they override PrimeVue's styles */
-    .my-custom-header {
-        background-color: #3b82f6 !important; /* Blue background with !important */
-        color: white !important; /* White text with !important */
-    }
-    
-    .my-custom-header-cell {
-        background-color: #3b82f6 !important;
-        color: white !important;
-    }
-</style>

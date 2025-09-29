@@ -93,7 +93,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
 
     // PROTECTED PAYMENT ROUTES
+    Route::post('/add/payment', [PaymentController::class, 'store']);
     Route::get('/get/payments/{orderID}', [PaymentController::class, 'paymentsByOrderID']);
     Route::patch('/update/payment/{paymentID}', [PaymentController::class, 'updatePayment']);
+
 
 });

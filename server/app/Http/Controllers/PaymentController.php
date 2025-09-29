@@ -7,6 +7,8 @@ use App\Models\Materials;
 use App\Models\OrderLogs;
 use App\Models\OrderPayment;
 use App\Models\Orders;
+use App\Models\PaymentAttachment;
+use App\Models\PaymentMethod;
 use App\Service\PaymentService;
 use App\Traits\HandleAttachments;
 use App\Traits\OrderTrait;
@@ -33,6 +35,35 @@ class PaymentController extends Controller
         $orders = $this->paymentService->allOrders($limit);
 
         return response()->json($orders, 200);
+    }
+
+
+    public function store(Request $request)
+    {
+        // ✅ Validate incoming form data
+        $validated = $request->validate([
+            'order_id' => 'required|exists:orders,id',
+            'payment_attachment' => 'required|file|mimes:jpg,jpeg,png|max:2048', // adjust rules
+        ]);
+
+        Log::info("validated: ", [$validated]);
+
+        $order = Orders::findOrFail($validated['order_id']);
+        $attachmentURL = $this->uploadToS3(
+            root: 'payment',
+            sub: Auth::user()->id,
+            file: $request->file('payment_attachment')
+        );
+
+        $paymentMethodID = PaymentMethod::where('code', PaymentMethod::GCASH)->value('id') ?? 0;
+
+        $orderPayment = $this->paymentService->createAndLoadOrderPayment($paymentMethodID, $order->id, Auth::user()->id, $attachmentURL);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Payment uploaded successfully!',
+            'data' => $orderPayment
+        ]);
     }
 
     public function updateOrderStatus(Request $request)

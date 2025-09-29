@@ -1,6 +1,6 @@
 import type { PaymentStatus } from '@/types/payment'
 
-export const getStatusBadgeClass = (status: PaymentStatus) => {
+export const getPaymentStatusBadge = (status: PaymentStatus) => {
     switch (status) {
         case 'in_review':
             return 'bg-yellow-100 text-yellow-800 border-yellow-200'
@@ -13,7 +13,7 @@ export const getStatusBadgeClass = (status: PaymentStatus) => {
     }
 }
 
-export const getStatusLabel = (status: string) => {
+export const getPaymentStatusLabel = (status: string) => {
     return status.replace('_', ' ').toUpperCase()
 }
 

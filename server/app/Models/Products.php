@@ -10,7 +10,7 @@ class Products extends Model
 {
     protected $guarded = ['id'];
 
-    public function products()
+    public function orders()
     {
         return $this->hasMany(Orders::class, 'product_id');
     }
