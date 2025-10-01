@@ -14,6 +14,7 @@
     const isOpenChatBox = ref<boolean>(false)
     const isOrderDetailsOpen = ref<boolean>(false)
     const orderDetails = ref<Orders>()
+    const searchTerm = ref<string>('')
     const toast = useToast()
 
     const {
@@ -21,11 +22,9 @@
         isLoading,
         error,
     } = useQuery({
-        queryKey: ['orders'],
+        queryKey: ['orders', searchTerm],
         queryFn: async () => {
-            const respData = await apiService.get<PaginatedResponse<Orders>>(`/api/get/orders`)
-            console.log('respData: ', respData)
-
+            const respData = await apiService.get<PaginatedResponse<Orders>>(`/api/get/orders?search=${searchTerm.value}`)
             return respData
         },
         enabled: true,
@@ -78,10 +77,10 @@
                     </div>
                     <input
                         type="search"
+                        v-model="searchTerm"
                         id="default-search"
-                        class="block w-full p-4 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                        placeholder="Search Order No., Status..."
-                        required
+                        class="block w-full p-3 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-gray-900 focus:border-gray-900"
+                        placeholder="Search Order No. or Status..."
                     />
                 </div>
             </div>

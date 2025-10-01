@@ -5,6 +5,7 @@
     import { useMutation, useQueryClient } from '@tanstack/vue-query'
     import { ref } from 'vue'
     import { useToast } from 'primevue/usetoast'
+import Loader from '../Loader.vue'
 
     const props = defineProps<{
         paymentData: QrCodePaymentData | null
@@ -58,8 +59,7 @@
             const respData = await apiService.post('/api/add/payment', data)
             return respData
         },
-        onSuccess: (response) => {
-            console.log('response add payment: ', response)
+        onSuccess: () => {
             toast.add({
                 severity: 'success',
                 summary: 'Payment Added Successfully',
@@ -217,6 +217,8 @@
                     </TransitionChild>
                 </div>
             </div>
+            <Loader v-if="paymentMutation.isPending.value" msg="Adding New Payment..." />
         </Dialog>
     </TransitionRoot>
+
 </template>

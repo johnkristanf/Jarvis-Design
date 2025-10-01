@@ -6,18 +6,15 @@
     import PaymentAttachmentPopOver from './PaymentAttachmentPopOver.vue'
     import PaymentStatusBadge from './PaymentStatusBadge.vue'
     import PaymentAmountApplied from './PaymentAmountApplied.vue'
-    import { onMounted, ref } from 'vue'
+    import { ref } from 'vue'
     import AddNewButton from '../AddNewButton.vue'
     import AddNewPaymentModal from './AddNewPaymentModal.vue'
+    import { usePayments } from '@/composables/usePayments'
 
     const props = defineProps<{
         orderDetails: Orders
         isOpen: boolean
     }>()
-
-    onMounted(() => {
-        console.log('orderDetails: ', props.orderDetails)
-    })
 
     const showAddNewPaymentModal = ref<boolean>(false)
     const qrCodePaymentData = ref<QrCodePaymentData | null>(null)
@@ -29,7 +26,7 @@
             product_name: props.orderDetails.product!.name!,
             total_quantity: props.orderDetails.total_quantity,
             total_price: props.orderDetails.total_price,
-            order_id: props.orderDetails.id
+            order_id: props.orderDetails.id,
         }
     }
 
@@ -40,6 +37,12 @@
 
     const emit = defineEmits(['close'])
     const handleCloseModal = () => emit('close')
+
+    // Payment composable
+    const { orderTotalPrice, totalApplied, remainingBalance, hasFullyPaid } = usePayments(
+        props.orderDetails.order_payments,
+        props.orderDetails.total_price,
+    )
 </script>
 
 <template>
@@ -68,7 +71,7 @@
                         leave-from="opacity-100 scale-100"
                         leave-to="opacity-0 scale-95"
                     >
-                        <DialogPanel class="w-full max-w-3xl transform overflow-hidden bg-white shadow-2xl transition-all">
+                        <DialogPanel class="relative w-full max-w-3xl transform overflow-hidden bg-white shadow-2xl transition-all">
                             <!-- Header -->
                             <div class="bg-gray-900 text-white p-6 border-b border-gray-200">
                                 <div class="flex items-center justify-between">
@@ -193,63 +196,28 @@
                                     </div>
                                 </div>
 
-                                <!-- Pricing -->
-                                <div class="mb-6">
-                                    <h3 class="text-lg font-semibold text-black mb-3 border-l-4 border-black pl-3">Pricing</h3>
-                                    <div class="bg-gray-50 p-4 border border-gray-200">
-                                        <div class="flex justify-between items-center mb-2">
-                                            <span class="text-gray-600">Unit Price:</span>
-                                            <span class="font-medium text-black">₱ {{ Math.floor(orderDetails.product_unit_price) }}</span>
-                                        </div>
-
-                                        <div class="flex justify-between items-center mb-2">
-                                            <span class="text-gray-600">Total Quantity:</span>
-                                            <span class="font-medium text-black">
-                                                {{ orderDetails.solo_quantity ? orderDetails.solo_quantity : orderDetails.total_quantity }}
-                                            </span>
-                                        </div>
-                                        <div class="border-t border-gray-300 pt-2 mt-2">
-                                            <div class="flex justify-between items-center">
-                                                <span class="font-semibold text-black">Total Price:</span>
-                                                <span class="font-bold text-xl text-black">
-                                                    ₱
-                                                    {{ Math.floor(orderDetails.total_price).toLocaleString() }}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Pricing -->
-                                <div class="mb-6 pb-6 border-b border-gray-200">
-                                    <h3 class="text-lg font-semibold text-black mb-3 border-l-4 border-black pl-3">Pricing</h3>
-                                    <div class="bg-gray-50 p-4 border border-gray-200">
-                                        <div class="flex justify-between items-center mb-2">
-                                            <span class="text-gray-600">Unit Price:</span>
-                                            <span class="font-medium text-black">₱ {{ Math.floor(orderDetails.product_unit_price) }}</span>
-                                        </div>
-                                        <div class="flex justify-between items-center mb-2">
-                                            <span class="text-gray-600">Total Quantity:</span>
-                                            <span class="font-medium text-black">
-                                                {{ orderDetails.solo_quantity ? orderDetails.solo_quantity : orderDetails.total_quantity }}
-                                            </span>
-                                        </div>
-                                        <div class="border-t border-gray-300 pt-2 mt-2">
-                                            <div class="flex justify-between items-center">
-                                                <span class="font-semibold text-black">Total Price:</span>
-                                                <span class="font-bold text-xl text-black">
-                                                    ₱ {{ Math.floor(orderDetails.total_price).toLocaleString() }}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
                                 <!-- Payments Section -->
-                                <div v-if="orderDetails.order_payments && orderDetails.order_payments.length > 0" class="mb-6">
+                                <div v-if="orderDetails.order_payments && orderDetails.order_payments.length > 0" class="mb-20">
                                     <div class="flex items-center justify-between mb-3">
                                         <h3 class="text-lg font-semibold text-black mb-3 border-l-4 border-black pl-3">Payment History</h3>
-                                        <AddNewButton message="Add Payment" @action="handleShowNewPaymentModal" />
+                                        <div>
+                                            <!-- Show Add button if not fully paid -->
+                                            <AddNewButton v-if="!hasFullyPaid" message="Add Payment" @action="handleShowNewPaymentModal" />
+
+                                            <!-- Show fully paid message if at least one payment is fully paid -->
+                                            <p v-else class="mt-4 text-green-600 font-semibold text-sm flex items-center gap-2">
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    class="w-5 h-5 text-green-600"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    stroke="currentColor"
+                                                >
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                                </svg>
+                                                This order is fully paid
+                                            </p>
+                                        </div>
                                     </div>
                                     <div class="space-y-4">
                                         <div
@@ -285,33 +253,6 @@
                                             <!-- Payment Amount -->
                                             <PaymentAmountApplied :amount="payment.amount_applied" :status="payment.status" />
                                         </div>
-
-                                        <!-- Payment Summary -->
-                                        <div class="bg-gray-900 text-white p-4 rounded">
-                                            <div class="flex items-center justify-between mb-2">
-                                                <span class="text-sm">Total Paid</span>
-                                                <span class="text-xl font-bold">
-                                                    ₱
-                                                    {{
-                                                        Math.floor(
-                                                            orderDetails.order_payments.reduce((sum, p) => sum + p.amount_applied, 0),
-                                                        ).toLocaleString()
-                                                    }}
-                                                </span>
-                                            </div>
-                                            <div class="flex items-center justify-between text-sm">
-                                                <span class="text-gray-300">Remaining Balance</span>
-                                                <span class="font-semibold">
-                                                    ₱
-                                                    {{
-                                                        Math.floor(
-                                                            orderDetails.total_price -
-                                                                orderDetails.order_payments.reduce((sum, p) => sum + p.amount_applied, 0),
-                                                        ).toLocaleString()
-                                                    }}
-                                                </span>
-                                            </div>
-                                        </div>
                                     </div>
                                 </div>
 
@@ -328,6 +269,27 @@
                                             />
                                         </svg>
                                         <p class="text-gray-600 text-sm">No payments recorded yet</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Payment Total Summary -->
+                            <div
+                                v-if="orderDetails.order_payments && orderDetails.order_payments.length > 0"
+                                class="absolute bottom-0 w-full border-t border-gray-200 bg-gray-50 px-6 py-4 flex-shrink-0"
+                            >
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div>
+                                        <p class="text-sm text-gray-900 mb-1">Order Total Price</p>
+                                        <p class="text-xl font-bold text-gray-900">₱{{ orderTotalPrice.toLocaleString() }}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-900 mb-1">Total Paid Amount</p>
+                                        <p class="text-xl font-bold text-green-600">₱{{ totalApplied.toLocaleString() }}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-900 mb-1">Remaining Balance</p>
+                                        <p class="text-xl font-bold text-amber-600">₱{{ remainingBalance.toLocaleString() }}</p>
                                     </div>
                                 </div>
                             </div>

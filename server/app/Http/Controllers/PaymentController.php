@@ -3,13 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreOrderRequest;
+use App\Models\AdminNotification;
 use App\Models\Materials;
 use App\Models\OrderLogs;
 use App\Models\OrderPayment;
 use App\Models\Orders;
-use App\Models\PaymentAttachment;
 use App\Models\PaymentMethod;
 use App\Service\PaymentService;
+use App\Service\NotificationService;
 use App\Traits\HandleAttachments;
 use App\Traits\OrderTrait;
 use Exception;
@@ -23,16 +24,20 @@ class PaymentController extends Controller
     use HandleAttachments, OrderTrait;
 
     protected $paymentService;
+    protected $notificationService;
 
     public function __construct()
     {
         $this->paymentService = new PaymentService;
+        $this->notificationService = new NotificationService;
     }
 
     public function getAllOrders(Request $request)
     {
+        $search = $request->input('search');
+
         $limit = $request->get('limit', 10);
-        $orders = $this->paymentService->allOrders($limit);
+        $orders = $this->paymentService->allOrders($limit, $search);
 
         return response()->json($orders, 200);
     }
@@ -46,8 +51,6 @@ class PaymentController extends Controller
             'payment_attachment' => 'required|file|mimes:jpg,jpeg,png|max:2048', // adjust rules
         ]);
 
-        Log::info("validated: ", [$validated]);
-
         $order = Orders::findOrFail($validated['order_id']);
         $attachmentURL = $this->uploadToS3(
             root: 'payment',
@@ -58,6 +61,22 @@ class PaymentController extends Controller
         $paymentMethodID = PaymentMethod::where('code', PaymentMethod::GCASH)->value('id') ?? 0;
 
         $orderPayment = $this->paymentService->createAndLoadOrderPayment($paymentMethodID, $order->id, Auth::user()->id, $attachmentURL);
+
+
+        $orderPayment->load(['users']);
+        $message = sprintf(
+    "💰 Payment Received!\n\n".
+            "Order No: %s\n".
+            "Customer: %s\n".
+            "Product: %s (%s)\n",
+
+            $order->order_number,
+            $orderPayment->users->name ?? 'Guest',
+            $order->product->name ?? 'N/A',
+            ucfirst($order->color),
+        );
+
+        $this->notificationService->notifyAdmin(AdminNotification::ORDER_NOTIFICATION_TYPE, $message);
 
         return response()->json([
             'success' => true,
@@ -102,7 +121,7 @@ class PaymentController extends Controller
                 ? Orders::FOR_DELIVERY
                 : Orders::FOR_PICKUP;
 
-            $this->paymentService->notifyUser($order->id, $order->user_id, $notifyStatus);
+            $this->notificationService->notifyUserOrder($order, $order->user_id, $notifyStatus);
 
             return $order;
         });
@@ -113,34 +132,7 @@ class PaymentController extends Controller
         ]);
     }
 
-    public function orderNotificationsPerUser()
-    {
-        $orderNotifications = $this->paymentService->getNotificationPerUser(userID: Auth::user()->id);
-        return response()->json($orderNotifications, 200);
-    }
-
-    public function updateNotificationAsRead(Request $request)
-    {
-        $validated = $request->validate([
-            'notification_id' => 'required|numeric',
-        ]);
-
-        $updatedNotificationID = $this->paymentService->updateNotification($validated['notification_id']);
-
-        return response()->json([
-            'msg' => 'Notification Read Update Successfully',
-            'notifID' => $updatedNotificationID,
-        ], 200);
-    }
-
-    public function updateNotificationAsReadAll()
-    {
-        $this->paymentService->updateAllNotificationsAsRead();
-
-        return response()->json([
-            'msg' => 'Notification Read All Successfully',
-        ], 200);
-    }
+   
 
     public function placeOrder(StoreOrderRequest $request)
     {
@@ -223,10 +215,29 @@ class PaymentController extends Controller
             $this->paymentService->processPayment($order->id, $request->file('payment_attachment'));
         }
 
-        // NOTFICATION
-        $this->paymentService->notifyUser($order, Auth::user()->id, Orders::PENDING);
+        // User order notification
+        $this->notificationService->notifyUserOrder($order, Auth::user()->id, Orders::PENDING);
 
-        // Email User Order
+        // Notify admin
+        $message = sprintf(
+    "🆕 New Order Placed!\n\n".
+            "Order No: %s\n".
+            "Customer: %s\n".
+            "Product: %s (%s)\n".
+            "Quantity: %d pcs\n".
+            "Total Price: ₱%s\n",
+
+            $order->order_number,
+            Auth::user()->name ?? 'Guest',
+            $order->product->name ?? 'N/A',
+            ucfirst($order->color),
+            $order->total_quantity,
+            number_format($order->total_price, 2),
+        );
+
+        $this->notificationService->notifyAdmin(AdminNotification::ORDER_NOTIFICATION_TYPE, $message);
+
+        // Email user order
         $this->paymentService->sendOrderConfirmationEmail($order);
 
         return response()->json(['message' => 'Order placed successfully', 'order_id' => $order->id]);
@@ -249,9 +260,11 @@ class PaymentController extends Controller
     {
         $payments = OrderPayment::with([
             'payment_methods:id,name', 
-            'payment_attachments:id,order_payment_id,url'
+            'payment_attachments:id,order_payment_id,url',
+            'orders:id,total_price'
         ])
         ->where('order_id', $orderID)
+        ->orderBy('created_at', 'asc')
         ->get();
 
         Log::info("payments: ", [$payments]);

@@ -8,7 +8,7 @@ use App\Models\PaymentMethod;
 use App\Traits\OrderTrait;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Auth; 
 use Illuminate\Support\Facades\Log;
 
 class ProcessPayment implements ShouldQueue

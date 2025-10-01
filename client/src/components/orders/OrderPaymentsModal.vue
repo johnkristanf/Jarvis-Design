@@ -8,9 +8,14 @@
     import { ref, watch } from 'vue'
     import PaymentAttachmentPopOver from './PaymentAttachmentPopOver.vue'
     import PaymentStatusBadge from './PaymentStatusBadge.vue'
+    import { useToast } from 'primevue/usetoast'
+    import { usePayments } from '@/composables/usePayments'
 
     const props = defineProps<{
-        orderID: number
+        orderData: {
+            order_id: number
+            order_number: string
+        }
     }>()
 
     // MODAL CLOSING EMITS
@@ -20,6 +25,7 @@
     const queryClient = useQueryClient()
     const editingPayments = ref<{ [key: number]: number }>({})
     const updatingPayments = ref<Set<number>>(new Set())
+    const toast = useToast()
 
     // FETCH ALL PAYMENTS BY ORDER ID
     const {
@@ -27,9 +33,9 @@
         error,
         isLoading,
     } = useQuery({
-        queryKey: ['payments_by_order', props.orderID],
+        queryKey: ['payments_by_order', props.orderData.order_id],
         queryFn: async () => {
-            const respData = await apiService.get<Payment[]>(`/api/get/payments/${props.orderID}`)
+            const respData = await apiService.get<Payment[]>(`/api/get/payments/${props.orderData.order_id}`)
             return respData
         },
     })
@@ -42,12 +48,18 @@
             })
         },
         onSuccess: (_, variables) => {
+            toast.add({
+                severity: 'success',
+                summary: 'Payment Applied Successfully',
+                life: 1500,
+            })
+
             // Remove from editing state
             delete editingPayments.value[variables.id]
             updatingPayments.value.delete(variables.id)
 
             // Invalidate and refetch
-            queryClient.invalidateQueries({ queryKey: ['payments_by_order', props.orderID] })
+            queryClient.invalidateQueries({ queryKey: ['payments_by_order', props.orderData.order_id] })
         },
         onError: (error, variables) => {
             console.error('Failed to update payment:', error)
@@ -83,6 +95,9 @@
 
     const isEditing = (paymentId: number) => paymentId in editingPayments.value
     const isUpdating = (paymentId: number) => updatingPayments.value.has(paymentId)
+
+    // Payment composable
+    const { orderTotalPrice, totalApplied, remainingBalance, hasFullyPaid } = usePayments(payments.value, null)
 </script>
 
 <template>
@@ -93,7 +108,7 @@
                 <div class="bg-gray-900 text-white px-6 py-4 flex items-center justify-between">
                     <div>
                         <h1 class="text-xl font-bold">Payment Management</h1>
-                        <p class="text-gray-300 text-sm">Order #{{ orderID }}</p>
+                        <p class="text-gray-300 text-sm">Order # {{ props.orderData.order_number }}</p>
                     </div>
                     <button @click="handleCloseModal" class="text-gray-300 hover:text-white p-2 rounded-lg hover:bg-gray-800 transition-colors">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -168,6 +183,7 @@
                                         <div v-if="!isEditing(payment.id)" class="flex items-center justify-between bg-gray-50 rounded-lg p-3">
                                             <span class="text-xl font-bold text-gray-900">${{ payment.amount_applied }}</span>
                                             <button
+                                                v-if="!hasFullyPaid"
                                                 @click="startEditing(payment.id, payment.amount_applied)"
                                                 :disabled="isUpdating(payment.id)"
                                                 class="text-gray-600 hover:text-gray-900 p-1 rounded transition-colors disabled:opacity-50"
@@ -241,7 +257,7 @@
                         </div>
                     </div>
 
-                    <!-- Empty State -->
+                    <!-- No Payments Found -->
                     <div v-else class="text-center py-12">
                         <div class="text-gray-400 mb-4">
                             <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -255,6 +271,24 @@
                         </div>
                         <h3 class="text-lg font-medium text-gray-900 mb-2">No payments found</h3>
                         <p class="text-gray-600">There are no payments associated with this order.</p>
+                    </div>
+
+                    <!-- Payment Total Summary -->
+                    <div v-if="payments && payments.length > 0" class="border-t border-gray-200 bg-gray-50 px-6 py-4 flex-shrink-0">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <p class="text-sm text-gray-600 mb-1">Order Total Price</p>
+                                <p class="text-xl font-bold text-gray-900">₱{{ orderTotalPrice.toLocaleString() }}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600 mb-1">Total Paid Amount</p>
+                                <p class="text-xl font-bold text-green-600">₱{{ totalApplied.toLocaleString() }}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600 mb-1">Remaining Balance</p>
+                                <p class="text-xl font-bold text-amber-600">₱{{ remainingBalance.toLocaleString() }}</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

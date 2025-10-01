@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { getAllColors, getAllSizes } from '@/api/get/designs'
 import type { Colors, Sizes } from '@/types/design'
 import { ref, onMounted } from 'vue'

@@ -4,6 +4,7 @@ use App\Http\Controllers\ChatController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DesignsController;
 use App\Http\Controllers\MaterialsController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -24,6 +25,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // PROTECTED USER ROUTE
     Route::get('/user/data', [UserController::class, 'user']);
     Route::post('/update/profile', [UserController::class, 'update']);
+    Route::get('/admin/data', [UserController::class, 'admin']);
 
     // PROTECTED DESIGNS ROUTE
     Route::get('/uploaded/designs', [DesignsController::class, 'getUploadedDesigns']);
@@ -55,11 +57,16 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/set/order/date', [PaymentController::class, 'setOrderDate']);
 
     Route::get('/get/order/logs', [PaymentController::class, 'getOrderLogs']);
-    Route::get('/get/order/notifications', [PaymentController::class, 'orderNotificationsPerUser']);
 
+   
     // PROTECTED NOTIFICATION ROUTE
-    Route::put('/notification/read', [PaymentController::class, 'updateNotificationAsRead']);
-    Route::put('/all/notification/read', [PaymentController::class, 'updateNotificationAsReadAll']);
+    Route::put('/notification/read', [NotificationController::class, 'notificationAsRead']);
+    Route::put('/all/notification/read', [NotificationController::class, 'markAllNotifcationAsRead']);
+
+    Route::get('/get/order/notifications', [NotificationController::class, 'orderNotificationsPerUser']);
+    Route::get('/get/admin/notifications', [NotificationController::class, 'adminNotifications']);
+    Route::post('/stock/alert/notify', [NotificationController::class, 'notifyStockAlert']);
+
 
     // PROTECTED MATERIALS ROUTE
     Route::post('/add/material', [MaterialsController::class, 'store']);
@@ -96,6 +103,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/add/payment', [PaymentController::class, 'store']);
     Route::get('/get/payments/{orderID}', [PaymentController::class, 'paymentsByOrderID']);
     Route::patch('/update/payment/{paymentID}', [PaymentController::class, 'updatePayment']);
-
+    
 
 });

@@ -62,17 +62,20 @@
     const toast = useToast()
 
     const showOrderPaymentsModal = ref<boolean>(false)
-    const selectedOrderID = ref<number>(0)
+    const selectedOrderData = ref<{ order_id: number; order_number: string } | null>(null)
 
-    const handleShowOrderPaymentsModal = (orderID: number, close: () => void) => {
+    const handleShowOrderPaymentsModal = (orderID: number, orderNumber: string, close: () => void) => {
         close()
         showOrderPaymentsModal.value = true
-        selectedOrderID.value = orderID
+        selectedOrderData.value = {
+            order_id: orderID,
+            order_number: orderNumber,
+        }
     }
 
     const handleCloseOrderPaymentsModal = () => {
         showOrderPaymentsModal.value = false
-        selectedOrderID.value = 0
+        selectedOrderData.value = null
     }
 
     // PREFERRED ORDER OPTION FOR SETTING STATUS FILTERING
@@ -293,52 +296,10 @@
                     <td class="px-6 py-4 font-semibold text-gray-900 dark:text-white">
                         {{ order.product?.name }}
                     </td>
-                    <!-- <td class="p-4">
-                        <button
-                            @click="handleOpenUploadedImagesModal(order.design_id)"
-                            class="text-gray-900 rounded-md p-2 hover:opacity-75 hover:cursor-pointer hover:underline font-medium"
-                        >
-                            Show Uploaded Images
-                        </button>
-                    </td> -->
 
                     <td class="p-4">
                         <img :src="order.temp_url" class="w-24 h-24 object-cover rounded-md border" alt="Design Image" />
                     </td>
-
-                    <!-- <td class="px-6 py-4 font-semibold text-gray-900 dark:text-white">
-                        {{ order.user.name }}
-                    </td>
-
-                    <td class="px-6 py-4 font-semibold text-gray-900 dark:text-white">
-                        {{ order.phone_number }}
-                    </td>
-
-                    <td class="px-6 py-4 font-semibold text-gray-900 dark:text-white">
-                        {{ order.address }}
-                    </td>
-
-                    <td class="px-6 py-4 font-semibold text-gray-900 dark:text-white">
-                        <div v-if="order.solo_quantity !== null">
-                            {{ order.solo_quantity }}
-                        </div>
-                        <div v-else>
-                            <button
-                                @click="handleShowSizes(order.sizes)"
-                                class="text-gray-900 hover:underline hover:cursor-pointer"
-                            >
-                                View Quantity per Size
-                            </button>
-                        </div>
-                    </td>
-
-                    <td class="px-6 py-4 font-semibold text-gray-900 dark:text-white">
-                        {{ order.color }}
-                    </td> -->
-
-                    <!-- <td class="px-6 py-4 font-semibold text-gray-900 dark:text-white">
-                        {{ formatCurrency(order.total_price.toString()) }}
-                    </td> -->
 
                     <td class="px-6 py-4 font-semibold text-gray-900 dark:text-white">
                         {{ order.order_option.toUpperCase() }}
@@ -387,7 +348,7 @@
                                                 <!-- Payment Screenshot -->
                                                 <fwb-button
                                                     v-if="order.status !== OrderStatus.COMPLETED && order.status !== OrderStatus.CANCELLED"
-                                                    @click="handleShowOrderPaymentsModal(order.id, close)"
+                                                    @click="handleShowOrderPaymentsModal(order.id, order.order_number, close)"
                                                     color="light"
                                                 >
                                                     Payments
@@ -550,7 +511,7 @@
         @close="showSizeBreakdownModal = false"
     />
 
-    <OrderPaymentsModal v-if="showOrderPaymentsModal" :orderID="selectedOrderID" @close="handleCloseOrderPaymentsModal" />
+    <OrderPaymentsModal v-if="showOrderPaymentsModal && selectedOrderData" :orderData="selectedOrderData" @close="handleCloseOrderPaymentsModal" />
 
     <!-- SET DELIVERY DATE CONFIRMATION MODAL -->
     <div v-if="showConfirmModal" class="fixed inset-0 flex items-center justify-center bg-black/50 z-[9999999]">

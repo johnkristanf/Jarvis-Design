@@ -1,3 +1,4 @@
+import type { Payment } from './payment'
 import type { User } from './user'
 
 type OrderStatus = 'in_progress' | 'pick_up' | 'delivery' | 'completed'
@@ -74,7 +75,7 @@ export type Orders = {
     image_path: string
     temp_url: string
     delivery_date: string | null
-
+    order_payments: Payment[]
     user?: User
     product?: Product
     sizes: Size[]
@@ -96,6 +97,14 @@ export type Notifications = {
     is_read: boolean
     orders: Orders
     status: OrderStatus
+    created_at: string
+}
+
+export type AdminNotifications = {
+    id: number
+    type: string
+    message: string
+    is_read: boolean
     created_at: string
 }
 

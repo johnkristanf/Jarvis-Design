@@ -2,29 +2,25 @@
 
 namespace App\Events;
 
-use App\Models\Notifications;
-use App\Models\Orders;
+use App\Models\AdminNotification;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 
-class NotifyOrderStatus implements ShouldBroadcast, ShouldQueue
+class NotifyAdminEvent implements ShouldBroadcast, ShouldQueue
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
-
-    public Orders $orders;
-    public Notifications $notifcation;
 
     /**
      * Create a new event instance.
      */
-    public function __construct(Orders $orders, Notifications $notifcation)
+    public function __construct(public AdminNotification $notification)
     {
-        $this->orders = $orders;
-        $this->notifcation = $notifcation;
+        //
     }
 
     /**
@@ -35,28 +31,27 @@ class NotifyOrderStatus implements ShouldBroadcast, ShouldQueue
     public function broadcastOn(): array
     {
         return [
-            new Channel('order.notification'),
+            new Channel('admin.notification'),
         ];
     }
 
-    /**
-     * The event's broadcast name.
-     */
     public function broadcastAs(): string
     {
-        return 'notify.order.status';
+        return 'notify.admin';
     }
 
 
     public function broadcastWith(): array
     {
+        Log::info("notification", [$this->notification]);
+        Log::info("EVENT HERE");
         return [
             'notification' => [
-                'id'         => $this->notifcation->id,
-                'order_id'   => $this->orders->id,
-                'status'     => $this->orders->status,
-                'is_read'    => $this->notifcation->is_read ?? false,
-                'created_at' => $this->notifcation->created_at?->toISOString(),
+                'id'         => $this->notification->id,
+                'type'   => $this->notification->type,
+                'message'     => $this->notification->message,
+                'is_read'    => $this->notification->is_read ?? false,
+                'created_at' => $this->notification->created_at?->toISOString(),
             ],
         ];
     }

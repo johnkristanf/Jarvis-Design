@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Mail\EmailVerification;
+use App\Models\Roles;
 use App\Models\User;
 use App\Services\UserService;
 use Illuminate\Http\Request;
@@ -89,6 +90,16 @@ class UserController extends Controller
             ->first(); 
 
         return response()->json($authenticatedUser, 200);
+    }
+
+
+    public function admin()
+    {
+        $admin = User::where('role_id', Roles::ADMIN_ROLE_ID)
+            ->select('id', 'name', 'email')
+            ->first(); 
+
+        return response()->json($admin, 200);
     }
 
     public function update(Request $request)

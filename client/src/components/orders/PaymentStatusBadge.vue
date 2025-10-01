@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-    import { getPaymentStatusBadge, getPaymentStatusLabel } from '@/helper/order'
+    import { getPaymentStatusBadge, getPaymentStatusLabel } from '@/helper/payment'
     import type { PaymentStatus } from '@/types/payment'
 
     defineProps<{

@@ -75,7 +75,7 @@
     })
 
     // GET MATERIALS CATEGORY QUERY
-    const { isPending, data } = useQuery({
+    const { isPending } = useQuery({
         queryKey: ['materials_categories'],
         queryFn: async () => {
             const respData = await apiService.get<MaterialsCategory[]>('/api/get/material/categories')

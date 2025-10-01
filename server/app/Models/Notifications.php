@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Notifications extends Model
 {
+    protected $table = 'user_order_notifications';
     protected $guarded = ['id'];
 
 

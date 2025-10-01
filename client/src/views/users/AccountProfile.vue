@@ -1,5 +1,5 @@
+<!-- eslint-disable @typescript-eslint/no-explicit-any -->
 <script lang="ts" setup>
-    import Loader from '@/components/Loader.vue'
     import { updateProfile } from '@/api/post/profile'
     import { useFetchAuthenticatedUser } from '@/composables/useFetchAuthenticatedUser'
     import type { UpdateProfilePayload } from '@/types/user'
@@ -126,7 +126,7 @@
 </script>
 
 <template>
-    <div class="min-h-screen bg-gray-50 ">
+    <div class="min-h-screen bg-gray-50">
         <!-- Header Section -->
         <div class="bg-white border-b border-gray-200">
             <div class="max-w-4xl mx-auto px-4 py-6">
@@ -155,11 +155,11 @@
             </div>
 
             <!-- Form -->
-            <div v-else class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden ">
+            <div v-else class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <!-- Form Header -->
-                <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
-                    <h2 class="text-xl font-semibold text-gray-900">Account Information</h2>
-                    <p class="text-sm text-gray-600 mt-1">Update your personal details below</p>
+                <div class="px-6 py-4 border-b border-gray-200 bg-gray-900 text-gray-200">
+                    <h2 class="text-xl font-semibold">Account Information</h2>
+                    <p class="text-sm mt-1">Update your personal details below</p>
                 </div>
 
                 <!-- Form Body -->
@@ -271,19 +271,8 @@
                                     @click="togglePasswordVisibility"
                                     class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700"
                                 >
-                                    <svg
-                                        v-if="!showPassword"
-                                        class="w-5 h-5"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="2"
-                                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                                        />
+                                    <svg v-if="!showPassword" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                         <path
                                             stroke-linecap="round"
                                             stroke-linejoin="round"
@@ -325,9 +314,7 @@
                     </div>
 
                     <!-- Form Actions -->
-                    <div
-                        class="flex flex-col sm:flex-row justify-between items-center pt-6 mt-6 border-t border-gray-200 space-y-3 sm:space-y-0"
-                    >
+                    <div class="flex flex-col sm:flex-row justify-between items-center pt-6 mt-6 border-t border-gray-200 space-y-3 sm:space-y-0">
                         <div class="flex items-center space-x-2">
                             <div v-if="hasChanges" class="flex items-center text-sm text-amber-600">
                                 <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
@@ -356,20 +343,8 @@
                                 :disabled="!isFormValid || isLoadingMutation"
                                 class="px-6 py-2.5 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center"
                             >
-                                <svg
-                                    v-if="isLoadingMutation"
-                                    class="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <circle
-                                        class="opacity-25"
-                                        cx="12"
-                                        cy="12"
-                                        r="10"
-                                        stroke="currentColor"
-                                        stroke-width="4"
-                                    ></circle>
+                                <svg v-if="isLoadingMutation" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                     <path
                                         class="opacity-75"
                                         fill="currentColor"
@@ -385,10 +360,7 @@
         </div>
 
         <!-- Loading Overlay -->
-        <div
-            v-if="isLoadingMutation"
-            class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-        >
+        <div v-if="isLoadingMutation" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div class="bg-white rounded-lg p-6 flex items-center space-x-4">
                 <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>
                 <span class="text-gray-900 font-medium">Updating your profile...</span>
