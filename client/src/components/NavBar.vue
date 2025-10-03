@@ -239,7 +239,7 @@
                                     <Drawer
                                         v-model:visible="visibleRight"
                                         position="right"
-                                        class="bg-white !w-full md:!w-80 lg:!w-[30rem]"
+                                        class="bg-white !w-full md:!w-80 lg:!w-[30rem] z-[99999]"
                                     >
                                         <template #header>
                                             <div class="w-full flex items-center justify-between">
