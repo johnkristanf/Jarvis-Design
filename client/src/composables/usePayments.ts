@@ -1,20 +1,27 @@
-// usePayments.ts
-import { computed } from 'vue'
+import { computed, type Ref, type ComputedRef, unref } from 'vue'
 import type { Payment } from '@/types/payment'
 
-export function usePayments(payments: Payment[] | undefined, defaultTotalPrice: number | null) {
+export function usePayments(
+    payments: Ref<Payment[] | undefined> | ComputedRef<Payment[]> | Payment[] | undefined,
+    defaultTotalPrice: number | null
+) {
     const orderTotalPrice = computed(() => {
         if (defaultTotalPrice) {
             return defaultTotalPrice
         }
 
-        if (!payments || payments.length === 0) return 0
-        return payments[0].orders.total_price || 0
+        // Use unref to unwrap ref/computed or return the value directly
+        const paymentsValue = unref(payments)
+        
+        if (!paymentsValue || paymentsValue.length === 0) return 0
+        return paymentsValue[0].orders.total_price || 0
     })
 
     const totalApplied = computed(() => {
-        if (!payments) return 0
-        return payments.reduce((sum, p) => sum + (p.amount_applied || 0), 0)
+        const paymentsValue = unref(payments)
+        
+        if (!paymentsValue) return 0
+        return paymentsValue.reduce((sum, p) => sum + (p.amount_applied || 0), 0)
     })
 
     const remainingBalance = computed(() => {
@@ -22,8 +29,10 @@ export function usePayments(payments: Payment[] | undefined, defaultTotalPrice: 
     })
 
     const hasFullyPaid = computed(() => {
-        if (!payments) return false
-        return payments.some((p) => p.status === 'fully_paid')
+        const paymentsValue = unref(payments)
+        
+        if (!paymentsValue) return false
+        return paymentsValue.some((p) => p.status === 'fully_paid')
     })
 
     return { orderTotalPrice, totalApplied, remainingBalance, hasFullyPaid }
