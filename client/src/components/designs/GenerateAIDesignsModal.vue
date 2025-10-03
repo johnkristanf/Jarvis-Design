@@ -1,7 +1,6 @@
 <script lang="ts" setup>
     import { generateImageDesign } from '@/api/post/generate'
     import { useMutation } from '@tanstack/vue-query'
-    import { Toast } from 'primevue'
     import { useField, useForm } from 'vee-validate'
     import Loader from '../Loader.vue'
     import { ref } from 'vue'
@@ -11,8 +10,6 @@
     import { useToast } from 'primevue/usetoast'
     import ListSelectBox from '../ListSelectBox.vue'
 
-    import { FwbButton, FwbTooltip } from 'flowbite-vue'
-
     const emit = defineEmits(['close'])
     const handleCloseModal = () => emit('close')
 
@@ -20,8 +17,6 @@
     const isLoadingMutation = ref(false)
     const loaderMsg = ref<string>('')
     const imageUrls = ref([])
-
-    const handleGenerateAnother = () => (imageUrls.value.length = 0)
 
     const { handleSubmit } = useForm()
     const toast = useToast()
@@ -290,9 +285,5 @@
         </Dialog>
     </TransitionRoot>
 
-    <div v-if="isLoadingMutation">
-        <Loader :msg="loaderMsg" />
-    </div>
-
-    <Toast />
+    <Loader v-if="isLoadingMutation" :msg="loaderMsg" />
 </template>

@@ -82,6 +82,7 @@
                         summary: 'Low Stock Alert',
                         detail: `The following fabric are low on stock: ${materialNames}`,
                         closable: true,
+                        life: 3000
                     })
 
                     const lowStockData = {
