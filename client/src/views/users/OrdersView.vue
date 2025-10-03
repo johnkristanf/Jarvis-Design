@@ -88,7 +88,7 @@
 
         <!-- FLOATING MESSAGE ICON -->
         <div
-            class="fixed bottom-13 right-11 bg-gray-800 rounded-full z-[9999] p-3 hover:cursor-pointer hover:opacity-75"
+            class="fixed bottom-13 right-11 bg-gray-800 rounded-full z-[999] p-3 hover:cursor-pointer hover:opacity-75"
             @click="isOpenChatBox = true"
         >
             <ChatBubbleLeftRightIcon class="size-10 text-white" />
