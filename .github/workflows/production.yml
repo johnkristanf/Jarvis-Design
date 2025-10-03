@@ -72,7 +72,7 @@ jobs:
             mkdir -p ${{ env.EC2_SERVER_DIR }}
 
 
-      - name: Upload files to EC2 using native SCP
+      - name: Upload production files to EC2 using native SCP
         uses: ./.github/actions/upload-config-files
         with:
           ec2_secret_key: ${{ secrets.EC2_KEY }}
@@ -151,9 +151,6 @@ jobs:
             sudo systemctl enable snap.certbot.renew.service
             sudo systemctl enable snap.certbot.renew.timer
             sudo systemctl start snap.certbot.renew.timer
-
-            # (Optional) Check renewal schedule
-            sudo systemctl list-timers | grep certbot || true
 
 
       - name: 🚀 Deploy on EC2 via SSH
