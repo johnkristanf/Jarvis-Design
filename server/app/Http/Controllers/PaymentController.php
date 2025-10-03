@@ -287,16 +287,9 @@ class PaymentController extends Controller
         $currentTotalAmount = OrderPayment::where('order_id', $payment->order_id)
             ->sum('amount_applied');
 
-        Log::info("currentTotalAmount: ", [$currentTotalAmount]);
-
         // Add the new amount to get the projected total
         $projectedTotal = $currentTotalAmount + $validated['amount_applied'];
         $orderTotalPrice = $payment->orders->total_price;
-
-        Log::info("projectedTotal: ", [$projectedTotal]);
-        Log::info("orderTotalPrice: ", [$orderTotalPrice]);
-
-
 
          // Determine status
         if ($projectedTotal >= $orderTotalPrice) {
@@ -306,9 +299,6 @@ class PaymentController extends Controller
         } else {
             $newStatus = OrderPayment::IN_REVIEW;
         }
-
-        Log::info("newStatus: ", [$newStatus]);
-
 
         // Update the payment
         $payment->update([

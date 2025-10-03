@@ -413,7 +413,12 @@
                                                 </fwb-button>
 
                                                 <!-- Delivery or Pickup Date -->
-                                                <div v-if="!order.delivery_date">
+                                                <div
+                                                    v-if="
+                                                        order.status == OrderStatus.IN_PROGRESS &&
+                                                        !order.delivery_date
+                                                    "
+                                                >
                                                     <DatePicker
                                                         class="w-full z-[999999]"
                                                         showIcon
@@ -621,7 +626,9 @@
                 Are you sure you want to set this
                 <span class="font-semibold">
                     {{
-                        dateChangeActionData?.status === OrderStatus.FOR_DELIVERY ? 'delivery' : 'pick-up'
+                        dateChangeActionData?.status === OrderStatus.FOR_DELIVERY
+                            ? 'delivery'
+                            : 'pick-up'
                     }}
                 </span>
                 date to
