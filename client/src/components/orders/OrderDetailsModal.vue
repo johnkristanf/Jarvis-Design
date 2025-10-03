@@ -398,7 +398,7 @@
                                 "
                                 class="absolute bottom-0 w-full border-t border-gray-200 bg-gray-50 px-6 py-4 flex-shrink-0"
                             >
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div class="grid grid-cols-3 gap-4">
                                     <div>
                                         <p class="text-sm text-gray-900 mb-1">Order Total Price</p>
                                         <p class="text-xl font-bold text-gray-900">
