@@ -63,10 +63,16 @@
     <div
         v-for="msg in messages"
         :key="msg.id"
-        :class="['flex', msg.sender_id === authStore.currentUser?.id ? 'justify-end' : 'justify-start']"
+        :class="[
+            'flex',
+            msg.sender_id === authStore.currentUser?.id ? 'justify-end' : 'justify-start',
+        ]"
     >
         <div
-            :class="['flex flex-col gap-2', msg.sender_id === authStore.currentUser?.id ? 'items-end' : 'items-start']"
+            :class="[
+                'flex flex-col gap-2',
+                msg.sender_id === authStore.currentUser?.id ? 'items-end' : 'items-start',
+            ]"
         >
             <div
                 v-if="msg.content"
