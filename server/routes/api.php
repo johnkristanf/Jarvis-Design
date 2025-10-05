@@ -9,7 +9,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
-// THIS DESIGN IS FOR THE CUSTOMER SIDE
+// THIS DESIGN IS FOR THE CUSTOMER SIDE 
 Route::get('/get/pre_made/designs/{sort?}/{categories?}', [DesignsController::class, 'getPreMadeDesigns']);
 
 Route::get('/get/all/colors', [DesignsController::class, 'getAllColors']);
