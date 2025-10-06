@@ -7,10 +7,10 @@
     import Loader from './Loader.vue'
     import { BellIcon, CheckIcon } from '@heroicons/vue/20/solid'
     import { Drawer } from 'primevue'
-    import echo from '@/services/echo'
     import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
     import type { AdminNotifications } from '@/types/order'
     import { updateNotificationAsRead, updateNotificationAsReadAll } from '@/api/put/notifications'
+import { initializeEcho } from '@/services/echo'
 
     const isLoggingOut = ref<boolean>(false)
     const showNotificationDrawer = ref<boolean>(false)
@@ -143,6 +143,7 @@
 
     // WATCH EVERY NEW NOTIFICATION
     onMounted(() => {
+        const echo = initializeEcho();
         const channel = echo.channel('admin.notification')
 
         channel.listen('.notify.admin', (event: any) => {

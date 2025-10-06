@@ -15,11 +15,21 @@ return [
     |
     */
 
-    'paths' => ['api/*', 'sanctum/csrf-cookie', 'register', 'login', 'logout'],
+    'paths' => [
+        'api/*',
+        'sanctum/csrf-cookie',
+        'broadcasting/auth',  // Add this line
+        'register',
+        'login',
+        'logout'
+    ],
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['https://jarvis-designs.it.com', 'http://localhost:3000'],
+    'allowed_origins' => [
+        'https://jarvis-designs.it.com',
+        'http://localhost:3000'
+    ],
 
     'allowed_origins_patterns' => [],
 

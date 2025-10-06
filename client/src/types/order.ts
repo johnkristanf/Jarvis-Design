@@ -9,6 +9,7 @@ export const OrderStatus = {
     IN_PROGRESS: 'in_progress',
     FOR_DELIVERY: 'for_delivery',
     FOR_PICKUP: 'for_pickup',
+    PAYMENT_UPDATED: 'payment_updated',
     COMPLETED: 'completed',
 }
 

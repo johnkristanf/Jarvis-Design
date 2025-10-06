@@ -10,10 +10,10 @@
     import { ref, watch } from 'vue'
     import Toast from 'primevue/toast'
     import { useToast } from 'primevue'
-    import echo from '@/services/echo'
     import ChatBubble from './ChatBubble.vue'
     import { apiService } from '@/api/axios'
     import type { User } from '@/types/user'
+import { initializeEcho } from '@/services/echo'
 
     defineProps<{
         isOpen: boolean
@@ -120,6 +120,7 @@
         () => authStore.currentUser?.id,
         (newUserId) => {
             if (newUserId) {
+                const echo = initializeEcho()
                 const channel = echo.channel(`chat.${newUserId}`)
 
                 channel.subscribed(() => {

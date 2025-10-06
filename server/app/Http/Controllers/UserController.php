@@ -30,10 +30,6 @@ class UserController extends Controller
             'password' => 'required|min:8',
         ]);
 
-        Log::info('User Data: ', [
-            'data' => $validatedData,
-        ]);
-
         $createdUserID = $this->userService->registerUser($validatedData);
 
         if ($createdUserID) {

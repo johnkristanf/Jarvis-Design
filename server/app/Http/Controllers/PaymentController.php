@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\PaymentUpdated;
 use App\Http\Requests\StoreOrderRequest;
 use App\Models\AdminNotification;
 use App\Models\Materials;
@@ -65,10 +66,10 @@ class PaymentController extends Controller
 
         $orderPayment->load(['users']);
         $message = sprintf(
-    "💰 Payment Received!\n\n".
-            "Order No: %s\n".
-            "Customer: %s\n".
-            "Product: %s (%s)\n",
+            "💰 Payment Received!\n\n" .
+                "Order No: %s\n" .
+                "Customer: %s\n" .
+                "Product: %s (%s)\n",
 
             $order->order_number,
             $orderPayment->users->name ?? 'Guest',
@@ -132,7 +133,7 @@ class PaymentController extends Controller
         ]);
     }
 
-   
+
 
     public function placeOrder(StoreOrderRequest $request)
     {
@@ -211,7 +212,7 @@ class PaymentController extends Controller
         // BACKGROUND QUEUE JOBS
 
         // Process payment
-        if(isset($validated['payment_attachment'])){
+        if (isset($validated['payment_attachment'])) {
             $this->paymentService->processPayment($order->id, $request->file('payment_attachment'));
         }
 
@@ -220,12 +221,12 @@ class PaymentController extends Controller
 
         // Notify admin
         $message = sprintf(
-    "🆕 New Order Placed!\n\n".
-            "Order No: %s\n".
-            "Customer: %s\n".
-            "Product: %s (%s)\n".
-            "Quantity: %d pcs\n".
-            "Total Price: ₱%s\n",
+            "🆕 New Order Placed!\n\n" .
+                "Order No: %s\n" .
+                "Customer: %s\n" .
+                "Product: %s (%s)\n" .
+                "Quantity: %d pcs\n" .
+                "Total Price: ₱%s\n",
 
             $order->order_number,
             Auth::user()->name ?? 'Guest',
@@ -259,13 +260,13 @@ class PaymentController extends Controller
     public function paymentsByOrderID($orderID)
     {
         $payments = OrderPayment::with([
-            'payment_methods:id,name', 
+            'payment_methods:id,name',
             'payment_attachments:id,order_payment_id,url',
             'orders:id,total_price'
         ])
-        ->where('order_id', $orderID)
-        ->orderBy('created_at', 'asc')
-        ->get();
+            ->where('order_id', $orderID)
+            ->orderBy('created_at', 'asc')
+            ->get();
 
         Log::info("payments: ", [$payments]);
         return response()->json($payments);
@@ -279,7 +280,7 @@ class PaymentController extends Controller
         ]);
 
         $payment = OrderPayment::with([
-            'orders:id,total_price' 
+            'orders:id,total_price,status'
         ])->findOrFail($paymentID);
 
 
@@ -291,7 +292,7 @@ class PaymentController extends Controller
         $projectedTotal = $currentTotalAmount + $validated['amount_applied'];
         $orderTotalPrice = $payment->orders->total_price;
 
-         // Determine status
+        // Determine status
         if ($projectedTotal >= $orderTotalPrice) {
             $newStatus = OrderPayment::FULLY_PAID;
         } elseif ($projectedTotal > 0) {
@@ -306,6 +307,10 @@ class PaymentController extends Controller
             'status' => $newStatus
         ]);
 
+        Log::info("Payment Before Broadcast: ", [$payment]);
+        broadcast(new PaymentUpdated($payment));
+        $this->notificationService->notifyUserOrder($payment->orders, $payment->user_id, OrderPayment::PAYMENT_UPDATED);
+
         return response()->json([
             'success' => true,
             'payment' => $payment->fresh(),
@@ -314,4 +319,3 @@ class PaymentController extends Controller
         ]);
     }
 }
- 

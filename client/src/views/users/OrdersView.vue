@@ -2,20 +2,22 @@
     import CustomerChatBox from '@/components/message/CustomerChatBox.vue'
     import OrderDetailsModal from '@/components/orders/OrderDetailsModal.vue'
     import { ChatBubbleLeftRightIcon } from '@heroicons/vue/20/solid'
-    import { ref, watch } from 'vue'
+    import { onMounted, ref, watch } from 'vue'
     import { FwbCard } from 'flowbite-vue'
-    import { useQuery } from '@tanstack/vue-query'
+    import { useQuery, useQueryClient } from '@tanstack/vue-query'
     import Loader from '@/components/Loader.vue'
     import type { Orders } from '@/types/order'
     import { apiService } from '@/api/axios'
     import type { PaginatedResponse } from '@/types/pagination'
     import { useToast } from 'primevue'
+    import { initializeEcho } from '@/services/echo'
 
     const isOpenChatBox = ref<boolean>(false)
     const isOrderDetailsOpen = ref<boolean>(false)
     const orderDetails = ref<Orders>()
     const searchTerm = ref<string>('')
     const toast = useToast()
+    const queryClient = useQueryClient()
 
     const {
         data: orders,
@@ -24,7 +26,9 @@
     } = useQuery({
         queryKey: ['orders', searchTerm],
         queryFn: async () => {
-            const respData = await apiService.get<PaginatedResponse<Orders>>(`/api/get/orders?search=${searchTerm.value}`)
+            const respData = await apiService.get<PaginatedResponse<Orders>>(
+                `/api/get/orders?search=${searchTerm.value}`,
+            )
             return respData
         },
         enabled: true,
@@ -36,7 +40,8 @@
             if (err) {
                 toast.add({
                     severity: 'error',
-                    summary: 'Error loading orders, please check your internet connection and try again',
+                    summary:
+                        'Error loading orders, please check your internet connection and try again',
                     life: 3000,
                 })
             }
@@ -47,18 +52,44 @@
         isOrderDetailsOpen.value = true
         orderDetails.value = order
     }
+
+    onMounted(() => {
+        const echo = initializeEcho()
+
+        echo.private(`payments.update`)
+            .subscribed(() => {
+                console.log('Private Channel authorized & subscribed')
+            })
+            .listen('.payment.update', (event: any) => {
+                if (event.payment) {
+                    queryClient.invalidateQueries({ queryKey: ['orders', searchTerm] })
+                }
+            })
+            .error((error: any) => {
+                console.error('❌ Websocket Authorization failed:', error)
+            })
+    })
 </script>
 
 <template>
     <div class="card mt-5 p-8">
         <div class="flex items-center justify-between">
-            <h2 class="text-2xl font-bold tracking-tight text-gray-900">Orders & Shipping Details</h2>
+            <h2 class="text-2xl font-bold tracking-tight text-gray-900">
+                Orders & Shipping Details
+            </h2>
 
             <!-- SEARCH INPUT MUST AUTO FETCH ONCHANGE -->
             <div class="flex items-center hover:cursor-pointer hover:opacity-75">
-                <label for="default-search" class="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">Search</label>
+                <label
+                    for="default-search"
+                    class="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white"
+                >
+                    Search
+                </label>
                 <div class="relative">
-                    <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+                    <div
+                        class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none"
+                    >
                         <svg
                             class="w-4 h-4 text-gray-500 dark:text-gray-400"
                             aria-hidden="true"
@@ -98,7 +129,10 @@
             <CustomerChatBox :isOpen="isOpenChatBox" @close="isOpenChatBox = false" />
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 mt-5 pb-10 gap-5" v-if="!isLoading && orders && orders.data.length > 0">
+        <div
+            class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 mt-5 pb-10 gap-5"
+            v-if="!isLoading && orders && orders.data.length > 0"
+        >
             <fwb-card
                 v-for="order in orders.data"
                 :key="order.id"
@@ -116,11 +150,19 @@
             </fwb-card>
         </div>
 
-        <div v-else-if="!isLoading && orders && orders.data.length === 0" class="h-[50vh] flex items-center justify-center">
+        <div
+            v-else-if="!isLoading && orders && orders.data.length === 0"
+            class="h-[50vh] flex items-center justify-center"
+        >
             <h1 class="text-gray-700 text-xl">No Order Found</h1>
         </div>
 
-        <OrderDetailsModal v-if="orderDetails" :isOpen="isOrderDetailsOpen" :orderDetails="orderDetails" @close="isOrderDetailsOpen = false" />
+        <OrderDetailsModal
+            v-if="orderDetails"
+            :isOpen="isOrderDetailsOpen"
+            :orderDetails="orderDetails"
+            @close="isOrderDetailsOpen = false"
+        />
         <Loader v-if="isLoading" msg="Loading Orders..." />
     </div>
 </template>

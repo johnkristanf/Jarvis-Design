@@ -10,12 +10,15 @@ class OrderPayment extends Model
     const PARTIALLY_PAID = 'partially_paid';
     const FULLY_PAID = 'fully_paid';
 
+    const PAYMENT_UPDATED  = 'payment_updated';
+
+
     protected $guarded = ['id'];
 
     protected $casts = [
         'amount_applied' => 'float', // or 'decimal:2' for precision
     ];
-   
+
 
     public function users()
     {

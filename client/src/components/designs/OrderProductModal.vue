@@ -107,8 +107,6 @@
     const prepareFormData = () => {
         const data = new FormData()
 
-        console.log('paymentAttachmentFile.value: ', paymentAttachmentFile.value)
-
         data.append('color', formData.value.color)
         data.append('phone_number', formData.value.phone_number)
         data.append('address', formData.value.address)
@@ -165,7 +163,6 @@
             return respData
         },
         onSuccess: (response) => {
-            console.log('respData success Order: ', response)
             queryClient.invalidateQueries({ queryKey: ['order_notifications'] })
             toast.add({
                 severity: 'success',
@@ -247,10 +244,6 @@
         showQrCodePaymentModal.value = false
 
         const formData = prepareFormData()
-        for (const [key, value] of formData.entries()) {
-            console.log(`${key}:`, value)
-        }
-
         if (totalQuantity.value && totalPrice.value && paymentAttachmentFile.value) {
             formData.append('total_quantity', totalQuantity.value.toString())
             formData.append('total_price', totalPrice.value.toString())

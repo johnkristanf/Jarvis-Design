@@ -1,11 +1,9 @@
 <?php
 
 use Illuminate\Support\Facades\Broadcast;
+use Illuminate\Support\Facades\Log;
 
-Broadcast::channel('chat.{conversationId}', function ($user, $conversationId) {
-    return true;
-});
-
-Broadcast::channel('payments', function () {
+Broadcast::channel('payments.update', function ($user) {
+    Log::info("Socket Authenticated User: ", [$user]);
     return true;
 });

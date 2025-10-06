@@ -23,8 +23,8 @@
     import StatusBadge from './orders/StatusBadge.vue'
     import OrderMessages from './orders/OrderMessages.vue'
     import OrderDate from './orders/OrderDate.vue'
-    import echo from '@/services/echo'
     import type { Notifications } from '@/types/order'
+import { initializeEcho } from '@/services/echo'
 
     const route = useRoute()
     const router = useRouter()
@@ -125,11 +125,11 @@
 
     // WATCH EVERY NEW NOTIFICATION
     onMounted(() => {
+        const echo = initializeEcho()
         const channel = echo.channel('order.notification')
 
         channel.listen('.notify.order.status', (event: any) => {
-            const eventMessage = event.message
-
+            const eventMessage = event.notification
             if (eventMessage) {
                 queryClient.setQueryData<Notifications[]>(['order_notifications'], (oldData) => {
                     if (!oldData) return [eventMessage] // no cache yet, set initial

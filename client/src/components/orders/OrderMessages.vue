@@ -15,8 +15,8 @@
     </span>
 
     <span v-else-if="status === OrderStatus.IN_PROGRESS">
-        {{ product_name }} is currently being crafted and prepared. We’ll notify you once it’s ready for delivery or
-        pickup.
+        {{ product_name }} is currently being crafted and prepared. We’ll notify you once it’s ready
+        for delivery or pickup.
     </span>
 
     <span v-else-if="status === OrderStatus.FOR_DELIVERY">
@@ -24,7 +24,8 @@
     </span>
 
     <span v-else-if="status === OrderStatus.FOR_PICKUP">
-        {{ product_name }} is ready for pick-up. Please visit the store to collect it at your scheduled time.
+        {{ product_name }} is ready for pick-up. Please visit the store to collect it at your
+        scheduled time.
     </span>
 
     <span v-else-if="status === OrderStatus.COMPLETED">
@@ -32,5 +33,9 @@
     </span>
     <span v-else-if="status === OrderStatus.CANCELLED">
         {{ product_name }} has been cancelled. If this was unexpected, please contact support.
+    </span>
+
+    <span v-else-if="status === OrderStatus.PAYMENT_UPDATED">
+        Payment details for {{ product_name }} have been updated. Please check the payment history.
     </span>
 </template>
