@@ -24,7 +24,7 @@
     import OrderMessages from './orders/OrderMessages.vue'
     import OrderDate from './orders/OrderDate.vue'
     import type { Notifications } from '@/types/order'
-import { initializeEcho } from '@/services/echo'
+    import { initializeEcho } from '@/services/echo'
 
     const route = useRoute()
     const router = useRouter()

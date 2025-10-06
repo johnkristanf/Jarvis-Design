@@ -1,7 +1,7 @@
 <script lang="ts" setup>
     import AddProductModal from '@/components/designs/AddProductModal.vue'
     import ProductsTable from '@/components/designs/ProductsTable.vue'
-    import {  PlusIcon } from '@heroicons/vue/20/solid'
+    import { PlusIcon } from '@heroicons/vue/20/solid'
     import { reactive } from 'vue'
 
     const refToggles = reactive({
@@ -26,35 +26,6 @@
         <h1 class="text-2xl">Business Products</h1>
         <p class="text-sm text-gray-400 mt-1">Displays business products offered</p>
 
-        <div class="flex items-center justify-between">
-            <!-- CUSTOMER UPLOADED AND PRE MADE DESIGNS BUTTON TOGGLERS -->
-            <!-- <div class="mt-12 mb-5 w-full flex justify-end">
-                <h1
-                    v-if="!refToggles.show_uploaded_designs_table"
-                    class="text-gray-600 hover:cursor-pointer hover:opacity-75 flex items-center"
-                    @click="refToggles.show_uploaded_designs_table = true"
-                >
-                    View Uploaded Designs
-                    <ArrowRightIcon class="size-6" />
-                </h1>
-
-                <h1
-                    v-else
-                    class="text-gray-600 hover:cursor-pointer hover:opacity-75 flex items-center"
-                    @click="refToggles.show_uploaded_designs_table = false"
-                >
-                    <ArrowLeftIcon class="size-6" />
-                    View Made Designs
-                </h1>
-            </div> -->
-        </div>
-
-        <!-- DESIGN NOTE -->
-        <!-- <h1 class="text-sm text-gray-400 mt-6 mb-3">
-            Note: Materials used must be attach after the design creation in order the automated
-            deduction work
-        </h1> -->
-
         <div class="flex justify-end my-4">
             <button
                 v-if="!refToggles.show_uploaded_designs_table"
@@ -67,13 +38,6 @@
             </button>
         </div>
 
-        <!-- CUSTOMER UPLOADED DESIGNS TABLE -->
-        <!-- <UploadedDesignsTable
-            v-if="refToggles.show_uploaded_designs_table"
-            @openUpdateModal="openUpdateModal"
-        /> -->
-
-        <!-- PRE-MADE DESIGNS -->
         <ProductsTable v-if="!refToggles.show_uploaded_designs_table" />
     </div>
 
@@ -81,11 +45,4 @@
         v-if="refToggles.show_add_product_modal"
         @close="refToggles.show_add_product_modal = false"
     />
-
-    <!-- UPDATE CUSTOMER UPLOADED DESIGNS MODAL -->
-    <!-- <UpdateUploadedDesignsModal
-        v-if="selectedDesign && refToggles.show_update_design_modal"
-        :design="selectedDesign"
-        @close="refToggles.show_update_design_modal = false"
-    /> -->
 </template>

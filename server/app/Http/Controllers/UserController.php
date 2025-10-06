@@ -8,9 +8,11 @@ use App\Models\User;
 use App\Services\UserService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Symfony\Component\HttpFoundation\Response;
 
 class UserController extends Controller
 {
@@ -79,13 +81,37 @@ class UserController extends Controller
     {
         $authenticatedUser = Auth::user();
         $authenticatedUser = User::where('id', $authenticatedUser->id)
-            ->select('id', 'name', 'email', 'username', 'role_id')
+            ->select('id', 'name', 'email', 'username', 'role_id', 'prompt_limit')
             ->with(['role' => function ($query) {
                 $query->select('id', 'name');
             }])
-            ->first(); 
+            ->first();
 
         return response()->json($authenticatedUser, 200);
+    }
+
+
+    public function deductPromptLimit()
+    {
+        return DB::transaction(function () {
+            $user = User::lockForUpdate()->find(Auth::id()); // Lock row to prevent race conditions
+
+            if (!$user) {
+                return response()->json(['message' => 'User not found'], Response::HTTP_NOT_FOUND);
+            }
+
+            if ($user->prompt_limit <= 0) {
+                return response()->json(['message' => 'Prompt limit already reached'], Response::HTTP_BAD_REQUEST);
+            }
+
+            // Deduct safely
+            $user->decrement('prompt_limit', 1);
+
+            return response()->json([
+                'message' => 'Prompt deducted successfully',
+                'remaining_prompt_limit' => $user->prompt_limit - 1, // value after decrement
+            ], 200);
+        });
     }
 
 
@@ -93,7 +119,7 @@ class UserController extends Controller
     {
         $admin = User::where('role_id', Roles::ADMIN_ROLE_ID)
             ->select('id', 'name', 'email')
-            ->first(); 
+            ->first();
 
         return response()->json($admin, 200);
     }

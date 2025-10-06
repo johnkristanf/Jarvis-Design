@@ -4,8 +4,8 @@ import { useAuthStore } from '@/stores/user'
 import { onMounted, ref } from 'vue'
 
 export const useFetchAuthenticatedUser = () => {
-    const isLoading = ref();
-    const authStore = useAuthStore();
+    const isLoading = ref()
+    const authStore = useAuthStore()
 
     const userDataFetch = async () => {
         isLoading.value = true
@@ -15,10 +15,7 @@ export const useFetchAuthenticatedUser = () => {
             authStore.setUser(fetchedUserData)
             authStore.setAuthenticated(true)
         } catch (error: any) {
-            if (error.statusCode == 401) {
-                // YOU CAN ADD HERE A STATE RENDERING A MODAL THAT SAYS THE SESSION HAS EXPIRED YOU ARE LOGGED OUT
-                // window.location.href = '/'
-            }
+            console.error("Error fetching user data: ", error);
         } finally {
             isLoading.value = false
         }
@@ -31,5 +28,6 @@ export const useFetchAuthenticatedUser = () => {
     return {
         authStore,
         isLoading,
+        refetchUser: userDataFetch,
     }
 }

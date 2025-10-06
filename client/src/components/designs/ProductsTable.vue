@@ -116,13 +116,7 @@
                             Upload Design
                         </button>
 
-                        <!-- <button
-                            @click="handleAttachMaterialsOnDesign(product.id)"
-                            class="text-gray-900 hover:underline"
-                        >
-                            Attach Materials
-                        </button> -->
-                        <button class="text-blue-600 hover:underline">Edit</button>
+                        <!-- <button class="text-blue-600 hover:underline">Edit</button> -->
                         <DeleteDialog
                             :selectedID="product.id"
                             endpoint_url="/api/delete/product"

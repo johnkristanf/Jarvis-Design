@@ -26,6 +26,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/user/data', [UserController::class, 'user']);
     Route::post('/update/profile', [UserController::class, 'update']);
     Route::get('/admin/data', [UserController::class, 'admin']);
+    Route::patch('/deduct/prompt/limit', [UserController::class, 'deductPromptLimit']);
 
     // PROTECTED DESIGNS ROUTE
     Route::get('/uploaded/designs', [DesignsController::class, 'getUploadedDesigns']);

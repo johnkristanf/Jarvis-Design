@@ -9,6 +9,8 @@
     import { ArrowDownTrayIcon, XMarkIcon } from '@heroicons/vue/20/solid'
     import { useToast } from 'primevue/usetoast'
     import ListSelectBox from '../ListSelectBox.vue'
+    import { deductPromptLimit } from '@/api/put/user'
+    import { useFetchAuthenticatedUser } from '@/composables/useFetchAuthenticatedUser'
 
     const emit = defineEmits(['close'])
     const handleCloseModal = () => emit('close')
@@ -18,12 +20,13 @@
     const loaderMsg = ref<string>('')
     const imageUrls = ref([])
 
+    const { authStore, refetchUser } = useFetchAuthenticatedUser()
     const { handleSubmit } = useForm()
     const toast = useToast()
 
     const generateImageMutation = useMutation({
         mutationFn: generateImageDesign,
-        onSuccess: (response) => {
+        onSuccess: async (response) => {
             isLoadingMutation.value = false
             console.log('response: ', response)
 
@@ -36,6 +39,9 @@
                     detail: 'Scroll down to look up for the designs',
                     life: 3000,
                 })
+
+                await deductPromptLimit()
+                await refetchUser()
             }
         },
 
@@ -75,6 +81,19 @@
                 summary: 'Missing Fields',
                 detail: 'Please enter both a prompt and a style preference.',
                 life: 3000,
+            })
+            return
+        }
+
+        const promptLimit = authStore.currentUser?.prompt_limit ?? 0
+        console.log('PROMPT LIMIT: ', promptLimit)
+
+        if (promptLimit <= 0) {
+            toast.add({
+                severity: 'warn',
+                summary: 'Daily Limit Reached',
+                detail: 'You have reached your AI prompt limit for today. Please try again tomorrow generating designs.',
+                life: 4000,
             })
             return
         }

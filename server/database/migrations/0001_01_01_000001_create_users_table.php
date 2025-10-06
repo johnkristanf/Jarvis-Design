@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('username');
             $table->string('email');
             $table->string('password');
+            $table->integer('prompt_limit')->default(10);
             $table->foreignId('role_id')->constrained('roles')->onUpdate('cascade');
             $table->timestamps();
         });
@@ -43,7 +44,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('users');
-        Schema::dropIfExists('password_reset_tokens');
+        // Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('sessions');
     }
 };
