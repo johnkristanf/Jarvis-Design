@@ -4,7 +4,7 @@
     import { formatDateWithTime } from '@/helper/order'
     import type { Payment, UpdatePaymentPayload } from '@/types/payment'
     import { Dialog, DialogPanel } from '@headlessui/vue'
-    import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
+    import { useQuery, useMutation } from '@tanstack/vue-query'
     import { computed, ref } from 'vue'
     import PaymentAttachmentPopOver from './PaymentAttachmentPopOver.vue'
     import PaymentStatusBadge from './PaymentStatusBadge.vue'
@@ -21,7 +21,6 @@
     const emit = defineEmits(['close'])
     const handleCloseModal = () => emit('close')
 
-    const queryClient = useQueryClient()
     const editingPayments = ref<{ [key: number]: number }>({})
     const updatingPayments = ref<Set<number>>(new Set())
     const toast = useToast()
