@@ -273,7 +273,7 @@ class PaymentController extends Controller
     }
 
 
-    public function updatePayment($paymentID, Request $request)
+    public function recordPayment($paymentID, Request $request)
     {
         $validated = $request->validate([
             'amount_applied' => 'required|numeric'
@@ -303,11 +303,10 @@ class PaymentController extends Controller
 
         // Update the payment
         $payment->update([
-            'amount_applied' => $validated['amount_applied'],
+            'amount_applied' => $projectedTotal,
             'status' => $newStatus
         ]);
 
-        Log::info("Payment Before Broadcast: ", [$payment]);
         broadcast(new PaymentUpdated($payment));
         $this->notificationService->notifyUserOrder($payment->orders, $payment->user_id, OrderPayment::PAYMENT_UPDATED);
 

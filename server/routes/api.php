@@ -93,17 +93,19 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // DASHBOARD PROTECTED ROUTE
     Route::get('/get/sales/report', [DashboardController::class, 'monthlySalesReport']);
     Route::get('/get/sales/category', [DashboardController::class, 'salesPerProductCategory']);
+    Route::get('/get/fabric/used', [DashboardController::class, 'fabricUsed']);
     Route::get('/get/latest/orders', [DashboardController::class, 'latestOrders']);
 
     // REPORT GENERATION
     Route::get('/get/reports/monthly-sales', [DashboardController::class, 'downloadMonthlySales']);
     Route::get('/get/reports/category-sales', [DashboardController::class, 'downloadCategorySales']);
+    Route::get('/get/reports/fabric-used', [DashboardController::class, 'downloadFabricUsed']);
 
 
     // PROTECTED PAYMENT ROUTES
     Route::post('/add/payment', [PaymentController::class, 'store']);
     Route::get('/get/payments/{orderID}', [PaymentController::class, 'paymentsByOrderID']);
-    Route::patch('/update/payment/{paymentID}', [PaymentController::class, 'updatePayment']);
+    Route::patch('/record/payment/{paymentID}', [PaymentController::class, 'recordPayment']);
     
 
 });

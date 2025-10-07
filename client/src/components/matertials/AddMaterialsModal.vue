@@ -21,8 +21,14 @@
     const materialSchema = yup.object({
         material_name: yup.string().required('Fabric name is required'),
         unit: yup.string().required('Unit is required'),
-        quantity: yup.number().required('Stock quantity is required').min(0, 'Quantity cannot be negative'),
-        reorder_level: yup.number().required('Reorder level is required').min(0, 'Reorder level cannot be negative'),
+        quantity: yup
+            .number()
+            .required('Stock quantity is required')
+            .min(0, 'Quantity cannot be negative'),
+        reorder_level: yup
+            .number()
+            .required('Reorder level is required')
+            .min(0, 'Reorder level cannot be negative'),
         // category: yup.string().required('Category is required'),
     })
 
@@ -78,7 +84,9 @@
     const { isPending } = useQuery({
         queryKey: ['materials_categories'],
         queryFn: async () => {
-            const respData = await apiService.get<MaterialsCategory[]>('/api/get/material/categories')
+            const respData = await apiService.get<MaterialsCategory[]>(
+                '/api/get/material/categories',
+            )
             console.log('respData: ', respData)
 
             return respData
@@ -97,10 +105,16 @@
 </script>
 
 <template>
-    <Dialog :open="open" @close="() => emit('close')" class="fixed inset-0 z-[99999] flex items-center justify-center bg-gray-900/80">
+    <Dialog
+        :open="open"
+        @close="() => emit('close')"
+        class="fixed inset-0 z-[99999] flex items-center justify-center bg-gray-900/80"
+    >
         <DialogPanel class="w-full max-w-xl bg-white h-[70%] p-6 overflow-y-auto">
             <DialogTitle class="text-lg font-bold">New Fabric</DialogTitle>
-            <DialogDescription class="text-sm text-gray-600 mb-4">Enter the fabric details below.</DialogDescription>
+            <DialogDescription class="text-sm text-gray-600 mb-4">
+                Enter the fabric details below.
+            </DialogDescription>
 
             <form @submit.prevent="onSubmit" class="mt-5">
                 <!-- Fabric Name -->
@@ -138,14 +152,22 @@
                         <label class="block text-sm">Stock Quantity</label>
                     </div>
 
-                    <input v-model="quantity" type="number" class="font-medium w-full px-3 py-2 rounded mt-1 border" />
+                    <input
+                        v-model="quantity"
+                        type="number"
+                        class="font-medium w-full px-3 py-2 rounded mt-1 border"
+                    />
                     <span class="text-sm text-red-600 mt-1 block">{{ quantityError }}</span>
                 </div>
 
                 <!-- Reorder Level -->
                 <div class="mb-4">
                     <label class="block text-sm">Stock Reorder Level</label>
-                    <input v-model="reorder_level" type="number" class="font-medium w-full px-3 py-2 rounded mt-1 border" />
+                    <input
+                        v-model="reorder_level"
+                        type="number"
+                        class="font-medium w-full px-3 py-2 rounded mt-1 border"
+                    />
                     <span class="text-sm text-red-600 mt-1 block">{{ reorderError }}</span>
                 </div>
 
@@ -158,7 +180,10 @@
                     >
                         Cancel
                     </button>
-                    <button type="submit" class="font-medium px-4 py-2 bg-gray-900 text-white rounded hover:opacity-75 hover:cursor-pointer">
+                    <button
+                        type="submit"
+                        class="font-medium px-4 py-2 bg-gray-900 text-white rounded hover:opacity-75 hover:cursor-pointer"
+                    >
                         Save
                     </button>
                 </div>
@@ -166,13 +191,8 @@
         </DialogPanel>
     </Dialog>
 
-    <div v-if="materialsMutation.isPending.value">
-        <Loader msg="Adding New Material..." />
-    </div>
-
-    <div v-if="isPending">
-        <Loader msg="Getting Material Categories..." />
-    </div>
+    <Loader v-if="materialsMutation.isPending.value" msg="Adding New Fabric..." />
+    <Loader v-if="isPending" msg="Getting Material Categories..." />
 
     <Toast />
 </template>

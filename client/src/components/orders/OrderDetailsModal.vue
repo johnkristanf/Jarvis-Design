@@ -42,7 +42,7 @@
     }
 
     const emit = defineEmits(['close'])
-    const handleCloseModal = () => emit('close')
+    const handleCloseOrderDetailsModal = () => emit('close')
 
     // Payment composable
     const { orderTotalPrice, totalApplied, remainingBalance, hasFullyPaid } = usePayments(
@@ -87,7 +87,7 @@
                                         Order Details
                                     </DialogTitle>
                                     <button
-                                        @click="handleCloseModal"
+                                        @click="handleCloseOrderDetailsModal"
                                         class="text-white hover:text-gray-300 transition-colors"
                                     >
                                         <svg

@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\FabricUsedExport;
 use App\Exports\SalesReportExport;
 use App\Service\DashboardService;
-use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 
 class DashboardController extends Controller
@@ -27,6 +27,12 @@ class DashboardController extends Controller
     }
 
 
+    public function fabricUsed()
+    {
+        return $this->dashboardService->getFabricUsed();
+    }
+
+
     public function downloadMonthlySales()
     {
         return Excel::download(new SalesReportExport('monthly'), 'monthly_sales.xlsx');
@@ -35,6 +41,12 @@ class DashboardController extends Controller
     public function downloadCategorySales()
     {
         return Excel::download(new SalesReportExport('perCategory'), 'sales_per_category.xlsx');
+    }
+
+
+    public function downloadFabricUsed()
+    {
+        return Excel::download(new FabricUsedExport(), 'fabric_used.xlsx');
     }
 
     public function latestOrders()

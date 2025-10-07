@@ -23,10 +23,8 @@ class SalesReportExport implements FromArray, WithHeadings
         
         if ($this->reportType === 'monthly') {
             $data = $dashboardService->getMonthlySalesReport(isChartFiltered: false);
-            Log::info("data monthly: ", [$data]);
         } elseif ($this->reportType === 'perCategory') {
             $data = $dashboardService->getSalesPerProductCategory(isChartFiltered: false);
-            Log::info("data perCategory: ", [$data]);
         } else {
             $data = [];
         }

@@ -5,11 +5,12 @@
     import type { Payment, UpdatePaymentPayload } from '@/types/payment'
     import { Dialog, DialogPanel } from '@headlessui/vue'
     import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
-    import { computed, ref, watch } from 'vue'
+    import { computed, ref } from 'vue'
     import PaymentAttachmentPopOver from './PaymentAttachmentPopOver.vue'
     import PaymentStatusBadge from './PaymentStatusBadge.vue'
     import { useToast } from 'primevue/usetoast'
     import { usePayments } from '@/composables/usePayments'
+    import { FwbTooltip } from 'flowbite-vue'
 
     const props = defineProps<{
         orderData: {
@@ -43,16 +44,16 @@
     })
 
     // UPDATE PAYMENT MUTATION
-    const updatePaymentMutation = useMutation({
+    const recordPaymentMutation = useMutation({
         mutationFn: async ({ id, amount }: UpdatePaymentPayload) => {
-            return await apiService.patch(`/api/update/payment/${id}`, {
+            return await apiService.patch(`/api/record/payment/${id}`, {
                 amount_applied: amount,
             })
         },
         onSuccess: (_, variables) => {
             toast.add({
                 severity: 'success',
-                summary: 'Payment Applied Successfully',
+                summary: 'Payment Recorded Successfully',
                 life: 1500,
             })
 
@@ -71,17 +72,6 @@
         },
     })
 
-    // Watch for data changes
-    watch(
-        payments,
-        (newData) => {
-            if (newData) {
-                console.log('payments: ', newData)
-            }
-        },
-        { immediate: true },
-    )
-
     const startEditing = (paymentId: number, currentAmount: number) => {
         editingPayments.value[paymentId] = currentAmount
     }
@@ -94,7 +84,7 @@
         const newAmount = editingPayments.value[paymentId]
 
         updatingPayments.value.add(paymentId)
-        updatePaymentMutation.mutate({ id: paymentId, amount: newAmount })
+        recordPaymentMutation.mutate({ id: paymentId, amount: newAmount })
     }
 
     const isEditing = (paymentId: number) => paymentId in editingPayments.value
@@ -232,28 +222,78 @@
                                             <span class="text-xl font-bold text-gray-900">
                                                 ${{ payment.amount_applied }}
                                             </span>
-                                            <button
-                                                v-if="!hasFullyPaid"
-                                                @click="
-                                                    startEditing(payment.id, payment.amount_applied)
-                                                "
-                                                :disabled="isUpdating(payment.id)"
-                                                class="text-gray-600 hover:text-gray-900 p-1 rounded transition-colors disabled:opacity-50"
-                                            >
-                                                <svg
-                                                    class="w-4 h-4"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    viewBox="0 0 24 24"
-                                                >
-                                                    <path
-                                                        stroke-linecap="round"
-                                                        stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                                                    />
-                                                </svg>
-                                            </button>
+
+                                            <div class="flex items-center">
+                                                <fwb-tooltip>
+                                                    <template #trigger>
+                                                        <button
+                                                            v-if="!hasFullyPaid"
+                                                            @click="
+                                                                startEditing(
+                                                                    payment.id,
+                                                                    payment.amount_applied,
+                                                                )
+                                                            "
+                                                            :disabled="isUpdating(payment.id)"
+                                                            class="text-gray-600 hover:text-gray-900 p-1 rounded transition-colors disabled:opacity-50"
+                                                        >
+                                                            <svg
+                                                                class="w-4 h-4"
+                                                                fill="none"
+                                                                stroke="currentColor"
+                                                                viewBox="0 0 24 24"
+                                                            >
+                                                                <path
+                                                                    stroke-linecap="round"
+                                                                    stroke-linejoin="round"
+                                                                    stroke-width="2"
+                                                                    d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                                />
+                                                            </svg>
+                                                        </button>
+                                                    </template>
+                                                    <template #content>
+                                                        <h1 class="text-xs font-normal">
+                                                            Record Payment
+                                                        </h1>
+                                                    </template>
+                                                </fwb-tooltip>
+
+                                                <!-- <fwb-tooltip>
+                                                    <template #trigger>
+                                                        <button
+                                                            v-if="!hasFullyPaid"
+                                                            @click="
+                                                                startEditing(
+                                                                    payment.id,
+                                                                    payment.amount_applied,
+                                                                )
+                                                            "
+                                                            :disabled="isUpdating(payment.id)"
+                                                            class="text-gray-600 hover:text-gray-900 p-1 rounded transition-colors disabled:opacity-50"
+                                                        >
+                                                            <svg
+                                                                class="w-4 h-4"
+                                                                fill="none"
+                                                                stroke="currentColor"
+                                                                viewBox="0 0 24 24"
+                                                            >
+                                                                <path
+                                                                    stroke-linecap="round"
+                                                                    stroke-linejoin="round"
+                                                                    stroke-width="2"
+                                                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                                                />
+                                                            </svg>
+                                                        </button>
+                                                    </template>
+                                                    <template #content>
+                                                        <h1 class="text-xs font-normal">
+                                                            Edit Payment
+                                                        </h1>
+                                                    </template>
+                                                </fwb-tooltip> -->
+                                            </div>
                                         </div>
                                         <div v-else class="flex space-x-2">
                                             <div class="relative flex-1">

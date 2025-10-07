@@ -2,10 +2,12 @@
 
 namespace App\Service;
 
+use App\Models\OrderPayment;
 use App\Models\Orders;
 use App\Traits\HandleAttachments;
 use App\Traits\SalesTrait;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class DashboardService
 {
@@ -13,15 +15,13 @@ class DashboardService
 
     public function getMonthlySalesReport($isChartFiltered = true)
     {
-        $monthlySales = DB::table('orders')
+        $monthlySales = DB::table('order_payments')
             ->select(
-                DB::raw("TO_CHAR(delivery_date, 'Month') as month_name"),
-                DB::raw("EXTRACT(MONTH FROM delivery_date) as month_number"),
-                DB::raw("SUM(total_price) as total_sales")
+                DB::raw("TO_CHAR(updated_at, 'Month') as month_name"),
+                DB::raw("EXTRACT(MONTH FROM updated_at) as month_number"),
+                DB::raw("SUM(amount_applied) as total_sales")
             )
-            ->whereNotNull('delivery_date')
-            ->where('status', Orders::COMPLETED)
-
+            ->where('status', OrderPayment::FULLY_PAID)
             ->groupBy('month_name', 'month_number')
             ->orderBy('month_number', 'asc')
             ->get();
@@ -30,7 +30,8 @@ class DashboardService
             return $this->filterSalesReportForChart(
                 sales: $monthlySales,
                 label: 'Monthly Sales Report',
-                category: 'month_name'
+                category: 'month_name',
+                keyValue: 'total_sales'
             );
         }
 
@@ -44,28 +45,51 @@ class DashboardService
         $salesPerProductCategory = DB::table('orders')
             ->select(
                 'design_categories.name as category_name',
-                DB::raw('SUM(orders.total_price) as total_sales')
+                DB::raw('SUM(order_payments.amount_applied) as total_sales')
             )
             ->leftJoin('products', 'orders.product_id', '=', 'products.id')
             ->leftJoin('design_categories', 'products.category_id', '=', 'design_categories.id')
+            ->leftJoin('order_payments', 'orders.id', '=', 'order_payments.order_id')
 
-            ->whereNotNull('orders.delivery_date')
-            ->where('orders.status', '=', Orders::COMPLETED)
-
+            ->where('order_payments.status', '=', OrderPayment::FULLY_PAID)
             ->groupBy('design_categories.name')
             ->orderByDesc('total_sales')
             ->get();
 
+
+        Log::info("salesPerProductCategory: ", [$salesPerProductCategory]);
        
         if($isChartFiltered){
             return $this->filterSalesReportForChart(
                 sales: $salesPerProductCategory,
                 label: 'Sales Per Product',
-                category: 'category_name'
+                category: 'category_name',
+                keyValue: 'total_sales'
             );
         }
 
         return $salesPerProductCategory;
+    }
+
+    public function getFabricUsed()
+    {
+        $fabricUsed = DB::table('order_logs')
+            ->select(
+                'material_name',
+                DB::raw('SUM(total_quantity_used) as total_fabric_used')
+            )
+            ->groupBy('material_name')
+            ->orderByDesc('total_fabric_used')
+            ->get();
+
+        Log::info("fabricUsed: ", [$fabricUsed]);
+
+        return $this->filterSalesReportForChart(
+            sales: $fabricUsed,
+            label: 'Total Fabric Used',
+            category: 'material_name',
+            keyValue: 'total_fabric_used'
+        );
     }
 
     public function getLatestOrder()

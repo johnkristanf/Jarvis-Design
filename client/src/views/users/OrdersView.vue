@@ -1,3 +1,4 @@
+<!-- eslint-disable @typescript-eslint/no-explicit-any -->
 <script lang="ts" setup>
     import CustomerChatBox from '@/components/message/CustomerChatBox.vue'
     import OrderDetailsModal from '@/components/orders/OrderDetailsModal.vue'

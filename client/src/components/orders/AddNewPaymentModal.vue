@@ -68,7 +68,7 @@ import Loader from '../Loader.vue'
 
             setTimeout(() => {
                 queryClient.invalidateQueries({ queryKey: ['orders'] })
-                handleCloseModal()
+                window.location.href = '/orders'
             }, 1500)
         },
 

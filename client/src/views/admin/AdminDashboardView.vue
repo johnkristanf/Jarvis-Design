@@ -11,7 +11,14 @@
         Legend,
     } from 'chart.js'
 
-    import { FwbTable, FwbTableBody, FwbTableCell, FwbTableHead, FwbTableHeadCell, FwbTableRow } from 'flowbite-vue'
+    import {
+        FwbTable,
+        FwbTableBody,
+        FwbTableCell,
+        FwbTableHead,
+        FwbTableHeadCell,
+        FwbTableRow,
+    } from 'flowbite-vue'
 
     import { Bar, Line } from 'vue-chartjs'
     import type { ChartOptions } from 'chart.js'
@@ -21,14 +28,35 @@
     import { type LatestOrders } from '@/types/order'
     import StatusBadge from '@/components/orders/StatusBadge.vue'
     import { ArrowDownTrayIcon } from '@heroicons/vue/20/solid'
+    import { downloadBlobFile } from '@/helper/report'
 
-    ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, BarElement)
+    ChartJS.register(
+        CategoryScale,
+        LinearScale,
+        PointElement,
+        LineElement,
+        Title,
+        Tooltip,
+        Legend,
+        BarElement,
+    )
 
     // SALES PER CATEGORY BAR CHART DATA
     const { data: salePerProductCategory } = useQuery({
         queryKey: ['sales-per-category'],
         queryFn: async () => {
             const respData = await apiService.get<SalesReport>('/api/get/sales/category')
+            return respData
+        },
+    })
+
+    // FABRIC USED BAR CHART DATA
+    const { data: fabricUsed } = useQuery({
+        queryKey: ['fabric-used'],
+        queryFn: async () => {
+            const respData = await apiService.get<SalesReport>('/api/get/fabric/used')
+            console.log('fabricUsed: ', respData)
+
             return respData
         },
     })
@@ -57,7 +85,7 @@
         },
     })
 
-    const lineChartOptions = {
+    const lineChartOptions: ChartOptions<'line'> = {
         responsive: true,
         maintainAspectRatio: false,
     }
@@ -78,12 +106,7 @@
                 responseType: 'blob',
             })
 
-            const url = window.URL.createObjectURL(new Blob([response]))
-            const link = document.createElement('a')
-            link.href = url
-            link.setAttribute('download', 'monthly_sales.xlsx')
-            document.body.appendChild(link)
-            link.click()
+            downloadBlobFile(response, 'monthly_sales.xlsx')
         } catch (error) {
             console.error('Download Report Error: ', error)
         }
@@ -96,12 +119,20 @@
                 responseType: 'blob',
             })
 
-            const url = window.URL.createObjectURL(new Blob([response]))
-            const link = document.createElement('a')
-            link.href = url
-            link.setAttribute('download', 'sales_per_category.xlsx')
-            document.body.appendChild(link)
-            link.click()
+            downloadBlobFile(response, 'sales_per_category.xlsx')
+        } catch (error) {
+            console.error('Download Report Error: ', error)
+        }
+    }
+
+    // DOWNLOAD REPORT PER FABRIC USED
+    const downloadReportPerFabricUsed = async () => {
+        try {
+            const response = await apiService.get<Blob>('/api/get/reports/fabric-used', {
+                responseType: 'blob',
+            })
+
+            downloadBlobFile(response, 'fabric_used.xlsx')
         } catch (error) {
             console.error('Download Report Error: ', error)
         }
@@ -127,7 +158,7 @@
 
                 <Line
                     v-if="monthlySalesReport"
-                    id="my-chart-id"
+                    id="monthly-sales"
                     :options="lineChartOptions"
                     :data="monthlySalesReport"
                 />
@@ -142,21 +173,51 @@
 
                 <Bar
                     v-if="salePerProductCategory"
-                    id="my-chart-id"
+                    id="sales-per-category"
                     :options="chartOptions"
                     :data="salePerProductCategory"
                 />
             </div>
 
-            <div class="h-[300px] rounded-md p-3 bg-gray-100 lg:col-span-2">
+            <div class="h-[300px] rounded-md p-3 lg:col-span-2">
+                <div class="flex justify-end">
+                    <button @click="downloadReportPerFabricUsed">
+                        <ArrowDownTrayIcon class="size-6 hover:cursor-pointer hover:opacity-75" />
+                    </button>
+                </div>
+
+                <div class="w-full h-full">
+                    <Bar
+                        v-if="fabricUsed"
+                        id="fabric-used"
+                        :options="{
+                            ...chartOptions,
+                            maintainAspectRatio: false, // important!
+                        }"
+                        :data="fabricUsed"
+                    />
+                </div>
+            </div>
+
+            <div class="h-[300px] rounded-md p-3 lg:col-span-2">
                 <p class="text-gray-700">Latest Orders</p>
 
                 <fwb-table class="w-full h-full mt-3">
                     <fwb-table-head>
-                        <fwb-table-head-cell>Order No.</fwb-table-head-cell>
-                        <fwb-table-head-cell class="px-16 py-3">Design</fwb-table-head-cell>
-                        <fwb-table-head-cell>Name</fwb-table-head-cell>
-                        <fwb-table-head-cell>Status</fwb-table-head-cell>
+                        <fwb-table-head-cell class="text-xs text-white uppercase bg-gray-900">
+                            Order No.
+                        </fwb-table-head-cell>
+                        <fwb-table-head-cell
+                            class="px-16 py-3 text-xs text-white uppercase bg-gray-900"
+                        >
+                            Design
+                        </fwb-table-head-cell>
+                        <fwb-table-head-cell class="text-xs text-white uppercase bg-gray-900">
+                            Name
+                        </fwb-table-head-cell>
+                        <fwb-table-head-cell class="text-xs text-white uppercase bg-gray-900">
+                            Status
+                        </fwb-table-head-cell>
                     </fwb-table-head>
 
                     <fwb-table-body>
