@@ -11,6 +11,7 @@ use App\Models\PaymentAttachment;
 use App\Traits\HandleAttachments;
 use App\Traits\OrderTrait;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class PaymentService
@@ -39,38 +40,30 @@ class PaymentService
                         'order_id',
                         'amount_applied',
                         'status',
-                    ])->with(['payment_attachments:id,order_payment_id,url', 'payment_methods:id,name']); // ✅ include payment method details
+                    ])
+                    ->with([
+                        'payment_attachments:id,order_payment_id,url',
+                        'payment_methods:id,name',
+                    ])
+                    ->orderBy('created_at', 'asc'); // ✅ payments sorted ascending
                 },
             ])
+                ->leftJoin('order_payments', 'order_payments.order_id', '=', 'orders.id')
                 ->select([
-                    'id',
-                    'order_number',
-                    'product_unit_price',
-                    'color',
-                    'phone_number',
-                    'address',
-                    'design_type',
-                    'order_option',
-                    'total_quantity',
-                    'total_price',
-                    'solo_quantity',
-                    'own_design_url',
-                    'business_design_url',
-                    'status',
-                    'delivery_date',
-                    'user_id',
-                    'product_id',
-                    'created_at',
-                ]);
+                    'orders.*',
+                    DB::raw('COALESCE(SUM(order_payments.amount_applied), 0) AS total_paid'),
+                    DB::raw('(orders.total_price - COALESCE(SUM(order_payments.amount_applied), 0)) AS balance'),
+                ])
+                ->groupBy('orders.id');
 
             $authenticatedUser = Auth::user();
             if (! $authenticatedUser->isAdmin()) {
-                $query->where('user_id', '=', $authenticatedUser->id);
+                $query->where('orders.user_id', '=', $authenticatedUser->id);
             }
 
             if ($search) {
-                $query->where('order_number', 'ILIKE', "%{$search}%")
-                    ->orWhere('status', 'ILIKE', "%{$search}%");
+                $query->where('orders.order_number', 'ILIKE', "%{$search}%")
+                    ->orWhere('orders.status', 'ILIKE', "%{$search}%");
             }
 
             $orders = $query->latest()->paginate($limit);

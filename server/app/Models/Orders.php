@@ -22,6 +22,8 @@ class Orders extends Model
 
     protected $casts = [
         'total_price' => 'float', 
+        'total_paid'  => 'float',
+        'balance'     => 'float',
     ];
 
     public function user(): BelongsTo

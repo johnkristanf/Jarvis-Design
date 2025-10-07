@@ -303,7 +303,7 @@ class PaymentController extends Controller
 
         // Update the payment
         $payment->update([
-            'amount_applied' => $projectedTotal,
+            'amount_applied' => $validated['amount_applied'],
             'status' => $newStatus
         ]);
 

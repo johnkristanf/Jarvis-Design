@@ -44,8 +44,6 @@
             const respData = await apiService.get<PaginatedResponse<Orders>>(
                 `/api/get/orders?page=${pagination.page}&limit=${pagination.limit}`,
             )
-            console.log('respData: ', respData)
-
             return respData
         },
         enabled: true,
@@ -64,19 +62,12 @@
     const toast = useToast()
 
     const showOrderPaymentsModal = ref<boolean>(false)
-    const selectedOrderData = ref<{ order_id: number; order_number: string } | null>(null)
+    const selectedOrderData = ref<Orders | null>(null)
 
-    const handleShowOrderPaymentsModal = (
-        orderID: number,
-        orderNumber: string,
-        close: () => void,
-    ) => {
+    const handleShowOrderPaymentsModal = (orders: Orders, close: () => void) => {
         close()
         showOrderPaymentsModal.value = true
-        selectedOrderData.value = {
-            order_id: orderID,
-            order_number: orderNumber,
-        }
+        selectedOrderData.value = orders
     }
 
     const handleCloseOrderPaymentsModal = () => {
@@ -388,11 +379,7 @@
                                                         order.status !== OrderStatus.CANCELLED
                                                     "
                                                     @click="
-                                                        handleShowOrderPaymentsModal(
-                                                            order.id,
-                                                            order.order_number,
-                                                            close,
-                                                        )
+                                                        handleShowOrderPaymentsModal(order, close)
                                                     "
                                                     color="light"
                                                 >
@@ -611,7 +598,7 @@
 
     <OrderPaymentsModal
         v-if="showOrderPaymentsModal && selectedOrderData"
-        :orderData="selectedOrderData"
+        :orders="selectedOrderData"
         @close="handleCloseOrderPaymentsModal"
     />
 

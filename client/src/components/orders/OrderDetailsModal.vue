@@ -45,10 +45,7 @@
     const handleCloseOrderDetailsModal = () => emit('close')
 
     // Payment composable
-    const { orderTotalPrice, totalApplied, remainingBalance, hasFullyPaid } = usePayments(
-        computed(() => props.orderDetails.order_payments || []),
-        props.orderDetails.total_price,
-    )
+    const { hasFullyPaid } = usePayments(computed(() => props.orderDetails.order_payments || []))
 </script>
 
 <template>
@@ -402,19 +399,19 @@
                                     <div>
                                         <p class="text-sm text-gray-900 mb-1">Order Total Price</p>
                                         <p class="text-xl font-bold text-gray-900">
-                                            ₱{{ orderTotalPrice.toLocaleString() }}
+                                            ₱{{ props.orderDetails.total_price.toLocaleString() }}
                                         </p>
                                     </div>
                                     <div>
                                         <p class="text-sm text-gray-900 mb-1">Total Paid Amount</p>
                                         <p class="text-xl font-bold text-green-600">
-                                            ₱{{ totalApplied.toLocaleString() }}
+                                            ₱{{ props.orderDetails.total_paid }}
                                         </p>
                                     </div>
                                     <div>
                                         <p class="text-sm text-gray-900 mb-1">Remaining Balance</p>
                                         <p class="text-xl font-bold text-amber-600">
-                                            ₱{{ remainingBalance.toLocaleString() }}
+                                            ₱{{ props.orderDetails.balance }}
                                         </p>
                                     </div>
                                 </div>

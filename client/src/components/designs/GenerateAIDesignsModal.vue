@@ -180,7 +180,10 @@
                             >
                                 <div class="flex flex-col gap-2">
                                     <div class="flex justify-between items-center gap-2">
-                                        <h1>Prompt:</h1>
+                                        <div class="flex items-center justify-between w-full">
+                                            <h1>Prompt:</h1>
+                                            <h1 class="text-gray-500 text-sm">Daily Prompt Limit: {{ authStore.currentUser?.prompt_limit }}</h1>
+                                        </div>
 
                                         <!-- PROMPT TOOLTIP -->
                                         <!-- <fwb-tooltip

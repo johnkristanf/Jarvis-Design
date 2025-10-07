@@ -11,12 +11,10 @@
     import { useToast } from 'primevue/usetoast'
     import { usePayments } from '@/composables/usePayments'
     import { FwbTooltip } from 'flowbite-vue'
+    import type { Orders } from '@/types/order'
 
     const props = defineProps<{
-        orderData: {
-            order_id: number
-            order_number: string
-        }
+        orders: Orders
     }>()
 
     // MODAL CLOSING EMITS
@@ -34,11 +32,9 @@
         error,
         isLoading,
     } = useQuery({
-        queryKey: ['payments_by_order', props.orderData.order_id],
+        queryKey: ['payments_by_order', props.orders.id],
         queryFn: async () => {
-            const respData = await apiService.get<Payment[]>(
-                `/api/get/payments/${props.orderData.order_id}`,
-            )
+            const respData = await apiService.get<Payment[]>(`/api/get/payments/${props.orders.id}`)
             return respData
         },
     })
@@ -62,9 +58,14 @@
             updatingPayments.value.delete(variables.id)
 
             // Invalidate and refetch
-            queryClient.invalidateQueries({
-                queryKey: ['payments_by_order', props.orderData.order_id],
-            })
+            // queryClient.invalidateQueries({
+            //     queryKey: ['payments_by_order', props.orders.id],
+            // })
+
+            setTimeout(() => {
+                window.location.href = '/admin/orders'
+            }, 1500)
+            
         },
         onError: (error, variables) => {
             console.error('Failed to update payment:', error)
@@ -91,10 +92,7 @@
     const isUpdating = (paymentId: number) => updatingPayments.value.has(paymentId)
 
     // Payment composable
-    const { orderTotalPrice, totalApplied, remainingBalance, hasFullyPaid } = usePayments(
-        computed(() => payments.value || []),
-        null,
-    )
+    const { hasFullyPaid } = usePayments(computed(() => payments.value || []))
 </script>
 
 <template>
@@ -109,9 +107,7 @@
                 <div class="bg-gray-900 text-white px-6 py-4 flex items-center justify-between">
                     <div>
                         <h1 class="text-xl font-bold">Payment Management</h1>
-                        <p class="text-gray-300 text-sm">
-                            Order # {{ props.orderData.order_number }}
-                        </p>
+                        <p class="text-gray-300 text-sm">Order # {{ props.orders.order_number }}</p>
                     </div>
                     <button
                         @click="handleCloseModal"
@@ -433,19 +429,19 @@
                             <div>
                                 <p class="text-sm text-gray-600 mb-1">Order Total Price</p>
                                 <p class="text-xl font-bold text-gray-900">
-                                    ₱{{ orderTotalPrice.toLocaleString() }}
+                                    ₱{{ orders.total_price.toLocaleString() }}
                                 </p>
                             </div>
                             <div>
                                 <p class="text-sm text-gray-600 mb-1">Total Paid Amount</p>
                                 <p class="text-xl font-bold text-green-600">
-                                    ₱{{ totalApplied.toLocaleString() }}
+                                    ₱{{ orders.total_paid.toLocaleString() }}
                                 </p>
                             </div>
                             <div>
                                 <p class="text-sm text-gray-600 mb-1">Remaining Balance</p>
                                 <p class="text-xl font-bold text-amber-600">
-                                    ₱{{ remainingBalance.toLocaleString() }}
+                                    ₱{{ orders.balance.toLocaleString() }}
                                 </p>
                             </div>
                         </div>

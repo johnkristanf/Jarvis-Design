@@ -30,6 +30,8 @@
             const respData = await apiService.get<PaginatedResponse<Orders>>(
                 `/api/get/orders?search=${searchTerm.value}`,
             )
+            console.log("respData: ", respData);
+            
             return respData
         },
         enabled: true,

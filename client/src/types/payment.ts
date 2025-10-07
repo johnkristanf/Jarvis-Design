@@ -1,6 +1,12 @@
-import type { Orders } from "./order"
+import type { Orders } from './order'
 
 export type PaymentStatus = 'in_review' | 'partially_paid' | 'fully_paid'
+
+export const PaymentStatus = {
+    IN_REVIEW: 'in_review',
+    PARTIALLY_PAID: 'partially_paid',
+    FULLY_PAID: 'fully_paid',
+}
 
 export interface Payment {
     id: number
