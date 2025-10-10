@@ -11,9 +11,8 @@ export async function getAllConversation(): Promise<Conversation[]> {
     return response
 }
 
-
 export async function getAllCustomers(): Promise<Customers[]> {
-    const response = await apiService.get<Customers[]>(`/api/get/all/customers`);
-    console.log("response customers: ", response);
+    const response = await apiService.get<Customers[]>(`/api/get/all/customers`)
+    console.log('response customers: ', response)
     return response
 }

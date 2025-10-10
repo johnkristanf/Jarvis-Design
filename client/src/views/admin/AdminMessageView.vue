@@ -28,10 +28,6 @@
     })
 
     const selectCustomerToChat = (user_id: number, name: string, email: string) => {
-        console.log('user_id', user_id)
-        console.log('name', name)
-        console.log('email', email)
-
         selectedCustomerData.value.id = user_id
         selectedCustomerData.value.name = name
         selectedCustomerData.value.email = email
@@ -111,9 +107,6 @@
 
     const handleSendMessage = () => {
         if (!messageContent.value && !attachment.value) return // prevent empty submission
-
-        console.log('message: ', messageContent.value)
-        console.log('attachment: ', attachment.value)
 
         const formData = new FormData()
         if (messageContent.value) {

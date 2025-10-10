@@ -44,7 +44,7 @@ class ChatService implements ChatServiceInterface
             }
 
             // Load sender and conversation relationships
-            $message->load(['sender', 'conversation']);
+            $message->load(['sender', 'conversation', 'message_attachments']);
             return $message;
         });
     }

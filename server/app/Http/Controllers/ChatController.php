@@ -41,7 +41,6 @@ class ChatController extends Controller
         $content = trim($validated['content'] ?? '') ?: null;
 
         if ($conversation && $conversation->id) {
-            Log::info("EXITS");
             if ($request->hasFile('attachment')) {
                 $attachmentURL = $this->uploadToS3(
                     root: 'conversation',
@@ -57,8 +56,6 @@ class ChatController extends Controller
                 'conversation_id' => $conversation->id,
             ]);
         } else {
-            Log::info("NOPE EXITS");
-
             $conversation = $this->chat->createLoadConversation(userID: $validated['user_id']);
 
             if ($request->hasFile('attachment')) {

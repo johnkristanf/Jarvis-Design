@@ -8,7 +8,7 @@
     import { XMarkIcon } from '@heroicons/vue/20/solid'
 
     const props = defineProps<{
-        messages: Message[]
+        messages: Message[] | undefined
         conversationUserID: number
         queryKey: string
     }>()

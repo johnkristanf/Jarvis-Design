@@ -13,7 +13,7 @@
     import ChatBubble from './ChatBubble.vue'
     import { apiService } from '@/api/axios'
     import type { User } from '@/types/user'
-import { initializeEcho } from '@/services/echo'
+    import { initializeEcho } from '@/services/echo'
 
     defineProps<{
         isOpen: boolean
@@ -133,19 +133,22 @@ import { initializeEcho } from '@/services/echo'
                     const eventMessage = event.message
 
                     // 1. Optimistically update Vue Query cache
-                    queryClient.setQueryData(['user_conversation', eventMessage.conversation.user_id], (oldData: any) => {
-                        if (!oldData) {
-                            return {
-                                ...eventMessage.conversation,
-                                messages: [eventMessage.messages],
+                    queryClient.setQueryData(
+                        ['user_conversation', eventMessage.conversation.user_id],
+                        (oldData: any) => {
+                            if (!oldData) {
+                                return {
+                                    ...eventMessage.conversation,
+                                    messages: [eventMessage.messages],
+                                }
                             }
-                        }
 
-                        return {
-                            ...oldData,
-                            messages: [...oldData.messages, eventMessage.messages],
-                        }
-                    })
+                            return {
+                                ...oldData,
+                                messages: [...oldData.messages, eventMessage.messages],
+                            }
+                        },
+                    )
                 })
             }
         },
@@ -168,23 +171,41 @@ import { initializeEcho } from '@/services/echo'
                 <div class="fixed inset-0 bg-black/25" />
             </TransitionChild>
             <div class="fixed inset-0 flex items-center justify-center p-4">
-                <DialogPanel class="w-1/2 h-[85vh] mb-12 bg-gray-100 border border-gray-400 rounded-md flex">
+                <DialogPanel
+                    class="!w-full md:!w-1/2 lg:!w-1/2 h-[85vh] mb-12 bg-gray-100 border border-gray-400 rounded-md flex"
+                >
                     <!-- Chat messages -->
                     <div class="relative flex-1">
                         <!-- Chat Header -->
-                        <div class="bg-gray-900 flex items-center justify-between font-medium h-18 pl-5">
+                        <div
+                            class="bg-gray-900 flex items-center justify-between font-medium h-18 pl-5"
+                        >
                             <div class="flex items-center">
-                                <img src="/user_icon-removebg.png" class="h-12 mr-3" alt="Flowbite Logo" />
+                                <img
+                                    src="/user_icon-removebg.png"
+                                    class="h-12 mr-3"
+                                    alt="Flowbite Logo"
+                                />
 
-                                <div v-if="adminDataQuery.data.value" class="flex flex-col text-sm text-white">
+                                <div
+                                    v-if="adminDataQuery.data.value"
+                                    class="flex flex-col text-sm text-white"
+                                >
                                     <h1>{{ adminDataQuery.data.value.name }}</h1>
-                                    <h1 class="text-gray-400">{{ adminDataQuery.data.value.email }}</h1>
+                                    <h1 class="text-gray-400">
+                                        {{ adminDataQuery.data.value.email }}
+                                    </h1>
                                 </div>
                             </div>
-                            <XMarkIcon class="text-white size-8 mr-3 hover:cursor-pointer hover:opacity-75" @click="handleCloseModal" />
+                            <XMarkIcon
+                                class="text-white size-8 mr-3 hover:cursor-pointer hover:opacity-75"
+                                @click="handleCloseModal"
+                            />
                         </div>
 
-                        <div class="flex-1 font-medium h-[75%] pt-5 px-5 overflow-y-auto space-y-4 pb-8">
+                        <div
+                            class="flex-1 font-medium h-[75%] pt-5 px-5 overflow-y-auto space-y-4 pb-8"
+                        >
                             <!-- Loop messages -->
                             <template v-if="conversationQuery.data.value?.messages?.length">
                                 <ChatBubble
@@ -199,12 +220,17 @@ import { initializeEcho } from '@/services/echo'
                         </div>
 
                         <!-- Message input -->
-                        <div class="absolute bottom-0 left-0 w-full flex items-center gap-2 p-4 bg-gray-50 border-t border-gray-300">
+                        <div
+                            class="absolute bottom-0 left-0 w-full flex items-center gap-2 p-4 bg-gray-50 border-t border-gray-300"
+                        >
                             <!-- File preview before sending -->
                             <div v-if="attachment" class="flex items-center gap-2">
                                 <div v-if="attachmentPreview" class="relative">
                                     <!-- Image preview -->
-                                    <img :src="attachmentPreview" class="h-16 w-16 object-cover rounded-md border" />
+                                    <img
+                                        :src="attachmentPreview"
+                                        class="h-16 w-16 object-cover rounded-md border"
+                                    />
 
                                     <!-- X button inside image -->
                                     <button
@@ -222,7 +248,12 @@ import { initializeEcho } from '@/services/echo'
                                 class="cursor-pointer hover:opacity-75 bg-blue-500 rounded-md p-2"
                             >
                                 <ArrowUpOnSquareIcon class="size-5 text-white" />
-                                <input id="file-upload" type="file" class="hidden" @change="handleFileChange" />
+                                <input
+                                    id="file-upload"
+                                    type="file"
+                                    class="hidden"
+                                    @change="handleFileChange"
+                                />
                             </label>
 
                             <input
@@ -238,7 +269,8 @@ import { initializeEcho } from '@/services/echo'
                                 @click="handleSendMessage"
                                 :disabled="sendMessageMutation.isPending.value"
                                 :class="{
-                                    'opacity-50 cursor-not-allowed': sendMessageMutation.isPending.value,
+                                    'opacity-50 cursor-not-allowed':
+                                        sendMessageMutation.isPending.value,
                                 }"
                             >
                                 <ChevronDoubleRightIcon class="size-5" />
