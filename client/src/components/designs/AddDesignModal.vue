@@ -6,6 +6,8 @@
     import { apiService } from '@/api/axios'
     import { useMutation, useQueryClient } from '@tanstack/vue-query'
     import Loader from '../Loader.vue'
+    import { TrashIcon } from '@heroicons/vue/20/solid'
+    import DeleteDialog from '../DeleteDialog..vue'
 
     const props = defineProps<{
         selectedProductCategory: string | undefined
@@ -70,8 +72,6 @@
     })
 
     const handleUpload = () => {
-        console.log('selectedFile: ', selectedFile.value)
-
         if (!selectedFile.value) {
             toast.add({
                 severity: 'warn',
@@ -99,7 +99,7 @@
         class="fixed inset-0 z-[999] flex items-center justify-center bg-black/50"
     >
         <DialogPanel
-            class="bg-white h-[400px] overflow-y-auto shadow-xl w-full max-w-xl p-6 space-y-6"
+            class="bg-white h-[400px] overflow-y-auto shadow-xl w-full max-w-4xl p-6 space-y-6"
         >
             <div class="space-y-1">
                 <h2 class="text-xl font-semibold text-gray-800">Upload Design</h2>
@@ -112,25 +112,6 @@
                     Product:
                     <strong>{{ props.selectedProductName }}</strong>
                 </p>
-            </div>
-
-            <div class="flex flex-col">
-                <h2 class="font-semibold text-gray-800 mb-2">Uploaded Designs:</h2>
-
-                <div
-                    v-if="props.designImages && props.designImages.length > 0"
-                    class="grid grid-cols-1 sm:grid-cols-2 gap-4"
-                >
-                    <div v-for="(image, index) in props.designImages" :key="index" class="relative">
-                        <img
-                            :src="image"
-                            :alt="`Design ${index + 1}`"
-                            class="w-full max-h-64 object-contain rounded-md border border-gray-300 p-3"
-                        />
-                    </div>
-                </div>
-
-                <p v-else class="text-sm text-gray-500 mt-2">No uploaded designs yet.</p>
             </div>
 
             <div class="space-y-3 mt-10">
@@ -155,6 +136,44 @@
                         class="w-full max-h-64 object-contain rounded-md p-3 border-2 border-dashed border-gray-300"
                     />
                 </div>
+            </div>
+
+            <div class="flex flex-col">
+                <h2 class="font-semibold text-gray-800 mb-2">Uploaded Designs:</h2>
+
+                <div
+                    v-if="props.designImages && props.designImages.length > 0"
+                    class="grid grid-cols-1 sm:grid-cols-2 gap-4"
+                >
+                    <div
+                        v-for="(image, index) in props.designImages"
+                        :key="index"
+                        class="relative group"
+                    >
+                        <img
+                            :src="image"
+                            :alt="`Design ${index + 1}`"
+                            class="w-full max-h-64 object-contain rounded-md border border-gray-300 p-3"
+                        />
+
+                        <!-- Floating Delete Button -->
+                        <DeleteDialog
+                            :selectedID="-1"
+                            endpoint_url="/api/delete/product/design"
+                            query_key="products"
+                            v-slot="{ openModal }"
+                        >
+                            <button
+                                @click="openModal"
+                                class="absolute top-2 right-2 bg-red-600 text-white rounded-full p-1.5 hover:opacity-75 hover:cursor-pointer transition"
+                            >
+                                <TrashIcon class="size-5" />
+                            </button>
+                        </DeleteDialog>
+                    </div>
+                </div>
+
+                <p v-else class="text-sm text-gray-500 mt-2">No uploaded designs yet.</p>
             </div>
 
             <div class="flex justify-end gap-3 pt-4">

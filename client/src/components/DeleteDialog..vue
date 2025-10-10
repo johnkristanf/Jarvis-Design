@@ -53,11 +53,13 @@
 
 <template>
     <div class="flex items-center justify-center">
-        <button @click="openModal" class="text-red-600 hover:underline">Delete</button>
+        <slot :openModal="openModal">
+            <button @click="openModal" class="text-red-600 hover:underline">Delete</button>
+        </slot>
     </div>
 
     <TransitionRoot appear :show="isOpen" as="template">
-        <Dialog as="div" @close="closeModal" class="relative z-10">
+        <Dialog as="div" @close="closeModal" class="relative z-[9999]">
             <!-- Backdrop -->
             <TransitionChild
                 as="template"
@@ -122,7 +124,10 @@
                             </div>
 
                             <!-- Error Message -->
-                            <p v-if="deleteMutation.isError.value" class="mt-3 text-sm text-red-500">
+                            <p
+                                v-if="deleteMutation.isError.value"
+                                class="mt-3 text-sm text-red-500"
+                            >
                                 Failed to delete. Please try again.
                             </p>
                         </DialogPanel>

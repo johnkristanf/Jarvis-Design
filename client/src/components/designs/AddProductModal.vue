@@ -85,8 +85,6 @@
 
     // FOR SUBMISSION HANDLER
     const onSubmit = handleSubmit((values) => {
-        console.log('values: ', values)
-
         const formData = new FormData()
         formData.append('category_id', values.category.toString())
 
