@@ -93,10 +93,17 @@ class DesignsController extends Controller
             // Generate temporary URLs for each design's image
             $designImages = $product->designs->map(function ($design) {
                 if ($design->image_url && Storage::disk('s3')->exists($design->image_url)) {
-                    return Storage::disk('s3')->temporaryUrl(
+
+                    $tempUrlString = Storage::disk('s3')->temporaryUrl(
                         $design->image_url,
                         now()->addMinutes(10) // 10 minutes validity
                     );
+
+                    return [
+                        'id' => $design->id,
+                        'image_url' => $design->image_url,
+                        'temp_url' => $tempUrlString
+                    ];
                 }
                 return null;
             })
@@ -383,60 +390,54 @@ class DesignsController extends Controller
 
     public function addProductDesign(Request $request)
     {
-        try {
 
-            $validated = $request->validate([
-                'design' => 'required',
-                'product_id' => 'required',
-                'product_name' => 'required|string',
-                'category_name' => 'required|string',
+        $validated = $request->validate([
+            'design' => 'required',
+            'product_id' => 'required',
+            'product_name' => 'required|string',
+            'category_name' => 'required|string',
+        ]);
+
+        if ($request->hasFile('design')) {
+            $file = $request->file('design');
+
+            // Generate safe, unique filename
+            $categorySlug = Str::slug($validated['category_name']);
+            $slugName = Str::slug($validated['product_name']);
+            $extractedFileName = $file->getClientOriginalName();
+
+            // Sanitize category name for S3 path
+            $s3Key = "designs/{$categorySlug}/{$slugName}/{$extractedFileName}";
+
+            // Upload to S3
+            Storage::disk('s3')->put($s3Key, file_get_contents($file), [
+                'visibility' => 'private',
             ]);
 
-            Log::info('Design Data: ', $validated);
-
-            if ($request->hasFile('design')) {
-                $file = $request->file('design');
-
-                // Generate safe, unique filename
-                $categorySlug = Str::slug($validated['category_name']);
-                $slugName = Str::slug($validated['product_name']);
-                $extractedFileName = $file->getClientOriginalName();
-
-                // Sanitize category name for S3 path
-                $s3Key = "designs/{$categorySlug}/{$slugName}/{$extractedFileName}";
-
-                // Upload to S3
-                Storage::disk('s3')->put($s3Key, file_get_contents($file), [
-                    'visibility' => 'private',
-                ]);
-
-                Log::info('Uploaded to S3', ['s3_key' => $s3Key]);
-
-                // Save record in the 'designs' table
-                Designs::create([
-                    'image_url' => $s3Key, // Store the S3 object key
-                    'product_id' => $validated['product_id'],
-                ]);
-            }
-
-            return response()->json([
-                'message' => 'Product design uploaded successfully!',
-            ], 201);
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json([
-                'message' => 'Validation failed.',
-                'errors' => $e->errors(),
-            ], 422);
-        } catch (\Exception $e) {
-            Log::error('Design Upload Error:', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
+            // Save record in the 'designs' table
+            Designs::create([
+                'image_url' => $s3Key, // Store the S3 object key
+                'product_id' => $validated['product_id'],
             ]);
-
-            return response()->json([
-                'message' => 'An error occurred while uploading the design.',
-            ], 500);
         }
+
+        return response()->json([
+            'message' => 'Product design uploaded successfully!',
+        ], 201);
+    }
+
+    public function deleteProductDesign(string $imageURL)
+    {
+        Log::info("imageURL: ", [$imageURL]);
+        $decodedPath = urldecode($imageURL);
+
+        // Delete the file from your configured S3 disk
+        if (Storage::disk('s3')->exists($decodedPath)) {
+            Storage::disk('s3')->delete($decodedPath);
+            return response()->json(['message' => 'Design deleted successfully.'], 200);
+        }
+
+        return response()->json(['error' => 'File not found.'], 404);
     }
 
     public function attachDesignMaterial(Request $request)
@@ -453,22 +454,6 @@ class DesignsController extends Controller
         $designID = $validated['design_id'];
         $materials = $validated['material_quantity_arr'];
 
-        Log::info('Design Data: ', [
-            'designType' => $designType,
-            'designID' => $designID,
-            'materials' => $materials,
-        ]);
-
-        // switch (strtolower($designType)) {
-        //     case 'pre-made':
-        //         $design = Designs::with('materials')->find($designID);
-        //         break;
-        //     case 'uploaded':
-        //         $design = UploadedDesign::with('materials')->find($designID);
-        //         break;
-        //     default:
-        //         $design = null;
-        // }
 
         $design = match ($designType) {
             OrderType::PRE_MADE->value => Designs::with('materials')->find($designID),

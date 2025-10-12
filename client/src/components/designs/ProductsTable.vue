@@ -7,9 +7,10 @@
     import { OrderTypes } from '@/types/order'
     import type { Products } from '@/types/product'
     import AddDesignModal from './AddDesignModal.vue'
-    import DeleteDialog from '../DeleteDialog..vue'
     import PaginationControls from '../PaginationControls.vue'
     import type { PaginatedResponse } from '@/types/pagination'
+    import type { BusinessProductDesign } from '@/types/design'
+import DeleteDialog from '../DeleteDialog.vue'
 
     const modals = reactive({
         show_attach_materials: false,
@@ -20,7 +21,7 @@
     const selectedProductCategory = ref<string>()
     const selectedProductID = ref<number>()
     const selectedProductName = ref<string>()
-    const selectedDesignImages = ref<string[]>()
+    const selectedDesignImages = ref<BusinessProductDesign[]>()
 
     // PAGINATION REFS
     const pagination = reactive({
@@ -58,7 +59,7 @@
         product_id: number,
         product_name: string,
         product_category: string,
-        design_images: string[],
+        design_images: BusinessProductDesign[],
     ) => {
         selectedProductCategory.value = product_category
         selectedProductID.value = product_id
@@ -81,7 +82,7 @@
                     <th scope="col" class="px-6 py-3">Action</th>
                 </tr>
             </thead>
-            <tbody v-if="products" >
+            <tbody v-if="products">
                 <tr
                     v-for="product in products.data"
                     :key="product.id"
@@ -121,6 +122,7 @@
                             :selectedID="product.id"
                             endpoint_url="/api/delete/product"
                             query_key="products"
+                            success_message="Product Deleted Successfully"
                         />
                     </td>
                 </tr>

@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-    import { ref } from 'vue'
+    import { onMounted, ref } from 'vue'
     import {
         TransitionRoot,
         TransitionChild,
@@ -9,28 +9,45 @@
     } from '@headlessui/vue'
     import { useMutation, useQueryClient } from '@tanstack/vue-query'
     import { apiService } from '@/api/axios'
+    import { useToast } from 'primevue'
 
     // Props
     const props = defineProps<{
-        selectedID: number
+        selectedID: number | string
         endpoint_url: string
         query_key: string
+        success_message: string
+        refresh_url: string | undefined
     }>()
 
     const isOpen = ref(false)
 
     // Vue Query: Setup Query Client
     const queryClient = useQueryClient()
+    const toast = useToast()
 
     // Define the mutation for deleting a record
     const deleteMutation = useMutation({
-        mutationFn: async (id: number) => {
-            return await apiService.delete(`${props.endpoint_url}/${id}`)
+        mutationFn: async (id: number | string) => {
+            return await apiService.delete(`${props.endpoint_url}/${encodeURIComponent(id)}`)
         },
         onSuccess: () => {
             // Invalidate queries to refresh data after deletion
             queryClient.invalidateQueries({ queryKey: [props.query_key] })
-            closeModal()
+
+            toast.add({
+                severity: 'success',
+                summary: 'Success',
+                detail: props.success_message,
+                life: 1500,
+            })
+
+            setTimeout(() => {
+                if (props.refresh_url) {
+                    window.location.href = props.refresh_url
+                }
+                closeModal()
+            }, 1500)
         },
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         onError: (error: any) => {
@@ -49,6 +66,10 @@
     function handleDelete() {
         deleteMutation.mutate(props.selectedID)
     }
+
+    onMounted(() => {
+        console.log('props: ', props)
+    })
 </script>
 
 <template>

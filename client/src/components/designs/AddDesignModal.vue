@@ -2,18 +2,18 @@
     import { ref } from 'vue'
     import { Dialog, DialogPanel } from '@headlessui/vue'
     import { useToast } from 'primevue'
-    import Toast from 'primevue/toast'
     import { apiService } from '@/api/axios'
     import { useMutation, useQueryClient } from '@tanstack/vue-query'
     import Loader from '../Loader.vue'
     import { TrashIcon } from '@heroicons/vue/20/solid'
-    import DeleteDialog from '../DeleteDialog..vue'
+    import type { BusinessProductDesign } from '@/types/design'
+    import DeleteDialog from '../DeleteDialog.vue'
 
     const props = defineProps<{
         selectedProductCategory: string | undefined
         selectedProductID: number
         selectedProductName: string | undefined
-        designImages: string[] | undefined
+        designImages: BusinessProductDesign[] | undefined
     }>()
 
     const emit = defineEmits(['close'])
@@ -151,16 +151,18 @@
                         class="relative group"
                     >
                         <img
-                            :src="image"
+                            :src="image.temp_url"
                             :alt="`Design ${index + 1}`"
                             class="w-full max-h-64 object-contain rounded-md border border-gray-300 p-3"
                         />
 
                         <!-- Floating Delete Button -->
                         <DeleteDialog
-                            :selectedID="-1"
+                            :selectedID="image.image_url"
                             endpoint_url="/api/delete/product/design"
                             query_key="products"
+                            success_message="Product Design Deleted Successfully"
+                            refresh_url="/admin/products"
                             v-slot="{ openModal }"
                         >
                             <button
@@ -195,7 +197,4 @@
 
     <!-- LOADER -->
     <Loader v-if="mutation.isPending.value" msg="Uploading Design..." />
-
-    <!-- TOAST -->
-    <Toast />
 </template>

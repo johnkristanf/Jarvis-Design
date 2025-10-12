@@ -9,7 +9,7 @@
     import Toast from 'primevue/toast'
 
     import EditMaterialsModal from './EditMaterialsModal.vue'
-    import DeleteDialog from '../DeleteDialog..vue'
+    import DeleteDialog from '../DeleteDialog.vue'
     import type { PaginatedResponse } from '@/types/pagination'
     import PaginationControls from '../PaginationControls.vue'
     import AddNewButton from '../AddNewButton.vue'
@@ -82,7 +82,7 @@
                         summary: 'Low Stock Alert',
                         detail: `The following fabric are low on stock: ${materialNames}`,
                         closable: true,
-                        life: 3000
+                        life: 3000,
                     })
 
                     const lowStockData = {
@@ -187,6 +187,7 @@
                             :selectedID="material.id"
                             endpoint_url="/api/delete/material"
                             query_key="materials"
+                            success_message="Fabric Deleted Successfully"
                         />
                     </td>
                 </tr>
