@@ -17,7 +17,7 @@
         endpoint_url: string
         query_key: string
         success_message: string
-        refresh_url: string | undefined
+        refresh_url?: string 
     }>()
 
     const isOpen = ref(false)
