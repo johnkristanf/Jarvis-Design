@@ -22,7 +22,7 @@ jobs:
           php-version: '8.2'
 
       - name: Install Dependencies
-        run: composer install --prefer-dist --no-progress --no-suggest
+        run: composer install --prefer-dist --no-progress 
 
       - name: Run Laravel Pint (Formatter)
         run: ./vendor/bin/pint
