@@ -31,7 +31,7 @@ export type AuthenticatedUserData = {
     email: string
     role_id: number
     role: Role
-    prompt_limit: number
+    prompt_limit?: number
 }
 
 export type User = {

@@ -86,7 +86,6 @@
         }
 
         const promptLimit = authStore.currentUser?.prompt_limit ?? 0
-        console.log('PROMPT LIMIT: ', promptLimit)
 
         if (promptLimit <= 0) {
             toast.add({
