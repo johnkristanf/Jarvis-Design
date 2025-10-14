@@ -19,7 +19,7 @@ return new class extends Migration
             $table->foreignId('category_id')
                 ->constrained('design_categories')
                 ->onDelete('cascade');
-                
+
             $table->foreignId('fabric_type_id')
                 ->nullable()
                 ->constrained('materials')
@@ -27,6 +27,7 @@ return new class extends Migration
 
 
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

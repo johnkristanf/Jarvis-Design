@@ -19,6 +19,7 @@ return new class extends Migration
             $table->unsignedInteger('reorder_level')->default(0);
             $table->foreignId('category_id')->constrained('materials_category')->onDelete('cascade');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
