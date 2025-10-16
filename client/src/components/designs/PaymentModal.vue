@@ -18,14 +18,6 @@
         isOpen: boolean
     }>()
 
-    // DYNAMIC QRCODE GENERATION RESPONSE
-    // const paymentResponseRef = ref<ProceedPaymentResponseData>({
-    //     code_id: '',
-    //     amount: -1,
-    //     business_name: '',
-    //     qrcode_img_src: '',
-    // })
-
     // STATE FOR PLACE ORDER MUTATING
     const isPlacingOrder = ref<boolean>(false)
     const fileInput = ref<HTMLInputElement | null>(null)
@@ -36,43 +28,6 @@
 
     const queryClient = useQueryClient()
     const toast = useToast()
-
-    // const handleGeneratePaymentQrCode = async () => {
-    //     const designID = props.attributeData.design_id
-    //     const totalPrice = props.attributeData.quantity * props.paymentData.price
-    //     const orderOption = props.paymentData.order_option
-    //     const orderType = props.orderType
-
-    //     const quantity = props.attributeData.quantity
-    //     const color = props.attributeData.color
-    //     const size = props.attributeData.size
-
-    //     console.log('totalPrice: ', totalPrice)
-    //     console.log('orderType: ', orderType)
-    //     console.log('quantity: ', quantity)
-    //     console.log('color: ', color)
-    //     console.log('size: ', size)
-
-    //     const response = await generateQrCode(
-    //         designID,
-    //         totalPrice,
-    //         orderOption,
-    //         orderType,
-    //         quantity,
-    //         color,
-    //         size,
-    //     )
-    //     console.log('response qrcode: ', response)
-
-    //     if (response && paymentResponseRef.value) {
-    //         paymentResponseRef.value = response
-    //     }
-    // }
-
-    // UNCOMMENT THIS LATER IF PANEL OR ADVISOR ASK FOR DYNAMIC QRCODE PAYMENT PROCESS
-    // onMounted(() => {
-    //     handleGeneratePaymentQrCode()
-    // })
 
     // PLACE ORDER MUTATION
     const orderMutation = useMutation({
@@ -185,22 +140,11 @@
                                 </p>
                             </div>
 
-                            <!-- <div class="mt-2" v-if="paymentResponseRef.qrcode_img_src != ''">
-                                <img
-                                    :src="paymentResponseRef.qrcode_img_src"
-                                    alt="Generated QR CODE"
-                                />
-                            </div> -->
-
                             <div class="mt-5 flex flex-col items-center justify-center">
                                 <img src="/jarvis-gcash-qr.webp" alt="Generated QR CODE" width="300" />
 
                                 <h1 class="text-gray-500">Name: JA**N S.</h1>
                             </div>
-                            <!-- <div class="w-full flex flex-col justify-center items-center">
-                                <h1>Generating QR Code...</h1>
-                                <ProgressSpinner :pt="{ root: { style: { width: '40px' } } }" />
-                            </div> -->
 
                             <!-- PAYMENT CONFIRMATION SCREENSHOT UPLOAD -->
                             <div class="mt-10">
