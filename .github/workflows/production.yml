@@ -1,9 +1,9 @@
 name: Jarvis Design Deployment
 
 on:
-    push:
-      branches:
-        - production
+  push:
+    branches:
+      - production
 
 env:
   EC2_SERVER_DIR: /home/${{ secrets.EC2_USER }}/server
@@ -33,7 +33,6 @@ jobs:
       - name: Push Docker Image to Docker Hub
         run: docker push johnkristan/jarvis-designs:latest
 
-
   production:
     runs-on: ubuntu-latest
     needs: build
@@ -61,7 +60,6 @@ jobs:
           sentry_laravel_dsn: ${{ secrets.SENTRY_LARAVEL_DSN }}
           sentry_traces_sample_rate: ${{ secrets.SENTRY_TRACES_SAMPLE_RATE }}
 
-
       - name: Make Server Directory on EC2
         uses: appleboy/ssh-action@v1.0.2
         with:
@@ -71,15 +69,14 @@ jobs:
           script: |
             mkdir -p ${{ env.EC2_SERVER_DIR }}
 
-
       - name: Upload production files to EC2 using native SCP
         uses: ./.github/actions/upload-config-files
         with:
           ec2_secret_key: ${{ secrets.EC2_KEY }}
           ec2_ssh_address: ${{ env.EC2_SSH_ADDRESS }}
           ec2_server_directory: ${{ env.EC2_SERVER_DIR }}
-          files_to_upload: 'server/docker-compose.yml server/default.conf .env'
-         
+          files_to_upload: "server/docker-compose.yml server/default.conf .env"
+
       - name: Install Docker and Docker Compose inside EC2
         uses: appleboy/ssh-action@v1.0.2
         with:
@@ -151,7 +148,6 @@ jobs:
             sudo systemctl enable snap.certbot.renew.service
             sudo systemctl enable snap.certbot.renew.timer
             sudo systemctl start snap.certbot.renew.timer
-
 
       - name: 🚀 Deploy on EC2 via SSH
         uses: appleboy/ssh-action@v1.0.2
