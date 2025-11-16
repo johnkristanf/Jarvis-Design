@@ -55,12 +55,21 @@
 
         },
 
-        onError: () => {
+        onError: (error: any) => {
             isLoadingMutation.value = false
+            console.log("ERROR :", error);
+            
+
+            // Try to get error message - look for known keys
+            let message = 'An error occurred while registering your account. Please try again.';
+            if (error && (error.msg || error.message)) {
+                message = error.msg || error.message
+            }
+
             toast.add({
                 severity: 'error',
                 summary: 'Registration Failed',
-                detail: 'An error occurred while registering your account. Please try again.',
+                detail: message,
                 life: 3000,
             })
         },

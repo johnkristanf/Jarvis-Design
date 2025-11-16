@@ -102,7 +102,9 @@ runs:
           MAIL_PORT=587
           MAIL_ENCRYPTION=tls
           MAIL_FROM_NAME="${APP_NAME}"
-          EMAIL_VERIFICATION_URL="${APP_URL}/email/verified"
+          
+          CLIENT_APP_URL=https://jarvis-designs.it.com
+          EMAIL_VERIFICATION_URL="${CLIENT_APP_URL}/email/verified"
 
           MAIL_USERNAME=${{ inputs.mail_username }}
           MAIL_PASSWORD=${{ inputs.mail_password }}

@@ -84,7 +84,7 @@
                             tracking number once your item has shipped.
                         </p>
                     </div>
-                    <div class="mb-10">
+                    <!-- <div class="mb-10">
                         <h3
                             class="flex items-center mb-4 text-lg font-medium text-gray-900 dark:text-white"
                         >
@@ -106,7 +106,7 @@
                             Yes! For bulk orders or wholesale partnerships, please contact us
                             directly. We offer discounted rates for large quantity purchases.
                         </p>
-                    </div>
+                    </div> -->
                 </div>
             </div>
         </div>

@@ -13,6 +13,15 @@ class UserService
     public function registerUser(array $data): int
     {
         try {
+            // Check if username already exists
+            if (User::where('username', $data['username'])->exists()) {
+                throw new Exception('Username already exists.', 409);
+            }
+
+            // Check if email already exists
+            if (User::where('email', $data['email'])->exists()) {
+                throw new Exception('Email already exists.', 409);
+            }
 
             $hashedPassword = Hash::make($data['password']);
             $roleID = Roles::where('name', 'user')->first()->id;
@@ -33,7 +42,7 @@ class UserService
                 'code' => $e->getCode(),
             ]);
 
-            throw new Exception('Error in registering user. Please try again', 500);
+            throw new Exception($e->getMessage() ?: 'Error in registering user. Please try again', $e->getCode() ?: 500);
         }
     }
 }

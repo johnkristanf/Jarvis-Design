@@ -25,32 +25,48 @@ class UserController extends Controller
 
     public function register(Request $request)
     {
-        $validatedData = $request->validate([
-            'name' => 'required|string',
-            'username' => 'required|string',
-            'email' => 'required|string|email',
-            'password' => 'required|min:8',
-        ]);
+        try {
+            $validatedData = $request->validate([
+                'name' => 'required|string',
+                'username' => 'required|string',
+                'email' => 'required|string|email',
+                'password' => 'required|min:8',
+            ]);
 
-        $createdUserID = $this->userService->registerUser($validatedData);
+            $this->userService->registerUser($validatedData);
 
-        if ($createdUserID) {
-            if (! empty($validatedData['email'])) {
+            if (!empty($validatedData['email'])) {
                 // EMAIL VERIFICATION LINK
                 Mail::to($validatedData['email'])->send(new EmailVerification(emailTo: $validatedData['email']));
-            } else {
-                Log::warning('Attempted to send email without a valid recipient.');
+            } 
+
+            return response()->json([
+                'message' => 'Account Created Successfully',
+                'email' => $validatedData['email'],
+            ], 201);
+
+        } catch (\Exception $e) {
+            // Friendly exception messages for common registration errors
+            $statusCode = $e->getCode();
+            if (!$statusCode || !is_int($statusCode) || $statusCode < 100 || $statusCode > 599) {
+                $statusCode = 500;
+            }
+
+            $message = $e->getMessage();
+
+            // Optional: Customize messages if needed
+            if (strpos(strtolower($message), 'username already exists') !== false) {
+                $message = 'That username is already taken. Please choose another.';
+            } elseif (strpos(strtolower($message), 'email already exists') !== false) {
+                $message = 'That email address is already in use. Please use another.';
+            } elseif (!$message) {
+                $message = 'An error occurred while creating your account. Please try again later.';
             }
 
             return response()->json([
-                'msg' => 'Account Created Successfully',
-                'email' => $validatedData['email'],
-            ], 201);
+                'message' => $message,
+            ], $statusCode);
         }
-
-        return response()->json([
-            'msg' => 'Failed to Create Account',
-        ], 500);
     }
 
     public function login(Request $request)
