@@ -22,7 +22,6 @@
     const selectedCategory = ref<string | number>()
     const selectedTag = ref<string | number>()
     const openDesignModal = ref(false)
-    const showAIDesignModal = ref<boolean>(false)
 
     // CATEGORY EXPANSION TRACKER
     const expandedCategory = ref<number | null>(null)
@@ -84,7 +83,6 @@
 
     const handleOpenAIDesigns = () => {
         showAIDesignModal.value = true
-        showOrderModal.value = false
     }
 </script>
 
@@ -152,12 +150,12 @@
         @close="openDesignModal = false"
     />
 
-    <GenerateAIDesignsModal v-if="showAIDesignModal" @close="showAIDesignModal = false" />
 
     <OrderProductModal
         v-if="showOrderModal && selectedCategoryRef && selectedProductRef"
         :categoryName="selectedCategoryRef"
         :product="selectedProductRef"
+        :showAIDesignModal="showAIDesignModal"
         @close="showOrderModal = false"
         @openAIDesigns="handleOpenAIDesigns"
     />

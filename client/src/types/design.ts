@@ -64,7 +64,6 @@ export interface Sizes {
 
 export type DesignGenerate = {
     prompt: string
-    style_preference: string
 }
 
 export interface UploadedDesign {

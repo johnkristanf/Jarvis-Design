@@ -5,7 +5,6 @@
     import Loader from '../Loader.vue'
     import { ref } from 'vue'
     import type { DesignGenerate } from '@/types/design'
-    import { TransitionRoot, TransitionChild, Dialog, DialogPanel } from '@headlessui/vue'
     import { ArrowDownTrayIcon, XMarkIcon } from '@heroicons/vue/20/solid'
     import { useToast } from 'primevue/usetoast'
     import ListSelectBox from '../ListSelectBox.vue'
@@ -71,11 +70,16 @@
         { name: 'sketch' },
     ])
 
-    const { value: prompt } = useField<string>('prompt')
-    const { value: style_preference } = useField<string>('style_preference')
+    // const { value: prompt } = useField<string>('prompt')
+    // const { value: style_preference } = useField<string>('style_preference')
 
-    const onImageGenerate = handleSubmit((values) => {
-        if (!values.prompt || !values.style_preference) {
+    const prompt = ref(null)
+    const style_preference = ref(null)
+
+    const onImageGenerate = () => {
+        console.log('NING SUBMIT MAN')
+
+        if (!prompt.value || !style_preference.value) {
             toast.add({
                 severity: 'warn',
                 summary: 'Missing Fields',
@@ -98,213 +102,105 @@
         }
 
         const designGengerateData: DesignGenerate = {
-            prompt: values.prompt,
-            style_preference: values.style_preference.name,
+            prompt: prompt.value,
         }
 
         generateImageMutation.mutate(designGengerateData)
-    })
+    }
 </script>
 
 <template>
-    <TransitionRoot as="template" :show="true">
-        <Dialog as="div" class="relative z-[9999]" :static="true">
-            <TransitionChild
-                as="template"
-                enter="ease-out duration-300"
-                enter-from="opacity-0"
-                enter-to="opacity-100"
-                leave="ease-in duration-200"
-                leave-from="opacity-100"
-                leave-to="opacity-0"
-            >
-                <div class="fixed inset-0 bg-gray-500/75 transition-opacity" />
-            </TransitionChild>
+    <div class="w-[60%] h-[480px] transform overflow-y-auto bg-white p-8 text-left">
+        <div class="flex items-center justify-between my-4">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">Prompt your Desired AI Design</h2>
+        </div>
 
-            <div class="fixed inset-0 z-10 overflow-y-auto">
-                <div class="flex min-h-full items-center justify-center p-4 text-center">
-                    <TransitionChild
-                        as="template"
-                        enter="ease-out duration-300"
-                        enter-from="opacity-0 scale-95"
-                        enter-to="opacity-100 scale-100"
-                        leave="ease-in duration-200"
-                        leave-from="opacity-100 scale-100"
-                        leave-to="opacity-0 scale-95"
+        <form class="flex flex-col gap-7 w-full mb-8">
+            <div class="flex flex-col gap-2">
+                <div class="flex justify-between items-center gap-2">
+                    <div class="flex items-center justify-between w-full">
+                        <h1>Prompt:</h1>
+                        <h1 class="text-gray-500 text-sm">
+                            Daily Prompt Limit:
+                            {{ authStore.currentUser?.prompt_limit }}
+                        </h1>
+                    </div>
+                </div>
+
+                <textarea
+                    type="text"
+                    id="prompt"
+                    v-model="prompt"
+                    placeholder="Mock up: Polo Shirt Design: Spider man Color: Green"
+                    class="font-medium block w-full rounded-md bg-white px-3 text-base text-black placeholder:text-gray-400 focus:outline-none border border-gray-300"
+                ></textarea>
+
+                <div class="flex flex-col gap-2">
+                    <h1>Style Preference:</h1>
+                    <select
+                        v-model="style_preference"
+                        class="font-medium block w-full rounded-md bg-white px-3 text-base text-black border border-gray-300 focus:outline-none"
                     >
-                        <DialogPanel
-                            class="w-full h-[500px] max-w-4xl transform overflow-y-auto bg-white p-8 text-left align-middle shadow-xl transition-all"
-                        >
-                            <button
-                                type="button"
-                                class="absolute top-4 right-4 text-gray-400 hover:text-gray-500"
-                                @click="handleCloseModal"
-                            >
-                                <span class="sr-only">Close</span>
-                                <XMarkIcon class="size-6" aria-hidden="true" />
-                            </button>
-
-                            <div class="flex items-center justify-between my-4">
-                                <h2 class="text-2xl font-bold text-gray-900 mb-6">
-                                    Prompt your Desired AI Design
-                                </h2>
-
-                                <!-- BUTTONS AFTER THE IMAGES GETTING GENERATED -->
-                                <!-- <div
-                                    v-if="imageUrls && imageUrls.length > 0"
-                                    class="flex items-center gap-2"
-                                >
-                                    <button
-                                        @click="handleGenerateAnother"
-                                        class="font-bold bg-gray-900 text-white rounded-md p-2 text-gray-900 mr-3 hover:cursor-pointer hover:opacity-75"
-                                    >
-                                        Generate another
-                                    </button>
-
-                                    <button
-                                        v-if="imageUrls && imageUrls.length > 0"
-                                        @click="handleCloseModal"
-                                        class="font-bold bg-gray-700 text-white rounded-md p-2 text-gray-900 mr-3 hover:cursor-pointer hover:opacity-75"
-                                    >
-                                        Close
-                                    </button>
-                                </div> -->
-                            </div>
-
-                            <!-- FORM INPUT BEFORE GENERATION -->
-                            <!-- v-if="imageUrls.length == 0" -->
-                            <form
-                                @submit.prevent="onImageGenerate"
-                                class="flex flex-col gap-7 w-full mb-8"
-                            >
-                                <div class="flex flex-col gap-2">
-                                    <div class="flex justify-between items-center gap-2">
-                                        <div class="flex items-center justify-between w-full">
-                                            <h1>Prompt:</h1>
-                                            <h1 class="text-gray-500 text-sm">Daily Prompt Limit: {{ authStore.currentUser?.prompt_limit }}</h1>
-                                        </div>
-
-                                        <!-- PROMPT TOOLTIP -->
-                                        <!-- <fwb-tooltip
-                                            placement="right"
-                                            theme="light"
-                                            trigger="click"
-                                        >
-                                            <template #trigger>
-                                                <fwb-button type="button" color="dark">
-                                                    Prompting Tips
-                                                </fwb-button>
-                                            </template>
-                                            <template #content>
-                                                <div
-                                                    class="whitespace-pre-line max-w-xl text-sm leading-relaxed font-normal text-gray-800"
-                                                >
-                                                    <div class="mb-2 text-xl font-semibold mt-3">
-                                                        🎨 Prompting Tips for Your Custom Design
-                                                    </div>
-
-                                                    Want to create the perfect design? Here's a
-                                                    sample prompt:
-
-                                                    <br />
-                                                    <br />
-                                                    "A cute Hello Kitty character holding a coffee
-                                                    mug, wearing a pink and yellow polo shirt with
-                                                    an armored futuristic design. The background is
-                                                    simple white or transparent."
-
-                                                    <br />
-                                                    <br />
-                                                    - Be specific — mention characters, style,
-                                                    colors ✅
-                                                    <br />
-                                                    - Think visually
-                                                    <br />
-                                                    - 🚫 Avoid long sentences
-                                                </div>
-                                            </template>
-                                        </fwb-tooltip> -->
-                                    </div>
-
-                                    <textarea
-                                        type="text"
-                                        id="prompt"
-                                        v-model="prompt"
-                                        placeholder="Mock up: Polo Shirt Design: Spider man Color: Green"
-                                        class="font-medium block w-full rounded-md bg-white px-3 text-base text-black placeholder:text-gray-400 focus:outline-none border border-gray-300"
-                                    ></textarea>
-                                </div>
-
-                                <div class="flex flex-col gap-2">
-                                    <h1>Style Preference:</h1>
-
-                                    <ListSelectBox
-                                        v-model="style_preference"
-                                        :options="preferences"
-                                        displayKey="name"
-                                    />
-                                </div>
-
-                                <div class="flex flex-col gap-3">
-                                    <button
-                                        type="submit"
-                                        class="px-4 py-2 rounded-md bg-gray-900 text-white hover:cursor-pointer hover:opacity-75"
-                                    >
-                                        Generate
-                                    </button>
-
-                                    <button
-                                        type="button"
-                                        @click="handleCloseModal"
-                                        class="px-4 py-2 rounded-md bg-gray-700 text-white hover:cursor-pointer hover:opacity-75"
-                                    >
-                                        Close
-                                    </button>
-                                </div>
-                            </form>
-
-                            <!-- LIST OF AI GENERATED DESIGNS -->
-                            <div v-if="imageUrls && imageUrls.length > 0" class="mt-5">
-                                <h1 class="mb-3">Generated AI Images:</h1>
-                                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    <div
-                                        v-for="(imageUrl, index) in imageUrls"
-                                        :key="'generated-' + index"
-                                        class="group relative overflow-hidden rounded-md"
-                                    >
-                                        <!-- Download Button -->
-                                        <a
-                                            :href="`${aiAPIURL}/download/image/${imageUrl}`"
-                                            download
-                                            class="absolute top-2 right-2 z-10 p-1 bg-white/80 hover:bg-white rounded-full shadow-md transition"
-                                            target="_blank"
-                                        >
-                                            <ArrowDownTrayIcon
-                                                class="w-5 h-5 text-gray-700 hover:text-black"
-                                            />
-                                        </a>
-
-                                        <!-- Image -->
-                                        <img
-                                            :src="`${aiAPIURL}/generated/image/${imageUrl}`"
-                                            class="aspect-square w-full rounded-md bg-gray-200 object-cover group-hover:opacity-75 transition"
-                                        />
-
-                                        <!-- Caption -->
-                                        <h3
-                                            class="mt-2 text-sm text-center text-gray-700 font-medium"
-                                        >
-                                            Generated Design {{ index + 1 }}
-                                        </h3>
-                                    </div>
-                                </div>
-                            </div>
-                        </DialogPanel>
-                    </TransitionChild>
+                        <option :value="null" disabled selected>Select a style preference</option>
+                        <option v-for="option in preferences" :key="option.name" :value="option">
+                            {{ option.name }}
+                        </option>
+                    </select>
                 </div>
             </div>
-        </Dialog>
-    </TransitionRoot>
+
+            <div class="flex flex-col gap-3">
+                <button
+                    type="button"
+                    @click="onImageGenerate"
+                    class="px-4 py-2 rounded-md bg-gray-900 text-white hover:cursor-pointer hover:opacity-75"
+                >
+                    Generate
+                </button>
+
+                <button
+                    type="button"
+                    @click="handleCloseModal"
+                    class="px-4 py-2 rounded-md bg-gray-700 text-white hover:cursor-pointer hover:opacity-75"
+                >
+                    Close
+                </button>
+            </div>
+        </form>
+
+        <!-- LIST OF AI GENERATED DESIGNS -->
+        <div v-if="imageUrls && imageUrls.length > 0" class="mt-5">
+            <h1 class="mb-3">Generated AI Images:</h1>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div
+                    v-for="(imageUrl, index) in imageUrls"
+                    :key="'generated-' + index"
+                    class="group relative overflow-hidden rounded-md"
+                >
+                    <!-- Download Button -->
+                    <a
+                        :href="`${aiAPIURL}/download/image/${imageUrl}`"
+                        download
+                        class="absolute top-2 right-2 z-10 p-1 bg-white/80 hover:bg-white rounded-full shadow-md transition"
+                        target="_blank"
+                    >
+                        <ArrowDownTrayIcon class="w-5 h-5 text-gray-700 hover:text-black" />
+                    </a>
+
+                    <!-- Image -->
+                    <img
+                        :src="`${aiAPIURL}/generated/image/${imageUrl}`"
+                        class="aspect-square w-full rounded-md bg-gray-200 object-cover group-hover:opacity-75 transition"
+                    />
+
+                    <!-- Caption -->
+                    <h3 class="mt-2 text-sm text-center text-gray-700 font-medium">
+                        Generated Design {{ index + 1 }}
+                    </h3>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <Loader v-if="isLoadingMutation" :msg="loaderMsg" />
 </template>
