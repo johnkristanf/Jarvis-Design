@@ -80,10 +80,6 @@
         },
         { deep: true },
     )
-
-    const handleOpenAIDesigns = () => {
-        showAIDesignModal.value = true
-    }
 </script>
 
 <template>
@@ -150,13 +146,10 @@
         @close="openDesignModal = false"
     />
 
-
     <OrderProductModal
         v-if="showOrderModal && selectedCategoryRef && selectedProductRef"
         :categoryName="selectedCategoryRef"
         :product="selectedProductRef"
-        :showAIDesignModal="showAIDesignModal"
         @close="showOrderModal = false"
-        @openAIDesigns="handleOpenAIDesigns"
     />
 </template>
