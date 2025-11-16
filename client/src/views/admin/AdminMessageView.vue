@@ -71,6 +71,8 @@
             return await getConversation(selectedCustomerData.value.id)
         },
         enabled: computed(() => !!selectedCustomerData.value.id),
+        refetchOnWindowFocus: false,
+        refetchOnMount: false,
     })
 
     // Handle file selection
@@ -151,6 +153,14 @@
                                     ...eventMessage.conversation,
                                     messages: [eventMessage.messages],
                                 }
+                            }
+
+                            const messageExists = oldData.messages.some(
+                                (msg: any) => msg.id === eventMessage.messages.id,
+                            )
+
+                            if (messageExists) {
+                                return oldData
                             }
 
                             return {
@@ -286,9 +296,6 @@
                     </button>
                 </div>
             </div>
-
-            <!-- No conversation selected -->
-            <!-- <div v-else class="flex items-center justify-center h-full text-gray-500">Select a conversation to start chatting</div> -->
         </div>
 
         <Loader v-if="isLoading" msg="Loading Messages..." />

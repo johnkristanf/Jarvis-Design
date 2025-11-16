@@ -42,6 +42,8 @@
             return await getConversation(authStore.currentUser.id)
         },
         enabled: !!authStore.currentUser?.id,
+        refetchOnWindowFocus: false,
+        refetchOnMount: false,
     })
 
     // USE QUERY COVERSATION
@@ -141,6 +143,14 @@
                                     ...eventMessage.conversation,
                                     messages: [eventMessage.messages],
                                 }
+                            }
+
+                            const messageExists = oldData.messages.some(
+                                (msg: any) => msg.id === eventMessage.messages.id,
+                            )
+
+                            if (messageExists) {
+                                return oldData
                             }
 
                             return {
