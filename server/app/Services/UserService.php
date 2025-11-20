@@ -30,6 +30,8 @@ class UserService
                 'name' => $data['name'],
                 'username' => $data['username'],
                 'email' => $data['email'],
+                'address' => $data['address'],
+                'phone_number' => $data['phone_number'],
                 'password' => $hashedPassword,
                 'role_id' => $roleID,
             ])->id;

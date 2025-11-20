@@ -3,7 +3,7 @@
     import CustomerChatBox from '@/components/message/CustomerChatBox.vue'
     import OrderDetailsModal from '@/components/orders/OrderDetailsModal.vue'
     import { ChatBubbleLeftRightIcon } from '@heroicons/vue/20/solid'
-    import { onMounted, ref, watch } from 'vue'
+    import { computed, onMounted, ref, watch } from 'vue'
     import { FwbCard } from 'flowbite-vue'
     import { useQuery, useQueryClient } from '@tanstack/vue-query'
     import Loader from '@/components/Loader.vue'
@@ -12,6 +12,8 @@
     import type { PaginatedResponse } from '@/types/pagination'
     import { useToast } from 'primevue'
     import { initializeEcho } from '@/services/echo'
+    import { useFetchAuthenticatedUser } from '@/composables/useFetchAuthenticatedUser'
+    import { getConversation, markConversationAsRead } from '@/api/get/message'
 
     const isOpenChatBox = ref<boolean>(false)
     const isOrderDetailsOpen = ref<boolean>(false)
@@ -19,6 +21,8 @@
     const searchTerm = ref<string>('')
     const toast = useToast()
     const queryClient = useQueryClient()
+
+    const { authStore } = useFetchAuthenticatedUser()
 
     const {
         data: orders,
@@ -30,8 +34,8 @@
             const respData = await apiService.get<PaginatedResponse<Orders>>(
                 `/api/get/orders?search=${searchTerm.value}`,
             )
-            console.log("respData: ", respData);
-            
+            console.log('respData: ', respData)
+
             return respData
         },
         enabled: true,
@@ -54,6 +58,35 @@
     const openOrderDetails = (order: Orders) => {
         isOrderDetailsOpen.value = true
         orderDetails.value = order
+    }
+
+    const conversationQuery = useQuery({
+        queryKey: ['user_conversation', authStore.currentUser?.id],
+        queryFn: async () => {
+            return await getConversation(authStore.currentUser.id)
+        },
+    })
+
+    // Computed property to count unread messages not sent by the authenticated user
+    const unreadMessagesCount = computed(() => {
+        const conversation = conversationQuery.data.value
+        const myId = authStore.currentUser?.id
+        if (!conversation || !myId || !Array.isArray(conversation.messages)) return 0
+
+        return conversation.messages.filter(
+            (msg: any) => msg.is_read === false && msg.sender_id !== myId,
+        ).length
+    })
+
+    const markMessagesAsRead = async (userId: number) => {
+        await markConversationAsRead(userId)
+        // Invalidate relevant queries after marking as read
+        queryClient.invalidateQueries({ queryKey: ['user_conversation', userId] })
+    }
+
+    const handleOpenChatBox = async () => {
+        isOpenChatBox.value = true
+        markMessagesAsRead(authStore.currentUser?.id)
     }
 
     onMounted(() => {
@@ -123,8 +156,14 @@
         <!-- FLOATING MESSAGE ICON -->
         <div
             class="fixed bottom-13 right-11 bg-gray-800 rounded-full z-[999] p-3 hover:cursor-pointer hover:opacity-75"
-            @click="isOpenChatBox = true"
+            @click="handleOpenChatBox"
         >
+            <span
+                v-if="unreadMessagesCount > 0"
+                class="absolute -top-1 -left-2 bg-red-500 text-white text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center"
+            >
+                {{ unreadMessagesCount > 99 ? '99+' : unreadMessagesCount }}
+            </span>
             <ChatBubbleLeftRightIcon class="size-10 text-white" />
         </div>
 

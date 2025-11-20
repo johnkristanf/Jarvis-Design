@@ -86,6 +86,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/get/convo/{userID}', [ChatController::class, 'getConversationByUserID']);
     Route::get('/get/all/convo', [ChatController::class, 'getAllConversation']);
     Route::get('/get/all/customers', [ChatController::class, 'getAllCustomers']);
+    Route::put('/convo/read/{userId}', [ChatController::class, 'markConversationAsRead']);
 
     Route::put('/update/chat/{messageID}', [ChatController::class, 'updateMessage']);
     Route::delete('/delete/chat/{messageID}', [ChatController::class, 'deleteMessage']);

@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import { useFetchAuthenticatedUser } from '@/composables/useFetchAuthenticatedUser';
+
     const callouts = [
         {
             name: 'Task Masters',
@@ -23,6 +25,8 @@
             imageAlt: 'Collection of four insulated travel bottles on wooden shelf.',
         },
     ]
+
+    const { authStore } = useFetchAuthenticatedUser()
 </script>
 
 <template>
@@ -37,7 +41,11 @@
                         </h2>
                     </div>
 
-                    <router-link to="/designs" class="flex hover:cursor-pointer opacity-75 text-lg">
+                    <router-link
+                        v-if="authStore.currentUser"
+                        to="/designs"
+                        class="flex hover:cursor-pointer opacity-75 text-lg"
+                    >
                         <h1 class="text-gray-900 hover:opacity-40">View All</h1>
                     </router-link>
                 </div>

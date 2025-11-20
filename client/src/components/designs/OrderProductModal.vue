@@ -27,6 +27,7 @@
     import Loader from '../Loader.vue'
     import { isValidCssColor } from '@/helper/order'
     import GenerateAIDesignsModal from './GenerateAIDesignsModal.vue'
+    import { useFetchAuthenticatedUser } from '@/composables/useFetchAuthenticatedUser'
 
     const props = defineProps({
         categoryName: String,
@@ -43,12 +44,13 @@
     // Define emits
     const emit = defineEmits(['close', 'openAIDesigns'])
     const handleClose = () => emit('close')
+    const { authStore } = useFetchAuthenticatedUser()
 
     // Reactive data
     const formData = ref({
         color: '',
-        phone_number: '',
-        address: '',
+        phone_number: authStore?.user?.phone_number || '',
+        address: authStore?.user?.address || '',
 
         // SOLO QUANTITY FOR FIXED PRICED PRODUCT
         solo_quantity: null as number | null,

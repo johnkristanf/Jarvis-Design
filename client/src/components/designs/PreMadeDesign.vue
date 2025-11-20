@@ -8,7 +8,6 @@
     import { useDesignFilterStore } from '@/stores/filter'
     import { FwbCard } from 'flowbite-vue'
     import OrderProductModal from './OrderProductModal.vue'
-    import GenerateAIDesignsModal from './GenerateAIDesignsModal.vue'
 
     // FILTER SELECT STORE
     const filterStore = useDesignFilterStore()

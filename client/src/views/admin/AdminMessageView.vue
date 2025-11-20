@@ -1,6 +1,6 @@
 <!-- eslint-disable @typescript-eslint/no-explicit-any -->
 <script lang="ts" setup>
-    import { getAllCustomers, getConversation } from '@/api/get/message'
+    import { getAllCustomers, getConversation, markConversationAsRead } from '@/api/get/message'
     import { sendChatMessageApi } from '@/api/post/message'
     import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
     import { computed, ref, watch } from 'vue'
@@ -10,14 +10,32 @@
     import { useToast } from 'primevue'
     import ChatBubble from '@/components/message/ChatBubble.vue'
     import { initializeEcho } from '@/services/echo'
+    import type { Conversation } from '@/types/message'
 
     const queryClient = useQueryClient()
-
-    // ALL CONVERSATION QUERY
-
-    const { data: customers, isLoading } = useQuery({
+    
+    const { data: customers, isLoading: isLoadingCustomers } = useQuery({
         queryKey: ['all_customers'],
         queryFn: getAllCustomers,
+        select: (rawCustomers: any[]) => {
+            // For each customer, attach unreadCount
+            return rawCustomers.map((customer) => {
+                let unreadCount = 0
+                if (Array.isArray(customer.conversations)) {
+                    for (const conv of customer.conversations) {
+                        if (Array.isArray(conv.messages)) {
+                            unreadCount += conv.messages.filter(
+                                (msg: any) => msg.is_read === false,
+                            ).length
+                        }
+                    }
+                }
+                return {
+                    ...customer,
+                    unreadCount,
+                }
+            })
+        },
     })
 
     // track selected conversation
@@ -31,6 +49,17 @@
         selectedCustomerData.value.id = user_id
         selectedCustomerData.value.name = name
         selectedCustomerData.value.email = email
+
+        // Mark messages as read when selecting customer
+        markMessagesAsRead(user_id)
+    }
+
+    // Function to mark messages as read (optimistically update UI)
+    const markMessagesAsRead = async (userId: number) => {
+        await markConversationAsRead(userId)
+        // Invalidate relevant queries after marking as read
+        queryClient.invalidateQueries({ queryKey: ['admin_conversation', userId] })
+        queryClient.invalidateQueries({ queryKey: ['all_customers'] })
     }
 
     // PRE-SELECT 1st CUSTOMER
@@ -41,6 +70,8 @@
                 selectedCustomerData.value.id = customer[0].id
                 selectedCustomerData.value.name = customer[0].name
                 selectedCustomerData.value.email = customer[0].email
+
+                markMessagesAsRead(customer[0].id)
             }
         },
     )
@@ -144,7 +175,7 @@
                     console.log('📨 Event data:', event.message)
                     const eventMessage = event.message
 
-                    // 1. Optimistically update Vue Query cache
+                    // 1. Update the specific conversation query
                     queryClient.setQueryData(
                         ['admin_conversation', eventMessage.conversation.user_id],
                         (oldData: any) => {
@@ -204,7 +235,20 @@
                                     : 'text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700',
                             ]"
                         >
-                            <img src="/user_icon.jpeg" class="h-7 mr-3 sm:h-8" alt="User avatar" />
+                            <div class="relative">
+                                <img
+                                    src="/user_icon.jpeg"
+                                    class="h-7 mr-3 sm:h-8"
+                                    alt="User avatar"
+                                />
+                                <!-- Unread count badge -->
+                                <span
+                                    v-if="customer.unreadCount > 0"
+                                    class="absolute -top-1 -left-2 bg-red-500 text-white text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center"
+                                >
+                                    {{ customer.unreadCount > 99 ? '99+' : customer.unreadCount }}
+                                </span>
+                            </div>
                             <div class="flex flex-col text-sm">
                                 <h1>{{ customer.name }}</h1>
                                 <h1 class="text-gray-400">{{ customer.email }}</h1>
@@ -298,6 +342,6 @@
             </div>
         </div>
 
-        <Loader v-if="isLoading" msg="Loading Messages..." />
+        <Loader v-if="conversationQuery.isLoading.value" msg="Loading Messages..." />
     </div>
 </template>

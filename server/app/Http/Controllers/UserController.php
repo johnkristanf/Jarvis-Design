@@ -30,6 +30,8 @@ class UserController extends Controller
                 'name' => 'required|string',
                 'username' => 'required|string',
                 'email' => 'required|string|email',
+                'address' => 'nullable|string',
+                'phone_number' => 'nullable',
                 'password' => 'required|min:8',
             ]);
 
@@ -97,7 +99,7 @@ class UserController extends Controller
     {
         $authenticatedUser = Auth::user();
         $authenticatedUser = User::where('id', $authenticatedUser->id)
-            ->select('id', 'name', 'email', 'username', 'role_id', 'prompt_limit')
+            ->select('id', 'name', 'email', 'username', 'role_id', 'prompt_limit', 'address', 'phone_number')
             ->with(['role' => function ($query) {
                 $query->select('id', 'name');
             }])

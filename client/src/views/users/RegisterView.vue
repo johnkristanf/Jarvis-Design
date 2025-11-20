@@ -14,6 +14,7 @@
     const isLoadingMutation = ref(false)
     const toast = useToast()
     const showPassword = ref(false)
+    const showConfirmPassword = ref(false)
 
     // VALIDATION SCHEMA
     const validationSchema = yup.object({
@@ -21,10 +22,19 @@
         last_name: yup.string().required('Last Name is required'),
         username: yup.string().required('Username is required'),
         email: yup.string().email('Invalid Email Address').required('Email is required'),
+        address: yup.string().notRequired(),
+        phone_number: yup
+            .string()
+            .matches(/^[0-9]{10}$/, 'Phone number must be 10 digits')
+            .notRequired(),
         password: yup
             .string()
             .required('Password is required')
             .min(8, 'Password must be at least 8 characters'),
+        confirm_password: yup
+            .string()
+            .required('Confirm Password is required')
+            .oneOf([yup.ref('password')], 'Passwords must match'),
     })
 
     const { handleSubmit, isSubmitting, handleReset } = useForm({
@@ -35,7 +45,11 @@
     const { value: lastName, errorMessage: lastNameError } = useField('last_name')
     const { value: username, errorMessage: usernameError } = useField('username')
     const { value: email, errorMessage: emailError } = useField('email')
+    const { value: phoneNumber, errorMessage: phoneNumberError } = useField('phone_number')
+    const { value: address, errorMessage: addressError } = useField('address')
     const { value: password, errorMessage: passwordError } = useField('password')
+    const { value: confirmPassword, errorMessage: confirmPasswordError } =
+        useField('confirm_password')
 
     // REGISTER MUTATION
     const mutation = useMutation({
@@ -49,19 +63,17 @@
                 summary: 'Registration Success!',
                 detail: 'Account Registered',
                 life: 3000,
-            });
+            })
 
-            window.location.href = '/email/verification?email=' + encodeURIComponent(response.email);
-
+            window.location.href = '/email/verification?email=' + encodeURIComponent(response.email)
         },
 
         onError: (error: any) => {
             isLoadingMutation.value = false
-            console.log("ERROR :", error);
-            
+            console.log('ERROR :', error)
 
             // Try to get error message - look for known keys
-            let message = 'An error occurred while registering your account. Please try again.';
+            let message = 'An error occurred while registering your account. Please try again.'
             if (error && (error.msg || error.message)) {
                 message = error.msg || error.message
             }
@@ -79,13 +91,26 @@
         },
     })
 
-
     // FORM SUBMISSION HANDLER
     const onSubmit = handleSubmit(async (values) => {
+        // Confirm password validation
+        if (values.password !== values.confirm_password) {
+            toast.add({
+                severity: 'error',
+                summary: 'Registration Failed',
+                detail: 'Passwords do not match. Please confirm your password.',
+                life: 3000,
+            })
+            isLoadingMutation.value = false
+            return
+        }
+
         const userData: RegistrationCredentials = {
             name: `${values.first_name} ${values.last_name}`.trim(),
             username: values.username,
             email: values.email,
+            address: values.address,
+            phone_number: values.phone_number,
             password: values.password,
         }
 
@@ -94,7 +119,7 @@
 </script>
 
 <template>
-    <div class="flex flex-col pt-4 px-6 lg:px-8 h-screen bg-white">
+    <div class="flex flex-col pt-4 px-6 lg:px-8 h-[150vh] bg-white">
         <div class="sm:mx-auto sm:w-full sm:max-w-sm">
             <img class="mx-auto w-[20%]" src="/jarvis-logo-circle.png" alt="Your Company" />
             <h2 class="mt-3 text-center text-2xl/9 font-bold tracking-tight">
@@ -106,7 +131,10 @@
             <form class="space-y-4 grid grid-cols-2 gap-3" @submit="onSubmit" method="POST">
                 <!-- First Name -->
                 <div>
-                    <label for="first_name" class="block text-sm/6 font-medium">First Name</label>
+                    <label for="first_name" class="block text-sm/6 font-medium">
+                        First Name
+                        <span class="text-red-500">*</span>
+                    </label>
                     <div class="mt-2">
                         <input
                             type="text"
@@ -122,7 +150,10 @@
 
                 <!-- Last Name -->
                 <div>
-                    <label for="last_name" class="block text-sm/6 font-medium">Last Name</label>
+                    <label for="last_name" class="block text-sm/6 font-medium">
+                        Last Name
+                        <span class="text-red-500">*</span>
+                    </label>
                     <div class="mt-2">
                         <input
                             type="text"
@@ -137,8 +168,11 @@
                 </div>
 
                 <!-- Username -->
-                <div class="col-span-2">
-                    <label for="username" class="block text-sm/6 font-medium">Username</label>
+                <div>
+                    <label for="username" class="block text-sm/6 font-medium">
+                        Username
+                        <span class="text-red-500">*</span>
+                    </label>
                     <div class="mt-2">
                         <input
                             type="text"
@@ -153,8 +187,11 @@
                 </div>
 
                 <!-- Email -->
-                <div class="col-span-2">
-                    <label for="email" class="block text-sm/6 font-medium">Email</label>
+                <div>
+                    <label for="email" class="block text-sm/6 font-medium">
+                        Email
+                        <span class="text-red-500">*</span>
+                    </label>
                     <div class="mt-2">
                         <input
                             type="email"
@@ -165,10 +202,53 @@
                     </div>
                     <p v-if="emailError" class="mt-1 text-red-500 text-sm">{{ emailError }}</p>
                 </div>
+                <!-- Phone Number -->
+                <div class="col-span-2">
+                    <label for="phone_number" class="block text-sm/6 font-medium">
+                        Phone Number
+                    </label>
+                    <div class="mt-2 flex rounded-md shadow-sm">
+                        <span
+                            class="inline-flex items-center rounded-l-md border border-r-0 border-gray-300 bg-gray-50 px-3 text-gray-500 text-sm/6"
+                        >
+                            +63
+                        </span>
+                        <input
+                            type="number"
+                            id="phone_number"
+                            v-model="phoneNumber"
+                            class="font-medium block w-full min-w-0 flex-1 rounded-none rounded-r-md bg-white px-3 py-1.5 text-base text-black outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:outline-none sm:text-sm/6"
+                            placeholder="9123456789"
+                            min="0"
+                        />
+                    </div>
+                    <p v-if="phoneNumberError" class="mt-1 text-red-500 text-sm">
+                        {{ phoneNumberError }}
+                    </p>
+                </div>
+
+                <!-- Address -->
+                <div class="col-span-2">
+                    <label for="address" class="block text-sm/6 font-medium">Address</label>
+                    <div class="mt-2">
+                        <input
+                            type="text"
+                            id="address"
+                            v-model="address"
+                            class="font-medium block w-full rounded-md bg-white px-3 py-1.5 text-base text-black outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:outline-none sm:text-sm/6"
+                        />
+                    </div>
+                    <p v-if="addressError" class="mt-1 text-red-500 text-sm">
+                        {{ addressError }}
+                    </p>
+                </div>
 
                 <!-- Password with Eye Toggle -->
                 <div class="col-span-2">
-                    <label for="password" class="block text-sm/6 font-medium">Password</label>
+                    <label for="password" class="block text-sm/6 font-medium">
+                        Password
+                        <span class="text-red-500">*</span>
+                    </label>
                     <div class="mt-2 relative">
                         <input
                             :type="showPassword ? 'text' : 'password'"
@@ -191,6 +271,37 @@
                     </div>
                     <p v-if="passwordError" class="mt-1 text-red-500 text-sm">
                         {{ passwordError }}
+                    </p>
+                </div>
+
+                <!-- Confirm Password -->
+                <div class="col-span-2">
+                    <label for="confirmPassword" class="block text-sm/6 font-medium">
+                        Confirm Password
+                        <span class="text-red-500">*</span>
+                    </label>
+                    <div class="mt-2 relative">
+                        <input
+                            :type="showConfirmPassword ? 'text' : 'password'"
+                            id="confirmPassword"
+                            v-model="confirmPassword"
+                            autocomplete="new-password"
+                            class="font-medium block w-full rounded-md bg-white px-3 py-1.5 pr-10 text-base text-black outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-none sm:text-sm/6"
+                        />
+                        <button
+                            type="button"
+                            @click="showConfirmPassword = !showConfirmPassword"
+                            class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-gray-700"
+                            tabindex="-1"
+                        >
+                            <component
+                                :is="showConfirmPassword ? EyeSlashIcon : EyeIcon"
+                                class="h-5 w-5"
+                            />
+                        </button>
+                    </div>
+                    <p v-if="confirmPasswordError" class="mt-1 text-red-500 text-sm">
+                        {{ confirmPasswordError }}
                     </p>
                 </div>
 

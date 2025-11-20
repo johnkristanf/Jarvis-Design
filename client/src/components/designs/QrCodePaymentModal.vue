@@ -1,6 +1,12 @@
 <script lang="ts" setup>
     import type { QrCodePaymentData } from '@/types/order'
-    import { TransitionRoot, TransitionChild, Dialog, DialogPanel, DialogTitle } from '@headlessui/vue'
+    import {
+        TransitionRoot,
+        TransitionChild,
+        Dialog,
+        DialogPanel,
+        DialogTitle,
+    } from '@headlessui/vue'
     import { ref } from 'vue'
     import { useToast } from 'primevue/usetoast'
 
@@ -12,7 +18,7 @@
     const emit = defineEmits(['close', 'place_order', 'fileSelected'])
     const handleCloseModal = () => emit('close')
     const handleTriggerPlaceOrder = () => emit('place_order')
-    const toast = useToast();
+    const toast = useToast()
 
     const file = ref<File | null>(null)
     const fileInput = ref<HTMLInputElement | null>(null)
@@ -80,14 +86,25 @@
                         leave-to="opacity-0 scale-95"
                     >
                         <DialogPanel
-                            class="w-[800px] max-w-5xl transform overflow-hidden rounded-2xl bg-white p-6 mb-8 text-left align-middle shadow-xl transition-all"
+                            class="w-[1000px] max-w-7xl transform overflow-hidden rounded-2xl bg-white p-6 mb-8 text-left align-middle shadow-xl transition-all"
                         >
-                            <DialogTitle as="h3" class="text-lg font-medium leading-6 text-gray-900">Scan Gcash QR Code</DialogTitle>
+                            <DialogTitle
+                                as="h3"
+                                class="text-lg font-medium leading-6 text-gray-900"
+                            >
+                                Scan Gcash QR Code
+                            </DialogTitle>
 
                             <div class="mt-2">
-                                <p class="text-sm text-gray-500">Product Name: {{ props.paymentData?.product_name }}</p>
-                                <p class="text-sm text-gray-500">Quantity: {{ props.paymentData?.total_quantity }}</p>
-                                <p class="text-sm text-gray-500">Total Price: ₱{{ props.paymentData?.total_price }}</p>
+                                <p class="text-sm text-gray-500">
+                                    Product Name: {{ props.paymentData?.product_name }}
+                                </p>
+                                <p class="text-sm text-gray-500">
+                                    Quantity: {{ props.paymentData?.total_quantity }}
+                                </p>
+                                <p class="text-sm text-gray-500">
+                                    Total Price: ₱{{ props.paymentData?.total_price }}
+                                </p>
                             </div>
 
                             <p class="text-sm text-center my-5">
@@ -95,60 +112,105 @@
                                 <br />
                                 A minimum payment of
                                 <strong>50% of the total amount</strong>
-                                is required. Orders with payments below this threshold will not be approved or processed.
+                                is required. Orders with payments below this threshold will not be
+                                approved or processed.
                             </p>
 
-                            <div class="flex items-center justify-center gap-5 h-full">
+                            <div class="flex items-center justify-center gap-12 h-full">
                                 <div class="mt-5 flex flex-col items-center justify-center">
-                                    <img src="/jarvis-gcash-qr.webp" alt="Generated QR CODE" width="300" />
+                                    <img
+                                        src="/jarvis-gcash-qr.webp"
+                                        alt="Generated QR CODE"
+                                        width="300"
+                                    />
 
-                                    <h1 class="text-gray-500">Name: JA**N S.</h1>
+                                    <h1 class="text-gray-500">JA**N S.</h1>
+                                    <h1 class="text-gray-500 flex gap-2">
+                                        <p class="text-blue-600">Gcash</p>
+                                    </h1>
+                                </div>
+
+                                <div class="mt-5 flex flex-col items-center justify-center">
+                                    <img src="/jd-maya.jpeg" alt="Generated QR CODE" width="300" />
+                                    <h1 class="text-gray-500">Roanne Mae Na Anunciado</h1>
+                                    <h1 class="text-gray-500 flex gap-2">
+                                        <p class="text-green-600">Maya</p>
+                                    </h1>
+                                </div>
+
+                                <div class="mt-5 flex flex-col items-center justify-center">
+                                    <img
+                                        src="/jd-union-pay-1.jpeg"
+                                        alt="Generated QR CODE"
+                                        width="300"
+                                    />
+
+                                    <h1 class="text-gray-500">Roanne Mae Na Anunciado</h1>
+                                    <h1 class="text-gray-500 flex gap-2">
+                                        <p class="text-orange-600">UnionBank</p>
+                                    </h1>
                                 </div>
 
                                 <!-- PAYMENT CONFIRMATION SCREENSHOT UPLOAD -->
+                            </div>
+
+                            <div
+                                class="w-full mt-5 border-2 border-dashed border-gray-300 rounded-md p-6 flex flex-col items-center justify-center relative h-[200px]"
+                            >
+                                <!-- If preview exists -->
+                                <div v-if="previewUrl" class="relative w-full h-full">
+                                    <img
+                                        :src="previewUrl"
+                                        alt="Payment Preview"
+                                        class="w-full h-full object-cover rounded-md"
+                                    />
+                                    <!-- Clear button -->
+                                    <button
+                                        @click="clearFile"
+                                        class="absolute top-[-12px] right-0 text-red-800 text-xl rounded-md p-1 hover:cursor-pointer"
+                                    >
+                                        ✕
+                                    </button>
+                                </div>
+
+                                <!-- If no file yet -->
                                 <div
-                                    class="mt-4 border-2 border-dashed border-gray-300 rounded-md p-6 flex flex-col items-center justify-center relative w-[280px] h-[200px]"
+                                    v-else
+                                    class="flex flex-col items-center justify-center text-center"
                                 >
-                                    <!-- If preview exists -->
-                                    <div v-if="previewUrl" class="relative w-full h-full">
-                                        <img :src="previewUrl" alt="Payment Preview" class="w-full h-full object-cover rounded-md" />
-                                        <!-- Clear button -->
-                                        <button
-                                            @click="clearFile"
-                                            class="absolute top-[-12px] right-0 text-red-800 text-xl rounded-md p-1 hover:cursor-pointer"
-                                        >
-                                            ✕
-                                        </button>
-                                    </div>
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        class="w-12 h-12 text-gray-400"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                                        />
+                                    </svg>
+                                    <p class="text-sm text-gray-600 mt-2">
+                                        Screenshot of Payment Confirmation
+                                    </p>
 
-                                    <!-- If no file yet -->
-                                    <div v-else class="flex flex-col items-center justify-center text-center">
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            class="w-12 h-12 text-gray-400"
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                            stroke="currentColor"
-                                        >
-                                            <path
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                stroke-width="2"
-                                                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                                            />
-                                        </svg>
-                                        <p class="text-sm text-gray-600 mt-2">Screenshot of Payment Confirmation</p>
+                                    <input
+                                        ref="fileInput"
+                                        type="file"
+                                        accept="image/*"
+                                        class="hidden"
+                                        @change="handleFileChange"
+                                    />
 
-                                        <input ref="fileInput" type="file" accept="image/*" class="hidden" @change="handleFileChange" />
-
-                                        <button
-                                            type="button"
-                                            @click="triggerFileSelect"
-                                            class="mt-3 px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none"
-                                        >
-                                            Select File
-                                        </button>
-                                    </div>
+                                    <button
+                                        type="button"
+                                        @click="triggerFileSelect"
+                                        class="mt-3 px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none"
+                                    >
+                                        Select File
+                                    </button>
                                 </div>
                             </div>
 
@@ -166,7 +228,9 @@
                                     @click="handleTriggerPlaceOrder"
                                     :class="[
                                         'inline-flex justify-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2',
-                                        !file ? 'bg-gray-400 hover:cursor-not-allowed' : 'bg-gray-900 hover:opacity-75 hover:cursor-pointer ',
+                                        !file
+                                            ? 'bg-gray-400 hover:cursor-not-allowed'
+                                            : 'bg-gray-900 hover:opacity-75 hover:cursor-pointer ',
                                     ]"
                                 >
                                     Place Order

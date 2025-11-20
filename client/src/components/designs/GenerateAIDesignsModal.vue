@@ -131,7 +131,9 @@
                     type="text"
                     id="prompt"
                     v-model="prompt"
-                    placeholder="Mock up: Polo Shirt Design: Spider man Color: Green"
+                    placeholder="Mock up: Volleyball Jersey 
+Design: Curve Uniques Lines
+Color: Black and White"
                     class="font-medium block w-full rounded-md bg-white px-3 text-base text-black placeholder:text-gray-400 focus:outline-none border border-gray-300"
                 ></textarea>
 

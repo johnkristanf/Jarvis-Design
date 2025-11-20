@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Interfaces\ChatServiceInterface;
+use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\Roles;
 use App\Models\User;
@@ -107,9 +108,34 @@ class ChatController extends Controller
     public function getAllCustomers()
     {
         $userRoleID = Roles::where('name', 'user')->first()->id;
-        return User::select('id', 'name', 'email')
+        return User::with([
+                'conversations.messages' // Eager load messages for each conversation
+            ])
+            ->select('id', 'name', 'email')
             ->where('role_id', '=', $userRoleID)
             ->get();
+    }
+
+    public function markConversationAsRead($userId)
+    {
+        // Eager load user's conversations with their unread messages
+        $conversations = Conversation::with(['messages' => function($query) {
+            $query->where('is_read', false);
+        }])->where('user_id', $userId)->get();
+
+        foreach ($conversations as $conversation) {
+            if ($conversation->messages->isNotEmpty()) {
+                $messageIds = $conversation->messages->pluck('id')->all();
+                Message::whereIn('id', $messageIds)
+                    ->update(['is_read' => true]);
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Conversation(s) marked as read.',
+            'user_id' => $userId,
+        ]);
     }
 
 
@@ -181,4 +207,6 @@ class ChatController extends Controller
             'message' => 'Message deleted successfully.',
         ]);
     }
+
+
 }

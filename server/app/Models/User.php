@@ -20,12 +20,8 @@ class User extends Authenticatable
      *
      * @var array<int, string>
      */
-    protected $fillable = [
-        'name',
-        'username',
-        'email',
-        'password',
-        'role_id',
+    protected $guarded  = [
+        'id'
     ];
 
     /**
@@ -82,8 +78,8 @@ class User extends Authenticatable
         return $this->hasMany(Notifications::class, 'user_id');
     }
 
-    public function message(): HasMany
+    public function conversations(): HasMany
     {
-        return $this->hasMany(Message::class, 'user_id');
+        return $this->hasMany(Conversation::class, 'user_id');
     }
 }

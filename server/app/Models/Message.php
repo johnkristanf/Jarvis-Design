@@ -8,8 +8,12 @@ use Illuminate\Support\Facades\Storage;
 
 class Message extends Model
 {
+    
     protected $guarded = ['id'];
 
+    protected $casts = [
+        'is_read' => 'boolean',
+    ];
     public function conversation(): BelongsTo
     {
         return $this->belongsTo(Conversation::class, 'conversation_id');
