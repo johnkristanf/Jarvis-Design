@@ -28,9 +28,7 @@ class ChatController extends Controller
             'attachment' => 'nullable|file|max:2048',
         ]);
 
-        Log::info("validated: ", [$validated]);
-
-        
+        Log::info('validated: ', [$validated]);
 
         $conversation = $this->chat->findConversationByUserID(
             userID: $validated['user_id'],
@@ -104,13 +102,13 @@ class ChatController extends Controller
         return $this->chat->loadAllConversation();
     }
 
-
     public function getAllCustomers()
     {
         $userRoleID = Roles::where('name', 'user')->first()->id;
+
         return User::with([
-                'conversations.messages' // Eager load messages for each conversation
-            ])
+            'conversations.messages', // Eager load messages for each conversation
+        ])
             ->select('id', 'name', 'email')
             ->where('role_id', '=', $userRoleID)
             ->get();
@@ -118,9 +116,10 @@ class ChatController extends Controller
 
     public function markConversationAsRead($userId)
     {
-        // Eager load user's conversations with their unread messages
-        $conversations = Conversation::with(['messages' => function($query) {
-            $query->where('is_read', false);
+        $authenticatedUserID = Auth::id();
+        $conversations = Conversation::with(['messages' => function ($query) use ($authenticatedUserID) {
+            $query->where('is_read', false)
+                ->where('sender_id', '!=', $authenticatedUserID);
         }])->where('user_id', $userId)->get();
 
         foreach ($conversations as $conversation) {
@@ -138,7 +137,6 @@ class ChatController extends Controller
         ]);
     }
 
-
     public function updateMessage(Request $request, $messageID)
     {
         $validator = Validator::make($request->all(), [
@@ -153,9 +151,8 @@ class ChatController extends Controller
             ], 422);
         }
 
-
         $message = Message::find($messageID);
-        if (!$message) {
+        if (! $message) {
             return response()->json([
                 'success' => false,
                 'message' => 'Message not found.',
@@ -176,22 +173,20 @@ class ChatController extends Controller
         ]);
     }
 
-
     public function deleteMessage($messageID)
     {
         $message = Message::find($messageID);
-        if (!$message) {
+        if (! $message) {
             return response()->json([
                 'success' => false,
                 'message' => 'Message not found.',
             ], 404);
         }
 
-
         // Delete s3 file if exists
         if ($message->attachment_url) {
             $response = $this->deleteS3File($message->attachment_url);
-            if (!$response['success']) {
+            if (! $response['success']) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Failed to Delete S3 File Attachment',
@@ -207,6 +202,4 @@ class ChatController extends Controller
             'message' => 'Message deleted successfully.',
         ]);
     }
-
-
 }

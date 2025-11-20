@@ -10,33 +10,46 @@
     import { useToast } from 'primevue'
     import ChatBubble from '@/components/message/ChatBubble.vue'
     import { initializeEcho } from '@/services/echo'
-    import type { Conversation } from '@/types/message'
+    import { useFetchAuthenticatedUser } from '@/composables/useFetchAuthenticatedUser'
 
-    const queryClient = useQueryClient()
-    
-    const { data: customers, isLoading: isLoadingCustomers } = useQuery({
+    const queryClient = useQueryClient();
+    const { authStore } = useFetchAuthenticatedUser();
+
+    // Computed property to safely access currentUser id only when available
+    const currentUserId = computed(() => authStore.currentUser?.id);
+
+    const { data: customers } = useQuery({
         queryKey: ['all_customers'],
         queryFn: getAllCustomers,
+        enabled: computed(() => !!currentUserId.value), // Only run if currentUserId exists
         select: (rawCustomers: any[]) => {
-            // For each customer, attach unreadCount
+            if (!currentUserId.value) {
+                // If not logged in yet, don't assume unread counts
+                return rawCustomers.map((customer) => ({
+                    ...customer,
+                    unreadCount: 0,
+                }));
+            }
             return rawCustomers.map((customer) => {
-                let unreadCount = 0
+                let unreadCount = 0;
                 if (Array.isArray(customer.conversations)) {
                     for (const conv of customer.conversations) {
                         if (Array.isArray(conv.messages)) {
                             unreadCount += conv.messages.filter(
-                                (msg: any) => msg.is_read === false,
-                            ).length
+                                (msg: any) =>
+                                    msg.is_read === false &&
+                                    msg.sender_id !== currentUserId.value
+                            ).length;
                         }
                     }
                 }
                 return {
                     ...customer,
                     unreadCount,
-                }
-            })
+                };
+            });
         },
-    })
+    });
 
     // track selected conversation
     const selectedCustomerData = ref({
@@ -56,8 +69,9 @@
 
     // Function to mark messages as read (optimistically update UI)
     const markMessagesAsRead = async (userId: number) => {
+
         await markConversationAsRead(userId)
-        // Invalidate relevant queries after marking as read
+        // Invalidate relevant queries afer marking as read
         queryClient.invalidateQueries({ queryKey: ['admin_conversation', userId] })
         queryClient.invalidateQueries({ queryKey: ['all_customers'] })
     }

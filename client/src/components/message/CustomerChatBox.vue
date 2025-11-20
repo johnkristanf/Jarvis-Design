@@ -19,7 +19,7 @@
         isOpen: boolean
     }>()
 
-    // USER DATA
+    // USER DATAc
     const { authStore } = useFetchAuthenticatedUser()
 
     // MODAL EMITS
