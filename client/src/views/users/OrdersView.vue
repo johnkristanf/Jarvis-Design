@@ -61,10 +61,15 @@
     }
 
     const conversationQuery = useQuery({
-        queryKey: ['user_conversation', authStore.currentUser?.id],
+        queryKey: computed(() => ['user_conversation', authStore.currentUser?.id]),
         queryFn: async () => {
+            // Wait until the user id is available before calling
+            while (!authStore.currentUser?.id) {
+                await new Promise(resolve => setTimeout(resolve, 50))
+            }
             return await getConversation(authStore.currentUser.id)
         },
+        enabled: computed(() => !!authStore.currentUser?.id),
     })
 
     // Computed property to count unread messages not sent by the authenticated user
@@ -86,7 +91,11 @@
 
     const handleOpenChatBox = async () => {
         isOpenChatBox.value = true
-        markMessagesAsRead(authStore.currentUser?.id)
+        // Only call markMessagesAsRead when userId is truly available
+        const userId = authStore.currentUser?.id
+        if (typeof userId === 'number') {
+            await markMessagesAsRead(userId)
+        }
     }
 
     onMounted(() => {

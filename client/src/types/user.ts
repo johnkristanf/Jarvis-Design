@@ -14,8 +14,8 @@ export type RegistrationCredentials = {
     name: string
     username: string
     email: string
-    address: string
-    phone_number: string
+    address?: string
+    phone_number?: string
     password?: string
 }
 
@@ -31,8 +31,8 @@ export type AuthenticatedUserData = {
     name: string
     username: string
     email: string
-    address: string
-    phone_number: string
+    address?: string
+    phone_number?: string
     role_id: number
     role: Role
     prompt_limit?: number
