@@ -22,6 +22,7 @@
     import PaginationControls from '../PaginationControls.vue'
     import type { PaginatedResponse } from '@/types/pagination'
     import OrderPaymentsModal from './OrderPaymentsModal.vue'
+    // @ts-ignore
     import ProductAttributesModal from '../designs/ProductAttributesModal.vue'
 
     const { isAdmin } = useAuthorization()

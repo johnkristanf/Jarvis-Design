@@ -28,6 +28,7 @@
     import { isValidCssColor } from '@/helper/order'
     import GenerateAIDesignsModal from './GenerateAIDesignsModal.vue'
     import { useFetchAuthenticatedUser } from '@/composables/useFetchAuthenticatedUser'
+    // @ts-ignore
     import BusinessDesignModal from './BusinessDesignModal.vue'
 
     const props = defineProps({
