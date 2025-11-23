@@ -78,7 +78,10 @@ class DesignsController extends Controller
 
     public function getAllProducts(Request $request)
     {
-        $limit = $request->get('limit', 10);
+
+        Log::info("ENDPOINT HIT: ");
+
+        $limit = $request->get('limit', 5);
         $products = Products::select('id', 'name', 'unit_price', 'category_id', 'fabric_quantity')
             ->with([
                 'design_category:id,name',
@@ -86,6 +89,8 @@ class DesignsController extends Controller
             ])
             ->latest()
             ->paginate($limit);
+
+        Log::info("products: ", [$products]);
 
 
         // Map each product and generate signed URLs for designs

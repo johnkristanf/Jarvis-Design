@@ -28,6 +28,7 @@
     import { isValidCssColor } from '@/helper/order'
     import GenerateAIDesignsModal from './GenerateAIDesignsModal.vue'
     import { useFetchAuthenticatedUser } from '@/composables/useFetchAuthenticatedUser'
+    import BusinessDesignModal from './BusinessDesignModal.vue'
 
     const props = defineProps({
         categoryName: String,
@@ -362,7 +363,7 @@
                         leave-to="opacity-0 scale-95"
                     >
                         <DialogPanel
-                            class="w-full h-[30rem] transform overflow-y-auto bg-white p-6 text-left align-middle shadow-xl transition-all"
+                            class="w-[1000px] max-w-7xl h-[30rem] transform overflow-y-auto bg-white p-6 text-left align-middle shadow-xl transition-all"
                         >
                             <DialogTitle as="h1" class="text-2xl text-gray-900">
                                 Product Order Details
@@ -400,7 +401,7 @@
                                             </span>
                                             <input
                                                 v-model="formData.phone_number"
-                                                type="tel"
+                                                type="number"
                                                 placeholder="9XXXXXXXXX"
                                                 class="w-full px-3 py-2 border font-medium border-gray-300 rounded-r-md focus:outline-none focus:ring-2 focus:ring-gray-500"
                                             />
@@ -602,49 +603,123 @@
                                             </p>
 
                                             <div
-                                                class="max-h-[300px] max-w-[400px] overflow-y-auto pr-2"
+                                                class="max-h-[500px] max-w-[700px] overflow-y-auto pr-2"
                                             >
-                                                <div class="grid grid-cols-3 gap-3">
+                                                <div class="grid grid-cols-2 md:grid-cols-3 gap-5">
                                                     <div
                                                         v-for="design in businessProductDesign"
                                                         :key="design.id"
                                                         :class="[
                                                             'rounded-md overflow-hidden transition-shadow relative',
-                                                            selectedBusinessDesignId === design.id
-                                                                ? 'ring-4 ring-gray-600 shadow-lg'
-                                                                : 'hover:shadow-md cursor-pointer',
                                                         ]"
-                                                        @click="
-                                                            () => {
-                                                                if (
+                                                    >
+                                                        <!-- Icon Buttons Topbar -->
+                                                        <div
+                                                            class="absolute flex right-0 top-[-5px] z-10 gap-2"
+                                                        >
+                                                            <!-- Open modal icon (eye) -->
+                                                            <BusinessDesignModal
+                                                                :temp_url="design.temp_url"
+                                                            />
+
+                                                            <!-- Select icon (check-circle) -->
+                                                            <button
+                                                                @click.stop="
+                                                                    () => {
+                                                                        if (
+                                                                            selectedBusinessDesignId ===
+                                                                            design.id
+                                                                        ) {
+                                                                            selectedBusinessDesignId =
+                                                                                null
+                                                                            formData.businessDesignURL =
+                                                                                ''
+                                                                        } else {
+                                                                            selectedBusinessDesignId =
+                                                                                design.id
+                                                                            formData.businessDesignURL =
+                                                                                design.image_url
+                                                                        }
+                                                                    }
+                                                                "
+                                                                :title="
                                                                     selectedBusinessDesignId ===
                                                                     design.id
-                                                                ) {
-                                                                    selectedBusinessDesignId = null
-                                                                    formData.businessDesignURL = ''
-                                                                } else {
-                                                                    selectedBusinessDesignId =
+                                                                        ? 'Deselect this design'
+                                                                        : 'Select this design'
+                                                                "
+                                                                class="bg-white/90 hover:bg-gray-100 border border-gray-300 hover:cursor-pointer rounded-full p-1 shadow focus:outline-none"
+                                                            >
+                                                                <svg
+                                                                    v-if="
+                                                                        selectedBusinessDesignId ===
                                                                         design.id
-                                                                    formData.businessDesignURL =
-                                                                        design.image_url
-                                                                }
-                                                            }
-                                                        "
-                                                    >
+                                                                    "
+                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                    class="h-5 w-5 text-green-600"
+                                                                    fill="none"
+                                                                    viewBox="0 0 24 24"
+                                                                    stroke="currentColor"
+                                                                    stroke-width="2"
+                                                                >
+                                                                    <path
+                                                                        stroke-linecap="round"
+                                                                        stroke-linejoin="round"
+                                                                        d="M9 12l2 2l4-4m5 2a9 9 0 11-18 0a9 9 0 0118 0z"
+                                                                    />
+                                                                </svg>
+                                                                <svg
+                                                                    v-else
+                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                    class="h-5 w-5 text-gray-400"
+                                                                    fill="none"
+                                                                    viewBox="0 0 24 24"
+                                                                    stroke="currentColor"
+                                                                    stroke-width="2"
+                                                                >
+                                                                    <circle
+                                                                        cx="12"
+                                                                        cy="12"
+                                                                        r="9"
+                                                                        stroke="currentColor"
+                                                                        stroke-width="2"
+                                                                        fill="none"
+                                                                    />
+                                                                </svg>
+                                                            </button>
+                                                        </div>
                                                         <img
                                                             :src="design.temp_url"
                                                             alt="Business Design"
-                                                            class="w-full h-full object-cover mb-3 hover:cursor-pointer"
+                                                            class="w-full h-[120px] object-contain bg-white mb-3 hover:cursor-pointer"
+                                                            @click="
+                                                                () => {
+                                                                    if (
+                                                                        selectedBusinessDesignId ===
+                                                                        design.id
+                                                                    ) {
+                                                                        selectedBusinessDesignId =
+                                                                            null
+                                                                        formData.businessDesignURL =
+                                                                            ''
+                                                                    } else {
+                                                                        selectedBusinessDesignId =
+                                                                            design.id
+                                                                        formData.businessDesignURL =
+                                                                            design.image_url
+                                                                    }
+                                                                }
+                                                            "
                                                         />
-                                                        <div
+                                                        <!-- <div
                                                             v-if="
                                                                 selectedBusinessDesignId ===
                                                                 design.id
                                                             "
-                                                            class="absolute top-1 right-1 bg-gray-800 text-white text-xs px-2 py-1 rounded-full"
+                                                            class="absolute top-2 right-2 bg-gray-800 text-white text-xs px-2 py-1 rounded-full"
                                                         >
                                                             Selected
-                                                        </div>
+                                                        </div> -->
                                                     </div>
                                                 </div>
                                             </div>

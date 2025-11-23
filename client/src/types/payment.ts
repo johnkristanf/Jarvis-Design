@@ -31,6 +31,7 @@ export interface PaymentAttachments {
 
 export interface PaymentMethods {
     id: number
+    code: string
     name: string
 }
 

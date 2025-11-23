@@ -37,7 +37,7 @@ class PaymentController extends Controller
     {
         $search = $request->input('search');
 
-        $limit = $request->get('limit', 10);
+        $limit = $request->get('limit', 5);
         $orders = $this->paymentService->allOrders($limit, $search);
 
         return response()->json($orders, 200);
@@ -257,15 +257,22 @@ class PaymentController extends Controller
         return response()->json($orderLogs);
     }
 
+    public function getPaymentMethods()
+    {
+        // Fetch all payment methods using model
+        $methods = PaymentMethod::select('id', 'code', 'name')->get();
+        return response()->json($methods);
+    }
+
     public function paymentsByOrderID($orderID)
     {
         $payments = OrderPayment::with([
-            'payment_methods:id,name',
+            'payment_methods:id,code,name',
             'payment_attachments:id,order_payment_id,url',
             'orders:id,total_price'
         ])
             ->where('order_id', $orderID)
-            ->orderBy('created_at', 'asc')
+            ->orderBy('created_at', 'desc')
             ->get();
 
         Log::info("payments: ", [$payments]);
@@ -276,45 +283,67 @@ class PaymentController extends Controller
     public function recordPayment($paymentID, Request $request)
     {
         $validated = $request->validate([
-            'amount_applied' => 'required|numeric'
+            'amount_applied' => 'sometimes|numeric',
+            'payment_method_id' => 'sometimes|exists:payment_methods,id'
         ]);
 
         $payment = OrderPayment::with([
             'orders:id,total_price,status'
         ])->findOrFail($paymentID);
 
+        $updateData = [];
+        $recalculateStatus = false;
 
-        // Calculate current total paid amount on a specific order
-        $currentTotalAmount = OrderPayment::where('order_id', $payment->order_id)
-            ->sum('amount_applied');
+        // Update payment method if provided
+        if (isset($validated['payment_method_id'])) {
+            $updateData['payment_method_id'] = $validated['payment_method_id'];
+        }
 
-        // Add the new amount to get the projected total
-        $projectedTotal = $currentTotalAmount + $validated['amount_applied'];
-        $orderTotalPrice = $payment->orders->total_price;
+        // Update amount if provided
+        if (isset($validated['amount_applied'])) {
+            $updateData['amount_applied'] = $validated['amount_applied'];
+            $recalculateStatus = true;
+        }
 
-        // Determine status
-        if ($projectedTotal >= $orderTotalPrice) {
-            $newStatus = OrderPayment::FULLY_PAID;
-        } elseif ($projectedTotal > 0) {
-            $newStatus = OrderPayment::PARTIALLY_PAID;
-        } else {
-            $newStatus = OrderPayment::IN_REVIEW;
+        // Recalculate status only if amount changed
+        if ($recalculateStatus) {
+            // Calculate current total paid amount on a specific order
+            $currentTotalAmount = OrderPayment::where('order_id', $payment->order_id)
+                ->sum('amount_applied');
+
+            // Subtract current payment amount and add new amount to get the projected total
+            $projectedTotal = $currentTotalAmount - $payment->amount_applied + $validated['amount_applied'];
+            $orderTotalPrice = $payment->orders->total_price;
+
+            // Determine status
+            if ($projectedTotal >= $orderTotalPrice) {
+                $newStatus = OrderPayment::FULLY_PAID;
+            } elseif ($projectedTotal > 0) {
+                $newStatus = OrderPayment::PARTIALLY_PAID;
+            } else {
+                $newStatus = OrderPayment::IN_REVIEW;
+            }
+
+            $updateData['status'] = $newStatus;
         }
 
         // Update the payment
-        $payment->update([
-            'amount_applied' => $validated['amount_applied'],
-            'status' => $newStatus
-        ]);
+        if (!empty($updateData)) {
+            $payment->update($updateData);
 
-        broadcast(new PaymentUpdated($payment));
-        $this->notificationService->notifyUserOrder($payment->orders, $payment->user_id, OrderPayment::PAYMENT_UPDATED);
+            broadcast(new PaymentUpdated($payment));
+            $this->notificationService->notifyUserOrder($payment->orders, $payment->user_id, OrderPayment::PAYMENT_UPDATED);
+        }
+
+        // Calculate current total for response
+        $currentTotalAmount = OrderPayment::where('order_id', $payment->order_id)
+            ->sum('amount_applied');
 
         return response()->json([
             'success' => true,
-            'payment' => $payment->fresh(),
-            'total_applied' => $projectedTotal,
-            'order_total' => $orderTotalPrice
+            'payment' => $payment->fresh(['payment_methods']),
+            'total_applied' => $currentTotalAmount,
+            'order_total' => $payment->orders->total_price
         ]);
     }
 }

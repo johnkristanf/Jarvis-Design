@@ -67,9 +67,6 @@
         deleteMutation.mutate(props.selectedID)
     }
 
-    onMounted(() => {
-        console.log('props: ', props)
-    })
 </script>
 
 <template>

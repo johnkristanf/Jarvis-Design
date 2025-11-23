@@ -22,16 +22,14 @@
     import PaginationControls from '../PaginationControls.vue'
     import type { PaginatedResponse } from '@/types/pagination'
     import OrderPaymentsModal from './OrderPaymentsModal.vue'
+    import ProductAttributesModal from '../designs/ProductAttributesModal.vue'
 
     const { isAdmin } = useAuthorization()
     const isStatusUpdating = ref<boolean>(false)
     const isOrderLoading = ref<boolean>(true)
 
     // PAGINATION REFS
-    const pagination = reactive({
-        page: 1,
-        limit: 5,
-    })
+    const currentPage = ref(1)
 
     const {
         data: orders,
@@ -39,10 +37,10 @@
         refetch,
         isLoading,
     } = useQuery({
-        queryKey: ['orders', pagination.page, pagination.limit],
+        queryKey: ['orders', currentPage],
         queryFn: async () => {
             const respData = await apiService.get<PaginatedResponse<Orders>>(
-                `/api/get/orders?page=${pagination.page}&limit=${pagination.limit}`,
+                `/api/get/orders?page=${currentPage.value}`,
             )
             return respData
         },
@@ -223,6 +221,8 @@
         if (container) {
             container.addEventListener('scroll', onTableScroll, { passive: true })
         }
+
+        console.log('orders: ', orders)
     })
 
     onBeforeMount(() => {
@@ -270,6 +270,7 @@
                     <th scope="col" class="px-6 py-3">Order No.</th>
 
                     <th scope="col" class="px-6 py-3">Product name</th>
+                    <th scope="col" class="px-6 py-3">Product attributes</th>
 
                     <th scope="col" class="px-16 py-3">
                         <span>Design</span>
@@ -306,6 +307,14 @@
 
                     <td class="px-6 py-4 font-semibold text-gray-900 dark:text-white">
                         {{ order.product?.name }}
+                    </td>
+
+                    <td class="px-6 py-4 font-semibold text-gray-900 dark:text-white">
+                        <ProductAttributesModal
+                            :sizes="order.sizes"
+                            :color="order.color"
+                            :solo_quantity="order.solo_quantity"
+                        />
                     </td>
 
                     <td class="p-4">
@@ -569,7 +578,7 @@
                 <PaginationControls
                     :currentPage="orders.current_page"
                     :lastPage="orders.last_page"
-                    @changePage="pagination.page = $event"
+                    @changePage="currentPage = $event"
                 />
             </tbody>
         </table>
@@ -600,6 +609,7 @@
         v-if="showOrderPaymentsModal && selectedOrderData"
         :orders="selectedOrderData"
         @close="handleCloseOrderPaymentsModal"
+        @status-change="(orderId, status) => handleStatusChange(orderId, status, () => {})"
     />
 
     <!-- SET DELIVERY DATE CONFIRMATION MODAL -->

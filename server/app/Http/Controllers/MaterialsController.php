@@ -37,7 +37,7 @@ class MaterialsController extends Controller
 
     public function get(Request $request)
     {
-        $limit = $request->get('limit', 10);
+        $limit = $request->get('limit', 5);
         $materials = Materials::with([
             'category' => function ($query) {
                 $query->select('id', 'name');
@@ -73,7 +73,8 @@ class MaterialsController extends Controller
             'unit' => $data['unit'],
             'quantity' => $data['quantity'],
             'reorder_level' => $data['reorder_level'],
-            'category_id' => $data['category'],
+            'category_id' => 1, // DUMMY DATA CAUSE THE CATEGORIZATION HAS BEEN REMOVED DUE TO PANEL REQUEST
+
         ]);
 
         return response()->json([

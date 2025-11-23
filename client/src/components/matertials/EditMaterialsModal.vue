@@ -53,8 +53,6 @@
     const { value: unit, errorMessage: unitError } = useField<string>('unit')
     const { value: quantity, errorMessage: quantityError } = useField<number>('quantity')
     const { value: reorder_level, errorMessage: reorderError } = useField<number>('reorder_level')
-    const { value: category, errorMessage: categoryError } = useField<number>('category')
-
     // ADD NEW MATERIALS MUTATION
     const materialsMutation = useMutation({
         mutationFn: async (data: MaterialFormValues) => {
@@ -65,7 +63,7 @@
             console.log('response editMaterial: ', response)
             toast.add({
                 severity: 'success',
-                summary: 'Material Edited Successfully',
+                summary: 'Fabric Edited Successfully',
                 life: 3000,
             })
 
@@ -75,16 +73,14 @@
         },
 
         onError: (error) => {
-            console.error('Error editting material:', error)
+            console.error('Error editting fabric:', error)
         },
     })
 
     // EDIT MATERTIAL SUBMISSION HANDLER
     const onSubmit = handleSubmit((values) => {
-        console.log('Submitted:', values)
         materialsMutation.mutate(values)
     })
-
 
     // GET MATERIALS CATEGORY QUERY
     const { isPending, data } = useQuery({
@@ -98,7 +94,6 @@
             return respData
         },
     })
-
 
     // WATCH EVERY TIME ADMIN OPEN EDIT MODAL THE SELECTED FIELDS GET FILLED
     watch(
@@ -120,8 +115,6 @@
 
     onMounted(() => {
         initFlowbite()
-
-        console.log('material 123113: ', props.material)
     })
 
     // RE-INITIALIZED THE FLOWBITE CAUSE THE DIALOG GETS MOUNTED IN THE DOM DYNAMICALLY
@@ -146,7 +139,7 @@
 
             <form @submit.prevent="onSubmit" class="mt-5">
                 <!-- Category -->
-                <div class="mb-4">
+                <!-- <div class="mb-4">
                     <label class="block text-sm">Category</label>
                     <select
                         v-model="category"
@@ -157,11 +150,11 @@
                         </option>
                     </select>
                     <span class="text-sm text-red-600 mt-1 block">{{ categoryError }}</span>
-                </div>
+                </div> -->
 
                 <!-- Material Name -->
                 <div class="mb-4">
-                    <label class="block text-sm">Material Name</label>
+                    <label class="block text-sm">Fabric Name</label>
                     <input
                         v-model="material_name"
                         type="text"

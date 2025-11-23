@@ -57,12 +57,10 @@ class DashboardService
             ->get();
 
 
-        Log::info("salesPerProductCategory: ", [$salesPerProductCategory]);
-       
         if($isChartFiltered){
             return $this->filterSalesReportForChart(
                 sales: $salesPerProductCategory,
-                label: 'Sales Per Product',
+                label: 'Sales Per Product Category',
                 category: 'category_name',
                 keyValue: 'total_sales'
             );

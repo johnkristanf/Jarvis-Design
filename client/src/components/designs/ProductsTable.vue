@@ -10,7 +10,7 @@
     import PaginationControls from '../PaginationControls.vue'
     import type { PaginatedResponse } from '@/types/pagination'
     import type { BusinessProductDesign } from '@/types/design'
-import DeleteDialog from '../DeleteDialog.vue'
+    import DeleteDialog from '../DeleteDialog.vue'
 
     const modals = reactive({
         show_attach_materials: false,
@@ -24,10 +24,7 @@ import DeleteDialog from '../DeleteDialog.vue'
     const selectedDesignImages = ref<BusinessProductDesign[]>()
 
     // PAGINATION REFS
-    const pagination = reactive({
-        page: 1,
-        limit: 5,
-    })
+    const currentPage = ref(1)
 
     // GET ALL PRE - MADE DESIGNS DATA QUERY
     const {
@@ -35,25 +32,18 @@ import DeleteDialog from '../DeleteDialog.vue'
         isError,
         data: products,
         error,
-        refetch,
     } = useQuery({
-        queryKey: ['products', pagination.page, pagination.limit],
+        queryKey: ['products', currentPage],
         queryFn: async () => {
+            console.log('pagination.page: ', currentPage.value)
+
             const respData = await apiService.get<PaginatedResponse<Products>>(
-                `/api/get/all/products?page=${pagination.page}&limit=${pagination.limit}`,
+                `/api/get/all/products?page=${currentPage.value}`,
             )
             console.log('respData products: ', respData)
             return respData
         },
     })
-
-    // WATCH EVERY PAGE CHANGE
-    watch([pagination.page], () => refetch())
-
-    // const handleAttachMaterialsOnDesign = (product_id: number) => {
-    //     selectedProductID.value = product_id
-    //     modals.show_attach_materials = true
-    // }
 
     const handleAddDesignOnProduct = (
         product_id: number,
@@ -102,7 +92,7 @@ import DeleteDialog from '../DeleteDialog.vue'
                     <td class="px-6 py-4">₱ {{ product.unit_price }}</td>
 
                     <!-- Actions -->
-                    <td class="font-medium px-6 py-12 flex items-center gap-3">
+                    <td class="font-medium px-6 py-6 flex items-center gap-3">
                         <button
                             @click="
                                 handleAddDesignOnProduct(
@@ -130,7 +120,7 @@ import DeleteDialog from '../DeleteDialog.vue'
                 <PaginationControls
                     :currentPage="products.current_page"
                     :lastPage="products.last_page"
-                    @changePage="pagination.page = $event"
+                    @changePage="currentPage = $event"
                 />
             </tbody>
         </table>

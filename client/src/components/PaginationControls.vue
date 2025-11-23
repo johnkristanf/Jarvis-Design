@@ -9,6 +9,8 @@
     const emit = defineEmits(['changePage'])
 
     const changePage = (page: number) => {
+        console.log("changePage number: ", page);
+        
         if (page >= 1 && page <= props.lastPage) {
             emit('changePage', page)
         }

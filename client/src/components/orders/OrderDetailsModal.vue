@@ -46,6 +46,8 @@
 
     // Payment composable
     const { hasFullyPaid } = usePayments(computed(() => props.orderDetails.order_payments || []))
+
+    console.log('orderDetails:', props.orderDetails)
 </script>
 
 <template>
@@ -128,12 +130,13 @@
                                     </div>
                                     <div>
                                         <h3 class="text-sm font-medium text-gray-600 tracking-wide">
-                                            Created
+                                            Date Ordered
                                         </h3>
                                         <p class="text-sm text-black mt-1">
                                             {{ formatDate(orderDetails.created_at) }}
                                         </p>
                                     </div>
+
                                     <div>
                                         <h3 class="text-sm font-medium text-gray-600 tracking-wide">
                                             {{
@@ -147,6 +150,19 @@
                                                 orderDetails.delivery_date
                                                     ? formatDate(orderDetails.delivery_date)
                                                     : 'N/A'
+                                            }}
+                                        </p>
+                                    </div>
+
+                                    <div>
+                                        <h3 class="text-sm font-medium text-gray-600 tracking-wide">
+                                            Expected Delivery Days
+                                        </h3>
+                                        <p class="text-sm text-green-600 mt-1">
+                                            {{
+                                                orderDetails.total_quantity < 100
+                                                    ? '5-7 business days'
+                                                    : '13-15 business days'
                                             }}
                                         </p>
                                     </div>

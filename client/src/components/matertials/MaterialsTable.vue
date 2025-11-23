@@ -20,10 +20,7 @@
         show_edit_materials_modal: false,
     })
 
-    const pagination = reactive({
-        page: 1,
-        limit: 5,
-    })
+    const currentPage = ref(1)
 
     // GET MATERIALS DATA QUERY
     const {
@@ -31,17 +28,15 @@
         data: designMaterials,
         refetch,
     } = useQuery({
-        queryKey: ['materials', pagination.page, pagination.limit],
+        queryKey: ['materials', currentPage],
         queryFn: async () => {
             const respData = await apiService.get<PaginatedResponse<Material>>(
-                `/api/get/materials?page=${pagination.page}&limit=${pagination.limit}`,
+                `/api/get/materials?page=${currentPage.value}`,
             )
             return respData
         },
     })
 
-    // REFETCH WHEN PAGE CHANGES
-    watch([pagination.page], () => refetch())
 
     // PRIMEVUE TOAST FOR ALERT
     const toast = useToast()
@@ -196,7 +191,7 @@
                 <PaginationControls
                     :currentPage="designMaterials.current_page"
                     :lastPage="designMaterials.last_page"
-                    @changePage="pagination.page = $event"
+                    @changePage="currentPage = $event"
                 />
             </tbody>
         </table>

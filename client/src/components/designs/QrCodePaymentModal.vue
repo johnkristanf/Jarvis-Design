@@ -92,7 +92,7 @@
                                 as="h3"
                                 class="text-lg font-medium leading-6 text-gray-900"
                             >
-                                Scan Gcash QR Code
+                                Scan Payment Method QR Code
                             </DialogTitle>
 
                             <div class="mt-2">
@@ -151,7 +151,6 @@
                                     </h1>
                                 </div>
 
-                                <!-- PAYMENT CONFIRMATION SCREENSHOT UPLOAD -->
                             </div>
 
                             <div

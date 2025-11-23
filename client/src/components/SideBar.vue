@@ -10,7 +10,7 @@
     import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
     import type { AdminNotifications } from '@/types/order'
     import { updateNotificationAsRead, updateNotificationAsReadAll } from '@/api/put/notifications'
-import { initializeEcho } from '@/services/echo'
+    import { initializeEcho } from '@/services/echo'
 
     const isLoggingOut = ref<boolean>(false)
     const showNotificationDrawer = ref<boolean>(false)
@@ -95,8 +95,6 @@ import { initializeEcho } from '@/services/echo'
             const respData = await apiService.get<AdminNotifications[]>(
                 '/api/get/admin/notifications',
             )
-            console.log('respData: ', respData)
-
             return respData
         },
     })
@@ -106,6 +104,7 @@ import { initializeEcho } from '@/services/echo'
         mutationFn: updateNotificationAsRead,
         onSuccess: async () => {
             queryClient.invalidateQueries({ queryKey: ['admin_notifications'] })
+            router.push('/admin/orders')
         },
 
         onError: (error) => {
@@ -143,13 +142,11 @@ import { initializeEcho } from '@/services/echo'
 
     // WATCH EVERY NEW NOTIFICATION
     onMounted(() => {
-        const echo = initializeEcho();
+        const echo = initializeEcho()
         const channel = echo.channel('admin.notification')
 
         channel.listen('.notify.admin', (event: any) => {
             const eventMessage = event.notification
-            console.log('eventMessage:', eventMessage)
-
             if (eventMessage) {
                 queryClient.setQueryData<AdminNotifications[]>(
                     ['admin_notifications'],
@@ -220,7 +217,9 @@ import { initializeEcho } from '@/services/echo'
                                 class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full min-w-5 h-5 flex items-center justify-center px-1"
                             >
                                 {{
-                                    (unreadNotificationsCount ?? 0) > 99 ? '99+' : unreadNotificationsCount
+                                    (unreadNotificationsCount ?? 0) > 99
+                                        ? '99+'
+                                        : unreadNotificationsCount
                                 }}
                             </span>
                         </button>
@@ -421,7 +420,7 @@ import { initializeEcho } from '@/services/echo'
 
     <Loader v-if="isLoggingOut" msg="Logging Out..." />
 
-    <Loader v-if="isMarkingRead" msg="Marking as Read..." />
+    <!-- <Loader v-if="isMarkingRead" msg="Marking as Read..." /> -->
 
     <Loader v-if="isMarkingAllRead" msg="Marking All as Read..." />
 </template>

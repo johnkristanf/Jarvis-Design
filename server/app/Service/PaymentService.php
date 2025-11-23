@@ -45,7 +45,7 @@ class PaymentService
                         'payment_attachments:id,order_payment_id,url',
                         'payment_methods:id,name',
                     ])
-                    ->orderBy('created_at', 'asc'); // ✅ payments sorted ascending
+                    ->orderBy('created_at', 'desc'); // ✅ payments sorted ascending
                 },
             ])
                 ->leftJoin('order_payments', 'order_payments.order_id', '=', 'orders.id')

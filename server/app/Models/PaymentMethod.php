@@ -8,6 +8,8 @@ class PaymentMethod extends Model
 {
     const GCASH = 'gcash';
     const CASH = 'cash';
+    const MAYA = 'maya';
+    const UNIONBANK = 'unionbank';
 
     protected $guarded = ['id'];
 

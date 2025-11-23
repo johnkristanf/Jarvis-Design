@@ -22,6 +22,16 @@ class PaymentMethodsSeeder extends Seeder
             [
                 'code' => 'gcash',
                 'name' => 'GCash'
+            ],
+
+            [
+                'code' => 'maya',
+                'name' => 'Maya'
+            ],
+
+            [
+                'code' => 'unionbank',
+                'name' => 'UnionBank'
             ]
         ];
 
