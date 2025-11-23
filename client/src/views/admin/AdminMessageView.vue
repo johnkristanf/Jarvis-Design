@@ -11,12 +11,13 @@
     import ChatBubble from '@/components/message/ChatBubble.vue'
     import { initializeEcho } from '@/services/echo'
     import { useFetchAuthenticatedUser } from '@/composables/useFetchAuthenticatedUser'
+    import { useRoute } from 'vue-router'
 
-    const queryClient = useQueryClient();
-    const { authStore } = useFetchAuthenticatedUser();
+    const queryClient = useQueryClient()
+    const { authStore } = useFetchAuthenticatedUser()
 
     // Computed property to safely access currentUser id only when available
-    const currentUserId = computed(() => authStore.currentUser?.id);
+    const currentUserId = computed(() => authStore.currentUser?.id)
 
     const { data: customers } = useQuery({
         queryKey: ['all_customers'],
@@ -28,28 +29,27 @@
                 return rawCustomers.map((customer) => ({
                     ...customer,
                     unreadCount: 0,
-                }));
+                }))
             }
             return rawCustomers.map((customer) => {
-                let unreadCount = 0;
+                let unreadCount = 0
                 if (Array.isArray(customer.conversations)) {
                     for (const conv of customer.conversations) {
                         if (Array.isArray(conv.messages)) {
                             unreadCount += conv.messages.filter(
                                 (msg: any) =>
-                                    msg.is_read === false &&
-                                    msg.sender_id !== currentUserId.value
-                            ).length;
+                                    msg.is_read === false && msg.sender_id !== currentUserId.value,
+                            ).length
                         }
                     }
                 }
                 return {
                     ...customer,
                     unreadCount,
-                };
-            });
+                }
+            })
         },
-    });
+    })
 
     // track selected conversation
     const selectedCustomerData = ref({
@@ -69,17 +69,37 @@
 
     // Function to mark messages as read (optimistically update UI)
     const markMessagesAsRead = async (userId: number) => {
-
         await markConversationAsRead(userId)
         // Invalidate relevant queries afer marking as read
         queryClient.invalidateQueries({ queryKey: ['admin_conversation', userId] })
         queryClient.invalidateQueries({ queryKey: ['all_customers'] })
     }
 
+    // Get the user ID from the route param (for /admin/message/:id)
+    const route = useRoute()
+    const routeUserId = computed(() => {
+        // ID will be a string, convert to number if needed
+        const id = route.params.id
+        return id ? Number(id) : null
+    })
+    
     // PRE-SELECT 1st CUSTOMER
     watch(
         () => customers.value,
         (customer) => {
+            console.log("routeUserId.value: ", routeUserId.value);
+            
+            if (routeUserId.value && customer && customer.length > 0) {
+                // Try to find the customer in the list that matches the routeUserId
+                const match = customer.find(cust => cust.id === routeUserId.value)
+                if (match) {
+                    selectedCustomerData.value.id = match.id
+                    selectedCustomerData.value.name = match.name
+                    selectedCustomerData.value.email = match.email
+                    markMessagesAsRead(match.id)
+                    return
+                }
+            }
             if (customer && customer.length > 0) {
                 selectedCustomerData.value.id = customer[0].id
                 selectedCustomerData.value.name = customer[0].name

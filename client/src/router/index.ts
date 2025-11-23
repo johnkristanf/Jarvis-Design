@@ -110,7 +110,7 @@ const router = createRouter({
                 },
 
                 {
-                    path: 'message',
+                    path: 'message/:id?',
                     component: AdminMessageView,
                 },
 

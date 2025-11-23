@@ -31,6 +31,9 @@
     // PAGINATION REFS
     const currentPage = ref(1)
 
+    // Keep a flag to avoid infinite loops if handleStatusChange causes a refetch
+    const alreadyUpdatedOrders = new Set<number>()
+
     const {
         data: orders,
         error,
@@ -45,6 +48,37 @@
             return respData
         },
         enabled: true,
+        select: (respData: PaginatedResponse<Orders>) => {
+            // Post-process: check if any order is at least 50% paid, and if so, update actual DB status
+            respData.data.forEach((order) => {
+                const currentTotalPaid = order.total_paid
+                const halfTotalPrice = order.total_price / 2
+
+                if (
+                    currentTotalPaid >= halfTotalPrice &&
+                    order.status !== OrderStatus.COMPLETED &&
+                    order.status !== OrderStatus.IN_PROGRESS &&
+                    order.status !== OrderStatus.CANCELLED &&
+                    !alreadyUpdatedOrders.has(order.id)
+                ) {
+                    // Call handleStatusChange to update the status in the DB
+                    alreadyUpdatedOrders.add(order.id)
+                    handleStatusChange(order.id, OrderStatus.IN_PROGRESS, () => {})
+                }
+            })
+
+            return respData // unmodified (let DB be the source of truth)
+        }
+    })
+
+    import { computed } from 'vue'
+
+    // Computed property: returns true if any order contains a payment with status 'fully_paid'
+    const hasAnyFullyPaid = computed(() => {
+        if (!orders.value?.data) return false
+        return orders.value.data.some((order) =>
+            order.order_payments?.some((payment) => payment.status === 'fully_paid'),
+        )
     })
 
     watch(
@@ -145,7 +179,7 @@
     // ORDER STATUSES
     const orderStatus = ref([
         { name: 'Complete', tag: OrderStatus.COMPLETED },
-        { name: 'In Progress', tag: OrderStatus.IN_PROGRESS },
+        // { name: 'In Progress', tag: OrderStatus.IN_PROGRESS }, // Hidden because the 50% payment handles the status set
         { name: 'Cancel', tag: OrderStatus.CANCELLED },
     ])
 
@@ -403,7 +437,10 @@
                                                     "
                                                     color="light"
                                                 >
-                                                    <router-link class="w-full" to="/admin/message">
+                                                    <router-link
+                                                        class="w-full"
+                                                        :to="`/admin/message/${order.user?.id}`"
+                                                    >
                                                         Chat to Customer
                                                     </router-link>
                                                 </fwb-button>
@@ -416,6 +453,7 @@
                                                     "
                                                 >
                                                     <DatePicker
+                                                        v-if="hasAnyFullyPaid"
                                                         class="w-full z-[999999]"
                                                         showIcon
                                                         iconDisplay="input"
