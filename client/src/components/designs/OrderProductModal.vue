@@ -79,6 +79,22 @@
         formData.value.ownDesignFile = file
     }
 
+    const ownDesignPreviewUrl = computed(() => {
+        if (formData.value.ownDesignFile) {
+            return URL.createObjectURL(formData.value.ownDesignFile)
+        }
+        return null
+    })
+
+    const fileInputRef = ref<HTMLInputElement | null>(null)
+
+    const clearOwnDesignFile = () => {
+        formData.value.ownDesignFile = null
+        if (fileInputRef.value) {
+            fileInputRef.value.value = ''
+        }
+    }
+
     const businessProductDesign = ref<BusinessProductDesign[]>([])
     const isLoadingBusinessDesigns = ref<boolean>(false)
     const showQrCodePaymentModal = ref<boolean>(false)
@@ -364,7 +380,7 @@
                         leave-to="opacity-0 scale-95"
                     >
                         <DialogPanel
-                            class="w-[1000px] max-w-7xl h-[30rem] transform overflow-y-auto bg-white p-6 text-left align-middle shadow-xl transition-all"
+                            class="w-[600px] max-w-7xl h-[30rem] transform overflow-y-auto bg-white p-6 text-left align-middle shadow-xl transition-all"
                         >
                             <DialogTitle as="h1" class="text-2xl text-gray-900">
                                 Product Order Details
@@ -591,10 +607,42 @@
                                                 Upload your own design
                                             </p>
                                             <input
+                                                ref="fileInputRef"
                                                 @change="handleFileUpload"
                                                 type="file"
                                                 accept="image/*"
                                             />
+
+                                            <!-- Image Preview -->
+                                            <div v-if="ownDesignPreviewUrl" class="mt-4">
+                                                <div class="relative inline-block">
+                                                    <img
+                                                        :src="ownDesignPreviewUrl"
+                                                        alt="Design Preview"
+                                                        class="max-w-full h-auto max-h-[200px] rounded-md border border-gray-300"
+                                                    />
+                                                    <button
+                                                        @click="clearOwnDesignFile"
+                                                        class="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full hover:cursor-pointer p-1 shadow-lg transition-colors"
+                                                        title="Remove image"
+                                                    >
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            class="h-4 w-4"
+                                                            fill="none"
+                                                            viewBox="0 0 24 24"
+                                                            stroke="currentColor"
+                                                            stroke-width="2"
+                                                        >
+                                                            <path
+                                                                stroke-linecap="round"
+                                                                stroke-linejoin="round"
+                                                                d="M6 18L18 6M6 6l12 12"
+                                                            />
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                            </div>
                                         </div>
 
                                         <!-- Business Design -->

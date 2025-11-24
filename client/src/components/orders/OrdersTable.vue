@@ -60,6 +60,7 @@
                     order.status !== OrderStatus.COMPLETED &&
                     order.status !== OrderStatus.IN_PROGRESS &&
                     order.status !== OrderStatus.CANCELLED &&
+                    order.status !== (OrderStatus.FOR_DELIVERY || OrderStatus.FOR_PICKUP) &&
                     !alreadyUpdatedOrders.has(order.id)
                 ) {
                     // Call handleStatusChange to update the status in the DB
@@ -69,10 +70,11 @@
             })
 
             return respData // unmodified (let DB be the source of truth)
-        }
+        },
     })
 
     import { computed } from 'vue'
+    import CancelOrderConfirmationDialog from '../CancelOrderConfirmationDialog.vue'
 
     // Computed property: returns true if any order contains a payment with status 'fully_paid'
     const hasAnyFullyPaid = computed(() => {
@@ -120,6 +122,8 @@
 
     const showSizeBreakdownModal = ref(false)
     const selectedOrderSizes = ref([]) // Holds sizes for modal
+
+    const isOrderCancelConfirmed = ref(false)
 
     // DATE UPDATE MUTATION
     const setDateMutation = useMutation({
@@ -200,6 +204,7 @@
 
                 if (refetchResult.status === 'success') {
                     isStatusUpdating.value = false
+                    isOrderCancelConfirmed.value = false
                 }
             } catch (err) {
                 console.error('Refetch failed:', err)
@@ -216,13 +221,15 @@
         },
     })
 
-    const handleStatusChange = (order_id: number, status: string, close: () => void) => {
-        console.log('Selected order_id:', order_id)
-        console.log('Selected status:', status)
+    const handleStatusChange = (order_id: number, statusTag: string, close: () => void) => {
+        if (statusTag === OrderStatus.CANCELLED && !isOrderCancelConfirmed.value) {
+            confirmCancelOrder(order_id, close)
+            return
+        }
 
         const statusData: UpdateStatusType = {
             order_id,
-            status,
+            status: statusTag,
         }
 
         mutation.mutate(statusData)
@@ -289,6 +296,25 @@
         }
         showConfirmModal.value = false
         dateChangeActionData.value = null
+    }
+
+    // Cancel Order Confirmation
+    const showCancelConfirmModal = ref(false)
+    const cancelOrderData = ref<{ orderId: number; close: () => void } | null>(null)
+
+    function confirmCancelOrder(orderId: number, close: () => void) {
+        cancelOrderData.value = { orderId, close }
+        showCancelConfirmModal.value = true
+        isOrderCancelConfirmed.value = true
+    }
+
+    function proceedCancelOrder() {
+        if (cancelOrderData.value) {
+            const { orderId, close } = cancelOrderData.value
+            handleStatusChange(orderId, OrderStatus.CANCELLED, close)
+        }
+        showCancelConfirmModal.value = false
+        cancelOrderData.value = null
     }
 </script>
 
@@ -587,6 +613,12 @@
                                 </transition>
                             </Popover>
                         </div>
+
+                        <!-- CANCEL ORDER CONFIRMATION -->
+                        <CancelOrderConfirmationDialog
+                            v-if="isOrderCancelConfirmed"
+                            @confirmCancel="proceedCancelOrder"
+                        />
 
                         <!-- ORDER STATUS OF USER -->
                         <!-- <div v-else>

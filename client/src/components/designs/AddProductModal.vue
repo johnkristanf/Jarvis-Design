@@ -217,7 +217,7 @@
 
                 <!-- PRODUCT UNIT PRICE -->
                 <div>
-                    <label class="block text-sm mb-3">Unit Price</label>
+                    <label class="block text-sm mb-3">Unit Price <span class="text-red-500">*</span></label>
                     <input
                         v-model="price"
                         type="number"
