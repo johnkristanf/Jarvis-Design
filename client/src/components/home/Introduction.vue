@@ -18,14 +18,14 @@
 
         <div class="w-full flex justify-center items-center ">
 
-            <input 
-                type="text" 
-                class="placeholder:opacity-75 placeholder:text-sm text-gray-500 border-none p-[11.3px] w-[35%]" 
+            <input
+                type="text"
+                class="placeholder:opacity-75 placeholder:text-sm text-gray-500 border-none p-[11.3px] w-[35%]"
                 placeholder="Your Work Email"
             />
 
 
-            <button 
+            <button
                 class="text-sm bg-gray-900 p-[14px] hover:opacity-75 hover:cursor-pointer"
             >
                 Start Ordering
@@ -103,12 +103,12 @@
                             </div>
                         </div>
 
-                        <router-link
+                        <!-- <router-link
                             to="/designs"
                             class="inline-block rounded-md border border-transparent bg-gray-900 px-8 py-3 text-center font-medium text-white hover:opacity-75"
                         >
                             Shop Designs
-                        </router-link>
+                        </router-link> -->
                     </div>
                 </div>
             </div>
