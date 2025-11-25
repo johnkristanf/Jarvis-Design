@@ -11,7 +11,7 @@
     import { OrderOptions, OrderStatus, type Orders, type UpdateStatusType } from '@/types/order'
     import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
     import Loader from '../Loader.vue'
-    import { onBeforeMount, onMounted, reactive, ref, watch } from 'vue'
+    import { onBeforeMount, onMounted,  ref, watch } from 'vue'
     import { updateOrderStatus } from '@/api/put/orders'
     import UploadedImagesModal from '../designs/UploadedImagesModal.vue'
     import QuantityPerSizeModal from '../designs/QuantityPerSizeModal.vue'
@@ -22,7 +22,7 @@
     import PaginationControls from '../PaginationControls.vue'
     import type { PaginatedResponse } from '@/types/pagination'
     import OrderPaymentsModal from './OrderPaymentsModal.vue'
-    // @ts-ignore
+    // @ts-expect-error bug
     import ProductAttributesModal from '../designs/ProductAttributesModal.vue'
 
     const { isAdmin } = useAuthorization()
@@ -475,12 +475,11 @@
                                                 <!-- Delivery or Pickup Date -->
                                                 <div
                                                     v-if="
-                                                        order.status == OrderStatus.IN_PROGRESS &&
+                                                        (order.status == OrderStatus.IN_PROGRESS && hasAnyFullyPaid) &&
                                                         !order.delivery_date
                                                     "
                                                 >
                                                     <DatePicker
-                                                        v-if="hasAnyFullyPaid"
                                                         class="w-full z-[999999]"
                                                         showIcon
                                                         iconDisplay="input"
