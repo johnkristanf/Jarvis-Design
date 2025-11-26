@@ -100,7 +100,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/get/card-analytics', [DashboardController::class, 'cardAnalytics']);
 
     // REPORT GENERATION
-    Route::get('/get/reports/monthly-sales', [DashboardController::class, 'downloadMonthlySales']);
+    Route::get('/get/reports/monthly-sales', [DashboardController::class, 'exportMonthlySales']);
     Route::get('/get/reports/category-sales', [DashboardController::class, 'downloadCategorySales']);
     Route::get('/get/reports/fabric-used', [DashboardController::class, 'downloadFabricUsed']);
 

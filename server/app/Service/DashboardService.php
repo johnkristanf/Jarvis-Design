@@ -7,11 +7,10 @@ use App\Models\Orders;
 use App\Traits\HandleAttachments;
 use App\Traits\SalesTrait;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 class DashboardService
 {
-    use SalesTrait, HandleAttachments;
+    use HandleAttachments, SalesTrait;
 
     public function getMonthlySalesReport($startDate, $endDate, $isChartFiltered = true)
     {
@@ -23,7 +22,7 @@ class DashboardService
                     ->from('orders')
                     ->whereBetween('created_at', [
                         $startDate->format('Y-m-d 00:00:00'),
-                        $endDate->format('Y-m-d 23:59:59')
+                        $endDate->format('Y-m-d 23:59:59'),
                     ]);
             })
             ->whereRaw('id IN (SELECT MAX(id) FROM order_payments GROUP BY order_id)')
@@ -34,8 +33,8 @@ class DashboardService
         $query = DB::table('order_payments')
             ->select(
                 DB::raw("TO_CHAR(updated_at, 'Month') as month_name"),
-                DB::raw("EXTRACT(MONTH FROM updated_at) as month_number"),
-                DB::raw("SUM(amount_applied) as total_sales")
+                DB::raw('EXTRACT(MONTH FROM updated_at) as month_number'),
+                DB::raw('SUM(amount_applied) as total_sales')
             )
             ->whereIn('order_id', $latestFullyPaidOrderIds)
             ->where('status', OrderPayment::FULLY_PAID);
@@ -50,20 +49,19 @@ class DashboardService
             ->groupBy('month_name', 'month_number')
             ->orderBy('month_number', 'asc')
             ->get();
-            
-        if($isChartFiltered){
+
+        if ($isChartFiltered) {
             return $this->filterSalesReportForChart(
                 sales: $monthlySales,
                 label: 'Monthly Sales Report',
                 category: 'month_name',
                 keyValue: 'total_sales',
-                bgColor:'#4338CA'
+                bgColor: '#4338CA'
             );
         }
 
         return $monthlySales;
     }
-
 
     public function getSalesPerProductCategory($startDate, $endDate, $isChartFiltered = true)
     {
@@ -78,19 +76,19 @@ class DashboardService
             ->where('order_payments.status', '=', OrderPayment::FULLY_PAID)
             ->whereBetween('orders.created_at', [
                 $startDate->format('Y-m-d 00:00:00'),
-                $endDate->format('Y-m-d 23:59:59')
+                $endDate->format('Y-m-d 23:59:59'),
             ])
             ->groupBy('design_categories.name')
             ->orderByDesc('total_sales')
             ->get();
 
-        if($isChartFiltered){
+        if ($isChartFiltered) {
             return $this->filterSalesReportForChart(
                 sales: $salesPerProductCategory,
                 label: 'Sales Per Product Category',
                 category: 'category_name',
                 keyValue: 'total_sales',
-                bgColor:'#0D9488'
+                bgColor: '#0D9488'
 
             );
         }
@@ -107,7 +105,7 @@ class DashboardService
             )
             ->whereBetween(DB::raw('DATE(created_at)'), [
                 $startDate->format('Y-m-d 00:00:00'),
-                $endDate->format('Y-m-d 23:59:59')
+                $endDate->format('Y-m-d 23:59:59'),
             ])
             ->groupBy('material_name')
             ->orderByDesc('total_fabric_used')
@@ -118,7 +116,7 @@ class DashboardService
             label: 'Total Fabric Used',
             category: 'material_name',
             keyValue: 'total_fabric_used',
-            bgColor:'#F59E42'
+            bgColor: '#F59E42'
         );
     }
 
@@ -131,14 +129,13 @@ class DashboardService
                 'own_design_url',
                 'business_design_url',
                 'status',
-                'product_id'
+                'product_id',
             ])
             ->limit(3)
             ->get();
 
         return $this->transformOrderDesignToS3Temp($orders);
     }
-
 
     public function getTotalSalesWithRange($startDate, $endDate)
     {
@@ -150,7 +147,7 @@ class DashboardService
                     ->from('orders')
                     ->whereBetween('created_at', [
                         $startDate->format('Y-m-d 00:00:00'),
-                        $endDate->format('Y-m-d 23:59:59')
+                        $endDate->format('Y-m-d 23:59:59'),
                     ]);
             })
             ->whereRaw('id IN (SELECT MAX(id) FROM order_payments GROUP BY order_id)')
@@ -172,7 +169,7 @@ class DashboardService
         $orderIds = DB::table('orders')
             ->whereBetween('created_at', [
                 $startDate->format('Y-m-d 00:00:00'),
-                $endDate->format('Y-m-d 23:59:59')
+                $endDate->format('Y-m-d 23:59:59'),
             ])
             ->pluck('id')
             ->toArray();
@@ -192,13 +189,13 @@ class DashboardService
             Orders::PENDING,
             Orders::FOR_DELIVERY,
             Orders::FOR_PICKUP,
-            Orders::IN_PROGRESS
+            Orders::IN_PROGRESS,
         ];
 
         return Orders::whereIn('status', $statuses)
             ->whereBetween('created_at', [
                 $startDate->format('Y-m-d 00:00:00'),
-                $endDate->format('Y-m-d 23:59:59')
+                $endDate->format('Y-m-d 23:59:59'),
             ])
             ->count();
     }
@@ -208,7 +205,7 @@ class DashboardService
         return Orders::where('status', Orders::COMPLETED)
             ->whereBetween('created_at', [
                 $startDate->format('Y-m-d 00:00:00'),
-                $endDate->format('Y-m-d 23:59:59')
+                $endDate->format('Y-m-d 23:59:59'),
             ])
             ->count();
     }

@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Exports\FabricUsedExport;
-use App\Exports\SalesReportExport;
+use App\Exports\CategorySalesPdfExport;
+use App\Exports\FabricUsedPdfExport;
+use App\Exports\MonthlySalesPdfExport;
 use App\Service\DashboardService;
 use DateTime;
 use Illuminate\Support\Facades\Log;
-use Maatwebsite\Excel\Facades\Excel;
 
 class DashboardController extends Controller
 {
@@ -23,7 +23,7 @@ class DashboardController extends Controller
         $startDate = request()->query('start_date');
         $endDate = request()->query('end_date');
 
-        if (!$startDate || !$endDate) {
+        if (! $startDate || ! $endDate) {
             return response()->json(['error' => 'Start date and end date are required.'], 400);
         }
 
@@ -39,7 +39,7 @@ class DashboardController extends Controller
         $startDate = request()->query('start_date');
         $endDate = request()->query('end_date');
 
-        if (!$startDate || !$endDate) {
+        if (! $startDate || ! $endDate) {
             return response()->json(['error' => 'Start date and end date are required.'], 400);
         }
 
@@ -49,13 +49,12 @@ class DashboardController extends Controller
         return $this->dashboardService->getSalesPerProductCategory($formattedStartDate, $formattedEndDate);
     }
 
-
     public function fabricUsed()
     {
         $startDate = request()->query('start_date');
         $endDate = request()->query('end_date');
 
-        if (!$startDate || !$endDate) {
+        if (! $startDate || ! $endDate) {
             return response()->json(['error' => 'Start date and end date are required.'], 400);
         }
 
@@ -65,20 +64,33 @@ class DashboardController extends Controller
         return $this->dashboardService->getFabricUsed($formattedStartDate, $formattedEndDate);
     }
 
-
-    public function downloadMonthlySales()
+    public function exportMonthlySales()
     {
         $startDate = request()->query('start_date');
         $endDate = request()->query('end_date');
 
-        if (!$startDate || !$endDate) {
+        if (! $startDate || ! $endDate) {
             return response()->json(['error' => 'Start date and end date are required.'], 400);
         }
 
         $formattedStartDate = new DateTime($startDate);
         $formattedEndDate = new DateTime($endDate);
 
-        return Excel::download(new SalesReportExport($formattedStartDate, $formattedEndDate, 'monthly'), 'monthly_sales.xlsx');
+        try {
+            // Generate PDF report
+            $pdfExport = new MonthlySalesPdfExport($formattedStartDate, $formattedEndDate);
+            $pdf = $pdfExport->generate();
+
+            return response()->streamDownload(function () use ($pdf) {
+                echo $pdf->output();
+            }, 'monthly_sales_report.pdf', [
+                'Content-Type' => 'application/pdf',
+            ]);
+        } catch (\Exception $e) {
+            Log::error('PDF Generation Error: ', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+
+            return response()->json(['error' => 'Failed to generate PDF report: '.$e->getMessage()], 500);
+        }
     }
 
     public function downloadCategorySales()
@@ -86,32 +98,58 @@ class DashboardController extends Controller
         $startDate = request()->query('start_date');
         $endDate = request()->query('end_date');
 
-        if (!$startDate || !$endDate) {
+        if (! $startDate || ! $endDate) {
             return response()->json(['error' => 'Start date and end date are required.'], 400);
         }
 
         $formattedStartDate = new DateTime($startDate);
         $formattedEndDate = new DateTime($endDate);
-        
-        return Excel::download(new SalesReportExport($formattedStartDate, $formattedEndDate, 'perCategory'), 'sales_per_category.xlsx');
-    }
 
+        try {
+            // Generate PDF report
+            $pdfExport = new CategorySalesPdfExport($formattedStartDate, $formattedEndDate);
+            $pdf = $pdfExport->generate();
+
+            return response()->streamDownload(function () use ($pdf) {
+                echo $pdf->output();
+            }, 'category_sales_report.pdf', [
+                'Content-Type' => 'application/pdf',
+            ]);
+        } catch (\Exception $e) {
+            Log::error('PDF Generation Error: ', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+
+            return response()->json(['error' => 'Failed to generate PDF report: '.$e->getMessage()], 500);
+        }
+    }
 
     public function downloadFabricUsed()
     {
         $startDate = request()->query('start_date');
         $endDate = request()->query('end_date');
 
-        if (!$startDate || !$endDate) {
+        if (! $startDate || ! $endDate) {
             return response()->json(['error' => 'Start date and end date are required.'], 400);
         }
 
         $formattedStartDate = new DateTime($startDate);
         $formattedEndDate = new DateTime($endDate);
 
-        return Excel::download(new FabricUsedExport($formattedStartDate, $formattedEndDate), 'fabric_used.xlsx');
-    }
+        try {
+            // Generate PDF report
+            $pdfExport = new FabricUsedPdfExport($formattedStartDate, $formattedEndDate);
+            $pdf = $pdfExport->generate();
 
+            return response()->streamDownload(function () use ($pdf) {
+                echo $pdf->output();
+            }, 'fabric_used_report.pdf', [
+                'Content-Type' => 'application/pdf',
+            ]);
+        } catch (\Exception $e) {
+            Log::error('PDF Generation Error: ', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+
+            return response()->json(['error' => 'Failed to generate PDF report: '.$e->getMessage()], 500);
+        }
+    }
 
     public function cardAnalytics()
     {
@@ -119,7 +157,7 @@ class DashboardController extends Controller
         $endDate = request()->query('end_date');
 
         // Validate date format (optional: you can use Laravel validation for stricter checks)
-        if (!$startDate || !$endDate) {
+        if (! $startDate || ! $endDate) {
             return response()->json(['error' => 'Start date and end date are required.'], 400);
         }
 
@@ -129,7 +167,7 @@ class DashboardController extends Controller
         // Pass the dates to the service method (we assume you may want to use filter on created_at)
         $totalSales = $this->dashboardService->getTotalSalesWithRange($formattedStartDate, $formattedEndDate);
         $totalCustomers = $this->dashboardService->getTotalCustomersWithRange($formattedStartDate, $formattedEndDate);
-        
+
         $totalPendingOrders = $this->dashboardService->countPendingOrdersWithRange($formattedStartDate, $formattedEndDate);
         $totalCompletedOrders = $this->dashboardService->countCompletedOrdersWithRange($formattedStartDate, $formattedEndDate);
 

@@ -27,7 +27,6 @@
     import type { SalesReport } from '@/types/dashboard'
     import type { CardAnalytics, LatestOrders } from '@/types/order'
     import StatusBadge from '@/components/orders/StatusBadge.vue'
-    import { ArrowDownTrayIcon } from '@heroicons/vue/20/solid'
     import { downloadBlobFile } from '@/helper/report'
     import { reactive } from 'vue'
 
@@ -118,7 +117,7 @@
     })
 
     // DOWNLOAD MONTHLY REPORT
-    const downloadMonthlyReport = async () => {
+    const exportMonthlyReport = async () => {
         try {
             const params = { start_date: dateFilter.start, end_date: dateFilter.end }
             const response = await apiService.get<Blob>('/api/get/reports/monthly-sales', {
@@ -126,7 +125,7 @@
                 responseType: 'blob',
             })
 
-            downloadBlobFile(response, 'monthly_sales.xlsx')
+            downloadBlobFile(response, 'monthly_sales_report.pdf')
         } catch (error) {
             console.error('Download Report Error: ', error)
         }
@@ -141,7 +140,7 @@
                 responseType: 'blob',
             })
 
-            downloadBlobFile(response, 'sales_per_category.xlsx')
+            downloadBlobFile(response, 'category_sales_report.pdf')
         } catch (error) {
             console.error('Download Report Error: ', error)
         }
@@ -156,13 +155,13 @@
                 responseType: 'blob',
             })
 
-            downloadBlobFile(response, 'fabric_used.xlsx')
+            downloadBlobFile(response, 'fabric_used_report.pdf')
         } catch (error) {
             console.error('Download Report Error: ', error)
         }
     }
 
-    const { data: cardAnalytics, refetch: refetchCardAnalytics } = useQuery({
+    const { data: cardAnalytics } = useQuery({
         queryKey: ['card-analytics', dateFilter.start, dateFilter.end],
         queryFn: async () => {
             const params = { start_date: dateFilter.start, end_date: dateFilter.end }
@@ -292,7 +291,7 @@
             <div class="h-[300px] rounded-md p-3 bg-gray-200">
                 <div class="flex justify-end">
                     <button
-                        @click="downloadMonthlyReport"
+                        @click="exportMonthlyReport"
                         class="bg-blue-600 p-2 text-xs text-white rounded-md hover:cursor-pointer hover:opacity-75"
                     >
                         Export
