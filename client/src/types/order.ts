@@ -155,3 +155,10 @@ export interface LatestOrders {
     status: string
     temp_url?: string // optional because sometimes presigned URLs are not always included
 }
+
+export type CardAnalytics = {
+    total_sales: string
+    total_customers: number
+    total_pending_orders: number
+    total_completed_orders: number
+}

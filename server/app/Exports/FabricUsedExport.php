@@ -9,6 +9,15 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 
 class FabricUsedExport implements FromCollection, WithHeadings
 {
+    protected $startDate;
+    protected $endDate;
+
+    public function __construct($startDate, $endDate)
+    {
+        $this->startDate = $startDate;
+        $this->endDate = $endDate;
+    }
+
     /**
     * @return \Illuminate\Support\Collection
     */
@@ -18,11 +27,14 @@ class FabricUsedExport implements FromCollection, WithHeadings
                 'material_name',
                 DB::raw('SUM(total_quantity_used) as total_used')
             )
+            ->whereBetween(DB::raw('DATE(created_at)'), [
+                $this->startDate->format('Y-m-d 00:00:00'),
+                $this->endDate->format('Y-m-d 23:59:59')
+            ])
             ->groupBy('material_name')
             ->orderBy('total_used', 'desc')
             ->get();
     }
-
 
     public function headings(): array
     {

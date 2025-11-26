@@ -4,7 +4,7 @@ namespace App\Traits;
 
 trait SalesTrait
 {
-    public function filterSalesReportForChart($sales, $label, $category, $keyValue)
+    public function filterSalesReportForChart($sales, $label, $category, $keyValue, $bgColor)
     {
         $labels = [];
         $data = [];
@@ -19,7 +19,8 @@ trait SalesTrait
             'datasets' => [
                 [
                     'label' => $label,
-                    'backgroundColor' => '#111827',
+                    // Change backgroundColor from slate-900 (#111827) to indigo-700 (#4338CA)
+                    'backgroundColor' => $bgColor,
                     'data' => $data,
                 ]
             ],

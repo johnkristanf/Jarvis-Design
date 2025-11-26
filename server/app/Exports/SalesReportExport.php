@@ -10,10 +10,15 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 class SalesReportExport implements FromArray, WithHeadings
 {
     protected $reportType;
+    protected $startDate;
+    protected $endDate;
 
-    public function __construct($reportType = 'monthly')
+    public function __construct($startDate , $endDate, $reportType = 'monthly' )
     {
         $this->reportType = $reportType;
+
+        $this->startDate = $startDate;
+        $this->endDate = $endDate;
     }
 
 
@@ -22,9 +27,9 @@ class SalesReportExport implements FromArray, WithHeadings
         $dashboardService = new DashboardService();
         
         if ($this->reportType === 'monthly') {
-            $data = $dashboardService->getMonthlySalesReport(isChartFiltered: false);
+            $data = $dashboardService->getMonthlySalesReport($this->startDate, $this->endDate, false);
         } elseif ($this->reportType === 'perCategory') {
-            $data = $dashboardService->getSalesPerProductCategory(isChartFiltered: false);
+            $data = $dashboardService->getSalesPerProductCategory($this->startDate, $this->endDate, false);
         } else {
             $data = [];
         }
@@ -48,6 +53,4 @@ class SalesReportExport implements FromArray, WithHeadings
 
         return [];
     }
-
-
 }

@@ -14,7 +14,7 @@ class Orders extends Model
     const FOR_PICKUP = 'for_pickup';
     const COMPLETED    = 'completed';
     const CANCELLED    = 'cancelled';
-
+    const IN_PROGRESS    = 'in_progress';
 
 
     protected $guarded = ['id'];
