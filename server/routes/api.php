@@ -77,6 +77,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/get/materials', [MaterialsController::class, 'get']);
     Route::get('/get/grouped/materials', [MaterialsController::class, 'getGroupedMaterials']);
     Route::delete('/delete/material/{id}', [MaterialsController::class, 'destroy']);
+    Route::put('/add/fabric/quantity/{fabricId}', [MaterialsController::class, 'addFabricQuantity']);
+    Route::put('/reduce/fabric/quantity/{fabricId}', [MaterialsController::class, 'reduceFabricQuantity']);
+
+    Route::get('/get/fabric/adjust/logs', [MaterialsController::class, 'getFabricAdjustLogs']);
 
     // PROTECTED ORDER ROUTE
     Route::post('/place/order', [PaymentController::class, 'placeOrder']);

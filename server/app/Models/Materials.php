@@ -45,4 +45,9 @@ class Materials extends Model
     {
         return $this->hasMany(Products::class, 'fabric_type_id');
     }
-}
+
+    public function logs()
+    {
+        return $this->hasMany(FabricAdjustLogs::class, 'material_id');
+    }
+    }

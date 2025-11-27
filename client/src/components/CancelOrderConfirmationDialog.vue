@@ -7,12 +7,10 @@
         DialogPanel,
         DialogTitle,
     } from '@headlessui/vue'
-    import { useMutation, useQueryClient } from '@tanstack/vue-query'
-    import { apiService } from '@/api/axios'
-    import { useToast } from 'primevue'
 
-    const emit = defineEmits(['confirmCancel'])
+    const emit = defineEmits(['confirmCancel', 'close'])
     const handleCancelOrder = () => emit('confirmCancel')
+    const closeModal = () => emit('close')
 </script>
 
 <template>
@@ -69,7 +67,8 @@
                                 <!-- Cancel Button -->
                                 <button
                                     type="button"
-                                    class="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
+                                    @click="closeModal"
+                                    class="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:cursor-pointer hover:opacity-75"
                                 >
                                     Cancel
                                 </button>
@@ -77,10 +76,10 @@
                                 <!-- Delete Button -->
                                 <button
                                     type="button"
-                                    class="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+                                    class="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white  hover:cursor-pointer hover:opacity-75"
                                     @click="handleCancelOrder"
                                 >
-                                    Proceed
+                                    Yes
                                 </button>
                             </div>
                         </DialogPanel>

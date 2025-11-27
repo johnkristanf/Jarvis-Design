@@ -14,6 +14,15 @@
     import PaginationControls from '../PaginationControls.vue'
     import AddNewButton from '../AddNewButton.vue'
 
+    // @ts-expect-error event
+    import AddFabricQtyModal from '../designs/AddFabricQtyModal.vue'
+
+    // @ts-expect-error event
+    import ReduceQtyModal from '../designs/ReduceQtyModal.vue'
+    
+    // @ts-expect-error event
+    import FabricAdjustLogsModal from '../designs/FabricAdjustLogsModal.vue'
+
     // REF TOGGLER OF ADD NEW MATERIALS MODAL
     const modals = reactive({
         show_add_materials_modal: false,
@@ -36,7 +45,6 @@
             return respData
         },
     })
-
 
     // PRIMEVUE TOAST FOR ALERT
     const toast = useToast()
@@ -172,12 +180,11 @@
                     <td class="px-6 py-4">{{ material.reorder_level }}</td>
 
                     <td class="px-6 py-6 flex gap-2">
-                        <button
-                            class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
-                            @click="onShowEditMaterial(material)"
-                        >
-                            Edit
-                        </button>
+                        <!-- INSERT_YOUR_CODE -->
+                        <FabricAdjustLogsModal :fabricId="material.id" :fabricName="material.name" :fabricQuantity="material.quantity"/>
+
+                        <AddFabricQtyModal :fabricId="material.id" :fabricName="material.name" />
+                        <ReduceQtyModal :fabricId="material.id" :fabricName="material.name" />
                         <DeleteDialog
                             :selectedID="material.id"
                             endpoint_url="/api/delete/material"

@@ -7,6 +7,7 @@ use App\Models\Orders;
 use App\Traits\HandleAttachments;
 use App\Traits\SalesTrait;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class DashboardService
 {
@@ -14,21 +15,24 @@ class DashboardService
 
     public function getMonthlySalesReport($startDate, $endDate, $isChartFiltered = true)
     {
-        // Find order IDs whose latest payment is 'fully_paid' (reference: getTotalSalesWithRange)
-        $latestFullyPaidOrderIds = DB::table('order_payments')
-            ->select('order_id')
-            ->whereIn('order_id', function ($query) use ($startDate, $endDate) {
-                $query->select('id')
-                    ->from('orders')
-                    ->whereBetween('created_at', [
-                        $startDate->format('Y-m-d 00:00:00'),
-                        $endDate->format('Y-m-d 23:59:59'),
-                    ]);
-            })
-            ->whereRaw('id IN (SELECT MAX(id) FROM order_payments GROUP BY order_id)')
-            ->where('status', '=', OrderPayment::FULLY_PAID)
+
+        // Find all orders within the date range
+        $orderIds = DB::table('orders')
+            ->whereBetween('created_at', [
+                $startDate->format('Y-m-d 00:00:00'),
+                $endDate->format('Y-m-d 23:59:59'),
+            ])
+            ->pluck('id')
+            ->toArray();
+
+        // For those orders, determine if any payment (regardless of whether it's the latest) is FULLY_PAID
+        $fullyPaidOrderIds = DB::table('order_payments')
+            ->whereIn('order_id', $orderIds)
+            ->where('status', OrderPayment::FULLY_PAID)
+            ->distinct()
             ->pluck('order_id')
             ->toArray();
+
 
         $query = DB::table('order_payments')
             ->select(
@@ -36,8 +40,9 @@ class DashboardService
                 DB::raw('EXTRACT(MONTH FROM updated_at) as month_number'),
                 DB::raw('SUM(amount_applied) as total_sales')
             )
-            ->whereIn('order_id', $latestFullyPaidOrderIds)
-            ->where('status', OrderPayment::FULLY_PAID);
+            ->whereIn('order_id', $fullyPaidOrderIds);
+
+        // Remove status = fully_paid so we sum all historical payments for those orders
 
         // Apply date range filter if both startDate and endDate are provided
         if ($startDate && $endDate) {
@@ -49,6 +54,7 @@ class DashboardService
             ->groupBy('month_name', 'month_number')
             ->orderBy('month_number', 'asc')
             ->get();
+
 
         if ($isChartFiltered) {
             return $this->filterSalesReportForChart(
@@ -65,6 +71,23 @@ class DashboardService
 
     public function getSalesPerProductCategory($startDate, $endDate, $isChartFiltered = true)
     {
+        // Find all orders within the date range
+        $orderIds = DB::table('orders')
+            ->whereBetween('created_at', [
+                $startDate->format('Y-m-d 00:00:00'),
+                $endDate->format('Y-m-d 23:59:59'),
+            ])
+            ->pluck('id')
+            ->toArray();
+
+        // For those orders, determine if any payment (regardless of whether it's the latest) is FULLY_PAID
+        $fullyPaidOrderIds = DB::table('order_payments')
+            ->whereIn('order_id', $orderIds)
+            ->where('status', OrderPayment::FULLY_PAID)
+            ->distinct()
+            ->pluck('order_id')
+            ->toArray();
+
         $salesPerProductCategory = DB::table('orders')
             ->select(
                 'design_categories.name as category_name',
@@ -73,8 +96,8 @@ class DashboardService
             ->leftJoin('products', 'orders.product_id', '=', 'products.id')
             ->leftJoin('design_categories', 'products.category_id', '=', 'design_categories.id')
             ->leftJoin('order_payments', 'orders.id', '=', 'order_payments.order_id')
-            ->where('order_payments.status', '=', OrderPayment::FULLY_PAID)
-            ->whereBetween('orders.created_at', [
+            ->whereIn('orders.id', $fullyPaidOrderIds)
+            ->whereBetween('order_payments.updated_at', [
                 $startDate->format('Y-m-d 00:00:00'),
                 $endDate->format('Y-m-d 23:59:59'),
             ])
@@ -139,25 +162,28 @@ class DashboardService
 
     public function getTotalSalesWithRange($startDate, $endDate)
     {
-        // Find order IDs whose latest payment is 'fully_paid'
-        $latestFullyPaidOrderIds = DB::table('order_payments')
-            ->select('order_id')
-            ->whereIn('order_id', function ($query) use ($startDate, $endDate) {
-                $query->select('id')
-                    ->from('orders')
-                    ->whereBetween('created_at', [
-                        $startDate->format('Y-m-d 00:00:00'),
-                        $endDate->format('Y-m-d 23:59:59'),
-                    ]);
-            })
-            ->whereRaw('id IN (SELECT MAX(id) FROM order_payments GROUP BY order_id)')
-            ->where('status', '=', 'fully_paid')
+        // Find all orders within the date range
+        $orderIds = DB::table('orders')
+            ->whereBetween('created_at', [
+                $startDate->format('Y-m-d 00:00:00'),
+                $endDate->format('Y-m-d 23:59:59'),
+            ])
+            ->pluck('id')
+            ->toArray();
+
+        // For those orders, determine if any payment (regardless of whether it's the latest) is FULLY_PAID
+        $fullyPaidOrderIds = DB::table('order_payments')
+            ->whereIn('order_id', $orderIds)
+            ->where('status', OrderPayment::FULLY_PAID)
+            ->distinct()
             ->pluck('order_id')
             ->toArray();
 
-        // Sum all amount_applied for those orders
+        Log::info("fullyPaidOrderIds: ", [$fullyPaidOrderIds]);
+
+        // Sum all amount_applied for all payments of those fully paid orders
         $sales = DB::table('order_payments')
-            ->whereIn('order_id', $latestFullyPaidOrderIds)
+            ->whereIn('order_id', $fullyPaidOrderIds)
             ->sum('amount_applied');
 
         return $sales;

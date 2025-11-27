@@ -13,7 +13,7 @@
 </script>
 
 <template>
-    <div class="overflow-x-auto mt-8 sm:rounded-lg">
+    <div class="overflow-x-auto sm:rounded-lg">
         <table class="min-w-full border border-gray-300 rounded-md text-sm">
             <thead class="bg-gray-900 text-white">
                 <tr>
@@ -26,7 +26,11 @@
 
             <!-- ✅ Data found -->
             <tbody v-if="orderLogs && orderLogs.length > 0">
-                <tr v-for="(log, index) in orderLogs" :key="index" class="border-t border-gray-200 hover:bg-gray-50">
+                <tr
+                    v-for="(log, index) in orderLogs"
+                    :key="index"
+                    class="border-t border-gray-200 hover:bg-gray-50"
+                >
                     <td class="px-4 py-2">{{ log.users?.name }}</td>
                     <td class="px-4 py-2">{{ log.material_name }}</td>
                     <td class="px-4 py-2">{{ log.total_quantity_used }}</td>

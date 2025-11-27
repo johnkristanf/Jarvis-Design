@@ -11,7 +11,7 @@
     import { OrderOptions, OrderStatus, type Orders, type UpdateStatusType } from '@/types/order'
     import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
     import Loader from '../Loader.vue'
-    import { onBeforeMount, onMounted,  ref, watch } from 'vue'
+    import { onBeforeMount, onMounted, ref, watch } from 'vue'
     import { updateOrderStatus } from '@/api/put/orders'
     import UploadedImagesModal from '../designs/UploadedImagesModal.vue'
     import QuantityPerSizeModal from '../designs/QuantityPerSizeModal.vue'
@@ -60,7 +60,8 @@
                     order.status !== OrderStatus.COMPLETED &&
                     order.status !== OrderStatus.IN_PROGRESS &&
                     order.status !== OrderStatus.CANCELLED &&
-                    order.status !== (OrderStatus.FOR_DELIVERY || OrderStatus.FOR_PICKUP) &&
+                    order.status !== OrderStatus.FOR_DELIVERY &&
+                    order.status !== OrderStatus.FOR_PICKUP &&
                     !alreadyUpdatedOrders.has(order.id)
                 ) {
                     // Call handleStatusChange to update the status in the DB
@@ -263,8 +264,6 @@
         if (container) {
             container.addEventListener('scroll', onTableScroll, { passive: true })
         }
-
-        console.log('orders: ', orders)
     })
 
     onBeforeMount(() => {
@@ -306,6 +305,10 @@
         cancelOrderData.value = { orderId, close }
         showCancelConfirmModal.value = true
         isOrderCancelConfirmed.value = true
+    }
+
+    function closeCancelOrderConfirmation() {
+        isOrderCancelConfirmed.value = false
     }
 
     function proceedCancelOrder() {
@@ -475,7 +478,8 @@
                                                 <!-- Delivery or Pickup Date -->
                                                 <div
                                                     v-if="
-                                                        (order.status == OrderStatus.IN_PROGRESS && hasAnyFullyPaid) &&
+                                                        order.status == OrderStatus.IN_PROGRESS &&
+                                                        hasAnyFullyPaid &&
                                                         !order.delivery_date
                                                     "
                                                 >
@@ -617,6 +621,7 @@
                         <CancelOrderConfirmationDialog
                             v-if="isOrderCancelConfirmed"
                             @confirmCancel="proceedCancelOrder"
+                            @close="closeCancelOrderConfirmation"
                         />
 
                         <!-- ORDER STATUS OF USER -->

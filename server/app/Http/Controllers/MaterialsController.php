@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\EditMaterialRequest;
 use App\Http\Requests\StoreMaterialRequest;
+use App\Models\FabricAdjustLogs;
 use App\Models\Materials;
 use App\Models\MaterialsCategory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class MaterialsController extends Controller
 {
@@ -26,6 +28,91 @@ class MaterialsController extends Controller
             'msg' => 'Material Created Successfully',
             'material_id' => $createdMaterialID,
         ]);
+    }
+
+
+    public function addFabricQuantity(Request $request, $fabricId)
+    {
+        $validated = $request->validate([
+            'delivery_date' => 'required|date',
+            'quantity' => 'required|integer|min:1',
+        ]);
+
+        $fabric = Materials::find($fabricId);
+
+        if (!$fabric) {
+            return response()->json(['msg' => 'Fabric not found'], 404);
+        }
+
+        Log::info("VALIDATED: ", [$validated]);
+        Log::info("FABRIC: ", [$fabric]);
+
+        $fabric->quantity += $validated['quantity'];
+        $fabric->save();
+
+        // Log the fabric adjustment
+        FabricAdjustLogs::create([
+            'material_id' => $fabric->id,
+            'quantity' => $validated['quantity'],
+            'action' => FabricAdjustLogs::ADDED,
+            'reason' => $request->input('reason', null),
+            'delivery_date' => $validated['delivery_date']
+        ]);
+
+        return response()->json([
+            'msg' => 'Fabric quantity added successfully',
+        ]);
+    }
+
+    public function reduceFabricQuantity(Request $request, $fabricId)
+    {
+        $validated = $request->validate([
+            'quantity' => 'required|integer|min:1',
+            'reason' => 'nullable|string|max:255',
+        ]);
+
+        $fabric = Materials::find($fabricId);
+
+        if (!$fabric) {
+            return response()->json(['msg' => 'Fabric not found'], 404);
+        }
+
+        Log::info("VALIDATED: ", [$validated]);
+        Log::info("FABRIC: ", [$fabric]);
+
+        if ($fabric->quantity < $validated['quantity']) {
+            return response()->json(['msg' => 'Insufficient fabric quantity'], 400);
+        }
+
+        $fabric->quantity -= $validated['quantity'];
+        $fabric->save();
+
+        // Log the fabric adjustment
+        FabricAdjustLogs::create([
+            'material_id' => $fabric->id,
+            'quantity' => $validated['quantity'],
+            'action' => FabricAdjustLogs::REDUCED,
+            'reason' => $request->input('reason', null),
+        ]);
+
+        return response()->json([
+            'msg' => 'Fabric quantity reduced successfully',
+        ]);
+    }
+    
+
+    public function getFabricAdjustLogs()
+    {
+
+        $logs = FabricAdjustLogs::with([
+                'material' => function ($query) {
+                    $query->select('id', 'name');
+                }
+            ])
+            ->orderByDesc('created_at')
+            ->get();
+
+        return response()->json($logs);
     }
 
     public function getMaterialCategory()
