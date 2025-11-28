@@ -109,7 +109,7 @@
 
                             <!-- FABRIC ADJUST LOG TABLE -->
                             <h1 class="mb-2 mt-5">Fabric Adjust Logs</h1>
-                            <FabricAdjustTable />
+                            <FabricAdjustTable :fabricId="props.fabricId"/>
                         </DialogPanel>
                     </TransitionChild>
                 </div>

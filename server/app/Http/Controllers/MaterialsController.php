@@ -99,16 +99,16 @@ class MaterialsController extends Controller
             'msg' => 'Fabric quantity reduced successfully',
         ]);
     }
-    
-
-    public function getFabricAdjustLogs()
+    public function getFabricAdjustLogs(Request $request)
     {
+        $fabricId = $request->query('fabric_id');
 
         $logs = FabricAdjustLogs::with([
                 'material' => function ($query) {
                     $query->select('id', 'name');
                 }
             ])
+            ->where('material_id', $fabricId)
             ->orderByDesc('created_at')
             ->get();
 

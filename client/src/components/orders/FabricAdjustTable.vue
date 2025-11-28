@@ -3,14 +3,24 @@
     import { apiService } from '@/api/axios'
 import { formatDate } from '@/helper/designs'
 
-    const { isPending, data: fabricLogs } = useQuery({
-        queryKey: ['fabric-adjust-logs'],
-        queryFn: async () => {
-            const respData = await apiService.get('/api/get/fabric/adjust/logs')
-            console.log('respData logs: ', respData)
+    const props = defineProps({
+        fabricId: {
+            type: String,
+            required: false,
+        },
+    })
 
+    const { isPending, data: fabricLogs } = useQuery({
+        queryKey: ['fabric-adjust-logs', props.fabricId],
+        queryFn: async () => {
+            // Pass fabricId as a query parameter
+            const respData = await apiService.get(`/api/get/fabric/adjust/logs`, {
+                params: { fabric_id: props.fabricId },
+            })
+            console.log('respData logs: ', respData)
             return respData
         },
+        enabled: !!props.fabricId,
     })
 </script>
 
