@@ -63,10 +63,10 @@ import { formatDate } from '@/helper/designs'
                                 class="px-2 py-1 rounded-md text-xs font-semibold"
                                 :class="
                                     log.action === 'added'
-                                        ? 'bg-green-100 text-green-800'
+                                        ? ' text-green-800'
                                         : log.action === 'reduced'
-                                            ? 'bg-red-100 text-red-800'
-                                            : 'bg-gray-100 text-gray-800'
+                                            ? ' text-red-800'
+                                            : ' text-gray-800'
                                 "
                             >
                                 {{ log.action ? log.action.toUpperCase() : '' }}
