@@ -58,18 +58,26 @@ import { formatDate } from '@/helper/designs'
                     </td>
                     <td class="px-4 py-2">{{ log.quantity }}</td>
                     <td class="px-4 py-2">
-                        <span
-                            class="px-2 py-1 rounded-md text-xs font-semibold"
-                            :class="
-                                log.action === 'added'
-                                    ? 'bg-green-100 text-green-800'
-                                    : log.action === 'reduced'
-                                      ? 'bg-red-100 text-red-800'
-                                      : 'bg-gray-100 text-gray-800'
-                            "
-                        >
-                            {{ log.action ? log.action.toUpperCase() : '' }}
-                        </span>
+                        <div class="flex flex-col">
+                            <span
+                                class="px-2 py-1 rounded-md text-xs font-semibold"
+                                :class="
+                                    log.action === 'added'
+                                        ? 'bg-green-100 text-green-800'
+                                        : log.action === 'reduced'
+                                            ? 'bg-red-100 text-red-800'
+                                            : 'bg-gray-100 text-gray-800'
+                                "
+                            >
+                                {{ log.action ? log.action.toUpperCase() : '' }}
+                            </span>
+                            <span v-if="log.reason" class="mt-1 text-xs text-gray-600">
+                                <strong>Reason:</strong> {{ log.reason }}
+                            </span>
+                            <span v-else class="mt-1 text-xs text-gray-400 italic">
+                                No reason provided
+                            </span>
+                        </div>
                     </td>
                 </tr>
             </tbody>
