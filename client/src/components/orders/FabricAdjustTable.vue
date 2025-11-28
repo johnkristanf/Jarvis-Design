@@ -71,12 +71,14 @@ import { formatDate } from '@/helper/designs'
                             >
                                 {{ log.action ? log.action.toUpperCase() : '' }}
                             </span>
-                            <span v-if="log.reason" class="mt-1 text-xs text-gray-600">
-                                <strong>Reason:</strong> {{ log.reason }}
-                            </span>
-                            <span v-else class="mt-1 text-xs text-gray-400 italic">
-                                No reason provided
-                            </span>
+                            <template v-if="log.action === 'reduced'">
+                                <span v-if="log.reason" class="mt-1 text-xs text-gray-600">
+                                    <strong>Reason:</strong> {{ log.reason }}
+                                </span>
+                                <span v-else class="mt-1 text-xs text-gray-400 italic">
+                                    No reason provided
+                                </span>
+                            </template>
                         </div>
                     </td>
                 </tr>
