@@ -36,7 +36,16 @@ import { formatDate } from '@/helper/designs'
                     <td class="px-4 py-2">
                         {{ log.delivery_date ? formatDate(log.delivery_date) : formatDate(log.created_at) }}
                     </td>
-                    <td class="px-4 py-2">{{ log.material.name }}</td>
+                    <td class="px-4 py-2">
+                        <template v-if="log.material && log.material.name">
+                            {{ log.material.name }}
+                        </template>
+                        <template v-else>
+                            <span class="inline-flex items-center px-2 py-1 rounded bg-red-100 text-red-700 text-xs font-bold border border-red-300">
+                                Fabric Deleted
+                            </span>
+                        </template>
+                    </td>
                     <td class="px-4 py-2">{{ log.quantity }}</td>
                     <td class="px-4 py-2">
                         <span
@@ -49,7 +58,7 @@ import { formatDate } from '@/helper/designs'
                                       : 'bg-gray-100 text-gray-800'
                             "
                         >
-                            {{ log.action.toUpperCase() }}
+                            {{ log.action ? log.action.toUpperCase() : '' }}
                         </span>
                     </td>
                 </tr>
