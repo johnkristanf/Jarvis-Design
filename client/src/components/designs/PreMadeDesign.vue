@@ -1,7 +1,12 @@
 <script lang="ts" setup>
     import { ref, watch } from 'vue'
     import PreviewDesignModal from './PreviewDesignModal.vue'
-    import type { Designs, GroupedDesignsResponse, Product } from '@/types/design'
+    import type {
+        BusinessProductDesign,
+        Designs,
+        GroupedDesignsResponse,
+        Product,
+    } from '@/types/design'
     import { useQuery, useQueryClient } from '@tanstack/vue-query'
     import { apiService } from '@/api/axios'
     import Loader from '../Loader.vue'
@@ -21,21 +26,10 @@
     const selectedCategory = ref<string | number>()
     const selectedTag = ref<string | number>()
     const openDesignModal = ref(false)
+    const businessProductDesign = ref<BusinessProductDesign[]>([])
 
     // CATEGORY EXPANSION TRACKER
     const expandedCategory = ref<number | null>(null)
-
-    // HANDLE DESIGN SELECTION FOR MODAL
-    // const handleSelectDesign = (
-    //     designs: Designs[],
-    //     categoryName: string | number,
-    //     tagName: string | number,
-    // ) => {
-    //     openDesignModal.value = true
-    //     selectedDesigns.value = designs
-    //     selectedCategory.value = categoryName
-    //     selectedTag.value = tagName
-    // }
 
     // ORDER RELATED
     const showOrderModal = ref<boolean>(false)
@@ -65,9 +59,23 @@
                 `/api/get/pre_made/designs/${sortTag}/${categoryIds}`,
             )
 
+            console.log('respData: ', respData)
+
             return respData
         },
     })
+
+    // FETCH UPLOADED BUSINESS DESIGNS
+    const fetchBusinessDesigns = async (product_id: number) => {
+        // isLoadingBusinessDesigns.value = true
+        const designs = await apiService.get<BusinessProductDesign[]>(
+            `/api/get/bussiness_designs/${product_id}`,
+        )
+        console.log('designs: ', designs)
+
+        businessProductDesign.value = designs
+        // isLoadingBusinessDesigns.value = false
+    }
 
     // REFRESH DESIGNS ON FILTER CHANGE
     const queryClient = useQueryClient()
@@ -79,58 +87,83 @@
         },
         { deep: true },
     )
+
+    // Provide a static images array for testing, to be shown under each product card
+    const staticImages = [
+        'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=facearea&w=400&q=80',
+        'https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=facearea&w=400&q=80',
+        'https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=facearea&w=400&q=80',
+    ]
 </script>
 
 <template>
-    <div
-        v-if="!showUploadedDesignsTableRef && designs"
-        class="space-y-6 grid grid-cols-3 sm:grid-col-4"
-    >
-        <div v-for="category in designs" :key="category.id">
-            <!-- CATEGORY CARD -->
-            <fwb-card @click="toggleCategory(category.id)" class="cursor-pointer">
-                <div class="p-5">
-                    <h5 class="text-2xl font-bold text-gray-900 dark:text-white">
-                        {{ category.name }}
-                    </h5>
-                    <p class="text-sm text-gray-600 dark:text-gray-300">
-                        {{
-                            category.is_fixed_priced
-                                ? `₱${category.fixed_price}`
-                                : 'Variable Pricing'
-                        }}
-                    </p>
-                </div>
-            </fwb-card>
+    <div v-if="!showUploadedDesignsTableRef && designs" class="w-full">
+        <!-- CATEGORY FILTERS -->
+        <div class="flex items-center gap-8 mb-6">
+            <div v-for="category in designs" :key="category.id">
+                <h1
+                    @click="toggleCategory(category.id)"
+                    class="text-xs font-bold text-gray-500 dark:text-white hover:opacity-75 hover:cursor-pointer"
+                    :class="{
+                        'text-blue-600 dark:text-blue-400': expandedCategory === category.id,
+                    }"
+                >
+                    {{ category.name }}
+                </h1>
+            </div>
+        </div>
 
-            <!-- PRODUCT CARDS -->
-            <div
-                v-if="expandedCategory === category.id && category.products.length > 0"
-                class="mt-4 flex flex-col"
-            >
-                <fwb-card v-for="product in category.products" :key="product.id">
+        <!-- PRODUCT CARDS DISPLAY AREA (SEPARATE FROM FILTERS) -->
+        <div v-if="expandedCategory !== null">
+            <template v-for="category in designs" :key="category.id">
+                <div v-if="expandedCategory === category.id">
+                    <!-- PRODUCT CARDS -->
                     <div
-                        class="p-4 w-full bg-gray-900 hover:cursor-pointer hover:opacity-75"
-                        @click="openOrderDetailsModal(category.name, product)"
+                        v-if="category.products.length > 0"
+                        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
                     >
-                        <h5 class="text-lg font-medium text-white dark:text-white">
-                            {{ product.name }}
-                            {{ product.fabric_type ? `(${product.fabric_type.name})` : '' }}
-                        </h5>
-                        <p class="text-sm text-white dark:text-gray-400">
-                            ₱{{ product.unit_price }}
-                        </p>
-                    </div>
-                </fwb-card>
-            </div>
+                        <fwb-card v-for="product in category.products" :key="product.id">
+                            <div class="flex gap-2 p-2 justify-start">
+                                <!-- FOR LOOP BUSINESS DESIGNS HERE -->
+                                 
+                                <!-- ONE PRODUCT CAN HAVE MANY DESIGNS -->
+                                <img
+                                    src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=facearea&w=400&q=80"
+                                    alt="Static Design"
+                                    class="object-cover rounded shadow border border-gray-200"
+                                />
+                            </div>
 
-            <!-- NO PRODUCTS MESSAGE -->
-            <div
-                v-else-if="expandedCategory === category.id && category.products.length === 0"
-                class="text-sm text-gray-500 dark:text-gray-400 mt-2 px-4"
-            >
-                No products in this category.
-            </div>
+                            <div class="p-4 w-full flex items-center justify-between">
+                                <div class="flex flex-col">
+                                    <h5 class="text-md font-medium text-gray-900 dark:text-white">
+                                        {{ product.name }}
+                                        <!-- <span v-if="product.fabric_type">({{ product.fabric_type.name }})</span> -->
+                                    </h5>
+                                    <p class="text-sm text-gray-700 dark:text-gray-400">
+                                        ₱{{ product.unit_price }}
+                                    </p>
+                                </div>
+
+                                <button
+                                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded transition-colors"
+                                    @click="openOrderDetailsModal(category.name, product)"
+                                >
+                                    Add to Cart
+                                </button>
+                            </div>
+                        </fwb-card>
+                    </div>
+
+                    <!-- NO PRODUCTS MESSAGE -->
+                    <div
+                        v-else
+                        class="text-sm text-gray-500 dark:text-gray-400 px-4 py-8 text-center"
+                    >
+                        No products in this category.
+                    </div>
+                </div>
+            </template>
         </div>
     </div>
 

@@ -395,7 +395,6 @@ class DesignsController extends Controller
 
     public function addProductDesign(Request $request)
     {
-
         $validated = $request->validate([
             'design' => 'required',
             'product_id' => 'required',

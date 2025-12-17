@@ -200,7 +200,7 @@
                                 <router-link
                                     v-for="item in navigation.filter(
                                         (nav) =>
-                                            !['Designs','Orders', 'Message'].includes(nav.name) ||
+                                            !['Orders', 'Message'].includes(nav.name) ||
                                             authStore.currentUser,
                                     )"
                                     :key="item.name"
