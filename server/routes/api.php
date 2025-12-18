@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DesignsController;
@@ -114,4 +115,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/get/payments/{orderID}', [PaymentController::class, 'paymentsByOrderID']);
     Route::get('/get/payment/methods', [PaymentController::class, 'getPaymentMethods']);
     Route::patch('/record/payment/{paymentID}', [PaymentController::class, 'recordPayment']);
+
+    // PROTECTED CART ROUTES
+    Route::post('/add/cart', [CartController::class, 'store']);
+    Route::post('/cart/count', [CartController::class, 'count']);
 });

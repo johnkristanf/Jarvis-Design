@@ -88,7 +88,7 @@
                     d="M12 6v12m6-6H6"
                 />
             </svg>
-            <span class="text-xs">Add Qty</span>
+            <span class="text-xs">Add</span>
         </button>
     </div>
     <TransitionRoot appear :show="isOpen" as="template">

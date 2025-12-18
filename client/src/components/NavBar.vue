@@ -9,7 +9,7 @@
         MenuItem,
         MenuItems,
     } from '@headlessui/vue'
-    import { BellAlertIcon, CheckIcon, UserIcon } from '@heroicons/vue/20/solid'
+    import { BellAlertIcon, CheckIcon, ShoppingCartIcon, UserIcon } from '@heroicons/vue/20/solid'
     import { BellIcon } from '@heroicons/vue/24/outline'
     import { useRoute, useRouter } from 'vue-router'
     import Loader from './Loader.vue'
@@ -334,6 +334,29 @@
                                         </div>
                                     </Drawer>
                                 </div>
+
+                                <!-- Shopping cart icon -->
+                                <router-link
+                                    v-if="authStore.currentUser"
+                                    to="/orders/cart"
+                                    class="relative rounded-full bg-gray-800 p-1.5 mr-2 text-gray-400 hover:text-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800 focus:outline-hidden"
+                                >
+                                    <span class="absolute -inset-1.5" />
+                                    <span class="sr-only">View cart</span>
+                                    <ShoppingCartIcon class="size-5" aria-hidden="true" />
+
+                                    <!-- Notification badge on cart icon -->
+                                    <span
+                                        v-if="unreadNotificationsCount > 0"
+                                        class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full min-w-5 h-5 flex items-center justify-center px-1"
+                                    >
+                                        {{
+                                            unreadNotificationsCount > 99
+                                                ? '99+'
+                                                : unreadNotificationsCount
+                                        }}
+                                    </span>
+                                </router-link>
 
                                 <button
                                     v-if="authStore.currentUser"

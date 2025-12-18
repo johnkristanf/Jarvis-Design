@@ -32,6 +32,7 @@ export interface Product {
     unit_price: string
     category_id: number
     fabric_type: FabricTypes
+    designs: BusinessProductDesign[]
     created_at: string
     updated_at: string
 }

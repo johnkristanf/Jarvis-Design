@@ -13,6 +13,7 @@
     import { useDesignFilterStore } from '@/stores/filter'
     import { FwbCard } from 'flowbite-vue'
     import OrderProductModal from './OrderProductModal.vue'
+    import DesignOptionModal from './DesignOptionModal.vue'
 
     // FILTER SELECT STORE
     const filterStore = useDesignFilterStore()
@@ -33,6 +34,7 @@
 
     // ORDER RELATED
     const showOrderModal = ref<boolean>(false)
+    const showDesignOptionModal = ref<boolean>(false)
     const selectedProductRef = ref<Product>()
     const selectedCategoryRef = ref<string>()
     // const fixedPriceAmmountRef = ref<number>()
@@ -41,6 +43,14 @@
         selectedProductRef.value = selectedProduct
         selectedCategoryRef.value = categoryName
         showOrderModal.value = true
+    }
+
+    const openDesignOptionModal = (selectedProduct: Product) => {
+        selectedProductRef.value = selectedProduct
+        showDesignOptionModal.value = true
+
+        console.log('selectedProductRef.value: ', selectedProductRef.value)
+        console.log('showDesignOptionModal.value: ', showDesignOptionModal.value)
     }
 
     // HANDLE CATEGORY EXPANSION
@@ -88,6 +98,20 @@
         { deep: true },
     )
 
+    // Pre-select the 1st category in designs
+    watch(
+        () => designs?.value,
+        (newDesigns) => {
+            if (
+                Array.isArray(newDesigns) &&
+                newDesigns.length > 0 &&
+                expandedCategory.value === null
+            ) {
+                expandedCategory.value = newDesigns[0].id
+            }
+        },
+    )
+
     // Provide a static images array for testing, to be shown under each product card
     const staticImages = [
         'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=facearea&w=400&q=80',
@@ -122,14 +146,22 @@
                         v-if="category.products.length > 0"
                         class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
                     >
-                        <fwb-card v-for="product in category.products" :key="product.id">
+                        <fwb-card
+                            v-for="product in category.products"
+                            :key="product.id"
+                            class="hover:cursor-pointer hover:opacity-75"
+                            @click="openDesignOptionModal(product)"
+                        >
                             <div class="flex gap-2 p-2 justify-start">
                                 <!-- FOR LOOP BUSINESS DESIGNS HERE -->
-                                 
+
                                 <!-- ONE PRODUCT CAN HAVE MANY DESIGNS -->
+                                <!-- Loop over product designs and show images -->
                                 <img
-                                    src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=facearea&w=400&q=80"
-                                    alt="Static Design"
+                                    v-if="product.designs && product.designs.length"
+                                    :key="product.designs[0].id"
+                                    :src="product.designs[0].temp_url"
+                                    alt="Product Design"
                                     class="object-cover rounded shadow border border-gray-200"
                                 />
                             </div>
@@ -145,12 +177,7 @@
                                     </p>
                                 </div>
 
-                                <button
-                                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded transition-colors"
-                                    @click="openOrderDetailsModal(category.name, product)"
-                                >
-                                    Add to Cart
-                                </button>
+                               
                             </div>
                         </fwb-card>
                     </div>
@@ -183,5 +210,11 @@
         :categoryName="selectedCategoryRef"
         :product="selectedProductRef"
         @close="showOrderModal = false"
+    />
+
+    <DesignOptionModal
+        v-if="showDesignOptionModal && selectedProductRef"
+        :product="selectedProductRef"
+        @close="showDesignOptionModal = false"
     />
 </template>

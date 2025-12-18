@@ -27,9 +27,37 @@ class DesignsController extends Controller
     {
         $categoriesArray = $categories ? explode(',', $categories) : [];
 
-        $result = DesignCategory::with('products.fabric_type:id,name') // eager load category
+        $result = DesignCategory::with([
+                'products' => function ($query) {
+                    $query->with([
+                        'fabric_type:id,name',
+                        // Eager load designs and only select fields needed (including image_path/url)
+                        'designs'
+                    ]);
+                }
+            ])
             ->select('id', 'name', 'is_fixed_priced', 'fixed_price')
             ->get();
+
+        // Transform the designs' image_path/image_url to temp_url of S3
+        $result->each(function ($category) {
+            $category->products->each(function ($product) {
+                if (isset($product->designs) && $product->designs->count()) {
+                    $product->designs->transform(function ($design) {
+                        if (!empty($design->image_url)) {
+                            // Set temp_url using S3 temporary URL for `image_path`
+                            $design->temp_url = Storage::disk('s3')->temporaryUrl(
+                                $design->image_url,
+                                now()->addMinutes(60)
+                            );
+                        } else {
+                            $design->temp_url = null;
+                        }
+                        return $design;
+                    });
+                }
+            });
+        });
 
         return response()->json($result, 200);
 

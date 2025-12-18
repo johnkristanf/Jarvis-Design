@@ -95,7 +95,7 @@
                     d="M6 12h12"
                 />
             </svg>
-            <span class="text-xs">Reduce Qty</span>
+            <span class="text-xs">Reduce </span>
         </button>
     </div>
     <TransitionRoot appear :show="isOpen" as="template">
