@@ -72,7 +72,7 @@
                 fabricTypeId.value = ftypes[0].id
             }
         },
-        { immediate: true }
+        { immediate: true },
     )
     watch(
         () => sizes.value,
@@ -81,7 +81,7 @@
                 sizeId.value = sizeVals[0].id
             }
         },
-        { immediate: true }
+        { immediate: true },
     )
 
     // Place order mutation
@@ -147,7 +147,7 @@
 
         // Peek FormData key-values for debugging
         for (const pair of formData.entries()) {
-            console.log(pair[0]+ ': ' + pair[1]);
+            console.log(pair[0] + ': ' + pair[1])
         }
         mutation.mutate(formData)
     })
@@ -239,12 +239,12 @@
                                                 <button
                                                     v-for="size in sizes"
                                                     :key="size.id"
-                                                    class="inline-flex items-center px-2 py-0.5 rounded-md text-sm font-semibold border
-                                                        transition-colors
-                                                        "
-                                                    :class="sizeId === size.id
-                                                        ? 'bg-blue-600 text-white border-blue-600'
-                                                        : 'bg-gray-100 text-gray-700 border-gray-300 hover:opacity-75'"
+                                                    class="inline-flex items-center px-2 py-0.5 rounded-md text-sm font-semibold border transition-colors"
+                                                    :class="
+                                                        sizeId === size.id
+                                                            ? 'bg-blue-600 text-white border-blue-600'
+                                                            : 'bg-gray-100 text-gray-700 border-gray-300 hover:opacity-75'
+                                                    "
                                                     type="button"
                                                     @click="sizeId = size.id"
                                                 >

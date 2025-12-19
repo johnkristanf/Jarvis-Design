@@ -9,12 +9,25 @@ use Illuminate\Support\Facades\Auth;
 
 class CartController extends Controller
 {
+
+    public function index()
+    {
+        $cartItems = Cart::with([
+            'user',
+            'product',
+            'fabric_types',
+            'size',
+            'product.designs' // Include the designs of the product
+        ])
+            ->where('user_id', Auth::id())
+            ->get();
+
+        return response()->json($cartItems);
+    }
     public function store(StoreCartRequest $request)
     {
-        // Validate the request data
         $validated = $request->validated();
 
-        // Store data into Cart model using ::create
         $cart = Cart::create([
             'user_id' => Auth::id(),
             'product_id' => $validated['product_id'],
@@ -28,11 +41,6 @@ class CartController extends Controller
         ]);
     }
 
-    /**
-     * Fetch count of cart items for the authenticated user.
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function count()
     {
         $count = Cart::where('user_id', Auth::id())->count();

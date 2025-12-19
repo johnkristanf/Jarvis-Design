@@ -117,6 +117,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::patch('/record/payment/{paymentID}', [PaymentController::class, 'recordPayment']);
 
     // PROTECTED CART ROUTES
+    Route::get('/get/all/cart', [CartController::class, 'index']);
     Route::post('/add/cart', [CartController::class, 'store']);
     Route::post('/cart/count', [CartController::class, 'count']);
 });

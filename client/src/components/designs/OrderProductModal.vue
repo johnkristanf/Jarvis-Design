@@ -17,7 +17,12 @@
     import type { PropType } from 'vue'
     import { useProductAttributes } from '@/composables/useProductAttribute'
     import { apiService } from '@/api/axios'
-    import { OrderOptions, type QrCodePaymentData, type SelectedOrderOption } from '@/types/order'
+    import {
+        OrderOptions,
+        type ProductDetails,
+        type QrCodePaymentData,
+        type SelectedOrderOption,
+    } from '@/types/order'
     import QrCodePaymentModal from './QrCodePaymentModal.vue'
     import ListSelectBox from '../ListSelectBox.vue'
     import { useMutation, useQueryClient } from '@tanstack/vue-query'
@@ -34,7 +39,7 @@
     const props = defineProps({
         categoryName: String,
         product: {
-            type: Object as PropType<Product>,
+            type: Object as PropType<Product | ProductDetails>,
             required: true,
         },
     })
@@ -390,10 +395,10 @@
                                 <!-- T-shirt Section -->
                                 <div>
                                     <div class="flex flex-col mb-5 text-sm">
-                                        <p class="font-medium text-gray-700">
+                                        <!-- <p class="font-medium text-gray-700">
                                             Category:
                                             <strong>{{ props.categoryName }}</strong>
-                                        </p>
+                                        </p> -->
                                         <p class="font-medium text-gray-700">
                                             Product:
                                             <strong>{{ props.product.name }}</strong>

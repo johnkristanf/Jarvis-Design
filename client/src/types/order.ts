@@ -162,3 +162,63 @@ export type CardAnalytics = {
     total_pending_orders: number
     total_completed_orders: number
 }
+
+
+export interface FabricType {
+    id: number
+    name: string
+    unit: string
+    quantity: number
+    reorder_level: number
+    created_at: string
+    updated_at: string
+}
+export interface Design {
+    id: number
+    image_url: string
+    product_id: number
+    created_at: string | null
+    updated_at: string | null
+}
+
+export interface ProductDetails {
+    id: number
+    name: string
+    category_id: number
+    unit_price: string
+    fabric_quantity: string
+    fabric_type_id: number
+    created_at: string
+    updated_at: string
+    deleted_at: string | null
+    designs: Design[]
+}
+
+export interface UserBasic {
+    id: number
+    name: string
+    email: string
+    address: string | null
+    phone_number: string | null
+    created_at: string
+    updated_at: string
+    username: string
+    role_id: number
+    prompt_limit: number
+}
+
+export interface CartItem {
+    id: number
+    created_at: string
+    updated_at: string
+    product_id: number
+    fabric_type_id: number
+    fabric_types: FabricType
+    product: ProductDetails
+    size_id: number
+    size: Size
+    quantity: number
+    user_id: number
+    user: UserBasic
+}
+

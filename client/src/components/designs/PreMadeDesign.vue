@@ -69,8 +69,6 @@
                 `/api/get/pre_made/designs/${sortTag}/${categoryIds}`,
             )
 
-            console.log('respData: ', respData)
-
             return respData
         },
     })
@@ -176,8 +174,6 @@
                                         ₱{{ product.unit_price }}
                                     </p>
                                 </div>
-
-                               
                             </div>
                         </fwb-card>
                     </div>

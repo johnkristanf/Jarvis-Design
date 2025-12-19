@@ -17,6 +17,7 @@ import EmailVerificationView from '@/views/users/EmailVerificationView.vue'
 import VerifiedEmail from '@/views/users/VerifiedEmail.vue'
 import AccountProfile from '@/views/users/AccountProfile.vue'
 import AdminAccountProfileView from '@/views/admin/AdminAccountProfileView.vue'
+import ShoppingCartView from '@/views/users/ShoppingCartView.vue'
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -44,6 +45,11 @@ const router = createRouter({
                 {
                     path: 'orders',
                     component: OrdersView,
+                },
+
+                {
+                    path: 'orders/cart',
+                    component: ShoppingCartView,
                 },
 
                 // {
