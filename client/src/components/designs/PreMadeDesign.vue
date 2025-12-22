@@ -110,12 +110,12 @@
         },
     )
 
-    // Provide a static images array for testing, to be shown under each product card
-    const staticImages = [
-        'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=facearea&w=400&q=80',
-        'https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=facearea&w=400&q=80',
-        'https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=facearea&w=400&q=80',
-    ]
+    // // Provide a static images array for testing, to be shown under each product card
+    // const staticImages = [
+    //     'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=facearea&w=400&q=80',
+    //     'https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=facearea&w=400&q=80',
+    //     'https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=facearea&w=400&q=80',
+    // ]
 </script>
 
 <template>
@@ -153,7 +153,6 @@
                             <div class="flex gap-2 p-2 justify-start">
                                 <!-- FOR LOOP BUSINESS DESIGNS HERE -->
 
-                                <!-- ONE PRODUCT CAN HAVE MANY DESIGNS -->
                                 <!-- Loop over product designs and show images -->
                                 <img
                                     v-if="product.designs && product.designs.length"

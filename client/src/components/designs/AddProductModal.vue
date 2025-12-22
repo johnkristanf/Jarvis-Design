@@ -143,7 +143,7 @@
         (fabricTypeId) => {
             const matched = fabricTypes.value?.find((fab) => fab.id === fabricTypeId)
             selectedFabricUnit.value = matched?.unit ?? null
-        }
+        },
     )
 
     // CHECK IF THE SELECTED CATEGORY HAS FABRIC REQUIRED
@@ -217,7 +217,10 @@
 
                 <!-- PRODUCT UNIT PRICE -->
                 <div>
-                    <label class="block text-sm mb-3">Unit Price <span class="text-red-500">*</span></label>
+                    <label class="block text-sm mb-3">
+                        Unit Price
+                        <span class="text-red-500">*</span>
+                    </label>
                     <input
                         v-model="price"
                         type="number"

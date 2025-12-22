@@ -173,7 +173,7 @@
                         leave-to="opacity-0 scale-95"
                     >
                         <DialogPanel
-                            class="w-[600px] max-w-7xl h-[30rem] transform overflow-y-auto bg-white p-6 text-left align-middle shadow-xl transition-all"
+                            class="w-[600px] max-w-7xl h-[27rem] transform overflow-y-auto bg-white p-6 text-left align-middle shadow-xl transition-all"
                         >
                             <DialogTitle as="h1" class="text-2xl text-gray-900">
                                 Product Order Option
@@ -204,7 +204,7 @@
 
                                     <form @submit.prevent="onSubmit" class="space-y-4">
                                         <!-- Fabric Type Input -->
-                                        <div class="mb-5">
+                                        <!-- <div class="mb-5">
                                             <label class="block text-sm text-gray-600 mb-1">
                                                 Fabric Type:
                                             </label>
@@ -228,7 +228,7 @@
                                             <p class="text-sm text-red-500 mt-1">
                                                 {{ fabricTypeError }}
                                             </p>
-                                        </div>
+                                        </div> -->
 
                                         <!-- Size Selection -->
                                         <div class="mb-5">

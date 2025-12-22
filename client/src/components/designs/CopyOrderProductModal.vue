@@ -31,6 +31,7 @@
     import Toast from 'primevue/toast'
     import Loader from '../Loader.vue'
     import { isValidCssColor } from '@/helper/order'
+    import GenerateAIDesignsModal from './GenerateAIDesignsModal.vue'
     import { useFetchAuthenticatedUser } from '@/composables/useFetchAuthenticatedUser'
     // @ts-ignore
     import BusinessDesignModal from './BusinessDesignModal.vue'
@@ -38,15 +39,10 @@
     const props = defineProps({
         categoryName: String,
         product: {
-            type: Object as PropType<Product[] | ProductDetails[]>,
+            type: Object as PropType<Product | ProductDetails>,
             required: true,
         },
     })
-
-    onMounted(() => {
-        console.log('OrderProductModal mounted 123', props.product)
-    })
-
 
     const { sizes, loadingSizes } = useProductAttributes()
     const queryClient = useQueryClient()
@@ -56,11 +52,6 @@
     const emit = defineEmits(['close', 'openAIDesigns'])
     const handleClose = () => emit('close')
     const { authStore } = useFetchAuthenticatedUser()
-
-    // Convert product to array if it isn't already
-    const productsArray = computed(() => {
-        return Array.isArray(props.product) ? props.product : [props.product]
-    })
 
     // Reactive data
     const formData = ref({
@@ -158,22 +149,6 @@
         isLoadingBusinessDesigns.value = false
     }
 
-    // Calculate total quantity across all products
-    const totalQuantityAllProducts = computed(() => {
-        return productsArray.value.reduce((sum, product) => {
-            return sum + (product.desired_quantity || 0)
-        }, 0)
-    })
-
-    // Calculate total price across all products
-    const totalPriceAllProducts = computed(() => {
-        return productsArray.value.reduce((sum, product) => {
-            const quantity = product.desired_quantity || 0
-            const price = Number(product.unit_price || 0)
-            return sum + (quantity * price)
-        }, 0)
-    })
-
     // SERIALIZING DATA TO THE FORMDATA
     const prepareFormData = () => {
         const data = new FormData()
@@ -183,15 +158,12 @@
         data.append('address', formData.value.address)
         data.append('design_type', formData.value.designType)
         data.append('order_option', formData.value.orderOption?.name as string)
-        
-        // Use the first product's info for now (you may need to adjust this based on your backend)
-        const firstProduct = productsArray.value[0]
-        data.append('product_unit_price', firstProduct.unit_price)
-        data.append('product_id', firstProduct.id.toString())
+        data.append('product_unit_price', props.product.unit_price)
+        data.append('product_id', props.product.id.toString())
 
         // Null if the product has no corresponding fabric like (mugs, lanyard, etc..)
-        if (firstProduct.fabric_type && firstProduct.fabric_type.id) {
-            data.append('fabric_type_id', firstProduct.fabric_type.id.toString())
+        if (props.product.fabric_type && props.product.fabric_type.id) {
+            data.append('fabric_type_id', props.product.fabric_type.id.toString())
         }
 
         // Conditionally append size quantities or solo quantity
@@ -218,7 +190,7 @@
 
     // TOTAL PRICE FOR MULTI SIZES
     const totalPriceForMultiSizes = computed(
-        () => totalQuantityForMultiSizes.value * Number(productsArray.value[0]?.unit_price || 0),
+        () => totalQuantityForMultiSizes.value * Number(props.product.unit_price),
     )
 
     // FINAL TOTAL QUANTITY THAT CATCHES CATEGORY THAT HAS
@@ -233,7 +205,7 @@
     const totalPrice = computed(() => {
         return shouldIncludeSizes.value
             ? totalPriceForMultiSizes.value
-            : (formData.value.solo_quantity ?? 0) * Number(productsArray.value[0]?.unit_price ?? 0)
+            : (formData.value.solo_quantity ?? 0) * Number(props.product.unit_price ?? 0)
     })
 
     // PLACE ORDER MUTATION
@@ -343,7 +315,7 @@
         () => formData.value.designType,
         (newVal) => {
             if (newVal === 'business-design') {
-                fetchBusinessDesigns(productsArray.value[0]?.id)
+                fetchBusinessDesigns(props.product.id)
             }
         },
     )
@@ -413,145 +385,165 @@
                         leave-to="opacity-0 scale-95"
                     >
                         <DialogPanel
-                            class="w-[1000px] h-[35rem] transform overflow-y-auto bg-white p-6 text-left align-middle shadow-xl transition-all"
+                            class="w-[600px] max-w-7xl h-[30rem] transform overflow-y-auto bg-white p-6 text-left align-middle shadow-xl transition-all"
                         >
-                            <DialogTitle as="h1" class="text-2xl text-gray-900 mb-4">
+                            <DialogTitle as="h1" class="text-2xl text-gray-900">
                                 Product Order Details
                             </DialogTitle>
 
                             <div class="space-y-7">
-                                <!-- Products List Section -->
-                                <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                                    <h2 class="text-lg font-semibold text-gray-800 mb-3">Selected Products</h2>
-                                    
-                                    <div class="space-y-3">
-                                        <div 
-                                            v-for="(product, index) in productsArray" 
-                                            :key="product.id + '-' + index"
-                                            class="bg-white rounded-md p-3 border border-gray-200"
-                                        >
-                                            <div class="flex justify-between items-start">
-                                                <div class="flex-1">
-                                                    <p class="font-medium text-gray-900">{{ product.name }}</p>
-                                                    <p class="text-sm text-gray-600 mt-1">
-                                                        Unit Price: <strong>₱{{ product.unit_price }}</strong>
-                                                    </p>
-                                                    <p class="text-sm text-gray-600">
-                                                        Quantity: <strong>{{ product.desired_quantity }}</strong>
-                                                    </p>
-                                                </div>
-                                                <div class="text-right">
-                                                    <p class="font-semibold text-gray-900">
-                                                        ₱{{ (Number(product.unit_price) * (product.desired_quantity || 0)).toFixed(2) }}
-                                                    </p>
-                                                </div>
-                                            </div>
+                                <!-- T-shirt Section -->
+                                <div>
+                                    <div class="flex flex-col mb-5 text-sm">
+                                        <!-- <p class="font-medium text-gray-700">
+                                            Category:
+                                            <strong>{{ props.categoryName }}</strong>
+                                        </p> -->
+                                        <p class="font-medium text-gray-700">
+                                            Product:
+                                            <strong>{{ props.product.name }}</strong>
+                                        </p>
+
+                                        <p class="font-medium text-gray-700">
+                                            Unit Price:
+                                            <strong>₱{{ props.product.unit_price }}</strong>
+                                        </p>
+                                    </div>
+
+                                    <!-- Phone Number Input -->
+                                    <div class="mb-8">
+                                        <label class="block text-sm text-gray-600 mb-1">
+                                            Phone Number:
+                                        </label>
+                                        <div class="flex items-center">
+                                            <span
+                                                class="px-3 py-2 bg-gray-100 border border-r-0 border-gray-300 rounded-l-md text-gray-700"
+                                            >
+                                                +63
+                                            </span>
+                                            <input
+                                                v-model="formData.phone_number"
+                                                type="number"
+                                                placeholder="9XXXXXXXXX"
+                                                class="w-full cursor-not-allowed px-3 py-2 border font-medium border-gray-300 rounded-r-md focus:outline-none focus:ring-2 focus:ring-gray-100"
+                                                readonly
+                                            />
                                         </div>
                                     </div>
 
-                                    <!-- Summary -->
-                                    <div class="mt-4 pt-3 border-t border-gray-300">
-                                        <div class="flex justify-between text-sm text-gray-700 mb-1">
-                                            <span>Total Items:</span>
-                                            <span class="font-medium">{{ productsArray.length }}</span>
-                                        </div>
-                                        <div class="flex justify-between text-sm text-gray-700 mb-1">
-                                            <span>Total Quantity:</span>
-                                            <span class="font-medium">{{ totalQuantityAllProducts }}</span>
-                                        </div>
-                                        <div class="flex justify-between text-base font-semibold text-gray-900">
-                                            <span>Total Amount:</span>
-                                            <span>₱{{ totalPriceAllProducts.toFixed(2) }}</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Phone Number Input -->
-                                <div class="mb-8">
-                                    <label class="block text-sm text-gray-600 mb-1">
-                                        Phone Number:
-                                    </label>
-                                    <div class="flex items-center">
-                                        <span
-                                            class="px-3 py-2 bg-gray-100 border border-r-0 border-gray-300 rounded-l-md text-gray-700"
-                                        >
-                                            +63
-                                        </span>
+                                    <!-- Full Address Input -->
+                                    <div class="mb-8">
+                                        <label class="block text-sm text-gray-600 mb-1">
+                                            Full Address:
+                                        </label>
                                         <input
-                                            v-model="formData.phone_number"
-                                            type="number"
-                                            placeholder="9XXXXXXXXX"
-                                            class="w-full cursor-not-allowed px-3 py-2 border font-medium border-gray-300 rounded-r-md focus:outline-none focus:ring-2 focus:ring-gray-100"
+                                            v-model="formData.address"
+                                            type="text"
+                                            placeholder="Enter Address"
+                                            class="w-full cursor-not-allowed px-3 py-2 border font-medium border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-100"
                                             readonly
                                         />
                                     </div>
-                                </div>
 
-                                <!-- Full Address Input -->
-                                <div class="mb-8">
-                                    <label class="block text-sm text-gray-600 mb-1">
-                                        Full Address:
-                                    </label>
-                                    <input
-                                        v-model="formData.address"
-                                        type="text"
-                                        placeholder="Enter Address"
-                                        class="w-full cursor-not-allowed px-3 py-2 border font-medium border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-100"
-                                        readonly
-                                    />
-                                </div>
-
-                                <!-- Color Input -->
-                                <div class="mb-8">
-                                    <label class="block text-sm text-gray-600 mb-1">
-                                        Color:
-                                    </label>
-                                    <div class="flex gap-2">
-                                        <!-- Select Dropdown -->
-                                        <select
-                                            v-model="selectedOption"
-                                            class="w-1/3 px-3 py-2 border font-medium border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
-                                        >
-                                            <option value="">-- Select --</option>
-                                            <option
-                                                v-for="color in colorOptions"
-                                                :key="color"
-                                                :value="color"
+                                    <!-- Color Input -->
+                                    <div class="mb-8">
+                                        <label class="block text-sm text-gray-600 mb-1">
+                                            Color:
+                                        </label>
+                                        <div class="flex gap-2">
+                                            <!-- Select Dropdown -->
+                                            <select
+                                                v-model="selectedOption"
+                                                class="w-1/3 px-3 py-2 border font-medium border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
                                             >
-                                                {{ color }}
-                                            </option>
-                                            <option value="custom">Custom</option>
-                                        </select>
+                                                <option value="">-- Select --</option>
+                                                <option
+                                                    v-for="color in colorOptions"
+                                                    :key="color"
+                                                    :value="color"
+                                                >
+                                                    {{ color }}
+                                                </option>
+                                                <option value="custom">Custom</option>
+                                            </select>
 
-                                        <!-- Swatch -->
-                                        <div
-                                            class="w-6 h-6 rounded border border-gray-300 shrink-0"
-                                            :style="{
-                                                backgroundColor: swatchColor || 'transparent',
-                                            }"
-                                            :title="
-                                                swatchColor
-                                                    ? `Preview: ${swatchColor}`
-                                                    : 'No color selected/invalid color'
-                                            "
-                                        ></div>
+                                            <!-- Swatch -->
+                                            <div
+                                                class="w-6 h-6 rounded border border-gray-300 shrink-0"
+                                                :style="{
+                                                    backgroundColor: swatchColor || 'transparent',
+                                                }"
+                                                :title="
+                                                    swatchColor
+                                                        ? `Preview: ${swatchColor}`
+                                                        : 'No color selected/invalid color'
+                                                "
+                                            ></div>
 
-                                        <!-- Free Text Input -->
+                                            <!-- Free Text Input -->
+                                            <input
+                                                v-if="selectedOption === 'custom'"
+                                                v-model="formData.color"
+                                                type="text"
+                                                placeholder="Enter custom color"
+                                                class="w-full px-3 py-2 border font-medium border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
+                                            />
+
+                                            <!-- Auto-set if dropdown selected -->
+                                            <input
+                                                v-else
+                                                :value="formData.color"
+                                                disabled
+                                                class="w-full px-3 py-2 border font-medium border-gray-300 rounded-md bg-gray-100 cursor-not-allowed"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <!-- Quantity for fixed price -->
+                                    <div v-if="!shouldIncludeSizes" class="mb-8">
+                                        <label class="block text-sm text-gray-600 mb-1">
+                                            Quantity:
+                                        </label>
                                         <input
-                                            v-if="selectedOption === 'custom'"
-                                            v-model="formData.color"
-                                            type="text"
-                                            placeholder="Enter custom color"
+                                            v-model="formData.solo_quantity"
+                                            type="number"
+                                            placeholder="Enter quantity"
                                             class="w-full px-3 py-2 border font-medium border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
                                         />
+                                    </div>
 
-                                        <!-- Auto-set if dropdown selected -->
-                                        <input
-                                            v-else
-                                            :value="formData.color"
-                                            disabled
-                                            class="w-full px-3 py-2 border font-medium border-gray-300 rounded-md bg-gray-100 cursor-not-allowed"
-                                        />
+                                    <!-- Sizes and Quantities as OTP-like inputs -->
+                                    <div v-if="shouldIncludeSizes" class="mb-8">
+                                        <label class="block text-sm text-gray-600 mb-2">
+                                            Size Quantities:
+                                        </label>
+                                        <div
+                                            class="grid grid-cols-4 gap-2"
+                                            v-if="Array.isArray(sizes) && !loadingSizes"
+                                        >
+                                            <div
+                                                v-for="size in sizes"
+                                                :key="size.id"
+                                                class="flex flex-col items-center"
+                                            >
+                                                <span class="text-xs text-gray-700 mb-1">
+                                                    {{ size.name }}
+                                                </span>
+                                                <input
+                                                    type="number"
+                                                    min="0"
+                                                    class="w-14 text-center font-medium px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
+                                                    v-model.number="
+                                                        formData.quantityPerSize[size.id]
+                                                    "
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <!-- LOADING SIZES -->
+                                        <div v-if="loadingSizes">
+                                            <h1 class="text-center">Loading Sizes...</h1>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -585,6 +577,28 @@
                                             ]"
                                         >
                                             Own Design
+                                        </button>
+                                        <button
+                                            @click="formData.designType = 'business-design'"
+                                            :class="[
+                                                'px-3 py-1 text-sm rounded-md border transition-colors hover:cursor-pointer hover:opacity-75',
+                                                formData.designType === 'business-design'
+                                                    ? 'bg-gray-500 text-white border-gray-500'
+                                                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50',
+                                            ]"
+                                        >
+                                            Business Design
+                                        </button>
+                                        <button
+                                            @click="openAIDesignModal"
+                                            :class="[
+                                                'px-3 py-1 text-sm rounded-md border transition-colors hover:cursor-pointer hover:opacity-75',
+                                                formData.designType === 'ai-generation'
+                                                    ? 'bg-gray-500 text-white border-gray-500'
+                                                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50',
+                                            ]"
+                                        >
+                                            AI Generation
                                         </button>
                                     </div>
                                 </div>
@@ -753,6 +767,15 @@
                                                                 }
                                                             "
                                                         />
+                                                        <!-- <div
+                                                            v-if="
+                                                                selectedBusinessDesignId ===
+                                                                design.id
+                                                            "
+                                                            class="absolute top-2 right-2 bg-gray-800 text-white text-xs px-2 py-1 rounded-full"
+                                                        >
+                                                            Selected
+                                                        </div> -->
                                                     </div>
                                                 </div>
                                             </div>
@@ -766,7 +789,8 @@
                                 </div>
 
                                 <!-- Price Display -->
-                                <!-- <div class="mb-4">
+
+                                <div class="mb-4">
                                     <label class="block text-sm text-gray-600 mb-2">
                                         Pricing Details:
                                     </label>
@@ -786,14 +810,14 @@
                                             </h1>
                                         </div>
                                     </div>
-                                </div> -->
+                                </div>
 
                                 <!-- Place Order Button -->
                                 <button
                                     :disabled="isFormInvalid"
                                     @click="
                                         openQrCodePaymentModal(
-                                            productsArray[0]?.name || 'Multiple Products',
+                                            props.product.name,
                                             totalQuantity,
                                             totalPrice,
                                         )
@@ -808,7 +832,7 @@
                                     Generate QR Code Payment
                                 </button>
 
-                                <!-- Cancel Button -->
+                                <!-- Place Order Button -->
                                 <button
                                     @click="handleClose"
                                     class="w-full bg-black hover:opacity-75 hover:bg-gray-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium py-3 px-4 rounded-md transition-colors duration-200"
@@ -818,6 +842,12 @@
                             </div>
                         </DialogPanel>
                     </TransitionChild>
+
+                    <!-- GENERATE AI DESIGNS PROMPT COMPONENT -->
+                    <GenerateAIDesignsModal
+                        v-if="showAIDesignModal"
+                        @close="showAIDesignModal = false"
+                    />
                 </div>
             </div>
         </Dialog>

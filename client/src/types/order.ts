@@ -163,7 +163,6 @@ export type CardAnalytics = {
     total_completed_orders: number
 }
 
-
 export interface FabricType {
     id: number
     name: string
@@ -183,6 +182,7 @@ export interface Design {
 
 export interface ProductDetails {
     id: number
+    desired_quantity?: number
     name: string
     category_id: number
     unit_price: string
@@ -221,4 +221,3 @@ export interface CartItem {
     user_id: number
     user: UserBasic
 }
-

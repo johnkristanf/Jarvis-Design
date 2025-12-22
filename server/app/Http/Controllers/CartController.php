@@ -6,6 +6,7 @@ use App\Http\Requests\StoreCartRequest;
 use App\Models\Cart;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class CartController extends Controller
 {
@@ -22,8 +23,29 @@ class CartController extends Controller
             ->where('user_id', Auth::id())
             ->get();
 
+        // Transform designs' image_url into a s3 readable temp url
+        $cartItems->transform(function ($item) {
+            if ($item->product && $item->product->designs) {
+                $item->product->designs->transform(function ($design) {
+                    if ($design->image_url) {
+                        // Generates a temporary URL valid for 60 minutes
+                        $design->temp_url = Storage::disk('s3')->temporaryUrl(
+                            $design->image_url,
+                            now()->addMinutes(60)
+                        );
+                    } else {
+                        $design->temp_url = null;
+                    }
+                    return $design;
+                });
+            }
+            return $item;
+        });
+
         return response()->json($cartItems);
     }
+
+    
     public function store(StoreCartRequest $request)
     {
         $validated = $request->validated();
