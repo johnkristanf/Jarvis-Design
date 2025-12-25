@@ -121,10 +121,14 @@
             selectedCartIds.value.includes(item.id),
         )
 
+        console.log("selectedItems: ", selectedItems);
+        
+
         if (selectedItems && selectedItems.length > 0) {
             // Build an array containing each selected product with its quantity
             const productsWithQuantities: ProductDetails[] = selectedItems.map((item) => ({
                 ...item.product,
+                size: item.size,
                 desired_quantity: cartQuantities[item.id] ?? item.quantity ?? 1,
             }))
 

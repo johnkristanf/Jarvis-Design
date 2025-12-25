@@ -192,6 +192,7 @@ export interface ProductDetails {
     updated_at: string
     deleted_at: string | null
     designs: Design[]
+    size: Size
 }
 
 export interface UserBasic {

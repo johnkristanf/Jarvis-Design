@@ -38,16 +38,12 @@
     const props = defineProps({
         categoryName: String,
         product: {
-            type: Object as PropType<Product[] | ProductDetails[]>,
+            type: Object as PropType<ProductDetails[]>,
             required: true,
         },
     })
 
-    onMounted(() => {
-        console.log('OrderProductModal mounted 123', props.product)
-    })
-
-
+   
     const { sizes, loadingSizes } = useProductAttributes()
     const queryClient = useQueryClient()
     const showAIDesignModal = ref<boolean>(false)
@@ -116,7 +112,7 @@
     const toast = useToast()
 
     const selectedBusinessDesignId = ref<number | null>(null)
-    const qrCodePaymentData = ref<QrCodePaymentData | null>(null)
+    const selectedProductsData = ref<ProductDetails[] | null>(null)
 
     // HANDLE PAYMENT ATTACHMENT FILE
     const handlePaymentAttachmentFile = (file: File | null) => {
@@ -134,17 +130,8 @@
         showAIDesignModal.value = true
     }
 
-    const openQrCodePaymentModal = (
-        product_name: string,
-        total_quantity: number,
-        total_price: number,
-    ) => {
-        qrCodePaymentData.value = {
-            product_name,
-            total_quantity,
-            total_price,
-        }
-
+    const openQrCodePaymentModal = (selectedProducts: ProductDetails[]) => {
+        selectedProductsData.value = selectedProducts
         showQrCodePaymentModal.value = true
     }
 
@@ -170,7 +157,7 @@
         return productsArray.value.reduce((sum, product) => {
             const quantity = product.desired_quantity || 0
             const price = Number(product.unit_price || 0)
-            return sum + (quantity * price)
+            return sum + quantity * price
         }, 0)
     })
 
@@ -183,25 +170,29 @@
         data.append('address', formData.value.address)
         data.append('design_type', formData.value.designType)
         data.append('order_option', formData.value.orderOption?.name as string)
-        
-        // Use the first product's info for now (you may need to adjust this based on your backend)
+
+        // paymentAttachmentFile must return an array of product_id and payment file
+        // Loop products array and map its respectiive payment, based on the product_id
         const firstProduct = productsArray.value[0]
+
+        console.log("productsArray sa prepare: ", productsArray);
+        
         data.append('product_unit_price', firstProduct.unit_price)
         data.append('product_id', firstProduct.id.toString())
 
         // Null if the product has no corresponding fabric like (mugs, lanyard, etc..)
-        if (firstProduct.fabric_type && firstProduct.fabric_type.id) {
-            data.append('fabric_type_id', firstProduct.fabric_type.id.toString())
-        }
+        // if (firstProduct.fabric_type && firstProduct.fabric_type.id) {
+        //     data.append('fabric_type_id', firstProduct.fabric_type.id.toString())
+        // }
 
-        // Conditionally append size quantities or solo quantity
-        if (shouldIncludeSizes.value) {
-            for (const [sizeId, qty] of Object.entries(formData.value.quantityPerSize)) {
-                data.append(`sizes[${sizeId}]`, qty.toString())
-            }
-        } else {
-            data.append('solo_quantity', formData.value.solo_quantity?.toString() ?? '')
-        }
+        // // Conditionally append size quantities or solo quantity
+        // if (shouldIncludeSizes.value) {
+        //     for (const [sizeId, qty] of Object.entries(formData.value.quantityPerSize)) {
+        //         data.append(`sizes[${sizeId}]`, qty.toString())
+        //     }
+        // } else {
+        //     data.append('solo_quantity', formData.value.solo_quantity?.toString() ?? '')
+        // }
 
         if (formData.value.designType === 'own-design' && formData.value.ownDesignFile) {
             data.append('own_design_file', formData.value.ownDesignFile)
@@ -306,19 +297,19 @@
         if (!formData.value.orderOption) return true
 
         // Design validation
-        if (formData.value.designType === 'own-design' && !formData.value.ownDesignFile) return true
-        if (formData.value.designType === 'business-design' && !formData.value.businessDesignURL)
-            return true
+        // if (formData.value.designType === 'own-design' && !formData.value.ownDesignFile) return true
+        // if (formData.value.designType === 'business-design' && !formData.value.businessDesignURL)
+        //     return true
 
-        // Quantity validation
-        if (shouldIncludeSizes.value) {
-            const hasQuantity = Object.values(formData.value.quantityPerSize).some(
-                (qty) => Number(qty) > 0,
-            )
-            if (!hasQuantity) return true
-        } else {
-            if (!formData.value.solo_quantity || formData.value.solo_quantity <= 0) return true
-        }
+        // // Quantity validation
+        // if (shouldIncludeSizes.value) {
+        //     const hasQuantity = Object.values(formData.value.quantityPerSize).some(
+        //         (qty) => Number(qty) > 0,
+        //     )
+        //     if (!hasQuantity) return true
+        // } else {
+        //     if (!formData.value.solo_quantity || formData.value.solo_quantity <= 0) return true
+        // }
 
         return false
     })
@@ -329,6 +320,10 @@
         showQrCodePaymentModal.value = false
 
         const formData = prepareFormData()
+        // Peek FormData (for debugging)
+        for (const pair of formData.entries()) {
+            console.log(pair[0]+ ':', pair[1]);
+        }
         if (totalQuantity.value && totalPrice.value && paymentAttachmentFile.value) {
             formData.append('total_quantity', totalQuantity.value.toString())
             formData.append('total_price', totalPrice.value.toString())
@@ -395,6 +390,8 @@
             formData.value.color = '' // Reset if custom selected
         }
     })
+
+    
 </script>
 
 <template>
@@ -422,27 +419,53 @@
                             <div class="space-y-7">
                                 <!-- Products List Section -->
                                 <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                                    <h2 class="text-lg font-semibold text-gray-800 mb-3">Selected Products</h2>
-                                    
+                                    <h2 class="text-lg font-semibold text-gray-800 mb-3">
+                                        Selected Products
+                                    </h2>
+
                                     <div class="space-y-3">
-                                        <div 
-                                            v-for="(product, index) in productsArray" 
+                                        <div
+                                            v-for="(product, index) in productsArray"
                                             :key="product.id + '-' + index"
                                             class="bg-white rounded-md p-3 border border-gray-200"
                                         >
                                             <div class="flex justify-between items-start">
                                                 <div class="flex-1">
-                                                    <p class="font-medium text-gray-900">{{ product.name }}</p>
+                                                    <p class="font-medium text-gray-900">
+                                                        {{ product.name }}
+                                                    </p>
                                                     <p class="text-sm text-gray-600 mt-1">
-                                                        Unit Price: <strong>₱{{ product.unit_price }}</strong>
+                                                        Unit Price:
+                                                        <strong>₱{{ product.unit_price }}</strong>
                                                     </p>
-                                                    <p class="text-sm text-gray-600">
-                                                        Quantity: <strong>{{ product.desired_quantity }}</strong>
-                                                    </p>
+                                                    <div class="flex items-center gap-2">
+                                                        <div
+                                                            v-if="product.size?.name"
+                                                            class="flex items-center mt-1"
+                                                        >
+                                                            <span
+                                                                class="inline-block px-2 py-0.5 rounded bg-blue-100 text-blue-800 text-xs font-semibold border border-blue-300"
+                                                            >
+                                                                {{ product.size.name }}
+                                                            </span>
+                                                        </div>
+                                                        <p class="text-sm text-gray-600">
+                                                            Quantity:
+                                                            <strong>
+                                                                {{ product.desired_quantity }}
+                                                            </strong>
+                                                        </p>
+                                                    </div>
                                                 </div>
+
                                                 <div class="text-right">
                                                     <p class="font-semibold text-gray-900">
-                                                        ₱{{ (Number(product.unit_price) * (product.desired_quantity || 0)).toFixed(2) }}
+                                                        ₱{{
+                                                            (
+                                                                Number(product.unit_price) *
+                                                                (product.desired_quantity || 0)
+                                                            ).toFixed(2)
+                                                        }}
                                                     </p>
                                                 </div>
                                             </div>
@@ -451,15 +474,25 @@
 
                                     <!-- Summary -->
                                     <div class="mt-4 pt-3 border-t border-gray-300">
-                                        <div class="flex justify-between text-sm text-gray-700 mb-1">
+                                        <div
+                                            class="flex justify-between text-sm text-gray-700 mb-1"
+                                        >
                                             <span>Total Items:</span>
-                                            <span class="font-medium">{{ productsArray.length }}</span>
+                                            <span class="font-medium">
+                                                {{ productsArray.length }}
+                                            </span>
                                         </div>
-                                        <div class="flex justify-between text-sm text-gray-700 mb-1">
+                                        <div
+                                            class="flex justify-between text-sm text-gray-700 mb-1"
+                                        >
                                             <span>Total Quantity:</span>
-                                            <span class="font-medium">{{ totalQuantityAllProducts }}</span>
+                                            <span class="font-medium">
+                                                {{ totalQuantityAllProducts }}
+                                            </span>
                                         </div>
-                                        <div class="flex justify-between text-base font-semibold text-gray-900">
+                                        <div
+                                            class="flex justify-between text-base font-semibold text-gray-900"
+                                        >
                                             <span>Total Amount:</span>
                                             <span>₱{{ totalPriceAllProducts.toFixed(2) }}</span>
                                         </div>
@@ -503,9 +536,7 @@
 
                                 <!-- Color Input -->
                                 <div class="mb-8">
-                                    <label class="block text-sm text-gray-600 mb-1">
-                                        Color:
-                                    </label>
+                                    <label class="block text-sm text-gray-600 mb-1">Color:</label>
                                     <div class="flex gap-2">
                                         <!-- Select Dropdown -->
                                         <select
@@ -791,13 +822,7 @@
                                 <!-- Place Order Button -->
                                 <button
                                     :disabled="isFormInvalid"
-                                    @click="
-                                        openQrCodePaymentModal(
-                                            productsArray[0]?.name || 'Multiple Products',
-                                            totalQuantity,
-                                            totalPrice,
-                                        )
-                                    "
+                                    @click="openQrCodePaymentModal(productsArray)"
                                     :class="[
                                         'w-full font-medium py-3 px-4 rounded-md transition-colors duration-200',
                                         isFormInvalid
@@ -827,7 +852,7 @@
 
     <QrCodePaymentModal
         v-if="showQrCodePaymentModal"
-        :paymentData="qrCodePaymentData"
+        :selectedProductsData="selectedProductsData"
         @close="showQrCodePaymentModal = false"
         @place_order="handlePlaceOrder"
         @fileSelected="handlePaymentAttachmentFile"
