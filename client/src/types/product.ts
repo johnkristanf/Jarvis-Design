@@ -13,3 +13,9 @@ export type Products = {
   }
 
 }
+
+
+export type ProductIndexPayment = {
+  index: number
+  file: File | null
+}

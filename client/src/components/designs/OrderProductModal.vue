@@ -34,6 +34,7 @@
     import { useFetchAuthenticatedUser } from '@/composables/useFetchAuthenticatedUser'
     // @ts-ignore
     import BusinessDesignModal from './BusinessDesignModal.vue'
+    import type { ProductIndexPayment } from '@/types/product'
 
     const props = defineProps({
         categoryName: String,
@@ -43,7 +44,6 @@
         },
     })
 
-   
     const { sizes, loadingSizes } = useProductAttributes()
     const queryClient = useQueryClient()
     const showAIDesignModal = ref<boolean>(false)
@@ -54,7 +54,7 @@
     const { authStore } = useFetchAuthenticatedUser()
 
     // Convert product to array if it isn't already
-    const productsArray = computed(() => {
+    const checkedOutProductsArray = computed(() => {
         return Array.isArray(props.product) ? props.product : [props.product]
     })
 
@@ -108,15 +108,15 @@
     const businessProductDesign = ref<BusinessProductDesign[]>([])
     const isLoadingBusinessDesigns = ref<boolean>(false)
     const showQrCodePaymentModal = ref<boolean>(false)
-    const paymentAttachmentFile = ref<File | null>(null)
+    const paymentAttachmentFile = ref<ProductIndexPayment[] | null>(null)
     const toast = useToast()
 
     const selectedBusinessDesignId = ref<number | null>(null)
     const selectedProductsData = ref<ProductDetails[] | null>(null)
 
     // HANDLE PAYMENT ATTACHMENT FILE
-    const handlePaymentAttachmentFile = (file: File | null) => {
-        paymentAttachmentFile.value = file
+    const handlePaymentAttachmentFile = (product_payment_file: ProductIndexPayment[]) => {
+        paymentAttachmentFile.value = product_payment_file
     }
 
     // FILTER SELECTED PRODUCT CATEGORY IF NEEDED THE SIZES INPUT (IF MUGS SELECTED THEREFORE NO SIZES IS AVAILABLE)
@@ -147,14 +147,14 @@
 
     // Calculate total quantity across all products
     const totalQuantityAllProducts = computed(() => {
-        return productsArray.value.reduce((sum, product) => {
+        return checkedOutProductsArray.value.reduce((sum, product) => {
             return sum + (product.desired_quantity || 0)
         }, 0)
     })
 
     // Calculate total price across all products
     const totalPriceAllProducts = computed(() => {
-        return productsArray.value.reduce((sum, product) => {
+        return checkedOutProductsArray.value.reduce((sum, product) => {
             const quantity = product.desired_quantity || 0
             const price = Number(product.unit_price || 0)
             return sum + quantity * price
@@ -173,12 +173,35 @@
 
         // paymentAttachmentFile must return an array of product_id and payment file
         // Loop products array and map its respectiive payment, based on the product_id
-        const firstProduct = productsArray.value[0]
+        // Map through the checked out products, appending each product's details and its corresponding payment file
+        console.log('paymentAttachmentFile: ', paymentAttachmentFile.value)
+        console.log('checkedOutProductsArray : ', checkedOutProductsArray.value)
 
-        console.log("productsArray sa prepare: ", productsArray);
-        
-        data.append('product_unit_price', firstProduct.unit_price)
-        data.append('product_id', firstProduct.id.toString())
+        checkedOutProductsArray.value.forEach((product, idx) => {
+            data.append(`products[${idx}][product_unit_price]`, product.unit_price)
+            data.append(`products[${idx}][product_id]`, product.id.toString())
+            if (
+                Array.isArray(paymentAttachmentFile.value) &&
+                paymentAttachmentFile.value[idx] &&
+                paymentAttachmentFile.value[idx].file
+            ) {
+                data.append(
+                    `products[${idx}][payment_attachment]`,
+                    paymentAttachmentFile.value[idx].file,
+                )
+            }
+
+            data.append('total_quantity', product.desired_quantity?.toString())
+            
+            const total_price = (
+                Number(product.desired_quantity) * Number(product.unit_price)
+            ).toString()
+
+            data.append('total_price', total_price.toString())
+
+            // data.append('total_quantity', totalQuantityAllProducts.value.toString())
+            // data.append('total_price', totalPriceAllProducts.value.toString())
+        })
 
         // Null if the product has no corresponding fabric like (mugs, lanyard, etc..)
         // if (firstProduct.fabric_type && firstProduct.fabric_type.id) {
@@ -209,7 +232,9 @@
 
     // TOTAL PRICE FOR MULTI SIZES
     const totalPriceForMultiSizes = computed(
-        () => totalQuantityForMultiSizes.value * Number(productsArray.value[0]?.unit_price || 0),
+        () =>
+            totalQuantityForMultiSizes.value *
+            Number(checkedOutProductsArray.value[0]?.unit_price || 0),
     )
 
     // FINAL TOTAL QUANTITY THAT CATCHES CATEGORY THAT HAS
@@ -224,7 +249,8 @@
     const totalPrice = computed(() => {
         return shouldIncludeSizes.value
             ? totalPriceForMultiSizes.value
-            : (formData.value.solo_quantity ?? 0) * Number(productsArray.value[0]?.unit_price ?? 0)
+            : (formData.value.solo_quantity ?? 0) *
+                  Number(checkedOutProductsArray.value[0]?.unit_price ?? 0)
     })
 
     // PLACE ORDER MUTATION
@@ -322,12 +348,7 @@
         const formData = prepareFormData()
         // Peek FormData (for debugging)
         for (const pair of formData.entries()) {
-            console.log(pair[0]+ ':', pair[1]);
-        }
-        if (totalQuantity.value && totalPrice.value && paymentAttachmentFile.value) {
-            formData.append('total_quantity', totalQuantity.value.toString())
-            formData.append('total_price', totalPrice.value.toString())
-            formData.append('payment_attachment', paymentAttachmentFile.value)
+            console.log(pair[0] + ':', pair[1])
         }
 
         mutation.mutate(formData)
@@ -338,7 +359,7 @@
         () => formData.value.designType,
         (newVal) => {
             if (newVal === 'business-design') {
-                fetchBusinessDesigns(productsArray.value[0]?.id)
+                fetchBusinessDesigns(checkedOutProductsArray.value[0]?.id)
             }
         },
     )
@@ -390,8 +411,6 @@
             formData.value.color = '' // Reset if custom selected
         }
     })
-
-    
 </script>
 
 <template>
@@ -425,7 +444,7 @@
 
                                     <div class="space-y-3">
                                         <div
-                                            v-for="(product, index) in productsArray"
+                                            v-for="(product, index) in checkedOutProductsArray"
                                             :key="product.id + '-' + index"
                                             class="bg-white rounded-md p-3 border border-gray-200"
                                         >
@@ -479,7 +498,7 @@
                                         >
                                             <span>Total Items:</span>
                                             <span class="font-medium">
-                                                {{ productsArray.length }}
+                                                {{ checkedOutProductsArray.length }}
                                             </span>
                                         </div>
                                         <div
@@ -822,7 +841,7 @@
                                 <!-- Place Order Button -->
                                 <button
                                     :disabled="isFormInvalid"
-                                    @click="openQrCodePaymentModal(productsArray)"
+                                    @click="openQrCodePaymentModal(checkedOutProductsArray)"
                                     :class="[
                                         'w-full font-medium py-3 px-4 rounded-md transition-colors duration-200',
                                         isFormInvalid

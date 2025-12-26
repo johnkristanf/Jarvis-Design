@@ -9,6 +9,7 @@
     } from '@headlessui/vue'
     import { ref, reactive, onMounted, computed, nextTick } from 'vue'
     import { useToast } from 'primevue/usetoast'
+import type { ProductIndexPayment } from '@/types/product';
 
     const props = defineProps<{
         selectedProductsData: ProductDetails[] | null
@@ -18,47 +19,43 @@
         console.log('QrCodePaymentModal selectedProductsData:', props.selectedProductsData)
     })
 
-    // -- Emits updated to match flexible array of { productId, file } --
+    // -- Emits updated to match flexible array of { index, file } --
     const emit = defineEmits(['close', 'place_order', 'fileSelected'])
     const handleCloseModal = () => emit('close')
     const handleTriggerPlaceOrder = () => emit('place_order')
     const toast = useToast()
 
-    // One upload area per product (use a map for files, previews, and refs)
+    /**
+     * In order to allow for duplicate "products" in the order (e.g. same product, same size, but ordered separately by user),
+     * we use the PRODUCT'S INDEX in the selectedProductsData array as the mapping key for payment proofs.
+     */
     const paymentFiles = reactive<Record<number, File | null>>({})
     const previewUrls = reactive<Record<number, string | undefined>>({})
     const fileInputRefs = reactive<Record<number, HTMLInputElement | null>>({})
 
-    // Maintain a flexible array for all file selections
-    const selectedPaymentProofs = ref<{ productId: number, file: File | null }[]>([])
+    // Maintain a flexible array for all file selections (index mapped)
+    const selectedPaymentProofs = ref<ProductIndexPayment[]>([])
 
     // Helper to return the array for emit and keep it normalized
     const updateSelectedPaymentProofs = () => {
-        selectedPaymentProofs.value = (props.selectedProductsData || []).map(product => ({
-            productId: product.id,
-            file: paymentFiles[product.id] || null,
+        if (!props.selectedProductsData) return
+        selectedPaymentProofs.value = props.selectedProductsData.map((product, idx) => ({
+            index: idx,
+            file: paymentFiles[idx] || null,
         }))
-
-        console.log("selectedPaymentProofs: ", selectedPaymentProofs);
-        
         emit('fileSelected', selectedPaymentProofs.value)
     }
 
-    const triggerFileSelect = (id: number) => {
-        console.log("ID SA FILE SELECT PRODUCT: ", id);
-        
+    const triggerFileSelect = (idx: number) => {
         nextTick(() => {
-            fileInputRefs[id]?.click()
+            fileInputRefs[idx]?.click()
         })
     }
 
-    const handleFileChange = (e: Event, id: number) => {
-        console.log("ID SA PRODUCT: ", id);
-        
+    const handleFileChange = (e: Event, idx: number) => {
         const target = e.target as HTMLInputElement
         if (target && target.files && target.files[0]) {
             const selectedFile = target.files[0]
-
             if (!selectedFile.type.startsWith('image/')) {
                 toast.add({
                     severity: 'warn',
@@ -68,29 +65,26 @@
                 target.value = ''
                 return
             }
-
-            paymentFiles[id] = selectedFile
-            previewUrls[id] = URL.createObjectURL(selectedFile) || undefined
-
+            paymentFiles[idx] = selectedFile
+            previewUrls[idx] = URL.createObjectURL(selectedFile) || undefined
             updateSelectedPaymentProofs()
         }
     }
 
-    const clearFile = (id: number) => {
-        paymentFiles[id] = null
-        previewUrls[id] = undefined
-        const inputRef = fileInputRefs[id]
+    const clearFile = (idx: number) => {
+        paymentFiles[idx] = null
+        previewUrls[idx] = undefined
+        const inputRef = fileInputRefs[idx]
         if (inputRef) inputRef.value = ''
         updateSelectedPaymentProofs()
     }
 
-    // Can only place order if ALL products have an image attached
+    // Can only place order if ALL products (by index) have an image attached
     const isAllPaymentsAttached = computed(() => {
         if (!props.selectedProductsData) return false
-        return props.selectedProductsData.every(
-            prod => paymentFiles[prod.id] && previewUrls[prod.id]
-        )
+        return props.selectedProductsData.every((_, idx) => paymentFiles[idx] && previewUrls[idx])
     })
+
     const getProductTotal = (p: ProductDetails) => {
         const qty = p.desired_quantity ?? 1
         const unitPrice = Number(p.unit_price || 0)
@@ -100,10 +94,10 @@
     // Prepare maps if not set
     onMounted(() => {
         if (props.selectedProductsData) {
-            props.selectedProductsData.forEach(product => {
-                if (!(product.id in paymentFiles)) paymentFiles[product.id] = null
-                if (!(product.id in previewUrls)) previewUrls[product.id] = undefined
-                if (!(product.id in fileInputRefs)) fileInputRefs[product.id] = null
+            props.selectedProductsData.forEach((_product, idx) => {
+                if (!(idx in paymentFiles)) paymentFiles[idx] = null
+                if (!(idx in previewUrls)) previewUrls[idx] = undefined
+                if (!(idx in fileInputRefs)) fileInputRefs[idx] = null
             })
             updateSelectedPaymentProofs()
         }
@@ -164,8 +158,11 @@
                                             <span class="font-bold">Order includes the following products:</span>
                                         </p>
                                         <ul class="ml-2 text-xs text-gray-500 list-disc">
-                                            <li v-for="product in props.selectedProductsData" :key="product.id">
-                                                {{ product.name }} - Qty: {{ product.desired_quantity ?? 1 }}, ₱{{ getProductTotal(product) }}
+                                            <li
+                                                v-for="(product, idx) in props.selectedProductsData"
+                                                :key="`prod-${idx}`"
+                                            >
+                                                {{ product.name }}<span v-if="product.size?.name"> ({{ product.size?.name }})</span> - Qty: {{ product.desired_quantity ?? 1 }}, ₱{{ getProductTotal(product) }}
                                             </li>
                                         </ul>
                                     </div>
@@ -186,14 +183,13 @@
                                 class="flex flex-col gap-10"
                             >
                                 <div
-                                    v-for="product in props.selectedProductsData"
-                                    :key="product.id"
+                                    v-for="(product, idx) in props.selectedProductsData"
+                                    :key="`upload-section-${idx}`"
                                     class="border border-gray-200 rounded-xl shadow-sm p-6 flex flex-col gap-5 bg-gray-50"
                                 >
                                     <!-- Product Info and QR Codes (VERTICAL alignment, no flex-row) -->
                                     <div class="mb-2">
-                                        <h2 class="font-bold">{{ product.id }}</h2>
-                                        <h2 class="font-bold">{{ product.name }}</h2>
+                                        <h2 class="font-bold">{{ product.name }}<span v-if="product.size?.name"> ({{ product.size?.name }})</span></h2>
                                         <div class="text-sm text-gray-600">
                                             Quantity: <b>{{ product.desired_quantity ?? 1 }}</b>
                                             <br>
@@ -245,14 +241,14 @@
                                         <div
                                             class="w-full border-2 border-dashed border-gray-300 rounded-md p-4 flex flex-col items-center justify-center relative h-[170px] bg-white"
                                         >
-                                            <div v-if="previewUrls[product.id]" class="relative w-full h-full">
+                                            <div v-if="previewUrls[idx]" class="relative w-full h-full">
                                                 <img
-                                                    :src="previewUrls[product.id]!"
+                                                    :src="previewUrls[idx]!"
                                                     alt="Payment Preview"
                                                     class="w-full h-full object-cover rounded-md"
                                                 />
                                                 <button
-                                                    @click="clearFile(product.id)"
+                                                    @click="clearFile(idx)"
                                                     class="absolute top-[-12px] right-0 text-red-800 text-xl rounded-md p-1 hover:cursor-pointer"
                                                 >
                                                     ✕
@@ -280,15 +276,15 @@
                                                     Screenshot of Payment Confirmation
                                                 </p>
                                                 <input
-                                                    :ref="el => { fileInputRefs[product.id] = el }"
+                                                    :ref="el => { fileInputRefs[idx] = el }"
                                                     type="file"
                                                     accept="image/*"
                                                     class="hidden"
-                                                    @change="e => handleFileChange(e, product.id)"
+                                                    @change="e => handleFileChange(e, idx)"
                                                 />
                                                 <button
                                                     type="button"
-                                                    @click="() => triggerFileSelect(product.id)"
+                                                    @click="() => triggerFileSelect(idx)"
                                                     class="mt-3 px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none"
                                                 >
                                                     Select File

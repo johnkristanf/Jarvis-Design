@@ -69,6 +69,9 @@
                 `/api/get/pre_made/designs/${sortTag}/${categoryIds}`,
             )
 
+            console.log("DESIGNS NI: ", respData);
+            
+
             return respData
         },
     })
