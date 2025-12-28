@@ -28,6 +28,7 @@
     // vee-validate
     import { useForm, useField } from 'vee-validate'
     import * as yup from 'yup'
+    import { isValidCssColor } from '@/helper/order'
 
     const props = defineProps({
         product: {
@@ -40,6 +41,8 @@
     const handleClose = () => emit('close')
 
     const { sizes, loadingSizes } = useProductAttributes()
+    const selectedOption = ref('')
+
     const queryClient = useQueryClient()
     const toast = useToast()
 
@@ -63,6 +66,7 @@
     // Field bindings
     const { value: fabricTypeId, errorMessage: fabricTypeError } = useField<number>('fabricTypeId')
     const { value: sizeId, errorMessage: sizeIdError } = useField<number>('sizeId')
+    const { value: color, errorMessage: colorError } = useField<string>('color')
 
     // Optional: Pre-select first item as available
     watch(
@@ -144,6 +148,7 @@
         formData.append('product_id', props.product.id.toString())
         formData.append('fabric_type_id', values.fabricTypeId.toString())
         formData.append('size_id', values.sizeId.toString())
+        formData.append('color', values.color)
 
         // Peek FormData key-values for debugging
         for (const pair of formData.entries()) {
@@ -152,8 +157,44 @@
         mutation.mutate(formData)
     })
 
-    onMounted(() => {
-        // console.log('DesignOptionModal props:', props)
+    const colorOptions = [
+        'Red',
+        'Blue',
+        'Green',
+        'Yellow',
+        'Black',
+        'Sunset Blaze',
+        'Tropical Punch',
+        'Ocean Wave',
+        'Aqua Breeze',
+    ]
+
+    const colorPalette: Record<string, string> = {
+        Red: '#FF0000',
+        Blue: '#0000FF',
+        Green: '#008000',
+        Yellow: '#FFFF00',
+        Black: '#000000',
+        'Sunset Blaze': '#FF6B3D',
+        'Tropical Punch': '#FF3B7F',
+        'Ocean Wave': '#2E8BC0',
+        'Aqua Breeze': '#7FDBFF',
+    }
+
+    const swatchColor = computed<string | null>(() => {
+        // If custom, use the free-text input; otherwise the selected option label
+        const candidate = selectedOption.value === 'custom' ? color.value : selectedOption.value
+
+        if (!candidate) return null
+        if (colorPalette[candidate]) return colorPalette[candidate]
+        if (isValidCssColor(candidate)) return candidate
+        return null
+    })
+
+    watch(selectedOption, (newVal) => {
+        if (newVal && newVal !== 'custom') {
+            color.value = newVal // auto-set color to selected option
+        }
     })
 </script>
 
@@ -194,12 +235,15 @@
                                     </div>
                                     <div
                                         v-if="props.product.designs && props.product.designs.length"
+                                        class="w-full flex"
                                     >
-                                        <img
-                                            :src="props.product.designs[0].temp_url"
-                                            alt="Product Design"
-                                            class="object-cover rounded shadow border border-gray-200 mb-4 max-w-full h-40"
-                                        />
+                                        <div class="w-full aspect-video relative mb-4">
+                                            <img
+                                                :src="props.product.designs[0].temp_url"
+                                                alt="Product Design"
+                                                class="w-full h-full object-contain rounded shadow border border-gray-200 absolute inset-0 bg-white"
+                                            />
+                                        </div>
                                     </div>
 
                                     <form @submit.prevent="onSubmit" class="space-y-4">
@@ -230,26 +274,88 @@
                                             </p>
                                         </div> -->
 
+                                        <!-- Color Option -->
+                                        <div class="mb-8">
+                                            <label class="block text-sm text-gray-600 mb-1">
+                                                Color:
+                                            </label>
+                                            <div class="flex gap-2">
+                                                <!-- Select Dropdown -->
+                                                <select
+                                                    v-model="selectedOption"
+                                                    class="w-1/3 px-3 py-2 border font-medium border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
+                                                >
+                                                    <option value="">-- Select --</option>
+                                                    <option
+                                                        v-for="color in colorOptions"
+                                                        :key="color"
+                                                        :value="color"
+                                                    >
+                                                        {{ color }}
+                                                    </option>
+                                                    <option value="custom">Custom</option>
+                                                </select>
+
+                                                <!-- Swatch -->
+                                                <div
+                                                    class="w-6 h-6 rounded border border-gray-300 shrink-0"
+                                                    :style="{
+                                                        backgroundColor:
+                                                            swatchColor || 'transparent',
+                                                    }"
+                                                    :title="
+                                                        swatchColor
+                                                            ? `Preview: ${swatchColor}`
+                                                            : 'No color selected/invalid color'
+                                                    "
+                                                ></div>
+
+                                                <!-- Free Text Input -->
+                                                <input
+                                                    v-if="selectedOption === 'custom'"
+                                                    v-model="color"
+                                                    type="text"
+                                                    placeholder="Enter custom color"
+                                                    class="w-full px-3 py-2 border font-medium border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
+                                                />
+
+                                                <!-- Auto-set if dropdown selected -->
+                                                <input
+                                                    v-else
+                                                    :value="color"
+                                                    disabled
+                                                    class="w-full px-3 py-2 border font-medium border-gray-300 rounded-md bg-gray-100 cursor-not-allowed"
+                                                />
+                                            </div>
+                                        </div>
+
                                         <!-- Size Selection -->
                                         <div class="mb-5">
                                             <label class="block text-sm text-gray-600 mb-1">
                                                 Size:
                                             </label>
                                             <div class="flex items-center gap-2 flex-wrap">
-                                                <button
-                                                    v-for="size in sizes"
-                                                    :key="size.id"
-                                                    class="inline-flex items-center px-2 py-0.5 rounded-md text-sm font-semibold border transition-colors"
-                                                    :class="
-                                                        sizeId === size.id
-                                                            ? 'bg-blue-600 text-white border-blue-600'
-                                                            : 'bg-gray-100 text-gray-700 border-gray-300 hover:opacity-75'
-                                                    "
-                                                    type="button"
-                                                    @click="sizeId = size.id"
-                                                >
-                                                    {{ size.name }}
-                                                </button>
+                                                <template v-if="!loadingSizes">
+                                                    <button
+                                                        v-for="size in sizes"
+                                                        :key="size.id"
+                                                        class="inline-flex items-center px-2 py-0.5 rounded-md text-sm font-semibold border transition-colors"
+                                                        :class="
+                                                            sizeId === size.id
+                                                                ? 'bg-blue-600 text-white border-blue-600'
+                                                                : 'bg-gray-100 text-gray-700 border-gray-300 hover:opacity-75'
+                                                        "
+                                                        type="button"
+                                                        @click="sizeId = size.id"
+                                                    >
+                                                        {{ size.name }}
+                                                    </button>
+                                                </template>
+                                                <template v-else>
+                                                    <span class="text-gray-500 text-sm italic">
+                                                        Loading sizes...
+                                                    </span>
+                                                </template>
                                             </div>
                                             <p class="text-sm text-red-500 mt-1">
                                                 {{ sizeIdError }}

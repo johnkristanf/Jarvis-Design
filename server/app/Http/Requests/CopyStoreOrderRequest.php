@@ -22,23 +22,22 @@ class StoreOrderRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'color' => 'required|string',
+           'color' => 'required|string',
             'phone_number' => 'required|string',
+            'product_unit_price' => 'required|numeric',
+            'product_id' => 'required|numeric',
             'address' => 'required|string',
             'design_type' => 'required|in:own-design,business-design,ai-generation',
             'order_option' => 'required|string',
-
-            'products' => 'required|array|min:1',
-            'products.*.product_id' => 'required|numeric',
-            'products.*.product_unit_price' => 'required|numeric',
-            'products.*.fabric_type_id' => 'required|numeric',
-            'products.*.payment_attachment' => 'required|file',
-            'products.*.total_quantity' => 'required|numeric',
-            'products.*.total_price' => 'required|numeric',
-            'products.*.sizes' => 'required|string',
-
+            'total_quantity' => 'required|numeric|min:1',
+            'total_price' => 'required|numeric|min:1',
+            'fabric_type_id' => 'nullable|numeric',
+            'solo_quantity' => 'nullable|numeric',
+            'sizes' => 'nullable|array',
+            'sizes.*' => 'nullable|numeric|min:0',
             'own_design_file' => 'nullable|file',
             'business_design_url' => 'nullable|string',
+            'payment_attachment' => 'required|file',
         ];
     }
 }

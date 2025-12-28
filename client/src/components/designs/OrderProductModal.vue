@@ -178,8 +178,10 @@
         console.log('checkedOutProductsArray : ', checkedOutProductsArray.value)
 
         checkedOutProductsArray.value.forEach((product, idx) => {
-            data.append(`products[${idx}][product_unit_price]`, product.unit_price)
             data.append(`products[${idx}][product_id]`, product.id.toString())
+            data.append(`products[${idx}][product_unit_price]`, product.unit_price.toString())
+            data.append(`products[${idx}][fabric_type_id]`, product.fabric_type_id.toString())
+
             if (
                 Array.isArray(paymentAttachmentFile.value) &&
                 paymentAttachmentFile.value[idx] &&
@@ -191,13 +193,17 @@
                 )
             }
 
-            data.append('total_quantity', product.desired_quantity?.toString())
-            
+
+            if (product.desired_quantity) {
+                data.append(`products[${idx}][total_quantity]`, product.desired_quantity.toString())
+            }
+
             const total_price = (
                 Number(product.desired_quantity) * Number(product.unit_price)
             ).toString()
 
-            data.append('total_price', total_price.toString())
+            data.append(`products[${idx}][total_price]`, total_price.toString())
+            data.append(`products[${idx}][sizes]`, JSON.stringify(product.size))
 
             // data.append('total_quantity', totalQuantityAllProducts.value.toString())
             // data.append('total_price', totalPriceAllProducts.value.toString())
