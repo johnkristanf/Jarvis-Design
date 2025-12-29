@@ -22,7 +22,6 @@ class StoreOrderRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'color' => 'required|string',
             'phone_number' => 'required|string',
             'address' => 'required|string',
             'design_type' => 'required|in:own-design,business-design,ai-generation',
@@ -31,6 +30,7 @@ class StoreOrderRequest extends FormRequest
             'products' => 'required|array|min:1',
             'products.*.product_id' => 'required|numeric',
             'products.*.product_unit_price' => 'required|numeric',
+            'products.*.product_color' => 'required|string',
             'products.*.fabric_type_id' => 'required|numeric',
             'products.*.payment_attachment' => 'required|file',
             'products.*.total_quantity' => 'required|numeric',

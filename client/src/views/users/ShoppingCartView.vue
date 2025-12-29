@@ -15,7 +15,8 @@
         queryKey: ['cart_items'],
         queryFn: async () => {
             const respData = await apiService.get<CartItem[]>(`/api/get/all/cart`)
-            // Don't mutate TS inferred types, rely on runtime output for price
+            console.log('respData:', respData)
+
             return respData
         },
     })
@@ -121,16 +122,26 @@
             selectedCartIds.value.includes(item.id),
         )
 
-        console.log("selectedItems: ", selectedItems);
-        
+        console.log('selectedItems: ', selectedItems)
 
         if (selectedItems && selectedItems.length > 0) {
             // Build an array containing each selected product with its quantity
-            const productsWithQuantities: ProductDetails[] = selectedItems.map((item) => ({
-                ...item.product,
-                size: item.size,
-                desired_quantity: cartQuantities[item.id] ?? item.quantity ?? 1,
-            }))
+            const productsWithQuantities: ProductDetails[] = selectedItems.map((item) => {
+                const baseProduct = {
+                    ...item.product,
+                    color: item.color,
+                    size: item.size,
+                    desired_quantity: cartQuantities[item.id] ?? item.quantity ?? 1,
+                }
+                // Conditionally add own_design_url and own_design_temp_url if present
+                if (item.own_design_url) {
+                    baseProduct.own_design_url = item.own_design_url
+                }
+                if (item.own_design_temp_url) {
+                    baseProduct.own_design_temp_url = item.own_design_temp_url
+                }
+                return baseProduct
+            })
 
             console.log('productsWithQuantities: ', productsWithQuantities)
 
@@ -185,13 +196,26 @@
                 />
 
                 <!-- Image -->
+
                 <img
+                    v-if="item.own_design_url"
+                    :src="
+                        'own_design_temp_url' in item
+                            ? (item as { own_design_temp_url?: string }).own_design_temp_url || ''
+                            : ''
+                    "
+                    alt="Own Design"
+                    class="w-24 h-24 rounded-xl object-cover bg-white/10"
+                />
+                <img
+                    v-else
                     :src="
                         item.product.designs &&
                         item.product.designs[0] &&
                         typeof item.product.designs[0] === 'object' &&
-                        'temp_url' in item.product.designs[0]
-                            ? (item.product.designs[0] as { temp_url?: string }).temp_url || ''
+                        'business_design_temp_url' in item.product.designs[0]
+                            ? (item.product.designs[0] as { business_design_temp_url?: string })
+                                  .business_design_temp_url || ''
                             : ''
                     "
                     :alt="item.product.name"
@@ -209,7 +233,7 @@
                             {{
                                 (() => {
                                     const price = item.product.unit_price
-                                    if (typeof price === 'number') return price.toLocaleString()
+                                    if (typeof price === 'number') return price
                                     if (typeof price === 'string') {
                                         const parsed = parseFloat(price)
                                         return !Number.isNaN(parsed) ? parsed.toLocaleString() : '-'

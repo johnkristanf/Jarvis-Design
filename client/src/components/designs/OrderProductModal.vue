@@ -82,29 +82,8 @@
         { id: 2, name: OrderOptions.PICK_UP, tag: 'PICK-UP' },
     ])
 
-    // UPLOAD HANDLER FOR "OWN DESIGN" ORDER CHOICE
-    // @ts-expect-error event
-    const handleFileUpload = (event) => {
-        const file = event.target.files[0]
-        formData.value.ownDesignFile = file
-    }
 
-    const ownDesignPreviewUrl = computed(() => {
-        if (formData.value.ownDesignFile) {
-            return URL.createObjectURL(formData.value.ownDesignFile)
-        }
-        return null
-    })
-
-    const fileInputRef = ref<HTMLInputElement | null>(null)
-
-    const clearOwnDesignFile = () => {
-        formData.value.ownDesignFile = null
-        if (fileInputRef.value) {
-            fileInputRef.value.value = ''
-        }
-    }
-
+   
     const businessProductDesign = ref<BusinessProductDesign[]>([])
     const isLoadingBusinessDesigns = ref<boolean>(false)
     const showQrCodePaymentModal = ref<boolean>(false)
@@ -123,12 +102,6 @@
     const shouldIncludeSizes = computed(() =>
         sublimationProductCategories.includes(props.categoryName ?? ''),
     )
-
-    const openAIDesignModal = () => {
-        formData.value.designType = 'ai-generation'
-        // emit('openAIDesigns')
-        showAIDesignModal.value = true
-    }
 
     const openQrCodePaymentModal = (selectedProducts: ProductDetails[]) => {
         selectedProductsData.value = selectedProducts
@@ -165,21 +138,20 @@
     const prepareFormData = () => {
         const data = new FormData()
 
-        data.append('color', formData.value.color)
         data.append('phone_number', formData.value.phone_number)
         data.append('address', formData.value.address)
         data.append('design_type', formData.value.designType)
         data.append('order_option', formData.value.orderOption?.name as string)
 
-        // paymentAttachmentFile must return an array of product_id and payment file
-        // Loop products array and map its respectiive payment, based on the product_id
-        // Map through the checked out products, appending each product's details and its corresponding payment file
         console.log('paymentAttachmentFile: ', paymentAttachmentFile.value)
         console.log('checkedOutProductsArray : ', checkedOutProductsArray.value)
 
+
+        // Map through the checked out products, appending each product's details and its corresponding payment file
         checkedOutProductsArray.value.forEach((product, idx) => {
             data.append(`products[${idx}][product_id]`, product.id.toString())
             data.append(`products[${idx}][product_unit_price]`, product.unit_price.toString())
+            data.append(`products[${idx}][product_color]`, product.color)
             data.append(`products[${idx}][fabric_type_id]`, product.fabric_type_id.toString())
 
             if (
@@ -325,7 +297,6 @@
     const isFormInvalid = computed(() => {
         if (!formData.value.phone_number) return true
         if (!formData.value.address.trim()) return true
-        if (!formData.value.color.trim()) return true
         if (!formData.value.orderOption) return true
 
         // Design validation
@@ -465,6 +436,21 @@
                                                     </p>
                                                     <div class="flex items-center gap-2">
                                                         <div
+                                                            v-if="product.color"
+                                                            class="flex items-center mt-1"
+                                                        >
+                                                            <span
+                                                                class="inline-block px-2 py-0.5 rounded text-xs font-semibold "
+                                                                :style="{
+                                                                    backgroundColor: colorPalette[product.color] || (isValidCssColor(product.color) ? product.color : '#e0e7ff'),
+                                                                    color: '#fff'
+                                                                }"
+                                                            >
+                                                                {{ product.color }}
+                                                            </span>
+                                                        </div>
+
+                                                        <div
                                                             v-if="product.size?.name"
                                                             class="flex items-center mt-1"
                                                         >
@@ -559,58 +545,6 @@
                                     />
                                 </div>
 
-                                <!-- Color Input -->
-                                <div class="mb-8">
-                                    <label class="block text-sm text-gray-600 mb-1">Color:</label>
-                                    <div class="flex gap-2">
-                                        <!-- Select Dropdown -->
-                                        <select
-                                            v-model="selectedOption"
-                                            class="w-1/3 px-3 py-2 border font-medium border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
-                                        >
-                                            <option value="">-- Select --</option>
-                                            <option
-                                                v-for="color in colorOptions"
-                                                :key="color"
-                                                :value="color"
-                                            >
-                                                {{ color }}
-                                            </option>
-                                            <option value="custom">Custom</option>
-                                        </select>
-
-                                        <!-- Swatch -->
-                                        <div
-                                            class="w-6 h-6 rounded border border-gray-300 shrink-0"
-                                            :style="{
-                                                backgroundColor: swatchColor || 'transparent',
-                                            }"
-                                            :title="
-                                                swatchColor
-                                                    ? `Preview: ${swatchColor}`
-                                                    : 'No color selected/invalid color'
-                                            "
-                                        ></div>
-
-                                        <!-- Free Text Input -->
-                                        <input
-                                            v-if="selectedOption === 'custom'"
-                                            v-model="formData.color"
-                                            type="text"
-                                            placeholder="Enter custom color"
-                                            class="w-full px-3 py-2 border font-medium border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
-                                        />
-
-                                        <!-- Auto-set if dropdown selected -->
-                                        <input
-                                            v-else
-                                            :value="formData.color"
-                                            disabled
-                                            class="w-full px-3 py-2 border font-medium border-gray-300 rounded-md bg-gray-100 cursor-not-allowed"
-                                        />
-                                    </div>
-                                </div>
-
                                 <!-- ORDER OPTION -->
                                 <div class="mb-8">
                                     <label class="block text-sm text-gray-600 mb-1">
@@ -625,202 +559,7 @@
                                     </div>
                                 </div>
 
-                                <!-- Design Selection Buttons -->
-                                <div class="mb-4">
-                                    <label class="block text-sm text-gray-600 mb-2">
-                                        Design Options:
-                                    </label>
-                                    <div class="flex gap-2 flex-wrap">
-                                        <button
-                                            @click="formData.designType = 'own-design'"
-                                            :class="[
-                                                'px-3 py-1 text-sm rounded-md border transition-colors hover:cursor-pointer hover:opacity-75',
-                                                formData.designType === 'own-design'
-                                                    ? 'bg-gray-500 text-white border-gray-500'
-                                                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50',
-                                            ]"
-                                        >
-                                            Own Design
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <!-- Design Upload/Input Area -->
-                                <div class="mb-6" v-if="formData.designType != 'ai-generation'">
-                                    <div
-                                        class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center bg-gray-50"
-                                    >
-                                        <!-- Own Design -->
-                                        <div v-if="formData.designType === 'own-design'">
-                                            <p class="text-sm text-gray-600 mb-3">
-                                                Upload your own design
-                                            </p>
-                                            <input
-                                                ref="fileInputRef"
-                                                @change="handleFileUpload"
-                                                type="file"
-                                                accept="image/*"
-                                            />
-
-                                            <!-- Image Preview -->
-                                            <div v-if="ownDesignPreviewUrl" class="mt-4">
-                                                <div class="relative inline-block">
-                                                    <img
-                                                        :src="ownDesignPreviewUrl"
-                                                        alt="Design Preview"
-                                                        class="max-w-full h-auto max-h-[200px] rounded-md border border-gray-300"
-                                                    />
-                                                    <button
-                                                        @click="clearOwnDesignFile"
-                                                        class="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full hover:cursor-pointer p-1 shadow-lg transition-colors"
-                                                        title="Remove image"
-                                                    >
-                                                        <svg
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            class="h-4 w-4"
-                                                            fill="none"
-                                                            viewBox="0 0 24 24"
-                                                            stroke="currentColor"
-                                                            stroke-width="2"
-                                                        >
-                                                            <path
-                                                                stroke-linecap="round"
-                                                                stroke-linejoin="round"
-                                                                d="M6 18L18 6M6 6l12 12"
-                                                            />
-                                                        </svg>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Business Design -->
-                                        <div v-else-if="formData.designType === 'business-design'">
-                                            <p class="text-sm text-gray-600 mb-3">
-                                                Browse business design templates
-                                            </p>
-
-                                            <div
-                                                class="max-h-[500px] max-w-[700px] overflow-y-auto pr-2"
-                                            >
-                                                <div class="grid grid-cols-2 md:grid-cols-3 gap-5">
-                                                    <div
-                                                        v-for="design in businessProductDesign"
-                                                        :key="design.id"
-                                                        :class="[
-                                                            'rounded-md overflow-hidden transition-shadow relative',
-                                                        ]"
-                                                    >
-                                                        <!-- Icon Buttons Topbar -->
-                                                        <div
-                                                            class="absolute flex right-0 top-[-5px] z-10 gap-2"
-                                                        >
-                                                            <!-- Open modal icon (eye) -->
-                                                            <BusinessDesignModal
-                                                                :temp_url="design.temp_url"
-                                                            />
-
-                                                            <!-- Select icon (check-circle) -->
-                                                            <button
-                                                                @click.stop="
-                                                                    () => {
-                                                                        if (
-                                                                            selectedBusinessDesignId ===
-                                                                            design.id
-                                                                        ) {
-                                                                            selectedBusinessDesignId =
-                                                                                null
-                                                                            formData.businessDesignURL =
-                                                                                ''
-                                                                        } else {
-                                                                            selectedBusinessDesignId =
-                                                                                design.id
-                                                                            formData.businessDesignURL =
-                                                                                design.image_url
-                                                                        }
-                                                                    }
-                                                                "
-                                                                :title="
-                                                                    selectedBusinessDesignId ===
-                                                                    design.id
-                                                                        ? 'Deselect this design'
-                                                                        : 'Select this design'
-                                                                "
-                                                                class="bg-white/90 hover:bg-gray-100 border border-gray-300 hover:cursor-pointer rounded-full p-1 shadow focus:outline-none"
-                                                            >
-                                                                <svg
-                                                                    v-if="
-                                                                        selectedBusinessDesignId ===
-                                                                        design.id
-                                                                    "
-                                                                    xmlns="http://www.w3.org/2000/svg"
-                                                                    class="h-5 w-5 text-green-600"
-                                                                    fill="none"
-                                                                    viewBox="0 0 24 24"
-                                                                    stroke="currentColor"
-                                                                    stroke-width="2"
-                                                                >
-                                                                    <path
-                                                                        stroke-linecap="round"
-                                                                        stroke-linejoin="round"
-                                                                        d="M9 12l2 2l4-4m5 2a9 9 0 11-18 0a9 9 0 0118 0z"
-                                                                    />
-                                                                </svg>
-                                                                <svg
-                                                                    v-else
-                                                                    xmlns="http://www.w3.org/2000/svg"
-                                                                    class="h-5 w-5 text-gray-400"
-                                                                    fill="none"
-                                                                    viewBox="0 0 24 24"
-                                                                    stroke="currentColor"
-                                                                    stroke-width="2"
-                                                                >
-                                                                    <circle
-                                                                        cx="12"
-                                                                        cy="12"
-                                                                        r="9"
-                                                                        stroke="currentColor"
-                                                                        stroke-width="2"
-                                                                        fill="none"
-                                                                    />
-                                                                </svg>
-                                                            </button>
-                                                        </div>
-                                                        <img
-                                                            :src="design.temp_url"
-                                                            alt="Business Design"
-                                                            class="w-full h-[120px] object-contain bg-white mb-3 hover:cursor-pointer"
-                                                            @click="
-                                                                () => {
-                                                                    if (
-                                                                        selectedBusinessDesignId ===
-                                                                        design.id
-                                                                    ) {
-                                                                        selectedBusinessDesignId =
-                                                                            null
-                                                                        formData.businessDesignURL =
-                                                                            ''
-                                                                    } else {
-                                                                        selectedBusinessDesignId =
-                                                                            design.id
-                                                                        formData.businessDesignURL =
-                                                                            design.image_url
-                                                                    }
-                                                                }
-                                                            "
-                                                        />
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div v-if="isLoadingBusinessDesigns">
-                                                <h1 class="text-center">
-                                                    Loading business designs...
-                                                </h1>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
+                                
                                 <!-- Price Display -->
                                 <!-- <div class="mb-4">
                                     <label class="block text-sm text-gray-600 mb-2">

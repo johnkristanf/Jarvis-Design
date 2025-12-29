@@ -41,7 +41,12 @@
     const handleClose = () => emit('close')
 
     const { sizes, loadingSizes } = useProductAttributes()
-    const selectedOption = ref('')
+
+    const selectedColorOption = ref('')
+
+    // File upload refs
+    const uploadedOwnDesignFile = ref<File | null>(null)
+    const fileInputRef = ref<HTMLInputElement | null>(null)
 
     const queryClient = useQueryClient()
     const toast = useToast()
@@ -88,7 +93,7 @@
         { immediate: true },
     )
 
-    // Place order mutation
+    // Add to cart mutation
     const mutation = useMutation({
         mutationFn: async (formData: FormData) => {
             const respData = await apiService.post('/api/add/cart', formData, {
@@ -108,7 +113,7 @@
             }, 1500)
         },
         onError: (err) => {
-            console.error('Place order error', err)
+            console.error('Add to cart error', err)
             // @ts-expect-error custom payload
             if (err.statusCode === 401) {
                 toast.add({
@@ -136,7 +141,7 @@
             }
             toast.add({
                 severity: 'error',
-                summary: 'Placing order error, please try again',
+                summary: 'Error occur while trying to add to cart, please try again',
                 life: 3000,
             })
         },
@@ -149,6 +154,10 @@
         formData.append('fabric_type_id', values.fabricTypeId.toString())
         formData.append('size_id', values.sizeId.toString())
         formData.append('color', values.color)
+
+        if (uploadedOwnDesignFile.value) {
+            formData.append('own_design_file', uploadedOwnDesignFile.value)
+        }
 
         // Peek FormData key-values for debugging
         for (const pair of formData.entries()) {
@@ -183,7 +192,8 @@
 
     const swatchColor = computed<string | null>(() => {
         // If custom, use the free-text input; otherwise the selected option label
-        const candidate = selectedOption.value === 'custom' ? color.value : selectedOption.value
+        const candidate =
+            selectedColorOption.value === 'custom' ? color.value : selectedColorOption.value
 
         if (!candidate) return null
         if (colorPalette[candidate]) return colorPalette[candidate]
@@ -191,7 +201,28 @@
         return null
     })
 
-    watch(selectedOption, (newVal) => {
+    // UPLOAD HANDLER FOR "OWN DESIGN" ORDER CHOICE
+    // @ts-expect-error event
+    const handleFileUpload = (event) => {
+        const file = event.target.files[0]
+        uploadedOwnDesignFile.value = file
+    }
+
+    const ownDesignPreviewUrl = computed(() => {
+        if (uploadedOwnDesignFile.value) {
+            return URL.createObjectURL(uploadedOwnDesignFile.value)
+        }
+        return null
+    })
+
+    const clearOwnDesignFile = () => {
+        uploadedOwnDesignFile.value = null
+        if (fileInputRef.value) {
+            fileInputRef.value.value = ''
+        }
+    }
+
+    watch(selectedColorOption, (newVal) => {
         if (newVal && newVal !== 'custom') {
             color.value = newVal // auto-set color to selected option
         }
@@ -282,7 +313,7 @@
                                             <div class="flex gap-2">
                                                 <!-- Select Dropdown -->
                                                 <select
-                                                    v-model="selectedOption"
+                                                    v-model="selectedColorOption"
                                                     class="w-1/3 px-3 py-2 border font-medium border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
                                                 >
                                                     <option value="">-- Select --</option>
@@ -312,7 +343,7 @@
 
                                                 <!-- Free Text Input -->
                                                 <input
-                                                    v-if="selectedOption === 'custom'"
+                                                    v-if="selectedColorOption === 'custom'"
                                                     v-model="color"
                                                     type="text"
                                                     placeholder="Enter custom color"
@@ -360,6 +391,50 @@
                                             <p class="text-sm text-red-500 mt-1">
                                                 {{ sizeIdError }}
                                             </p>
+                                        </div>
+
+                                        <!-- Upload your own design field -->
+                                        <div class="mt-5">
+                                            <p class="text-sm text-gray-600 mb-3">
+                                                Upload your own design (if preferred)
+                                            </p>
+                                            <input
+                                                ref="fileInputRef"
+                                                @change="handleFileUpload"
+                                                type="file"
+                                                accept="image/*"
+                                            />
+
+                                            <!-- Image Preview -->
+                                            <div v-if="ownDesignPreviewUrl" class="mt-4">
+                                                <div class="relative inline-block">
+                                                    <img
+                                                        :src="ownDesignPreviewUrl"
+                                                        alt="Design Preview"
+                                                        class="max-w-full h-auto max-h-[200px] rounded-md border border-gray-300"
+                                                    />
+                                                    <button
+                                                        @click="clearOwnDesignFile"
+                                                        class="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full hover:cursor-pointer p-1 shadow-lg transition-colors"
+                                                        title="Remove image"
+                                                    >
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            class="h-4 w-4"
+                                                            fill="none"
+                                                            viewBox="0 0 24 24"
+                                                            stroke="currentColor"
+                                                            stroke-width="2"
+                                                        >
+                                                            <path
+                                                                stroke-linecap="round"
+                                                                stroke-linejoin="round"
+                                                                d="M6 18L18 6M6 6l12 12"
+                                                            />
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                            </div>
                                         </div>
 
                                         <div class="flex justify-end items-center">

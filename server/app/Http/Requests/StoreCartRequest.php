@@ -22,9 +22,11 @@ class StoreCartRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'product_id' => 'required|integer|exists:products,id',
-            'fabric_type_id' => 'nullable|integer|exists:materials,id',
-            'size_id' => 'nullable|integer|exists:sizes,id',
+            'product_id' => ['required', 'integer', 'exists:products,id'],
+            'fabric_type_id' => ['nullable', 'integer', 'exists:materials,id'],
+            'size_id' => ['nullable', 'integer', 'exists:sizes,id'],
+            'color' => ['required', 'string'],
+            'own_design_file' => ['nullable', 'file'],
         ];
     }
 }

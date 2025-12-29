@@ -26,6 +26,8 @@ class AdminSeeder extends Seeder
                     'username' => 'jarvisdesigns',
                     'password' => Hash::make('admin123'),
                     'role_id' => $adminRoleID,
+                    'phone_number' => '09171234567',
+                    'address' => '123 St, Design City, PH',
                 ]
             );
 
@@ -36,6 +38,8 @@ class AdminSeeder extends Seeder
                     'username' => 'jake',
                     'password' => Hash::make('123456789'),
                     'role_id' => $userRoleID,
+                    'phone_number' => '09179876543',
+                    'address' => '456 Sample Ave, Cebu City, PH',
                 ]
             );
     }

@@ -151,13 +151,13 @@ class PaymentController extends Controller
                 
                 $order = Orders::create([
                     'order_number' => $orderNumber,
-                    'color' => $validated['color'],
                     'phone_number' => $validated['phone_number'],
                     'address' => $validated['address'],
                     'design_type' => $validated['design_type'],
                     'order_option' => $validated['order_option'],
     
                     // product-specific
+                    'color' => $product['product_color'],
                     'product_id' => $product['product_id'],
                     'product_unit_price' => $product['product_unit_price'],
                     'total_quantity' => $product['total_quantity'],

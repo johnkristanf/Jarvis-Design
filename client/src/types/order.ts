@@ -183,6 +183,7 @@ export interface Design {
 export interface ProductDetails {
     id: number
     desired_quantity?: number
+    color: string
     name: string
     category_id: number
     unit_price: string
@@ -193,6 +194,9 @@ export interface ProductDetails {
     deleted_at: string | null
     designs: Design[]
     size: Size
+
+    own_design_url?: string
+    own_design_temp_url?: string
 }
 
 export interface UserBasic {
@@ -210,6 +214,7 @@ export interface UserBasic {
 
 export interface CartItem {
     id: number
+    color: string
     created_at: string
     updated_at: string
     product_id: number
@@ -221,4 +226,6 @@ export interface CartItem {
     quantity: number
     user_id: number
     user: UserBasic
+    own_design_url?: string
+    own_design_temp_url?: string
 }
