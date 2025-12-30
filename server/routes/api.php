@@ -118,6 +118,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // PROTECTED CART ROUTES
     Route::get('/get/all/cart', [CartController::class, 'index']);
+    Route::get('/get/cart/count', [CartController::class, 'count']);
+
     Route::post('/add/cart', [CartController::class, 'store']);
-    Route::post('/cart/count', [CartController::class, 'count']);
 });

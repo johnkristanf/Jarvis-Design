@@ -103,6 +103,10 @@ export type Notifications = {
     created_at: string
 }
 
+export type CartCount = {
+    count: number
+}
+
 export type AdminNotifications = {
     id: number
     type: string
@@ -182,7 +186,6 @@ export interface Design {
 
 export interface ProductDetails {
     id: number
-    desired_quantity?: number
     color: string
     name: string
     category_id: number
@@ -195,6 +198,7 @@ export interface ProductDetails {
     designs: Design[]
     size: Size
 
+    desired_quantity?: number
     own_design_url?: string
     own_design_temp_url?: string
 }
@@ -232,5 +236,5 @@ export interface CartItem {
 
 export enum OrderAction {
     ADD_TO_CART = 'add_to_cart',
-    CHECK_OUT = 'check_out',
+    BUY_NOW = 'buy_now',
 }

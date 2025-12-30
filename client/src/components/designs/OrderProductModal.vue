@@ -35,9 +35,9 @@
     // @ts-ignore
     import BusinessDesignModal from './BusinessDesignModal.vue'
     import type { ProductIndexPayment } from '@/types/product'
+import { colorPalette } from '@/utils/color'
 
     const props = defineProps({
-        categoryName: String,
         product: {
             type: Object as PropType<ProductDetails[]>,
             required: true,
@@ -97,9 +97,9 @@
     }
 
     // FILTER SELECTED PRODUCT CATEGORY IF NEEDED THE SIZES INPUT (IF MUGS SELECTED THEREFORE NO SIZES IS AVAILABLE)
-    const shouldIncludeSizes = computed(() =>
-        sublimationProductCategories.includes(props.categoryName ?? ''),
-    )
+    // const shouldIncludeSizes = computed(() =>
+    //     sublimationProductCategories.includes(props.categoryName ?? ''),
+    // )
 
     const openQrCodePaymentModal = (selectedProducts: ProductDetails[]) => {
         selectedProductsData.value = selectedProducts
@@ -211,19 +211,19 @@
 
     // FINAL TOTAL QUANTITY THAT CATCHES CATEGORY THAT HAS
     // MULTI SIZES (BASKET APPAREL) AND SOLO (MUGS, LANYARD, etc..)
-    const totalQuantity = computed(() => {
-        return shouldIncludeSizes.value
-            ? totalQuantityForMultiSizes.value
-            : (formData.value.solo_quantity ?? 0)
-    })
+    // const totalQuantity = computed(() => {
+        // return shouldIncludeSizes.value
+            // ? totalQuantityForMultiSizes.value
+            // : (formData.value.solo_quantity ?? 0)
+    // })
 
     // FINAL TOTAL PRICE THAT CATCHES CATEGORY THAT HAS MULTI SIZES AND SOLO
-    const totalPrice = computed(() => {
-        return shouldIncludeSizes.value
-            ? totalPriceForMultiSizes.value
-            : (formData.value.solo_quantity ?? 0) *
-                  Number(checkedOutProductsArray.value[0]?.unit_price ?? 0)
-    })
+    // const totalPrice = computed(() => {
+    //     return shouldIncludeSizes.value
+    //         ? totalPriceForMultiSizes.value
+    //         : (formData.value.solo_quantity ?? 0) *
+    //               Number(checkedOutProductsArray.value[0]?.unit_price ?? 0)
+    // })
 
     // PLACE ORDER MUTATION
     const mutation = useMutation({
@@ -336,41 +336,6 @@
     )
 
     // COLOR SETTING
-
-    const swatchColor = computed<string | null>(() => {
-        // If custom, use the free-text input; otherwise the selected option label
-        const candidate =
-            selectedOption.value === 'custom' ? formData.value.color : selectedOption.value
-
-        if (!candidate) return null
-        if (colorPalette[candidate]) return colorPalette[candidate]
-        if (isValidCssColor(candidate)) return candidate
-        return null
-    })
-
-    const colorOptions = [
-        'Red',
-        'Blue',
-        'Green',
-        'Yellow',
-        'Black',
-        'Sunset Blaze',
-        'Tropical Punch',
-        'Ocean Wave',
-        'Aqua Breeze',
-    ]
-
-    const colorPalette: Record<string, string> = {
-        Red: '#FF0000',
-        Blue: '#0000FF',
-        Green: '#008000',
-        Yellow: '#FFFF00',
-        Black: '#000000',
-        'Sunset Blaze': '#FF6B3D',
-        'Tropical Punch': '#FF3B7F',
-        'Ocean Wave': '#2E8BC0',
-        'Aqua Breeze': '#7FDBFF',
-    }
 
     const selectedOption = ref('')
 

@@ -17,7 +17,7 @@
     import { computed, onMounted, ref } from 'vue'
     import { Drawer } from 'primevue'
     import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
-    import { getAllOrderNotifications } from '@/api/get/orders'
+    import { getAllCartCount, getAllOrderNotifications } from '@/api/get/orders'
     import { formateNotificationTimeAgo } from '@/helper/designs'
     import { updateNotificationAsRead, updateNotificationAsReadAll } from '@/api/put/notifications'
     import StatusBadge from './orders/StatusBadge.vue'
@@ -81,6 +81,11 @@
     const notificationsQuery = useQuery({
         queryKey: ['order_notifications'],
         queryFn: getAllOrderNotifications,
+    })
+
+    const { data: cartCount } = useQuery({
+        queryKey: ['cart_count'],
+        queryFn: getAllCartCount,
     })
 
     // Mark notification as read mutation
@@ -347,13 +352,13 @@
 
                                     <!-- Notification badge on cart icon -->
                                     <span
-                                        v-if="unreadNotificationsCount > 0"
+                                        v-if="cartCount && cartCount > 0"
                                         class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full min-w-5 h-5 flex items-center justify-center px-1"
                                     >
                                         {{
-                                            unreadNotificationsCount > 99
+                                            cartCount > 99
                                                 ? '99+'
-                                                : unreadNotificationsCount
+                                                : cartCount
                                         }}
                                     </span>
                                 </router-link>

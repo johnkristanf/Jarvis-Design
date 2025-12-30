@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-    import { ref, computed, watch, onMounted } from 'vue'
+    import { ref, computed, watch, onMounted, nextTick } from 'vue'
     import {
         Dialog,
         DialogPanel,
@@ -29,7 +29,10 @@
     import { useForm, useField } from 'vee-validate'
     import * as yup from 'yup'
     import { isValidCssColor } from '@/helper/order'
-    import { OrderAction } from '@/types/order'
+    import { OrderAction, type ProductDetails } from '@/types/order'
+    import OrderProductModal from './OrderProductModal.vue'
+    import { useRouter } from 'vue-router'
+import { colorOptions, colorPalette } from '@/utils/color'
 
     const props = defineProps({
         product: {
@@ -42,7 +45,9 @@
     const handleClose = () => emit('close')
 
     // For controlling dialog open state
+    const router = useRouter()
     const isModalOpen = ref(true)
+    const showOrderProductModal = ref(false)
 
     // If the modal closes (user clicks outside), emit close
     function onDialogClose(open: boolean) {
@@ -56,6 +61,10 @@
 
     const selectedColorOption = ref('')
     const selectedOrderAction = ref<OrderAction>()
+    const isCartAddingSuccessful = ref<boolean>(false)
+
+    // Product details to checkout
+    const checkoutProductDetailsRef = ref<ProductDetails[]>()
 
     // File upload refs
     const uploadedOwnDesignFile = ref<File | null>(null)
@@ -106,8 +115,7 @@
         { immediate: true },
     )
 
-    // Add to cart mutation
-    const mutation = useMutation({
+    const addToCartMutation = useMutation({
         mutationFn: async (formData: FormData) => {
             const respData = await apiService.post('/api/add/cart', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
@@ -115,15 +123,25 @@
             return respData
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['order_notifications'] })
-            toast.add({
-                severity: 'success',
-                summary: 'Added to cart successfully!',
-                life: 1000,
-            })
-            setTimeout(() => {
-                handleClose()
-            }, 1500)
+            queryClient.invalidateQueries({ queryKey: ['cart_items'] })
+
+            isCartAddingSuccessful.value = true
+
+            if (selectedOrderAction.value === OrderAction.ADD_TO_CART) {
+                toast.add({
+                    severity: 'success',
+                    summary: 'Added to cart successfully!',
+                    life: 1000,
+                })
+                setTimeout(() => {
+                    handleClose()
+                }, 1500)
+            }
+
+            // For BUY_NOW, do the navigation here, not in the submit handler
+            if (selectedOrderAction.value === OrderAction.BUY_NOW) {
+                window.location.href = '/orders/cart'
+            }
         },
         onError: (err) => {
             console.error('Add to cart error', err)
@@ -176,32 +194,11 @@
         for (const pair of formData.entries()) {
             console.log(pair[0] + ': ' + pair[1])
         }
-        mutation.mutate(formData)
+
+        addToCartMutation.mutate(formData)
     })
 
-    const colorOptions = [
-        'Red',
-        'Blue',
-        'Green',
-        'Yellow',
-        'Black',
-        'Sunset Blaze',
-        'Tropical Punch',
-        'Ocean Wave',
-        'Aqua Breeze',
-    ]
-
-    const colorPalette: Record<string, string> = {
-        Red: '#FF0000',
-        Blue: '#0000FF',
-        Green: '#008000',
-        Yellow: '#FFFF00',
-        Black: '#000000',
-        'Sunset Blaze': '#FF6B3D',
-        'Tropical Punch': '#FF3B7F',
-        'Ocean Wave': '#2E8BC0',
-        'Aqua Breeze': '#7FDBFF',
-    }
+   
 
     const swatchColor = computed<string | null>(() => {
         // If custom, use the free-text input; otherwise the selected option label
@@ -219,6 +216,11 @@
     const handleFileUpload = (event) => {
         const file = event.target.files[0]
         uploadedOwnDesignFile.value = file
+    }
+
+    const handleShowCheckoutModal = (checkoutProductDetails: ProductDetails[]) => {
+        showOrderProductModal.value = true
+        checkoutProductDetailsRef.value = checkoutProductDetails
     }
 
     const ownDesignPreviewUrl = computed(() => {
@@ -458,20 +460,20 @@
                                                 "
                                                 type="submit"
                                                 class="flex items-center gap-1 px-4 py-2 bg-gray-900 hover:opacity-75 hover:cursor-pointer text-white text-xs font-semibold rounded transition-colors"
-                                                :disabled="mutation.isPending.value"
+                                                :disabled="addToCartMutation.isPending.value"
                                             >
                                                 <ShoppingCartIcon class="size-4" />
                                                 Add to Cart
                                             </button>
 
                                             <button
-                                                @click="selectedOrderAction = OrderAction.CHECK_OUT"
+                                                @click="selectedOrderAction = OrderAction.BUY_NOW"
                                                 type="submit"
                                                 class="flex items-center gap-1 px-4 py-2 bg-blue-600 hover:opacity-75 hover:cursor-pointer text-white text-xs font-semibold rounded transition-colors"
-                                                :disabled="mutation.isPending.value"
+                                                :disabled="addToCartMutation.isPending.value"
                                             >
                                                 <BanknotesIcon class="size-4" />
-                                                Checkout
+                                                Buy Now
                                             </button>
                                         </div>
                                     </form>
@@ -484,7 +486,14 @@
         </Dialog>
     </TransitionRoot>
 
-    <Loader v-if="mutation.isPending.value" msg="Adding to Cart..." />
+    <Loader
+        v-if="addToCartMutation.isPending.value && selectedOrderAction === OrderAction.ADD_TO_CART"
+        msg="Adding to Cart..."
+    />
 
-    <Toast />
+    <!-- <OrderProductModal
+        v-if="showOrderProductModal"
+        :product="{}"
+        @close="showOrderProductModal = false"
+    /> -->
 </template>

@@ -5,6 +5,7 @@
     import { apiService } from '@/api/axios'
     import type { CartItem, ProductDetails } from '@/types/order'
     import OrderProductModal from '@/components/designs/OrderProductModal.vue'
+import { colorPalette } from '@/utils/color'
 
     // TanStack Query to fetch cart items
     const {
@@ -22,7 +23,7 @@
     })
 
     const showCheckoutModal = ref<boolean>(false)
-    const checkoutProductDetailsRef = ref<ProductDetails[]>() // now includes quantity
+    const checkoutProductDetailsRef = ref<ProductDetails[]>()
 
     // Selection for checkboxes
     const selectedCartIds = ref<number[]>([])
@@ -30,14 +31,14 @@
     // Quantities for each cart id
     const cartQuantities = reactive<{ [id: number]: number }>({})
 
-    // (Re)set all cart items as selected by default whenever they change and initialize quantities
+    // (Re)set only the FIRST cart item as selected by default whenever cartItems change, and initialize quantities
     watch(
         cartItems,
         (items) => {
             if (Array.isArray(items)) {
-                // If none are selected, default to all selected on load
+                // Only preselect the first cart item if none are selected
                 if (selectedCartIds.value.length === 0 && items.length > 0) {
-                    selectedCartIds.value = items.map((item) => item.id)
+                    selectedCartIds.value = [items[0].id]
                 }
                 // Remove IDs that no longer exist
                 else {
@@ -268,11 +269,24 @@
                             </button>
                         </div>
                     </div>
-                    <span
-                        class="w-[4%] inline-block bg-blue-100 text-blue-800 text-xs text-center font-semibold px-2 py-1 rounded-md"
-                    >
-                        {{ item.size ? item.size.name : 'No size' }}
-                    </span>
+
+                    <div class="flex items-center gap-2">
+                        <span
+                            class="inline-block text-xs text-center font-semibold px-2 py-1 rounded-md"
+                            :style="{
+                                backgroundColor: colorPalette[item.color] || '#2563eb',
+                                color: 'white'
+                            }"
+                        >
+                            {{ item.color ? item.color : 'No size'  }}
+                        </span>
+
+                        <span
+                            class="w-[4%] inline-block bg-blue-100 text-blue-800 text-xs text-center font-semibold px-2 py-1 rounded-md"
+                        >
+                            {{ item.size ? item.size.name : 'No size' }}
+                        </span>
+                    </div>
                 </div>
 
                 <!-- Quantity Control -->
@@ -297,7 +311,7 @@
             </div>
 
             <!-- Footer Cart Summary -->
-            <div class="w-full mt-5 z-40" style="pointer-events: auto">
+            <div class="w-full mt-5 z-40 sticky bottom-12" style="pointer-events: auto">
                 <div
                     class="mx-auto px-4 py-4 bg-gray-900/98 border-t border-white/10 flex flex-col md:flex-row items-center md:justify-between gap-3"
                 >
@@ -313,7 +327,7 @@
                     <button
                         @click="handleFullCheckout"
                         :disabled="selectedCartIds.length === 0"
-                        class="mt-2 md:mt-0 inline-flex items-center gap-2 px-8 py-2 rounded-full font-semibold bg-blue-700 hover:bg-blue-800 transition-colors text-white text-md shadow-lg active:scale-[.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                        class="mt-2 md:mt-0 inline-flex items-center gap-2 px-8 py-2 rounded-md font-semibold bg-blue-700 hover:bg-blue-800 transition-colors text-white text-md shadow-lg active:scale-[.98] disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         <ShoppingCartIcon class="size-5" />
                         Checkout
@@ -330,7 +344,6 @@
 
         <OrderProductModal
             v-if="showCheckoutModal && checkoutProductDetailsRef"
-            categoryName="TEST"
             :product="checkoutProductDetailsRef"
             @close="showCheckoutModal = false"
         />

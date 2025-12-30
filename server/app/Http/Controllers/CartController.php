@@ -22,10 +22,11 @@ class CartController extends Controller
             'product',
             'fabric_types',
             'size',
-            'product.designs' // Include the designs of the product
+            'product.designs' // Eager load product designs
         ])
-            ->where('user_id', Auth::id())
-            ->get();
+        ->where('user_id', Auth::id())
+        ->orderByDesc('created_at')
+        ->get();
 
 
         // Transform designs' image_url into a s3 readable temp url
@@ -67,10 +68,6 @@ class CartController extends Controller
     {
         $validated = $request->validated();
 
-        Log::info('Validated Cart Request:', [
-            'payload' => json_encode($validated, JSON_PRETTY_PRINT)
-        ]);
-
         $cart = Cart::create([
             'user_id' => Auth::id(),
             'color' => $validated['color'],
@@ -99,6 +96,8 @@ class CartController extends Controller
     public function count()
     {
         $count = Cart::where('user_id', Auth::id())->count();
+
+        Log::info("count: ", [$count]);
 
         return response()->json([
             'count' => $count,
