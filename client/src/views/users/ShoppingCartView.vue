@@ -22,7 +22,7 @@
     })
 
     const showCheckoutModal = ref<boolean>(false)
-    const selectedProductRef = ref<ProductDetails[]>() // now includes quantity
+    const checkoutProductDetailsRef = ref<ProductDetails[]>() // now includes quantity
 
     // Selection for checkboxes
     const selectedCartIds = ref<number[]>([])
@@ -126,7 +126,7 @@
 
         if (selectedItems && selectedItems.length > 0) {
             // Build an array containing each selected product with its quantity
-            const productsWithQuantities: ProductDetails[] = selectedItems.map((item) => {
+            const checkoutProductDetails: ProductDetails[] = selectedItems.map((item) => {
                 const baseProduct = {
                     ...item.product,
                     color: item.color,
@@ -143,15 +143,15 @@
                 return baseProduct
             })
 
-            console.log('productsWithQuantities: ', productsWithQuantities)
+            console.log('checkoutProductDetails: ', checkoutProductDetails)
 
-            handleShowCheckoutModal(productsWithQuantities)
+            handleShowCheckoutModal(checkoutProductDetails)
         }
     }
 
-    const handleShowCheckoutModal = (productWithQuantity: ProductDetails[]) => {
+    const handleShowCheckoutModal = (checkoutProductDetails: ProductDetails[]) => {
         showCheckoutModal.value = true
-        selectedProductRef.value = productWithQuantity
+        checkoutProductDetailsRef.value = checkoutProductDetails
     }
 </script>
 
@@ -329,9 +329,9 @@
         </div>
 
         <OrderProductModal
-            v-if="showCheckoutModal && selectedProductRef"
+            v-if="showCheckoutModal && checkoutProductDetailsRef"
             categoryName="TEST"
-            :product="selectedProductRef"
+            :product="checkoutProductDetailsRef"
             @close="showCheckoutModal = false"
         />
     </div>

@@ -229,3 +229,8 @@ export interface CartItem {
     own_design_url?: string
     own_design_temp_url?: string
 }
+
+export enum OrderAction {
+    ADD_TO_CART = 'add_to_cart',
+    CHECK_OUT = 'check_out',
+}

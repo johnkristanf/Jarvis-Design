@@ -82,8 +82,6 @@
         { id: 2, name: OrderOptions.PICK_UP, tag: 'PICK-UP' },
     ])
 
-
-   
     const businessProductDesign = ref<BusinessProductDesign[]>([])
     const isLoadingBusinessDesigns = ref<boolean>(false)
     const showQrCodePaymentModal = ref<boolean>(false)
@@ -146,13 +144,18 @@
         console.log('paymentAttachmentFile: ', paymentAttachmentFile.value)
         console.log('checkedOutProductsArray : ', checkedOutProductsArray.value)
 
-
         // Map through the checked out products, appending each product's details and its corresponding payment file
         checkedOutProductsArray.value.forEach((product, idx) => {
             data.append(`products[${idx}][product_id]`, product.id.toString())
             data.append(`products[${idx}][product_unit_price]`, product.unit_price.toString())
             data.append(`products[${idx}][product_color]`, product.color)
             data.append(`products[${idx}][fabric_type_id]`, product.fabric_type_id.toString())
+
+            if (formData.value.designType === 'own-design' && formData.value.ownDesignFile) {
+                data.append('own_design_file', formData.value.ownDesignFile)
+            } else if (formData.value.designType === 'business-design') {
+                data.append('business_design_url', formData.value.businessDesignURL)
+            }
 
             if (
                 Array.isArray(paymentAttachmentFile.value) &&
@@ -165,7 +168,6 @@
                 )
             }
 
-
             if (product.desired_quantity) {
                 data.append(`products[${idx}][total_quantity]`, product.desired_quantity.toString())
             }
@@ -176,9 +178,6 @@
 
             data.append(`products[${idx}][total_price]`, total_price.toString())
             data.append(`products[${idx}][sizes]`, JSON.stringify(product.size))
-
-            // data.append('total_quantity', totalQuantityAllProducts.value.toString())
-            // data.append('total_price', totalPriceAllProducts.value.toString())
         })
 
         // Null if the product has no corresponding fabric like (mugs, lanyard, etc..)
@@ -195,11 +194,6 @@
         //     data.append('solo_quantity', formData.value.solo_quantity?.toString() ?? '')
         // }
 
-        if (formData.value.designType === 'own-design' && formData.value.ownDesignFile) {
-            data.append('own_design_file', formData.value.ownDesignFile)
-        } else if (formData.value.designType === 'business-design') {
-            data.append('business_design_url', formData.value.businessDesignURL)
-        }
         return data
     }
 
@@ -440,10 +434,18 @@
                                                             class="flex items-center mt-1"
                                                         >
                                                             <span
-                                                                class="inline-block px-2 py-0.5 rounded text-xs font-semibold "
+                                                                class="inline-block px-2 py-0.5 rounded text-xs font-semibold"
                                                                 :style="{
-                                                                    backgroundColor: colorPalette[product.color] || (isValidCssColor(product.color) ? product.color : '#e0e7ff'),
-                                                                    color: '#fff'
+                                                                    backgroundColor:
+                                                                        colorPalette[
+                                                                            product.color
+                                                                        ] ||
+                                                                        (isValidCssColor(
+                                                                            product.color,
+                                                                        )
+                                                                            ? product.color
+                                                                            : '#e0e7ff'),
+                                                                    color: '#fff',
                                                                 }"
                                                             >
                                                                 {{ product.color }}
@@ -559,7 +561,6 @@
                                     </div>
                                 </div>
 
-                                
                                 <!-- Price Display -->
                                 <!-- <div class="mb-4">
                                     <label class="block text-sm text-gray-600 mb-2">

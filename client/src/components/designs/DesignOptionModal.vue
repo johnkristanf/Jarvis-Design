@@ -23,12 +23,13 @@
     import { useToast } from 'primevue/usetoast'
     import Toast from 'primevue/toast'
     import Loader from '../Loader.vue'
-    import { ShoppingCartIcon } from '@heroicons/vue/20/solid'
+    import { BanknotesIcon, ShoppingCartIcon } from '@heroicons/vue/20/solid'
 
     // vee-validate
     import { useForm, useField } from 'vee-validate'
     import * as yup from 'yup'
     import { isValidCssColor } from '@/helper/order'
+    import { OrderAction } from '@/types/order'
 
     const props = defineProps({
         product: {
@@ -40,9 +41,21 @@
     const emit = defineEmits(['close'])
     const handleClose = () => emit('close')
 
+    // For controlling dialog open state
+    const isModalOpen = ref(true)
+
+    // If the modal closes (user clicks outside), emit close
+    function onDialogClose(open: boolean) {
+        if (!open) {
+            isModalOpen.value = false
+            handleClose()
+        }
+    }
+
     const { sizes, loadingSizes } = useProductAttributes()
 
     const selectedColorOption = ref('')
+    const selectedOrderAction = ref<OrderAction>()
 
     // File upload refs
     const uploadedOwnDesignFile = ref<File | null>(null)
@@ -230,8 +243,8 @@
 </script>
 
 <template>
-    <TransitionRoot appear :show="true">
-        <Dialog as="div" static @close="() => {}" class="relative z-[999]">
+    <TransitionRoot appear :show="isModalOpen">
+        <Dialog as="div" class="relative z-[999]" :open="isModalOpen" @close="onDialogClose">
             <div class="fixed inset-0 overflow-y-auto bg-gray-900/80 transition-opacity">
                 <div
                     class="flex flex-col lg:flex-row items-start lg:items-center justify-center p-4 text-center gap-4 lg:gap-8 min-h-screen"
@@ -245,7 +258,7 @@
                         leave-to="opacity-0 scale-95"
                     >
                         <DialogPanel
-                            class="w-[600px] max-w-7xl h-[27rem] transform overflow-y-auto bg-white p-6 text-left align-middle shadow-xl transition-all"
+                            class="w-[600px] max-w-7xl h-[30rem] transform overflow-y-auto bg-white p-6 text-left align-middle shadow-xl transition-all"
                         >
                             <DialogTitle as="h1" class="text-2xl text-gray-900">
                                 Product Order Option
@@ -268,11 +281,11 @@
                                         v-if="props.product.designs && props.product.designs.length"
                                         class="w-full flex"
                                     >
-                                        <div class="w-full aspect-video relative mb-4">
+                                        <div class="w-full aspect-video relative">
                                             <img
                                                 :src="props.product.designs[0].temp_url"
                                                 alt="Product Design"
-                                                class="w-full h-full object-contain rounded shadow border border-gray-200 absolute inset-0 bg-white"
+                                                class="w-full h-full object-contain absolute inset-0 bg-white"
                                             />
                                         </div>
                                     </div>
@@ -304,6 +317,51 @@
                                                 {{ fabricTypeError }}
                                             </p>
                                         </div> -->
+
+                                        <!-- Upload your own design field -->
+                                        <div class="my-10">
+                                            <p class="text-sm text-gray-600 mb-3">
+                                                Upload your own design (if preferred)
+                                            </p>
+                                            <input
+                                                ref="fileInputRef"
+                                                @change="handleFileUpload"
+                                                type="file"
+                                                accept="image/*"
+                                                class="w-full"
+                                            />
+
+                                            <!-- Image Preview -->
+                                            <div v-if="ownDesignPreviewUrl" class="mt-4">
+                                                <div class="relative inline-block">
+                                                    <img
+                                                        :src="ownDesignPreviewUrl"
+                                                        alt="Design Preview"
+                                                        class="max-w-full h-auto max-h-[200px] rounded-md border border-gray-300"
+                                                    />
+                                                    <button
+                                                        @click="clearOwnDesignFile"
+                                                        class="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full hover:cursor-pointer p-1 shadow-lg transition-colors"
+                                                        title="Remove image"
+                                                    >
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            class="h-4 w-4"
+                                                            fill="none"
+                                                            viewBox="0 0 24 24"
+                                                            stroke="currentColor"
+                                                            stroke-width="2"
+                                                        >
+                                                            <path
+                                                                stroke-linecap="round"
+                                                                stroke-linejoin="round"
+                                                                d="M6 18L18 6M6 6l12 12"
+                                                            />
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
 
                                         <!-- Color Option -->
                                         <div class="mb-8">
@@ -393,58 +451,27 @@
                                             </p>
                                         </div>
 
-                                        <!-- Upload your own design field -->
-                                        <div class="mt-5">
-                                            <p class="text-sm text-gray-600 mb-3">
-                                                Upload your own design (if preferred)
-                                            </p>
-                                            <input
-                                                ref="fileInputRef"
-                                                @change="handleFileUpload"
-                                                type="file"
-                                                accept="image/*"
-                                            />
-
-                                            <!-- Image Preview -->
-                                            <div v-if="ownDesignPreviewUrl" class="mt-4">
-                                                <div class="relative inline-block">
-                                                    <img
-                                                        :src="ownDesignPreviewUrl"
-                                                        alt="Design Preview"
-                                                        class="max-w-full h-auto max-h-[200px] rounded-md border border-gray-300"
-                                                    />
-                                                    <button
-                                                        @click="clearOwnDesignFile"
-                                                        class="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full hover:cursor-pointer p-1 shadow-lg transition-colors"
-                                                        title="Remove image"
-                                                    >
-                                                        <svg
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            class="h-4 w-4"
-                                                            fill="none"
-                                                            viewBox="0 0 24 24"
-                                                            stroke="currentColor"
-                                                            stroke-width="2"
-                                                        >
-                                                            <path
-                                                                stroke-linecap="round"
-                                                                stroke-linejoin="round"
-                                                                d="M6 18L18 6M6 6l12 12"
-                                                            />
-                                                        </svg>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="flex justify-end items-center">
+                                        <div class="flex justify-end items-center gap-5">
                                             <button
+                                                @click="
+                                                    selectedOrderAction = OrderAction.ADD_TO_CART
+                                                "
                                                 type="submit"
-                                                class="flex items-center gap-1 px-4 py-2 bg-blue-600 hover:opacity-75 hover:cursor-pointer text-white text-xs font-semibold rounded transition-colors"
+                                                class="flex items-center gap-1 px-4 py-2 bg-gray-900 hover:opacity-75 hover:cursor-pointer text-white text-xs font-semibold rounded transition-colors"
                                                 :disabled="mutation.isPending.value"
                                             >
                                                 <ShoppingCartIcon class="size-4" />
                                                 Add to Cart
+                                            </button>
+
+                                            <button
+                                                @click="selectedOrderAction = OrderAction.CHECK_OUT"
+                                                type="submit"
+                                                class="flex items-center gap-1 px-4 py-2 bg-blue-600 hover:opacity-75 hover:cursor-pointer text-white text-xs font-semibold rounded transition-colors"
+                                                :disabled="mutation.isPending.value"
+                                            >
+                                                <BanknotesIcon class="size-4" />
+                                                Checkout
                                             </button>
                                         </div>
                                     </form>
