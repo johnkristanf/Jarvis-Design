@@ -234,7 +234,14 @@ class PaymentController extends Controller
                         'total_quantity_used' => $deduction,
                     ]);
                 }
-    
+
+                // Process order payment
+                // Use the payment attachment file specific to the current product
+                if (isset($product['payment_attachment'])) {
+                    $paymentAttachmentFile = $product['payment_attachment'];
+                    $this->paymentService->processPayment($order->id, $paymentAttachmentFile);
+                }
+
                 $createdOrders[] = $order;
             }
     
@@ -243,6 +250,9 @@ class PaymentController extends Controller
     
         // 5️⃣ Notifications (use first order as reference)
         foreach ($orders as $order) {
+
+            
+
             $this->notificationService->notifyUserOrder($order, Auth::user()->id, Orders::PENDING);
 
             $message = sprintf(

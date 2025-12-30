@@ -77,9 +77,7 @@ class DashboardController extends Controller
         $formattedEndDate = new DateTime($endDate);
 
         try {
-            // Generate PDF report
-            $pdfExport = new MonthlySalesPdfExport($formattedStartDate, $formattedEndDate);
-            $pdf = $pdfExport->generate();
+            $pdf = $this->dashboardService->getPerOrderSalesPDFReport($formattedStartDate, $formattedEndDate);
 
             return response()->streamDownload(function () use ($pdf) {
                 echo $pdf->output();
@@ -91,6 +89,22 @@ class DashboardController extends Controller
 
             return response()->json(['error' => 'Failed to generate PDF report: '.$e->getMessage()], 500);
         }
+
+        // try {
+        //     // Generate PDF report
+        //     $pdfExport = new MonthlySalesPdfExport($formattedStartDate, $formattedEndDate);
+        //     $pdf = $pdfExport->generate();
+
+        //     return response()->streamDownload(function () use ($pdf) {
+        //         echo $pdf->output();
+        //     }, 'monthly_sales_report.pdf', [
+        //         'Content-Type' => 'application/pdf',
+        //     ]);
+        // } catch (\Exception $e) {
+        //     Log::error('PDF Generation Error: ', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+
+        //     return response()->json(['error' => 'Failed to generate PDF report: '.$e->getMessage()], 500);
+        // }
     }
 
     public function downloadCategorySales()

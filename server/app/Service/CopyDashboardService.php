@@ -6,11 +6,10 @@ use App\Models\OrderPayment;
 use App\Models\Orders;
 use App\Traits\HandleAttachments;
 use App\Traits\SalesTrait;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-class DashboardService
+class CopyDashboardService
 {
     use HandleAttachments, SalesTrait;
 
@@ -68,31 +67,6 @@ class DashboardService
         }
 
         return $monthlySales;
-    }
-
-    public function getPerOrderSalesPDFReport($startDate, $endDate)
-    {
-        $orders = Orders::with(['product', 'sizes'])
-            ->withSum('order_payments as total_payment', 'amount_applied')
-            ->whereBetween('created_at', [
-                $startDate->format('Y-m-d 00:00:00'),
-                $endDate->format('Y-m-d 23:59:59'),
-            ])
-            ->whereIn('status', [Orders::COMPLETED, Orders::CANCELLED])
-            ->get();
-
-        Log::info("Per-order monthly sales report orders:\n" . json_encode($orders, JSON_PRETTY_PRINT));
-
-        $pdf = Pdf::loadView('pdf.per-order-monthly-sales', [
-            'orders' => $orders,
-            'startDate' => $startDate,
-            'endDate' => $endDate
-        ]);
-
-        Log::info("pdf:\n" . json_encode($pdf, JSON_PRETTY_PRINT));
-
-
-        return $pdf;
     }
 
     public function getSalesPerProductCategory($startDate, $endDate, $isChartFiltered = true)
