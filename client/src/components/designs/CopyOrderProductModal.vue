@@ -31,7 +31,7 @@
     import Toast from 'primevue/toast'
     import Loader from '../Loader.vue'
     import { isValidCssColor } from '@/helper/order'
-    import GenerateAIDesignsModal from './GenerateAIDesignsModal.vue'
+    import GenerateAIDesignsModal from './GenerateAIDesigns.vue'
     import { useFetchAuthenticatedUser } from '@/composables/useFetchAuthenticatedUser'
     // @ts-ignore
     import BusinessDesignModal from './BusinessDesignModal.vue'

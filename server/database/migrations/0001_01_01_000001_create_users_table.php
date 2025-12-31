@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('email');
             $table->string('password');
             $table->integer('prompt_limit')->default(10);
+            $table->integer('prompt_credit')->default(0);
             $table->string('phone_number')->nullable();
             $table->string('address')->nullable();
             $table->foreignId('role_id')->constrained('roles')->onUpdate('cascade');

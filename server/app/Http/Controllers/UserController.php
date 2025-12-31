@@ -99,7 +99,7 @@ class UserController extends Controller
     {
         $authenticatedUser = Auth::user();
         $authenticatedUser = User::where('id', $authenticatedUser->id)
-            ->select('id', 'name', 'email', 'username', 'role_id', 'prompt_limit', 'address', 'phone_number')
+            ->select('id', 'name', 'email', 'username', 'role_id', 'prompt_limit', 'prompt_credit', 'address', 'phone_number')
             ->with(['role' => function ($query) {
                 $query->select('id', 'name');
             }])
@@ -122,12 +122,19 @@ class UserController extends Controller
                 return response()->json(['message' => 'Prompt limit already reached'], Response::HTTP_BAD_REQUEST);
             }
 
-            // Deduct safely
+            // Deduct 1 from prompt_limit
             $user->decrement('prompt_limit', 1);
 
+            // Add 5 to existing prompt_credit, not override
+            $user->increment('prompt_credit', 5);
+
+            // Reload user to reflect updated values
+            $user->refresh();
+
             return response()->json([
-                'message' => 'Prompt deducted successfully',
-                'remaining_prompt_limit' => $user->prompt_limit - 1, // value after decrement
+                'message' => 'Prompt deducted successfully. 5 credits added to prompt_credit.',
+                'remaining_prompt_limit' => $user->prompt_limit,
+                'prompt_credit' => $user->prompt_credit,
             ], 200);
         });
     }

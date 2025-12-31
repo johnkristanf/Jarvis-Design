@@ -36,6 +36,7 @@ export type AuthenticatedUserData = {
     role_id: number
     role: Role
     prompt_limit?: number
+    prompt_credit?: number
 }
 
 export type User = {

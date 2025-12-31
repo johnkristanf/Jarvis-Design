@@ -12,6 +12,8 @@ export const useFetchAuthenticatedUser = () => {
 
         try {
             const fetchedUserData = await fetchUserData()
+            console.log("fetchedUserData: ", fetchedUserData);
+            
             authStore.setUser(fetchedUserData)
             authStore.setAuthenticated(true)
         } catch (error: any) {

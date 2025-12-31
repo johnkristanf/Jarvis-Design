@@ -4,7 +4,7 @@
     import Loader from '../Loader.vue'
     import { ref } from 'vue'
     import type { DesignGenerate } from '@/types/design'
-    import { ArrowDownTrayIcon } from '@heroicons/vue/20/solid'
+    import { ArrowDownTrayIcon, InformationCircleIcon } from '@heroicons/vue/20/solid'
     import { useToast } from 'primevue/usetoast'
     import { deductPromptLimit } from '@/api/put/user'
     import { useFetchAuthenticatedUser } from '@/composables/useFetchAuthenticatedUser'
@@ -13,7 +13,7 @@
     const handleCloseModal = () => emit('close')
 
     const aiAPIURL = import.meta.env.VITE_AI_API_URL
-    console.log("aiAPIURL: ", aiAPIURL);
+    console.log('aiAPIURL: ', aiAPIURL)
 
     const isLoadingMutation = ref(false)
     const loaderMsg = ref<string>('')
@@ -145,20 +145,40 @@
 </script>
 
 <template>
-    <div class="w-[60%] h-[480px] transform overflow-y-auto bg-white p-8 text-left">
+    <div class="transform bg-white p-8 text-left">
         <div class="flex items-center justify-between my-4">
             <h2 class="text-2xl font-bold text-gray-900 mb-6">Prompt your Desired AI Design</h2>
         </div>
 
         <form class="flex flex-col gap-7 w-full mb-8">
-            <div class="flex flex-col gap-2">
+            <div class="flex flex-col gap-2 w-full">
                 <div class="flex justify-between items-center gap-2">
-                    <div class="flex items-center justify-between w-full">
-                        <h1>Prompt:</h1>
-                        <h1 class="text-gray-500 text-sm">
-                            Daily Prompt Limit:
-                            {{ authStore.currentUser?.prompt_limit }}
-                        </h1>
+                    <div class="flex items-end justify-between w-full">
+                        <h1>Enter your Prompt:</h1>
+
+                        <div class="flex flex-col items-center gap-2 w-[20%]">
+                            <h1 class="text-gray-500 text-sm">
+                                Daily Prompt Limit:
+                                {{ authStore.currentUser?.prompt_limit }}
+                            </h1>
+
+                            <div class="flex items-center gap-1">
+                                <div class="relative group">
+                                    <InformationCircleIcon
+                                        class="size-5 text-gray-900 cursor-pointer"
+                                    />
+                                    <div
+                                        class="absolute right-6 top-1/2 z-20 w-60 -translate-y-1/2 rounded bg-gray-900 px-3 py-2 text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+                                        style="white-space: normal;"
+                                    >
+                                        For every generation, there is a corresponding 5 credits, which will add up to your overall payment on your next order.
+                                    </div>
+                                </div>
+                                <h1 class="text-gray-500 text-sm mr-13">
+                                    Prompt credit: ₱ {{ authStore.currentUser?.prompt_credit }}
+                                </h1>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -206,33 +226,35 @@ Color: Black and White"
         </form>
 
         <!-- LIST OF AI GENERATED DESIGNS -->
-        <div v-if="imageUrls && imageUrls.length > 0" class="mt-5">
-            <h1 class="mb-3">Generated AI Images:</h1>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div
-                    v-for="(imageUrl, index) in imageUrls"
-                    :key="'generated-' + index"
-                    class="group relative overflow-hidden rounded-md"
-                >
-                    <!-- Download Button -->
-                    <button
-                        @click="downloadImage(imageUrl, index)"
-                        class="absolute top-2 right-2 z-10 p-1 bg-white/80 hover:bg-white rounded-full shadow-md transition cursor-pointer"
-                        type="button"
+        <div class="mt-5">
+            <div v-if="imageUrls && imageUrls.length > 0">
+                <h1 class="mb-3">Generated AI Images:</h1>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div
+                        v-for="(imageUrl, index) in imageUrls"
+                        :key="'generated-' + index"
+                        class="group relative overflow-hidden rounded-md"
                     >
-                        <ArrowDownTrayIcon class="w-5 h-5 text-gray-700 hover:text-black" />
-                    </button>
+                        <!-- Download Button -->
+                        <button
+                            @click="downloadImage(imageUrl, index)"
+                            class="absolute top-2 right-2 z-10 p-1 bg-white/80 hover:bg-white rounded-full shadow-md transition cursor-pointer"
+                            type="button"
+                        >
+                            <ArrowDownTrayIcon class="w-5 h-5 text-gray-700 hover:text-black" />
+                        </button>
 
-                    <!-- Image -->
-                    <img
-                        :src="`${aiAPIURL}/generated/image/${imageUrl}`"
-                        class="aspect-square w-full rounded-md bg-gray-200 object-cover group-hover:opacity-75 transition"
-                    />
+                        <!-- Image -->
+                        <img
+                            :src="`${aiAPIURL}/generated/image/${imageUrl}`"
+                            class="aspect-square w-full rounded-md bg-gray-200 object-cover group-hover:opacity-75 transition"
+                        />
 
-                    <!-- Caption -->
-                    <h3 class="mt-2 text-sm text-center text-gray-700 font-medium">
-                        Generated Design {{ index + 1 }}
-                    </h3>
+                        <!-- Caption -->
+                        <h3 class="mt-2 text-sm text-center text-gray-700 font-medium">
+                            Generated Design {{ index + 1 }}
+                        </h3>
+                    </div>
                 </div>
             </div>
         </div>

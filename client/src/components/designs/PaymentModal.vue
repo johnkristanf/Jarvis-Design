@@ -203,7 +203,5 @@
         </Dialog>
     </TransitionRoot>
 
-    <Toast />
-
     <Loader v-if="isPlacingOrder" msg="Placing Order..." />
 </template>
