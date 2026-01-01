@@ -36,9 +36,8 @@ class StoreOrderRequest extends FormRequest
             'products.*.total_quantity' => 'required|numeric',
             'products.*.total_price' => 'required|numeric',
             'products.*.sizes' => 'required|string',
+            'products.*.own_design_url' => 'nullable|string',
 
-            'own_design_file' => 'nullable|file',
-            'business_design_url' => 'nullable|string',
         ];
     }
 }

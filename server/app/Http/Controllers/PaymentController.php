@@ -10,6 +10,8 @@ use App\Models\OrderLogs;
 use App\Models\OrderPayment;
 use App\Models\Orders;
 use App\Models\PaymentMethod;
+use App\Models\Products;
+use App\Models\User;
 use App\Service\PaymentService;
 use App\Service\NotificationService;
 use App\Traits\HandleAttachments;
@@ -164,16 +166,26 @@ class PaymentController extends Controller
                     'total_price' => $product['total_price'],
     
                     'solo_quantity' => $validated['solo_quantity'] ?? null,
-                    'business_design_url' => $validated['business_design_url'] ?? null,
                     'user_id' => Auth::id(),
                 ]);
 
+                // If the user didn't upload an own design, set the business design url to the first design of the product
+                if (array_key_exists('own_design_url', $product) && !is_null($product['own_design_url']) && $product['own_design_url'] !== '') {
+                    $order->own_design_url = $product['own_design_url'];
+                    $order->save();
+                } else {
+                    $productModel = Products::with('designs')->find($product['product_id']);
+                    if ($productModel && $productModel->designs && $productModel->designs->count() > 0) {
+                        $firstDesign = $productModel->designs->first();
+                        if ($firstDesign && isset($firstDesign->image_url)) {
+                            $order->business_design_url = $firstDesign->image_url;
+                            $order->save();
+                        }
+                    }
+                }
+
 
                 $decodedSizes = json_decode($product['sizes'], true);
-
-                Log::info("decodedSizes: ", [$decodedSizes]);
-
-                // ✅ KEEP your exact logic
                 if (! empty($decodedSizes)) {
                     if ($product['total_quantity'] > 0) {
                         $order->sizes()->attach($decodedSizes['id'], ['quantity' => $product['total_quantity']]);
@@ -193,21 +205,6 @@ class PaymentController extends Controller
                     ]);
                 }
     
-                // 3️⃣ Upload own-design file ONCE (shared across rows)
-                if (
-                    $validated['design_type'] === 'own-design' &&
-                    $request->hasFile('own_design_file') &&
-                    ! isset($createdOrders[0])
-                ) {
-                    $designURL = $this->uploadToS3(
-                        root: 'orders/designs',
-                        sub: $orderNumber,
-                        file: $request->file('own_design_file')
-                    );
-    
-                    Orders::where('order_number', $orderNumber)
-                        ->update(['own_design_url' => $designURL]);
-                }
     
                 // 4️⃣ Deduct material stock (per product)
                 if (! empty($product['fabric_type_id'])) {
@@ -236,7 +233,6 @@ class PaymentController extends Controller
                 }
 
                 // Process order payment
-                // Use the payment attachment file specific to the current product
                 if (isset($product['payment_attachment'])) {
                     $paymentAttachmentFile = $product['payment_attachment'];
                     $this->paymentService->processPayment($order->id, $paymentAttachmentFile);
@@ -248,10 +244,7 @@ class PaymentController extends Controller
             return $createdOrders;
         });
     
-        // 5️⃣ Notifications (use first order as reference)
         foreach ($orders as $order) {
-
-            
 
             $this->notificationService->notifyUserOrder($order, Auth::user()->id, Orders::PENDING);
 
@@ -275,6 +268,11 @@ class PaymentController extends Controller
             $this->paymentService->sendOrderConfirmationEmail($order);
 
         }
+
+        // Remove the remaining credit of the user
+        $user = User::findOrFail(Auth::id());
+        $user->prompt_credit = 0;
+        $user->save();
 
     
         return response()->json([

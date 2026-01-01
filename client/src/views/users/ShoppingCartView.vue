@@ -5,7 +5,10 @@
     import { apiService } from '@/api/axios'
     import type { CartItem, ProductDetails } from '@/types/order'
     import OrderProductModal from '@/components/designs/OrderProductModal.vue'
-import { colorPalette } from '@/utils/color'
+    import { colorPalette } from '@/utils/color'
+    import { useFetchAuthenticatedUser } from '@/composables/useFetchAuthenticatedUser'
+
+    const { authStore } = useFetchAuthenticatedUser()
 
     // TanStack Query to fetch cart items
     const {
@@ -275,10 +278,10 @@ import { colorPalette } from '@/utils/color'
                             class="inline-block text-xs text-center font-semibold px-2 py-1 rounded-md"
                             :style="{
                                 backgroundColor: colorPalette[item.color] || '#2563eb',
-                                color: 'white'
+                                color: 'white',
                             }"
                         >
-                            {{ item.color ? item.color : 'No size'  }}
+                            {{ item.color ? item.color : 'No size' }}
                         </span>
 
                         <span
@@ -317,8 +320,19 @@ import { colorPalette } from '@/utils/color'
                 >
                     <div class="flex items-center gap-3 w-full md:w-auto">
                         <span class="font-semibold text-lg text-white">Total Price:</span>
-                        <span class="font-bold text-2xl text-blue-300 tracking-wide">
+                        <span class="flex items-center gap-2 font-bold text-2xl text-blue-300 tracking-wide">
                             ₱ {{ totalPrice.toLocaleString() }}
+
+                            <span
+                                v-if="
+                                    authStore.currentUser &&
+                                    typeof authStore.currentUser.prompt_credit === 'number' &&
+                                    authStore.currentUser.prompt_credit > 0
+                                "
+                                class="text-base text-red-500"
+                            >
+                                +{{ authStore.currentUser.prompt_credit }} (prompt credits)
+                            </span>
                         </span>
                         <span v-if="selectedCartIds.length === 0" class="text-sm text-red-400 ml-2">
                             No items selected

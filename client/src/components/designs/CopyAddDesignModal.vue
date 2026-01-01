@@ -1,3 +1,6 @@
+
+
+
 <script lang="ts" setup>
     import { ref } from 'vue'
     import { Dialog, DialogPanel } from '@headlessui/vue'
@@ -114,10 +117,7 @@
                 </p>
             </div>
 
-            <div
-                v-if="props.designImages && props.designImages.length <= 0"
-                class="space-y-3 mt-10"
-            >
+            <div class="space-y-3 mt-10">
                 <!-- DESIGN IMAGE UPLOAD -->
                 <h2 class="font-semibold text-gray-800">Choose the Design to Upload:</h2>
 
@@ -142,9 +142,12 @@
             </div>
 
             <div class="flex flex-col">
-                <h2 class="font-semibold text-gray-800 mb-2">Uploaded Design:</h2>
+                <h2 class="font-semibold text-gray-800 mb-2">Uploaded Designs:</h2>
 
-                <div v-if="props.designImages && props.designImages.length > 0">
+                <div
+                    v-if="props.designImages && props.designImages.length > 0"
+                    class="grid grid-cols-1 sm:grid-cols-2 gap-4"
+                >
                     <div
                         v-for="(image, index) in props.designImages"
                         :key="index"
@@ -183,10 +186,9 @@
                     @click="handleCloseModal"
                     class="px-4 py-2 text-sm font-medium bg-gray-500 text-white hover:opacity-75 hover:cursor-pointer"
                 >
-                    Close
+                    Cancel
                 </button>
                 <button
-                    v-if="props.designImages && props.designImages.length <= 0"
                     @click="handleUpload"
                     class="px-4 py-2 text-sm font-semibold bg-gray-900 text-white hover:cursor-pointer hover:bg-gray-700"
                 >

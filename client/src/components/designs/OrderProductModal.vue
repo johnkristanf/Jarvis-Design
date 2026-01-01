@@ -35,7 +35,7 @@
     // @ts-ignore
     import BusinessDesignModal from './BusinessDesignModal.vue'
     import type { ProductIndexPayment } from '@/types/product'
-import { colorPalette } from '@/utils/color'
+    import { colorPalette } from '@/utils/color'
 
     const props = defineProps({
         product: {
@@ -151,10 +151,8 @@ import { colorPalette } from '@/utils/color'
             data.append(`products[${idx}][product_color]`, product.color)
             data.append(`products[${idx}][fabric_type_id]`, product.fabric_type_id.toString())
 
-            if (formData.value.designType === 'own-design' && formData.value.ownDesignFile) {
-                data.append('own_design_file', formData.value.ownDesignFile)
-            } else if (formData.value.designType === 'business-design') {
-                data.append('business_design_url', formData.value.businessDesignURL)
+            if (formData.value.designType === 'own-design' && product.own_design_url) {
+                data.append(`products[${idx}][own_design_url]`, product.own_design_url)
             }
 
             if (
@@ -212,9 +210,9 @@ import { colorPalette } from '@/utils/color'
     // FINAL TOTAL QUANTITY THAT CATCHES CATEGORY THAT HAS
     // MULTI SIZES (BASKET APPAREL) AND SOLO (MUGS, LANYARD, etc..)
     // const totalQuantity = computed(() => {
-        // return shouldIncludeSizes.value
-            // ? totalQuantityForMultiSizes.value
-            // : (formData.value.solo_quantity ?? 0)
+    // return shouldIncludeSizes.value
+    // ? totalQuantityForMultiSizes.value
+    // : (formData.value.solo_quantity ?? 0)
     // })
 
     // FINAL TOTAL PRICE THAT CATCHES CATEGORY THAT HAS MULTI SIZES AND SOLO
@@ -472,7 +470,21 @@ import { colorPalette } from '@/utils/color'
                                             class="flex justify-between text-base font-semibold text-gray-900"
                                         >
                                             <span>Total Amount:</span>
-                                            <span>₱{{ totalPriceAllProducts.toFixed(2) }}</span>
+                                            <span>
+                                                ₱{{ totalPriceAllProducts.toFixed(2) }}
+                                                <span
+                                                    v-if="
+                                                        authStore.currentUser &&
+                                                        typeof authStore.currentUser
+                                                            .prompt_credit === 'number' &&
+                                                        authStore.currentUser.prompt_credit > 0
+                                                    "
+                                                    class="text-base text-red-500"
+                                                >
+                                                    +{{ authStore.currentUser.prompt_credit }}
+                                                    (prompt credits)
+                                                </span>
+                                            </span>
                                         </div>
                                     </div>
                                 </div>

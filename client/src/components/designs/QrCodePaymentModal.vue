@@ -9,7 +9,7 @@
     } from '@headlessui/vue'
     import { ref, reactive, onMounted, computed, nextTick } from 'vue'
     import { useToast } from 'primevue/usetoast'
-import type { ProductIndexPayment } from '@/types/product';
+    import type { ProductIndexPayment } from '@/types/product'
 
     const props = defineProps<{
         selectedProductsData: ProductDetails[] | null
@@ -141,28 +141,49 @@ import type { ProductIndexPayment } from '@/types/product';
                             </DialogTitle>
 
                             <div class="mt-2">
-                                <template v-if="props.selectedProductsData && props.selectedProductsData.length === 1">
+                                <template
+                                    v-if="
+                                        props.selectedProductsData &&
+                                        props.selectedProductsData.length === 1
+                                    "
+                                >
                                     <p class="text-sm text-gray-500">
                                         Product Name: {{ props.selectedProductsData[0].name }}
                                     </p>
                                     <p class="text-sm text-gray-500">
-                                        Quantity: {{ props.selectedProductsData[0].desired_quantity ?? 1 }}
+                                        Quantity:
+                                        {{ props.selectedProductsData[0].desired_quantity ?? 1 }}
                                     </p>
                                     <p class="text-sm text-gray-500">
-                                        Total Price: ₱{{ getProductTotal(props.selectedProductsData[0]) }}
+                                        Total Price: ₱{{
+                                            getProductTotal(props.selectedProductsData[0])
+                                        }}
                                     </p>
                                 </template>
-                                <template v-else-if="props.selectedProductsData && props.selectedProductsData.length > 1">
+                                <template
+                                    v-else-if="
+                                        props.selectedProductsData &&
+                                        props.selectedProductsData.length > 1
+                                    "
+                                >
                                     <div>
                                         <p class="text-sm text-gray-500 mb-1">
-                                            <span class="font-bold">Order includes the following products:</span>
+                                            <span class="font-bold">
+                                                Order includes the following products:
+                                            </span>
                                         </p>
                                         <ul class="ml-2 text-xs text-gray-500 list-disc">
                                             <li
                                                 v-for="(product, idx) in props.selectedProductsData"
                                                 :key="`prod-${idx}`"
                                             >
-                                                {{ product.name }}<span v-if="product.size?.name"> ({{ product.size?.name }})</span> - Qty: {{ product.desired_quantity ?? 1 }}, ₱{{ getProductTotal(product) }}
+                                                {{ product.name }}
+                                                <span v-if="product.size?.name">
+                                                    ({{ product.size?.name }})
+                                                </span>
+                                                - Qty: {{ product.desired_quantity ?? 1 }}, ₱{{
+                                                    getProductTotal(product)
+                                                }}
                                             </li>
                                         </ul>
                                     </div>
@@ -179,7 +200,9 @@ import type { ProductIndexPayment } from '@/types/product';
                             </p>
 
                             <div
-                                v-if="props.selectedProductsData && props.selectedProductsData.length"
+                                v-if="
+                                    props.selectedProductsData && props.selectedProductsData.length
+                                "
                                 class="flex flex-col gap-10"
                             >
                                 <div
@@ -189,12 +212,18 @@ import type { ProductIndexPayment } from '@/types/product';
                                 >
                                     <!-- Product Info and QR Codes (VERTICAL alignment, no flex-row) -->
                                     <div class="mb-2">
-                                        <h2 class="font-bold">{{ product.name }}<span v-if="product.size?.name"> ({{ product.size?.name }})</span></h2>
+                                        <h2 class="font-bold">
+                                            {{ product.name }}
+                                            <span v-if="product.size?.name">
+                                                ({{ product.size?.name }})
+                                            </span>
+                                        </h2>
                                         <div class="text-sm text-gray-600">
-                                            Quantity: <b>{{ product.desired_quantity ?? 1 }}</b>
-                                            <br>
+                                            Quantity:
+                                            <b>{{ product.desired_quantity ?? 1 }}</b>
+                                            <br />
                                             Price per unit: ₱{{ product.unit_price }}
-                                            <br>
+                                            <br />
                                             <span>
                                                 Total Price:
                                                 <span class="font-bold text-blue-700">
@@ -204,7 +233,9 @@ import type { ProductIndexPayment } from '@/types/product';
                                         </div>
                                     </div>
                                     <!-- QR Codes in a row but block context -->
-                                    <div class="flex items-center justify-center gap-12 h-full mb-0">
+                                    <div
+                                        class="flex items-center justify-center gap-12 h-full mb-0"
+                                    >
                                         <div class="flex flex-col items-center justify-center">
                                             <img
                                                 src="/jarvis-gcash-qr.webp"
@@ -217,8 +248,14 @@ import type { ProductIndexPayment } from '@/types/product';
                                             </h1>
                                         </div>
                                         <div class="flex flex-col items-center justify-center">
-                                            <img src="/jd-maya.jpeg" alt="Generated QR CODE" width="180" />
-                                            <h1 class="text-gray-500 text-sm">Roanne Mae Na Anunciado</h1>
+                                            <img
+                                                src="/jd-maya.jpeg"
+                                                alt="Generated QR CODE"
+                                                width="180"
+                                            />
+                                            <h1 class="text-gray-500 text-sm">
+                                                Roanne Mae Na Anunciado
+                                            </h1>
                                             <h1 class="text-gray-500 flex gap-2">
                                                 <p class="text-green-600">Maya</p>
                                             </h1>
@@ -229,7 +266,9 @@ import type { ProductIndexPayment } from '@/types/product';
                                                 alt="Generated QR CODE"
                                                 width="180"
                                             />
-                                            <h1 class="text-gray-500 text-sm">Roanne Mae Na Anunciado</h1>
+                                            <h1 class="text-gray-500 text-sm">
+                                                Roanne Mae Na Anunciado
+                                            </h1>
                                             <h1 class="text-gray-500 flex gap-2">
                                                 <p class="text-orange-600">UnionBank</p>
                                             </h1>
@@ -237,11 +276,16 @@ import type { ProductIndexPayment } from '@/types/product';
                                     </div>
                                     <!-- Payment Screenshot Upload, full width, VERTICAL under QR -->
                                     <div class="flex flex-col gap-2 w-full">
-                                        <label class="text-xs font-medium mb-1 text-gray-700">Screenshot of Payment Confirmation</label>
+                                        <label class="text-xs font-medium mb-1 text-gray-700">
+                                            Screenshot of Payment Confirmation
+                                        </label>
                                         <div
                                             class="w-full border-2 border-dashed border-gray-300 rounded-md p-4 flex flex-col items-center justify-center relative h-[170px] bg-white"
                                         >
-                                            <div v-if="previewUrls[idx]" class="relative w-full h-full">
+                                            <div
+                                                v-if="previewUrls[idx]"
+                                                class="relative w-full h-full"
+                                            >
                                                 <img
                                                     :src="previewUrls[idx]!"
                                                     alt="Payment Preview"
@@ -276,11 +320,15 @@ import type { ProductIndexPayment } from '@/types/product';
                                                     Screenshot of Payment Confirmation
                                                 </p>
                                                 <input
-                                                    :ref="el => { fileInputRefs[idx] = el }"
+                                                    :ref="
+                                                        (el) => {
+                                                            fileInputRefs[idx] = el
+                                                        }
+                                                    "
                                                     type="file"
                                                     accept="image/*"
                                                     class="hidden"
-                                                    @change="e => handleFileChange(e, idx)"
+                                                    @change="(e) => handleFileChange(e, idx)"
                                                 />
                                                 <button
                                                     type="button"

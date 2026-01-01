@@ -32,7 +32,7 @@
     import { OrderAction, type ProductDetails } from '@/types/order'
     import OrderProductModal from './OrderProductModal.vue'
     import { useRouter } from 'vue-router'
-import { colorOptions, colorPalette } from '@/utils/color'
+    import { colorOptions, colorPalette } from '@/utils/color'
 
     const props = defineProps({
         product: {
@@ -197,8 +197,6 @@ import { colorOptions, colorPalette } from '@/utils/color'
 
         addToCartMutation.mutate(formData)
     })
-
-   
 
     const swatchColor = computed<string | null>(() => {
         // If custom, use the free-text input; otherwise the selected option label
@@ -489,6 +487,11 @@ import { colorOptions, colorPalette } from '@/utils/color'
     <Loader
         v-if="addToCartMutation.isPending.value && selectedOrderAction === OrderAction.ADD_TO_CART"
         msg="Adding to Cart..."
+    />
+
+    <Loader
+        v-if="addToCartMutation.isPending.value && selectedOrderAction === OrderAction.BUY_NOW"
+        msg="Processing Order..."
     />
 
     <!-- <OrderProductModal

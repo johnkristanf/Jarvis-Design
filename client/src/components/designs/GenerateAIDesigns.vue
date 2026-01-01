@@ -171,7 +171,7 @@
                                         class="absolute right-6 top-1/2 z-20 w-60 -translate-y-1/2 rounded bg-gray-900 px-3 py-2 text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
                                         style="white-space: normal;"
                                     >
-                                        For every generation, there is a corresponding 5 credits, which will add up to your overall payment on your next order.
+                                        For every generation, it's equivalent to 5 credits, which will add up to your overall payment on your next order.
                                     </div>
                                 </div>
                                 <h1 class="text-gray-500 text-sm mr-13">
