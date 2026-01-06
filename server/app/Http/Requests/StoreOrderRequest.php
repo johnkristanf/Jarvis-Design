@@ -31,11 +31,11 @@ class StoreOrderRequest extends FormRequest
             'products.*.product_id' => 'required|numeric',
             'products.*.product_unit_price' => 'required|numeric',
             'products.*.product_color' => 'required|string',
-            'products.*.fabric_type_id' => 'required|numeric',
+            'products.*.fabric_type_id' => 'nullable|numeric',
             'products.*.payment_attachment' => 'required|file',
             'products.*.total_quantity' => 'required|numeric',
             'products.*.total_price' => 'required|numeric',
-            'products.*.sizes' => 'required|string',
+            'products.*.sizes' => 'nullable|string',
             'products.*.own_design_url' => 'nullable|string',
 
         ];

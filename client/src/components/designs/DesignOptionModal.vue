@@ -40,6 +40,10 @@
             required: true,
         },
     })
+    onMounted(() => {
+        console.log("props.product: ", props.product);
+        
+    })
 
     const emit = defineEmits(['close'])
     const handleClose = () => emit('close')
@@ -183,7 +187,11 @@
         const formData = new FormData()
         formData.append('product_id', props.product.id.toString())
         formData.append('fabric_type_id', values.fabricTypeId.toString())
-        formData.append('size_id', values.sizeId.toString())
+
+        if (props.product.fabric_type) {
+            formData.append('size_id', values.sizeId.toString())
+        }
+        
         formData.append('color', values.color)
 
         if (uploadedOwnDesignFile.value) {
@@ -419,7 +427,10 @@
                                         </div>
 
                                         <!-- Size Selection -->
-                                        <div class="mb-5">
+                                        <div
+                                            v-if="props.product.fabric_type"
+                                            class="mb-5"
+                                        >
                                             <label class="block text-sm text-gray-600 mb-1">
                                                 Size:
                                             </label>

@@ -281,13 +281,14 @@
                                 color: 'white',
                             }"
                         >
-                            {{ item.color ? item.color : 'No size' }}
+                            {{ item.color ? item.color : 'No color' }}
                         </span>
 
                         <span
+                            v-if="item.size"
                             class="w-[4%] inline-block bg-blue-100 text-blue-800 text-xs text-center font-semibold px-2 py-1 rounded-md"
                         >
-                            {{ item.size ? item.size.name : 'No size' }}
+                            {{ item.size.name }}
                         </span>
                     </div>
                 </div>
@@ -320,7 +321,9 @@
                 >
                     <div class="flex items-center gap-3 w-full md:w-auto">
                         <span class="font-semibold text-lg text-white">Total Price:</span>
-                        <span class="flex items-center gap-2 font-bold text-2xl text-blue-300 tracking-wide">
+                        <span
+                            class="flex items-center gap-2 font-bold text-2xl text-blue-300 tracking-wide"
+                        >
                             ₱ {{ totalPrice.toLocaleString() }}
 
                             <span

@@ -149,7 +149,10 @@
             data.append(`products[${idx}][product_id]`, product.id.toString())
             data.append(`products[${idx}][product_unit_price]`, product.unit_price.toString())
             data.append(`products[${idx}][product_color]`, product.color)
-            data.append(`products[${idx}][fabric_type_id]`, product.fabric_type_id.toString())
+            
+            if (product.fabric_type_id) {
+                data.append(`products[${idx}][fabric_type_id]`, product.fabric_type_id.toString())
+            }
 
             if (formData.value.designType === 'own-design' && product.own_design_url) {
                 data.append(`products[${idx}][own_design_url]`, product.own_design_url)

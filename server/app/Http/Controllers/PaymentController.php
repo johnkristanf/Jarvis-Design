@@ -142,7 +142,7 @@ class PaymentController extends Controller
         $validated = $request->validated();
     
         Log::info('Validated Place Order Request: ' . json_encode($validated, JSON_PRETTY_PRINT));
-    
+
         $orders = DB::transaction(function () use ($validated, $request) {
     
             $createdOrders = [];
@@ -210,12 +210,34 @@ class PaymentController extends Controller
                 if (! empty($product['fabric_type_id'])) {
     
                     $fabric = Materials::lockForUpdate()->findOrFail($product['fabric_type_id']);
-    
-                    $fabricUsedPerUnit = (float) $fabric->products()
-                        ->where('products.id', $product['product_id'])
-                        ->value('fabric_quantity');
-    
-                    $deduction = $product['total_quantity'] * $fabricUsedPerUnit;
+
+                    $deduction = 0;
+
+                    // If the fabric's unit is roll, the decimal computation happens
+                    if($fabric && $fabric->unit){
+                        
+                    // Sample value:
+                    // [
+                    //     'XXS' => 1,
+                    //     'XS' => 2,
+                    //     'S' => 3,
+                    //     'M' => 4,
+                    //     'L' => 5,
+                    //     'XL' => 6,
+                    //     'XXL' => 7,
+                    // ]
+                    $sizes = \App\Models\Sizes::pluck('id', 'name');
+
+
+                    } else {
+                        $fabricUsedPerUnit = (float) $fabric->products()
+                            ->where('products.id', $product['product_id'])
+                            ->value('fabric_quantity');
+        
+                        $deduction = $product['total_quantity'] * $fabricUsedPerUnit;
+                    }
+
+                    Log::info("deduction: ", $deduction);
     
                     if ($fabric->quantity < $deduction) {
                         throw new \Exception("Not enough material stock for {$fabric->name}");
