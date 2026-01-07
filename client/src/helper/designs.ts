@@ -41,3 +41,17 @@ export const formatDate = (value: string) => {
 export const formateNotificationTimeAgo = (date: string | Date) => {
     return dayjs(date).fromNow()
 }
+
+export const truncateNonDecimal = (value: number) => {
+    const num = Number(value)
+
+    if (Number.isNaN(num)) return value
+
+    // If value is 1 or greater → no decimals
+    if (Math.abs(num) >= 1) {
+        return Math.trunc(num)
+    }
+
+    // If pure decimal → show decimals (trim trailing zeros)
+    return num.toString().replace(/\.?0+$/, '')
+}

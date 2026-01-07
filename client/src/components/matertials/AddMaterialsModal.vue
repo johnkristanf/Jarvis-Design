@@ -136,12 +136,15 @@
                         <label class="block text-sm">Unit</label>
                     </div>
 
-                    <input
+                    <select
                         v-model="unit"
-                        type="text"
                         class="font-medium w-full px-3 py-2 rounded mt-1 border"
-                        placeholder="rolls, meters, yards, etc..."
-                    />
+                    >
+                        <option value="" disabled>Select unit</option>
+                        <option value="rolls">rolls</option>
+                        <option value="meters">meters</option>
+                        <option value="yards">yards</option>
+                    </select>
                     <span class="text-sm text-red-600 mt-1 block">{{ unitError }}</span>
                 </div>
 

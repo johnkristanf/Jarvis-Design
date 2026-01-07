@@ -42,7 +42,15 @@
             type: Object as PropType<ProductDetails[]>,
             required: true,
         },
+
+        selectedCartIds: {
+            type: Array as PropType<number[]>,
+            required: true,
+        },
     })
+
+    console.log("props.selectedCartIds", props.selectedCartIds);
+    
 
     const { sizes, loadingSizes } = useProductAttributes()
     const queryClient = useQueryClient()
@@ -140,6 +148,7 @@
         data.append('address', formData.value.address)
         data.append('design_type', formData.value.designType)
         data.append('order_option', formData.value.orderOption?.name as string)
+        data.append('selected_cart_ids', JSON.stringify(props.selectedCartIds))
 
         console.log('paymentAttachmentFile: ', paymentAttachmentFile.value)
         console.log('checkedOutProductsArray : ', checkedOutProductsArray.value)
@@ -318,7 +327,6 @@
         showQrCodePaymentModal.value = false
 
         const formData = prepareFormData()
-        // Peek FormData (for debugging)
         for (const pair of formData.entries()) {
             console.log(pair[0] + ':', pair[1])
         }

@@ -22,6 +22,7 @@
     
     // @ts-expect-error event
     import FabricAdjustLogsModal from '../designs/FabricAdjustLogsModal.vue'
+import { truncateNonDecimal } from '@/helper/designs'
 
     // REF TOGGLER OF ADD NEW MATERIALS MODAL
     const modals = reactive({
@@ -174,10 +175,10 @@
                             'px-6 py-4',
                         ]"
                     >
-                        {{ material.quantity }}
+                        {{ truncateNonDecimal(material.quantity) }}
                     </td>
 
-                    <td class="px-6 py-4">{{ material.reorder_level }}</td>
+                    <td class="px-6 py-4">{{ truncateNonDecimal(material.reorder_level) }}</td>
 
                     <td class="px-6 py-6 flex gap-2">
                         <!-- INSERT_YOUR_CODE -->

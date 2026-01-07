@@ -26,6 +26,7 @@ class StoreOrderRequest extends FormRequest
             'address' => 'required|string',
             'design_type' => 'required|in:own-design,business-design,ai-generation',
             'order_option' => 'required|string',
+            'selected_cart_ids' => 'nullable|string',
 
             'products' => 'required|array|min:1',
             'products.*.product_id' => 'required|numeric',

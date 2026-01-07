@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('unit');
-            $table->unsignedInteger('quantity')->default(0);
-            $table->unsignedInteger('reorder_level')->default(0);
+            $table->decimal('quantity', 12, 6)->default(0);
+            $table->decimal('reorder_level', 12, 6)->default(0);
             $table->foreignId('category_id')->constrained('materials_category')->onDelete('cascade');
             $table->timestamps();
             $table->softDeletes();

@@ -362,6 +362,7 @@
         <OrderProductModal
             v-if="showCheckoutModal && checkoutProductDetailsRef"
             :product="checkoutProductDetailsRef"
+            :selectedCartIds="selectedCartIds"
             @close="showCheckoutModal = false"
         />
     </div>

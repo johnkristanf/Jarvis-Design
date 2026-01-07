@@ -214,21 +214,42 @@ class PaymentController extends Controller
                     $deduction = 0;
 
                     // If the fabric's unit is roll, the decimal computation happens
-                    if($fabric && $fabric->unit){
+                    if($fabric && $fabric->unit == 'rolls'){
                         
-                    // Sample value:
-                    // [
-                    //     'XXS' => 1,
-                    //     'XS' => 2,
-                    //     'S' => 3,
-                    //     'M' => 4,
-                    //     'L' => 5,
-                    //     'XL' => 6,
-                    //     'XXL' => 7,
-                    // ]
-                    $sizes = \App\Models\Sizes::pluck('id', 'name');
+                        $baseFabricQuantityUsed = 0;
+                        $deduction = 0;
 
+                        $sizeName = isset($decodedSizes['name']) ? $decodedSizes['name'] : null;
+                        switch ($sizeName) {
+                            case 'XXS':
+                                $baseFabricQuantityUsed = 0.003125;
+                                break;
+                            case 'XS':
+                                $baseFabricQuantityUsed = 0.00625;
+                                break;
+                            case 'S':
+                                $baseFabricQuantityUsed = 0.0125;
+                                break;
+                            case 'M':
+                                $baseFabricQuantityUsed = 0.025;
+                                break;
+                            case 'L':
+                                $baseFabricQuantityUsed = 0.05;
+                                break;
+                            case 'XL':
+                                $baseFabricQuantityUsed = 0.1;
+                                break;
+                            case 'XXL':
+                                $baseFabricQuantityUsed = 0.2;
+                                break;
+                            default:
+                                $baseFabricQuantityUsed = 0.003125; // Default to XXS value
+                        }
 
+                        $deduction = (float) ($baseFabricQuantityUsed * (float) $product['total_quantity']);
+
+                        Log::info("decodedSizes: ", [$decodedSizes]);
+                    
                     } else {
                         $fabricUsedPerUnit = (float) $fabric->products()
                             ->where('products.id', $product['product_id'])
@@ -237,11 +258,11 @@ class PaymentController extends Controller
                         $deduction = $product['total_quantity'] * $fabricUsedPerUnit;
                     }
 
-                    Log::info("deduction: ", $deduction);
+                    Log::info("deduction 123: ", [$deduction]);
     
-                    if ($fabric->quantity < $deduction) {
-                        throw new \Exception("Not enough material stock for {$fabric->name}");
-                    }
+                    // if ($fabric->quantity < $deduction) {
+                    //     throw new \Exception("Not enough material stock for {$fabric->name}");
+                    // }
     
                     $fabric->decrement('quantity', $deduction);
     
@@ -250,7 +271,7 @@ class PaymentController extends Controller
                         'order_id' => $order->id,
                         'material_name' => $fabric->name,
                         'unit' => $fabric->unit,
-                        'total_quantity_used' => $deduction,
+                        'total_quantity_used' => (float) $deduction,
                     ]);
                 }
 
