@@ -23,6 +23,7 @@ class FabricUsedPdfExport
     {
         $fabricUsed = OrderLogs::select(
             'material_name',
+            DB::raw('MIN(unit) as unit'),
             DB::raw('SUM(total_quantity_used) as total_used')
         )
             ->whereBetween(DB::raw('DATE(created_at)'), [
@@ -40,6 +41,7 @@ class FabricUsedPdfExport
             $used = (float) $fabric->total_used;
             $rows[] = [
                 'fabric' => $fabric->material_name,
+                'unit' => $fabric->unit,
                 'total_used' => number_format($used, 2),
             ];
             $totalUsed += $used;

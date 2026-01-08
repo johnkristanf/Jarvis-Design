@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Events\PaymentUpdated;
 use App\Http\Requests\StoreOrderRequest;
 use App\Models\AdminNotification;
+use App\Models\Cart;
 use App\Models\Materials;
 use App\Models\OrderLogs;
 use App\Models\OrderPayment;
@@ -185,7 +186,18 @@ class PaymentController extends Controller
                 }
 
 
+                $decodedCartIds = json_decode($validated['selected_cart_ids']);
                 $decodedSizes = json_decode($product['sizes'], true);
+
+                if(!empty($decodedCartIds)){
+                    foreach ($decodedCartIds as $cartId) {
+                        $cart = Cart::find($cartId);
+                        if ($cart) {
+                            $cart->delete();
+                        }
+                    }
+                }
+
                 if (! empty($decodedSizes)) {
                     if ($product['total_quantity'] > 0) {
                         $order->sizes()->attach($decodedSizes['id'], ['quantity' => $product['total_quantity']]);
@@ -258,12 +270,13 @@ class PaymentController extends Controller
                         $deduction = $product['total_quantity'] * $fabricUsedPerUnit;
                     }
 
-                    Log::info("deduction 123: ", [$deduction]);
-    
                     // if ($fabric->quantity < $deduction) {
                     //     throw new \Exception("Not enough material stock for {$fabric->name}");
                     // }
-    
+
+                    // Cap deduction to the available quantity (min 0)
+                    $deduction = max(0, min($deduction, $fabric->quantity));
+                    
                     $fabric->decrement('quantity', $deduction);
     
                     OrderLogs::create([

@@ -245,6 +245,8 @@
         },
         onSuccess: (response) => {
             queryClient.invalidateQueries({ queryKey: ['order_notifications'] })
+            queryClient.invalidateQueries({ queryKey: ['cart_items'] })
+            
             toast.add({
                 severity: 'success',
                 summary: 'Order Place Successfully!',

@@ -71,6 +71,16 @@
             border-top: 2px solid #1f2937; /* gray-900 */
             padding-top: 15px;
         }
+        /* Make the 'Total' row's top border span the full width */
+        .total-row td {
+            border-bottom: none;
+        }
+        .total-row td:first-child {
+            border-right: none;
+        }
+        .total-row td {
+            /* Ensuring border-top goes fully across all cells */
+        }
         .amount {
             text-align: right;
         }
@@ -94,6 +104,7 @@
         <thead>
             <tr>
                 <th>Fabric Name</th>
+                <th>Unit</th>
                 <th class="amount">Total Used</th>
             </tr>
         </thead>
@@ -101,15 +112,17 @@
             @foreach($rows as $row)
             <tr>
                 <td>{{ $row['fabric'] }}</td>
+                <td>{{ $row['unit'] }}</td>
                 <td class="amount">{{ $row['total_used'] }}</td>
             </tr>
             @endforeach
-            <tr class="total-row">
-                <td>Total</td>
-                <td class="amount">{{ $totalUsed }}</td>
-            </tr>
         </tbody>
+        <tfoot>
+            <tr class="total-row">
+                <td colspan="2" style="text-align:left; border-top:2px solid #1f2937; border-bottom: none;">Total</td>
+                <td class="amount" style="font-weight:bold; border-top:2px solid #1f2937; border-bottom: none;">{{ $totalUsed }}</td>
+            </tr>
+        </tfoot>
     </table>
 </body>
 </html>
-

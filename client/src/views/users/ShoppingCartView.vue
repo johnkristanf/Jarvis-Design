@@ -19,8 +19,6 @@
         queryKey: ['cart_items'],
         queryFn: async () => {
             const respData = await apiService.get<CartItem[]>(`/api/get/all/cart`)
-            console.log('respData:', respData)
-
             return respData
         },
     })
@@ -355,8 +353,8 @@
         <!-- Empty State -->
         <div v-else class="text-center px-5 py-20">
             <div class="text-8xl mb-5 opacity-50">🛒</div>
-            <p class="text-xl text-white/60 mb-2">Your cart is empty</p>
-            <p class="text-sm text-white/40">Add items to get started</p>
+            <p class="text-xl text-gray-900/60 mb-2">Your cart is empty</p>
+            <p class="text-sm text-gray-900/60">Add items to get started</p>
         </div>
 
         <OrderProductModal

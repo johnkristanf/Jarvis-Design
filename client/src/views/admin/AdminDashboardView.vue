@@ -28,7 +28,7 @@
     import type { CardAnalytics, LatestOrders } from '@/types/order'
     import StatusBadge from '@/components/orders/StatusBadge.vue'
     import { downloadBlobFile } from '@/helper/report'
-    import { reactive } from 'vue'
+    import { reactive, ref } from 'vue'
 
     ChartJS.register(
         CategoryScale,
@@ -50,6 +50,11 @@
         start: defaultStart,
         end: defaultEnd,
     })
+
+    // --- REF STATES FOR DOWNLOAD REQUEST TYPES ---
+    const isMonthlyReportDownloading = ref(false)
+    const isCategoryReportDownloading = ref(false)
+    const isFabricUsedReportDownloading = ref(false)
 
     // SALES PER CATEGORY BAR CHART DATA
     const { data: salePerProductCategory } = useQuery({
@@ -118,6 +123,7 @@
 
     // DOWNLOAD MONTHLY REPORT
     const exportMonthlyReport = async () => {
+        isMonthlyReportDownloading.value = true
         try {
             const params = { start_date: dateFilter.start, end_date: dateFilter.end }
             const response = await apiService.get<Blob>('/api/get/reports/monthly-sales', {
@@ -128,11 +134,14 @@
             downloadBlobFile(response, 'monthly_sales_report.pdf')
         } catch (error) {
             console.error('Download Report Error: ', error)
+        } finally {
+            isMonthlyReportDownloading.value = false
         }
     }
 
     // DOWNLOAD REPORT PER CATEGORY
     const downloadReportPerCategory = async () => {
+        isCategoryReportDownloading.value = true
         try {
             const params = { start_date: dateFilter.start, end_date: dateFilter.end }
             const response = await apiService.get<Blob>('/api/get/reports/category-sales', {
@@ -143,11 +152,14 @@
             downloadBlobFile(response, 'category_sales_report.pdf')
         } catch (error) {
             console.error('Download Report Error: ', error)
+        } finally {
+            isCategoryReportDownloading.value = false
         }
     }
 
     // DOWNLOAD REPORT PER FABRIC USED
     const downloadReportPerFabricUsed = async () => {
+        isFabricUsedReportDownloading.value = true
         try {
             const params = { start_date: dateFilter.start, end_date: dateFilter.end }
             const response = await apiService.get<Blob>('/api/get/reports/fabric-used', {
@@ -158,6 +170,8 @@
             downloadBlobFile(response, 'fabric_used_report.pdf')
         } catch (error) {
             console.error('Download Report Error: ', error)
+        } finally {
+            isFabricUsedReportDownloading.value = false
         }
     }
 
@@ -292,9 +306,14 @@
                 <div class="flex justify-end">
                     <button
                         @click="exportMonthlyReport"
-                        class="bg-blue-600 p-2 text-xs text-white rounded-md hover:cursor-pointer hover:opacity-75"
+                        :disabled="isMonthlyReportDownloading"
+                        :class="[
+                            'p-2 text-xs text-white rounded-md hover:cursor-pointer hover:opacity-75',
+                            isMonthlyReportDownloading ? 'bg-gray-400' : 'bg-blue-600'
+                        ]"
                     >
-                        Export
+                        <span v-if="isMonthlyReportDownloading">Exporting...</span>
+                        <span v-else>Export</span>
                     </button>
                 </div>
 
@@ -310,9 +329,14 @@
                 <div class="flex justify-end">
                     <button
                         @click="downloadReportPerCategory"
-                        class="bg-blue-600 p-2 text-xs text-white rounded-md hover:cursor-pointer hover:opacity-75"
+                        :disabled="isCategoryReportDownloading"
+                        :class="[
+                            'p-2 text-xs text-white rounded-md hover:cursor-pointer hover:opacity-75',
+                            isCategoryReportDownloading ? 'bg-gray-400' : 'bg-blue-600'
+                        ]"
                     >
-                        Export
+                        <span v-if="isCategoryReportDownloading">Exporting...</span>
+                        <span v-else>Export</span>
                     </button>
                 </div>
 
@@ -328,9 +352,14 @@
                 <div class="flex justify-end">
                     <button
                         @click="downloadReportPerFabricUsed"
-                        class="bg-blue-600 p-2 text-xs text-white rounded-md hover:cursor-pointer hover:opacity-75"
+                        :disabled="isFabricUsedReportDownloading"
+                        :class="[
+                            'p-2 text-xs text-white rounded-md hover:cursor-pointer hover:opacity-75',
+                            isFabricUsedReportDownloading ? 'bg-gray-400' : 'bg-blue-600'
+                        ]"
                     >
-                        Export
+                        <span v-if="isFabricUsedReportDownloading">Exporting...</span>
+                        <span v-else>Export</span>
                     </button>
                 </div>
 
@@ -340,7 +369,7 @@
                         id="fabric-used"
                         :options="{
                             ...chartOptions,
-                            maintainAspectRatio: false, // important!
+                            maintainAspectRatio: false,
                         }"
                         :data="fabricUsed"
                     />
