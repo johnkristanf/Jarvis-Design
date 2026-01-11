@@ -18,6 +18,7 @@ import VerifiedEmail from '@/views/users/VerifiedEmail.vue'
 import AccountProfile from '@/views/users/AccountProfile.vue'
 import AdminAccountProfileView from '@/views/admin/AdminAccountProfileView.vue'
 import ShoppingCartView from '@/views/users/ShoppingCartView.vue'
+import AdminReportsView from '@/views/admin/AdminReportsView.vue'
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -98,6 +99,11 @@ const router = createRouter({
                 {
                     path: 'dashboard',
                     component: AdminDashboardView,
+                },
+
+                {
+                    path: 'reports',
+                    component: AdminReportsView,
                 },
 
                 {

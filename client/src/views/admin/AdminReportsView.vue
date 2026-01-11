@@ -203,9 +203,9 @@
     <!-- THIS WILL DISPLAY GRIDS FOR EACH GRAPHS AND CHARTS FOR DASHBOARD SPECIFIC LAYOUT -->
 
     <div class="w-full p-4 rounded-md bg-gray-100 border-1 border-gray-400">
-        <h1 class="text-2xl">Dashboard</h1>
+        <h1 class="text-2xl">Reports</h1>
         <p class="text-sm text-gray-400 mt-1 mb-7">
-            Provide an overview of order metrics at glance
+            Overview reports for every transactions, providing an insightful data.
         </p>
 
         <div class="flex justify-end mb-6">
@@ -243,67 +243,11 @@
             </div>
         </div>
 
-        <!-- CARD ANALYTICS STATS START -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <div
-                class="bg-white rounded-lg shadow flex flex-col items-center justify-center py-6 px-4 border border-gray-200 min-h-[110px]"
-            >
-                <span class="text-xs text-gray-500 mb-1">Total Sales</span>
-                <span class="text-2xl font-semibold text-indigo-700">
-                    <template v-if="cardAnalytics && cardAnalytics.total_sales !== undefined">
-                        ₱{{
-                            Number(cardAnalytics.total_sales).toLocaleString(undefined, {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                            })
-                        }}
-                    </template>
-                    <template v-else>–</template>
-                </span>
-            </div>
-            <div
-                class="bg-white rounded-lg shadow flex flex-col items-center justify-center py-6 px-4 border border-gray-200 min-h-[110px]"
-            >
-                <span class="text-xs text-gray-500 mb-1">Total Customers</span>
-                <span class="text-2xl font-semibold text-teal-600">
-                    <template v-if="cardAnalytics && cardAnalytics.total_customers !== undefined">
-                        {{ cardAnalytics.total_customers }}
-                    </template>
-                    <template v-else>–</template>
-                </span>
-            </div>
-            <div
-                class="bg-white rounded-lg shadow flex flex-col items-center justify-center py-6 px-4 border border-gray-200 min-h-[110px]"
-            >
-                <span class="text-xs text-gray-500 mb-1">Pending Orders</span>
-                <span class="text-2xl font-semibold text-amber-500">
-                    <template
-                        v-if="cardAnalytics && cardAnalytics.total_pending_orders !== undefined"
-                    >
-                        {{ cardAnalytics.total_pending_orders }}
-                    </template>
-                    <template v-else>–</template>
-                </span>
-            </div>
-            <div
-                class="bg-white rounded-lg shadow flex flex-col items-center justify-center py-6 px-4 border border-gray-200 min-h-[110px]"
-            >
-                <span class="text-xs text-gray-500 mb-1">Completed Orders</span>
-                <span class="text-2xl font-semibold text-green-600">
-                    <template
-                        v-if="cardAnalytics && cardAnalytics.total_completed_orders !== undefined"
-                    >
-                        {{ cardAnalytics.total_completed_orders }}
-                    </template>
-                    <template v-else>–</template>
-                </span>
-            </div>
-        </div>
+       
         <!-- CARD ANALYTICS STATS END -->
 
         <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-            <!-- REPORT ANALYTICS -->
-            <!-- <div class="h-[300px] rounded-md p-3 bg-gray-200">
+            <div class="h-[300px] rounded-md p-3 bg-gray-200">
                 <div class="flex justify-end">
                     <button
                         @click="exportMonthlyReport"
@@ -375,47 +319,8 @@
                         :data="fabricUsed"
                     />
                 </div>
-            </div> -->
-
-            <div class="h-[300px] rounded-md p-3 lg:col-span-2">
-                <p class="text-gray-700">Latest Orders</p>
-
-                <fwb-table class="w-full h-full mt-3">
-                    <fwb-table-head>
-                        <fwb-table-head-cell class="text-xs text-white uppercase bg-gray-900">
-                            Order No.
-                        </fwb-table-head-cell>
-                        <fwb-table-head-cell
-                            class="px-16 py-3 text-xs text-white uppercase bg-gray-900"
-                        >
-                            Design
-                        </fwb-table-head-cell>
-                        <fwb-table-head-cell class="text-xs text-white uppercase bg-gray-900">
-                            Name
-                        </fwb-table-head-cell>
-                        <fwb-table-head-cell class="text-xs text-white uppercase bg-gray-900">
-                            Status
-                        </fwb-table-head-cell>
-                    </fwb-table-head>
-
-                    <fwb-table-body>
-                        <fwb-table-row v-for="order in latestOrders" :key="order.id">
-                            <fwb-table-cell>{{ order.order_number }}</fwb-table-cell>
-                            <fwb-table-cell>
-                                <img
-                                    :src="order.temp_url"
-                                    class="w-16 h-16 object-cover rounded-md border"
-                                    alt="Design Image"
-                                />
-                            </fwb-table-cell>
-                            <fwb-table-cell>{{ order.product.name }}</fwb-table-cell>
-                            <fwb-table-cell>
-                                <StatusBadge :status="order.status" />
-                            </fwb-table-cell>
-                        </fwb-table-row>
-                    </fwb-table-body>
-                </fwb-table>
             </div>
+
         </div>
     </div>
 </template>

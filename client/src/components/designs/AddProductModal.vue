@@ -203,7 +203,7 @@
 
                 <!-- PRODUCT FABRIC TYPE (OPTIONAL) -->
 
-                <div v-if="isFabricRequired">
+                <!-- <div v-if="isFabricRequired">
                     <label class="block text-sm mb-3">
                         Unit Fabric Quantity Used ({{ selectedFabricUnit }})
                     </label>
@@ -213,7 +213,7 @@
                         class="font-medium w-full border p-2 rounded"
                     />
                     <p class="text-sm text-red-500 mt-1">{{ fabricQuantityError }}</p>
-                </div>
+                </div> -->
 
                 <!-- PRODUCT UNIT PRICE -->
                 <div>

@@ -2,7 +2,7 @@
     import Toast from 'primevue/toast'
 
     import { Dialog, DialogPanel, DialogTitle, DialogDescription } from '@headlessui/vue'
-    import { defineProps, defineEmits, onMounted, onUpdated, nextTick } from 'vue'
+    import { onMounted, onUpdated, nextTick } from 'vue'
     import { useForm, useField } from 'vee-validate'
     import * as yup from 'yup'
     import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
@@ -136,14 +136,9 @@
                         <label class="block text-sm">Unit</label>
                     </div>
 
-                    <select
-                        v-model="unit"
-                        class="font-medium w-full px-3 py-2 rounded mt-1 border"
-                    >
+                    <select v-model="unit" class="font-medium w-full px-3 py-2 rounded mt-1 border">
                         <option value="" disabled>Select unit</option>
                         <option value="rolls">rolls</option>
-                        <option value="meters">meters</option>
-                        <option value="yards">yards</option>
                     </select>
                     <span class="text-sm text-red-600 mt-1 block">{{ unitError }}</span>
                 </div>
