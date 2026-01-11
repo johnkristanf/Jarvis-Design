@@ -322,7 +322,8 @@
                                                 <input
                                                     :ref="
                                                         (el) => {
-                                                            fileInputRefs[idx] = el
+                                                            fileInputRefs[idx] =
+                                                                el as HTMLInputElement | null
                                                         }
                                                     "
                                                     type="file"

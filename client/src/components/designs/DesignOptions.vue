@@ -1,6 +1,6 @@
 <script lang="ts" setup>
     import UploadDesignModal from '@/components/designs/UploadDesignModal.vue'
-    import GenerateAIDesignsModal from '@/components/designs/GenerateAIDesignsModal.vue'
+    import GenerateAIDesignsModal from '@/components/designs/GenerateAIDesigns.vue'
 
     import { DocumentArrowUpIcon, WrenchScrewdriverIcon } from '@heroicons/vue/20/solid'
     import { Popover, PopoverButton, PopoverPanel } from '@headlessui/vue'
@@ -43,7 +43,7 @@
                 <button
                     v-if="authStore.currentUser && authStore.isAuthenticated"
                     @click="handleOpenUploadModal"
-                    class="w-full mb-3 flex items-center justify-center gap-1 font-medium bg-gray-900 p-3 text-white w-[40%] rounded-md text-base focus:outline-none hover:bg-gray-700 cursor-pointer sm:text-sm/6"
+                    class="w-full mb-3 flex items-center justify-center gap-1 font-medium bg-gray-900 p-3 text-white  rounded-md text-base focus:outline-none hover:bg-gray-700 cursor-pointer sm:text-sm/6"
                 >
                     <DocumentArrowUpIcon class="size-5" />
                     Upload Design
@@ -52,7 +52,7 @@
                 <button
                     v-if="authStore.currentUser && authStore.isAuthenticated"
                     @click="handleOpenAIDesignModal"
-                    class="w-full flex items-center justify-center gap-1 font-medium bg-gray-900 p-3 text-white w-[40%] rounded-md text-base focus:outline-none hover:bg-gray-700 cursor-pointer sm:text-sm/6"
+                    class="w-full flex items-center justify-center gap-1 font-medium bg-gray-900 p-3 text-white  rounded-md text-base focus:outline-none hover:bg-gray-700 cursor-pointer sm:text-sm/6"
                 >
                     <WrenchScrewdriverIcon class="size-5" />
                     Generate AI Designs

@@ -200,13 +200,13 @@
         :isOpen="openDesignModal"
         @close="openDesignModal = false"
     />
-
+<!-- 
     <OrderProductModal
         v-if="showOrderModal && selectedCategoryRef && selectedProductRef"
         :categoryName="selectedCategoryRef"
         :product="selectedProductRef"
         @close="showOrderModal = false"
-    />
+    /> -->
 
     <DesignOptionModal
         v-if="showDesignOptionModal && selectedProductRef"

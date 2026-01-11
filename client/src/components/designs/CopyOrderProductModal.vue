@@ -162,9 +162,9 @@
         data.append('product_id', props.product.id.toString())
 
         // Null if the product has no corresponding fabric like (mugs, lanyard, etc..)
-        if (props.product.fabric_type && props.product.fabric_type.id) {
-            data.append('fabric_type_id', props.product.fabric_type.id.toString())
-        }
+        // if (props.product.fabric_type && props.product.fabric_type.id) {
+        //     data.append('fabric_type_id', props.product.fabric_type.id.toString())
+        // }
 
         // Conditionally append size quantities or solo quantity
         if (shouldIncludeSizes.value) {
@@ -855,13 +855,13 @@
 
     <Loader v-if="mutation.isPending.value" msg="Placing Order..." />
 
-    <QrCodePaymentModal
+    <!-- <QrCodePaymentModal
         v-if="showQrCodePaymentModal"
         :paymentData="qrCodePaymentData"
         @close="showQrCodePaymentModal = false"
         @place_order="handlePlaceOrder"
         @fileSelected="handlePaymentAttachmentFile"
-    />
+    /> -->
 
     <Toast />
 </template>
