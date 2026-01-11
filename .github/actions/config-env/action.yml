@@ -91,7 +91,7 @@ runs:
 
           AWS_ACCOUNT_ID=${{ inputs.aws_account_id }}
           AWS_DEFAULT_REGION="ap-southeast-1"
-          AWS_BUCKET="jarvis-designs"
+          AWS_BUCKET="jarvis-designs-production"
 
           QUEUE_CONNECTION=sqs
           SQS_PREFIX=https://sqs.ap-southeast-1.amazonaws.com/${{ inputs.aws_account_id }}
