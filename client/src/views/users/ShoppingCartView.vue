@@ -7,6 +7,7 @@
     import OrderProductModal from '@/components/designs/OrderProductModal.vue'
     import { colorPalette } from '@/utils/color'
     import { useFetchAuthenticatedUser } from '@/composables/useFetchAuthenticatedUser'
+    import { getCartItemImageSrc } from '@/helper/designs'
 
     const { authStore } = useFetchAuthenticatedUser()
 
@@ -201,25 +202,13 @@
 
                 <img
                     v-if="item.own_design_url"
-                    :src="
-                        'own_design_temp_url' in item
-                            ? (item as { own_design_temp_url?: string }).own_design_temp_url || ''
-                            : ''
-                    "
+                    :src="getCartItemImageSrc(item)"
                     alt="Own Design"
                     class="w-24 h-24 rounded-xl object-cover bg-white/10"
                 />
                 <img
                     v-else
-                    :src="
-                        item.product.designs &&
-                        item.product.designs[0] &&
-                        typeof item.product.designs[0] === 'object' &&
-                        'business_design_temp_url' in item.product.designs[0]
-                            ? (item.product.designs[0] as { business_design_temp_url?: string })
-                                  .business_design_temp_url || ''
-                            : ''
-                    "
+                    :src="getCartItemImageSrc(item)"
                     :alt="item.product.name"
                     class="w-24 h-24 rounded-xl object-cover bg-white/10"
                 />

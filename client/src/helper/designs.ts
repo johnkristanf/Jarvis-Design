@@ -1,6 +1,7 @@
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import 'dayjs/locale/en'
+import type { CartItem } from '@/types/order'
 
 dayjs.extend(relativeTime)
 dayjs.locale('en')
@@ -54,4 +55,17 @@ export const truncateNonDecimal = (value: number) => {
 
     // If pure decimal → show decimals (trim trailing zeros)
     return num.toString().replace(/\.?0+$/, '')
+}
+
+export const getCartItemImageSrc = (item: CartItem) => {
+    if (item.own_design_url) {
+        return (item as any).own_design_temp_url ?? ''
+    }
+
+    const design = item.product.designs?.[0]
+    if (design && typeof design === 'object' && 'business_design_temp_url' in design) {
+        return (design as any).business_design_temp_url ?? ''
+    }
+
+    return ''
 }
