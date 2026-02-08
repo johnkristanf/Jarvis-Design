@@ -15,6 +15,7 @@ composer install --no-interaction --no-dev --optimize-autoloader
 
 # Run database migrations
 php artisan migrate --seed --force
+php artisan optimize:clear
 php artisan optimize
 
 echo "✅ Starting queue work..."
