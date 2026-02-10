@@ -10,6 +10,7 @@ use App\Models\UploadedDesign;
 use App\OrderType;
 use App\Services\DesignsService;
 use Illuminate\Http\Request;
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -21,6 +22,65 @@ class DesignsController extends Controller
     public function __construct(DesignsService $designsService)
     {
         $this->designsService = $designsService;
+    }
+
+    private function s3TemporaryUrl(string $path, int $minutes = 10): ?string
+    {
+        /** @var FilesystemAdapter $s3 */
+        $s3 = Storage::disk('s3');
+
+        if (!$s3->exists($path)) {
+            return null;
+        }
+
+        return $s3->temporaryUrl($path, now()->addMinutes($minutes));
+    }
+
+    /**
+     * Public endpoint: fetch products with their designs (signed URLs) for customer-facing pages.
+     * Query params:
+     * - limit: number of products to return (default 6)
+     */
+    public function getProductsWithDesigns(Request $request)
+    {
+        $limit = (int) $request->get('limit', 6);
+        $limit = $limit > 0 ? $limit : 6;
+
+        $products = Products::select('id', 'name', 'unit_price', 'category_id')
+            ->with([
+                'design_category:id,name',
+                'designs:id,product_id,image_url',
+            ])
+            ->latest()
+            ->take($limit)
+            ->get();
+
+        $products->transform(function ($product) {
+            $designImages = $product->designs
+                ->map(function ($design) {
+                    if ($design->image_url) {
+                        $tempUrl = $this->s3TemporaryUrl($design->image_url, 10);
+                        if (!$tempUrl) {
+                            return null;
+                        }
+                        return [
+                            'id' => $design->id,
+                            'image_url' => $design->image_url,
+                            'temp_url' => $tempUrl,
+                        ];
+                    }
+                    return null;
+                })
+                ->filter()
+                ->values();
+
+            $product->design_images = $designImages;
+            unset($product->designs);
+
+            return $product;
+        });
+
+        return response()->json($products, 200);
     }
 
     public function getPreMadeDesigns($sort, $categories = '')
@@ -46,10 +106,7 @@ class DesignsController extends Controller
                     $product->designs->transform(function ($design) {
                         if (!empty($design->image_url)) {
                             // Set temp_url using S3 temporary URL for `image_path`
-                            $design->temp_url = Storage::disk('s3')->temporaryUrl(
-                                $design->image_url,
-                                now()->addMinutes(60)
-                            );
+                            $design->temp_url = $this->s3TemporaryUrl($design->image_url, 60);
                         } else {
                             $design->temp_url = null;
                         }
@@ -125,12 +182,11 @@ class DesignsController extends Controller
         $products->getCollection()->transform(function ($product) {
             // Generate temporary URLs for each design's image
             $designImages = $product->designs->map(function ($design) {
-                if ($design->image_url && Storage::disk('s3')->exists($design->image_url)) {
-
-                    $tempUrlString = Storage::disk('s3')->temporaryUrl(
-                        $design->image_url,
-                        now()->addMinutes(10) // 10 minutes validity
-                    );
+                if ($design->image_url) {
+                    $tempUrlString = $this->s3TemporaryUrl($design->image_url, 10);
+                    if (!$tempUrlString) {
+                        return null;
+                    }
 
                     return [
                         'id' => $design->id,
@@ -162,10 +218,7 @@ class DesignsController extends Controller
             ->where('product_id', $product_id)
             ->get()
             ->map(function ($design) {
-                $design->temp_url = Storage::disk('s3')->temporaryUrl(
-                    $design->image_url,              // key on S3
-                    now()->addMinutes(10)            // expires in 10 minutes
-                );
+                $design->temp_url = $this->s3TemporaryUrl($design->image_url, 10);
 
                 return $design;
             });
@@ -293,7 +346,7 @@ class DesignsController extends Controller
 
         foreach ($files as $filePath) {
             // Create temporary URL valid for 1 hour (60 minutes)
-            $tempUrl = Storage::disk('s3')->temporaryUrl($filePath, now()->addMinutes(60));
+            $tempUrl = $this->s3TemporaryUrl($filePath, 60);
             $urls[] = [
                 'temporary_url' => $tempUrl,
             ];

@@ -382,6 +382,8 @@
                                 Product Order Details
                             </DialogTitle>
 
+                            
+
                             <div class="space-y-7">
                                 <!-- Products List Section -->
                                 <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
@@ -502,39 +504,20 @@
                                     </div>
                                 </div>
 
-                                <!-- Phone Number Input -->
-                                <div class="mb-8">
-                                    <label class="block text-sm text-gray-600 mb-1">
-                                        Phone Number:
-                                    </label>
-                                    <div class="flex items-center">
-                                        <span
-                                            class="px-3 py-2 bg-gray-100 border border-r-0 border-gray-300 rounded-l-md text-gray-700"
-                                        >
-                                            +63
+                                <!-- Phone number and address as plain text at the top -->
+                                <div class="mb-4 bg-gray-100 p-4 rounded-lg border border-gray-200">
+                                    <div class="mb-2">
+                                        <span class="font-semibold text-gray-700 text-sm">Phone Number:</span>
+                                        <span class="ml-2 text-gray-800 text-sm">
+                                            {{ formData.phone_number }}
                                         </span>
-                                        <input
-                                            v-model="formData.phone_number"
-                                            type="number"
-                                            placeholder="9XXXXXXXXX"
-                                            class="w-full cursor-not-allowed px-3 py-2 border font-medium border-gray-300 rounded-r-md focus:outline-none focus:ring-2 focus:ring-gray-100"
-                                            readonly
-                                        />
                                     </div>
-                                </div>
-
-                                <!-- Full Address Input -->
-                                <div class="mb-8">
-                                    <label class="block text-sm text-gray-600 mb-1">
-                                        Full Address:
-                                    </label>
-                                    <input
-                                        v-model="formData.address"
-                                        type="text"
-                                        placeholder="Enter Address"
-                                        class="w-full cursor-not-allowed px-3 py-2 border font-medium border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-100"
-                                        readonly
-                                    />
+                                    <div>
+                                        <span class="font-semibold text-gray-700  text-sm">Full Address:</span>
+                                        <span class="ml-2 text-gray-800 text-sm">
+                                            {{ formData.address }}
+                                        </span>
+                                    </div>
                                 </div>
 
                                 <!-- ORDER OPTION -->

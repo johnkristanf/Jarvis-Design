@@ -322,7 +322,7 @@
 
     <div class="footer">
         <p class="prepared-by">Prepared by:</p>
-        <p class="owner-name">Jayson Santillan</p>
+        <p class="owner-name">Jason Santillan</p>
         <p class="owner-title">Owner</p>
         <p class="report-meta">This is a system generated report | Generated on {{ date('F d, Y g:i A') }}</p>
     </div>

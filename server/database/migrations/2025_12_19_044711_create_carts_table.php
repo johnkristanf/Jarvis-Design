@@ -19,6 +19,7 @@ return new class extends Migration
             $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
             $table->foreignId('fabric_type_id')->nullable()->constrained('materials')->onDelete('set null');
             $table->foreignId('size_id')->nullable()->constrained('sizes')->onDelete('set null');
+            $table->unsignedInteger('quantity')->default(1);
 
             $table->string('own_design_url')->nullable();
             $table->timestamps();

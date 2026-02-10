@@ -131,11 +131,11 @@
                         leave-to="opacity-0 scale-95"
                     >
                         <DialogPanel
-                            class="w-[1000px] max-w-7xl transform overflow-hidden rounded-2xl bg-white p-6 mb-8 text-left align-middle shadow-xl transition-all"
+                            class="w-full max-w-[1000px] transform overflow-hidden rounded-2xl bg-white p-4 sm:p-6 mb-8 text-left align-middle shadow-xl transition-all"
                         >
                             <DialogTitle
                                 as="h3"
-                                class="text-lg font-medium leading-6 text-gray-900"
+                                class="text-base sm:text-lg font-medium leading-6 text-gray-900"
                             >
                                 Scan Payment Method QR Code
                             </DialogTitle>
@@ -190,8 +190,8 @@
                                 </template>
                             </div>
 
-                            <p class="text-sm text-center my-5">
-                                <strong class="text-lg">Note:</strong>
+                            <p class="text-xs sm:text-sm text-center my-4 sm:my-5">
+                                <strong class="text-base sm:text-lg">Note:</strong>
                                 <br />
                                 A minimum payment of
                                 <strong>50% of the total amount</strong>
@@ -203,22 +203,22 @@
                                 v-if="
                                     props.selectedProductsData && props.selectedProductsData.length
                                 "
-                                class="flex flex-col gap-10"
+                                class="flex flex-col gap-6 sm:gap-10"
                             >
                                 <div
                                     v-for="(product, idx) in props.selectedProductsData"
                                     :key="`upload-section-${idx}`"
-                                    class="border border-gray-200 rounded-xl shadow-sm p-6 flex flex-col gap-5 bg-gray-50"
+                                    class="border border-gray-200 rounded-xl shadow-sm p-4 sm:p-6 flex flex-col gap-4 sm:gap-5 bg-gray-50"
                                 >
-                                    <!-- Product Info and QR Codes (VERTICAL alignment, no flex-row) -->
+                                    <!-- Product Info -->
                                     <div class="mb-2">
-                                        <h2 class="font-bold">
+                                        <h2 class="font-bold text-sm sm:text-base">
                                             {{ product.name }}
                                             <span v-if="product.size?.name">
                                                 ({{ product.size?.name }})
                                             </span>
                                         </h2>
-                                        <div class="text-sm text-gray-600">
+                                        <div class="text-xs sm:text-sm text-gray-600">
                                             Quantity:
                                             <b>{{ product.desired_quantity ?? 1 }}</b>
                                             <br />
@@ -232,55 +232,73 @@
                                             </span>
                                         </div>
                                     </div>
-                                    <!-- QR Codes in a row but block context -->
+                                    
+                                    <!-- QR Codes - responsive grid -->
                                     <div
-                                        class="flex items-center justify-center gap-12 h-full mb-0"
+                                        class="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 lg:gap-12 mb-0"
                                     >
                                         <div class="flex flex-col items-center justify-center">
                                             <img
                                                 src="/jarvis-gcash-qr.webp"
                                                 alt="Generated QR CODE"
-                                                width="180"
+                                                class="w-40 sm:w-44 lg:w-48"
                                             />
-                                            <h1 class="text-gray-500 text-sm">JA**N S.</h1>
+                                            <h1 class="text-gray-500 text-xs sm:text-sm mt-2">JA**N S.</h1>
                                             <h1 class="text-gray-500 flex gap-2">
-                                                <p class="text-blue-600">Gcash</p>
+                                                <p class="text-blue-600 text-xs sm:text-sm">Gcash</p>
                                             </h1>
                                         </div>
                                         <div class="flex flex-col items-center justify-center">
                                             <img
                                                 src="/jd-maya.jpeg"
                                                 alt="Generated QR CODE"
-                                                width="180"
+                                                class="w-40 sm:w-44 lg:w-48"
                                             />
-                                            <h1 class="text-gray-500 text-sm">
+                                            <h1 class="text-gray-500 text-xs sm:text-sm mt-2">
                                                 Roanne Mae Na Anunciado
                                             </h1>
                                             <h1 class="text-gray-500 flex gap-2">
-                                                <p class="text-green-600">Maya</p>
+                                                <p class="text-green-600 text-xs sm:text-sm">Maya</p>
                                             </h1>
                                         </div>
                                         <div class="flex flex-col items-center justify-center">
                                             <img
                                                 src="/jd-union-pay-1.jpeg"
                                                 alt="Generated QR CODE"
-                                                width="180"
+                                                class="w-40 sm:w-44 lg:w-48"
                                             />
-                                            <h1 class="text-gray-500 text-sm">
+                                            <h1 class="text-gray-500 text-xs sm:text-sm mt-2">
                                                 Roanne Mae Na Anunciado
                                             </h1>
                                             <h1 class="text-gray-500 flex gap-2">
-                                                <p class="text-orange-600">UnionBank</p>
+                                                <p class="text-orange-600 text-xs sm:text-sm">UnionBank</p>
                                             </h1>
                                         </div>
                                     </div>
-                                    <!-- Payment Screenshot Upload, full width, VERTICAL under QR -->
+                                    
+                                    <!-- Payment Screenshot Upload -->
                                     <div class="flex flex-col gap-2 w-full">
-                                        <label class="text-xs font-medium mb-1 text-gray-700">
+                                        <label class="text-xs sm:text-sm font-medium mb-1 text-gray-700">
                                             Screenshot of Payment Confirmation
                                         </label>
+                                        
+                                        <!-- Hidden file input with mobile-friendly attributes -->
+                                        <input
+                                            :ref="
+                                                (el) => {
+                                                    fileInputRefs[idx] =
+                                                        el as HTMLInputElement | null
+                                                }
+                                            "
+                                            type="file"
+                                            accept="image/*"
+                                            capture="environment"
+                                            class="hidden"
+                                            @change="(e) => handleFileChange(e, idx)"
+                                        />
+                                        
                                         <div
-                                            class="w-full border-2 border-dashed border-gray-300 rounded-md p-4 flex flex-col items-center justify-center relative h-[170px] bg-white"
+                                            class="w-full border-2 border-dashed border-gray-300 rounded-md p-4 flex flex-col items-center justify-center relative min-h-[170px] bg-white"
                                         >
                                             <div
                                                 v-if="previewUrls[idx]"
@@ -292,8 +310,10 @@
                                                     class="w-full h-full object-cover rounded-md"
                                                 />
                                                 <button
+                                                    type="button"
                                                     @click="clearFile(idx)"
-                                                    class="absolute top-[-12px] right-0 text-red-800 text-xl rounded-md p-1 hover:cursor-pointer"
+                                                    class="absolute top-[-12px] right-0 text-red-800 text-xl rounded-md p-1 hover:cursor-pointer focus:outline-none"
+                                                    aria-label="Remove image"
                                                 >
                                                     ✕
                                                 </button>
@@ -304,7 +324,7 @@
                                             >
                                                 <svg
                                                     xmlns="http://www.w3.org/2000/svg"
-                                                    class="w-12 h-12 text-gray-400"
+                                                    class="w-10 h-10 sm:w-12 sm:h-12 text-gray-400"
                                                     fill="none"
                                                     viewBox="0 0 24 24"
                                                     stroke="currentColor"
@@ -316,25 +336,13 @@
                                                         d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
                                                     />
                                                 </svg>
-                                                <p class="text-sm text-gray-600 mt-2">
+                                                <p class="text-xs sm:text-sm text-gray-600 mt-2 px-2">
                                                     Screenshot of Payment Confirmation
                                                 </p>
-                                                <input
-                                                    :ref="
-                                                        (el) => {
-                                                            fileInputRefs[idx] =
-                                                                el as HTMLInputElement | null
-                                                        }
-                                                    "
-                                                    type="file"
-                                                    accept="image/*"
-                                                    class="hidden"
-                                                    @change="(e) => handleFileChange(e, idx)"
-                                                />
                                                 <button
                                                     type="button"
                                                     @click="() => triggerFileSelect(idx)"
-                                                    class="mt-3 px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none"
+                                                    class="mt-3 px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-xs sm:text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 active:bg-gray-100"
                                                 >
                                                     Select File
                                                 </button>
@@ -345,14 +353,14 @@
                             </div>
 
                             <div v-else class="py-10">
-                                <h1 class="text-center text-gray-500">No product selected.</h1>
+                                <h1 class="text-center text-gray-500 text-sm">No product selected.</h1>
                             </div>
 
-                            <div class="mt-4 flex justify-end gap-3">
+                            <div class="mt-4 flex flex-col sm:flex-row justify-end gap-2 sm:gap-3">
                                 <button
                                     type="button"
                                     @click="handleCloseModal"
-                                    class="inline-flex justify-center rounded-md bg-black px-4 py-2 text-sm font-medium text-white hover:opacity-75 hover:cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                                    class="inline-flex justify-center rounded-md bg-black px-4 py-2 text-sm font-medium text-white hover:opacity-75 active:opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                                 >
                                     Cancel
                                 </button>
@@ -363,8 +371,8 @@
                                     :class="[
                                         'inline-flex justify-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2',
                                         !isAllPaymentsAttached
-                                            ? 'bg-gray-400 hover:cursor-not-allowed'
-                                            : 'bg-gray-900 hover:opacity-75 hover:cursor-pointer ',
+                                            ? 'bg-gray-400 cursor-not-allowed'
+                                            : 'bg-gray-900 hover:opacity-75 active:opacity-60',
                                     ]"
                                 >
                                     Place Order

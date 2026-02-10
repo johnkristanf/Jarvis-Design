@@ -74,6 +74,29 @@
         .amount {
             text-align: right;
         }
+        .footer {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+        }
+        .prepared-by {
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+        .owner-name {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+        .owner-title {
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 15px;
+        }
+        .report-meta {
+            font-size: 10px;
+            color: #999;
+        }
     </style>
 </head>
 <body>
@@ -110,6 +133,12 @@
             </tr>
         </tbody>
     </table>
+
+    <div class="footer">
+        <p class="prepared-by">Prepared by:</p>
+        <p class="owner-name">Jason Santillan</p>
+        <p class="owner-title">Owner</p>
+        <p class="report-meta">This is a system generated report | Generated on {{ date('F d, Y g:i A') }}</p>
+    </div>
 </body>
 </html>
-

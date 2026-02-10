@@ -13,6 +13,9 @@ use Illuminate\Support\Facades\Route;
 // THIS DESIGN IS FOR THE CUSTOMER SIDE
 Route::get('/get/pre_made/designs/{sort?}/{categories?}', [DesignsController::class, 'getPreMadeDesigns']);
 
+// PUBLIC PRODUCTS + DESIGNS (for customer-facing pages like Home)
+Route::get('/get/products/with-designs', [DesignsController::class, 'getProductsWithDesigns']);
+
 Route::get('/get/all/colors', [DesignsController::class, 'getAllColors']);
 Route::get('/get/all/sizes', [DesignsController::class, 'getAllSizes']);
 Route::get('/get/design/categories', [DesignsController::class, 'getDesignCategories']);
@@ -121,4 +124,5 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/get/cart/count', [CartController::class, 'count']);
 
     Route::post('/add/cart', [CartController::class, 'store']);
+    Route::delete('/delete/cart/{cartId}', [CartController::class, 'destroy']);
 });

@@ -1,32 +1,27 @@
 <script lang="ts" setup>
-import { useFetchAuthenticatedUser } from '@/composables/useFetchAuthenticatedUser';
+import { useFetchAuthenticatedUser } from '@/composables/useFetchAuthenticatedUser'
+import { useQuery } from '@tanstack/vue-query'
+import { apiService } from '@/api/axios'
+import type { Products } from '@/types/product'
+import { useRouter } from 'vue-router'
 
-    const callouts = [
-        {
-            name: 'Task Masters',
-            price: 150,
-            imageSrc: '/jersey-1.jpg',
-            imageAlt:
-                'Desk with leather desk pad, walnut desk organizer, wireless keyboard and mouse, and porcelain mug.',
-        },
+const { authStore } = useFetchAuthenticatedUser()
+const router = useRouter()
 
-        {
-            name: 'Division',
-            price: 200,
-            imageSrc: '/jersey-2.jpg',
-            imageAlt:
-                'Wood table with porcelain mug, leather journal, brass pen, leather key ring, and a houseplant.',
-        },
+const {
+    data: products,
+    isLoading,
+    isError,
+} = useQuery({
+    queryKey: ['home-products-with-designs'],
+    queryFn: async () => {
+        return await apiService.get<Products[]>(`/api/get/products/with-designs?limit=3`)
+    },
+})
 
-        {
-            name: 'Asukat Brothers',
-            price: 500,
-            imageSrc: '/jersey-3.jpg',
-            imageAlt: 'Collection of four insulated travel bottles on wooden shelf.',
-        },
-    ]
-
-    const { authStore } = useFetchAuthenticatedUser()
+const handleGoToDesigns = () => {
+    router.push('/designs')
+}
 </script>
 
 <template>
@@ -50,17 +45,25 @@ import { useFetchAuthenticatedUser } from '@/composables/useFetchAuthenticatedUs
                     </router-link>
                 </div>
 
-                <div class="space-y-12 lg:grid lg:grid-cols-3 lg:space-y-0 lg:gap-x-6">
-                    <div v-for="callout in callouts" :key="callout.name" class="group relative">
+                <div v-if="isLoading" class="py-10 text-gray-500">Loading designs...</div>
+                <div v-else-if="isError" class="py-10 text-red-600">Failed to load designs.</div>
+
+                <div v-else class="space-y-12 lg:grid lg:grid-cols-3 lg:space-y-0 lg:gap-x-6">
+                    <div
+                        v-for="product in products"
+                        :key="product.id"
+                        class="group relative hover:cursor-pointer"
+                        @click="handleGoToDesigns"
+                    >
                         <img
-                            :src="callout.imageSrc"
-                            :alt="callout.imageAlt"
+                            :src="product.design_images?.[0]?.temp_url || '/jersey-1.jpg'"
+                            :alt="product.name"
                             class="w-full rounded-lg bg-white object-cover group-hover:opacity-75 max-sm:h-80 sm:aspect-2/1 lg:aspect-square"
                         />
                         <h3 class="mt-6 text-sm text-gray-500">
-                            {{ callout.name }}
+                            {{ product.name }}
                         </h3>
-                        <p class="text-base font-semibold text-gray-900">₱ {{ callout.price }}</p>
+                        <p class="text-base font-semibold text-gray-900">₱ {{ product.unit_price }}</p>
                     </div>
                 </div>
             </div>

@@ -1,7 +1,7 @@
 <script lang="ts" setup>
     import { ShoppingCartIcon, TrashIcon } from '@heroicons/vue/20/solid'
     import { computed, ref, watch, reactive } from 'vue'
-    import { useQuery } from '@tanstack/vue-query'
+    import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
     import { apiService } from '@/api/axios'
     import type { CartItem, ProductDetails } from '@/types/order'
     import OrderProductModal from '@/components/designs/OrderProductModal.vue'
@@ -10,6 +10,7 @@
     import { getCartItemImageSrc } from '@/helper/designs'
 
     const { authStore } = useFetchAuthenticatedUser()
+    const queryClient = useQueryClient()
 
     // TanStack Query to fetch cart items
     const {
@@ -21,6 +22,17 @@
         queryFn: async () => {
             const respData = await apiService.get<CartItem[]>(`/api/get/all/cart`)
             return respData
+        },
+    })
+
+    // Add mutation for deleting a cart item
+    const deleteCartMutation = useMutation({
+        mutationFn: async (cartId: number) => {
+            return await apiService.delete(`/api/delete/cart/${cartId}`)
+        },
+        onSuccess: () => {
+            // Refresh cart items after successful delete
+            queryClient.invalidateQueries({ queryKey: ['cart_items'] })
         },
     })
 
@@ -96,6 +108,14 @@
         if (cartQuantities[id] > 1) {
             cartQuantities[id]--
         }
+    }
+
+    // Delete cart handler
+    function handleDeleteCart(id: number) {
+        console.log("WEWE");
+        
+        if (deleteCartMutation.isPending.value) return
+        deleteCartMutation.mutate(id)
     }
 
     // Total price is only from selected cart items, taking quantity into account
@@ -284,20 +304,17 @@
                 <div class="flex items-center gap-3">
                     <button
                         class="p-2 text-xs rounded-md bg-red-500/20 text-red-500 hover:opacity-75 hover:cursor-pointer active:scale-95 transition-all flex items-center justify-center"
+                        @click="handleDeleteCart(item.id)"
+                        :disabled="deleteCartMutation.isPending.value"
                     >
                         <TrashIcon class="size-3" />
-                        Remove
+                        <span v-if="deleteCartMutation.isPending.value">
+                            Removing...
+                        </span>
+                        <span v-else>
+                            Remove
+                        </span>
                     </button>
-                    <!-- Optional: Individual checkout button, currently commented out. -->
-                    <!--
-                    <button
-                        @click="handleShowCheckoutModal({ ...item.product, quantity: cartQuantities[item.id] ?? item.quantity ?? 1 })"
-                        class="p-2 text-xs rounded-md bg-gray-700/20 text-gray-800 hover:opacity-75 hover:cursor-pointer active:scale-95 transition-all flex items-center justify-center"
-                    >
-                        <ShoppingCartIcon class="size-3" />
-                        Checkout
-                    </button>
-                    -->
                 </div>
             </div>
 

@@ -67,6 +67,9 @@ class CartController extends Controller
     public function store(StoreCartRequest $request)
     {
         $validated = $request->validated();
+        Log::info('StoreCartRequest validated:', [
+            'payload' => json_encode($validated, JSON_PRETTY_PRINT)
+        ]);
 
         $cart = Cart::create([
             'user_id' => Auth::id(),
@@ -74,6 +77,7 @@ class CartController extends Controller
             'product_id' => $validated['product_id'],
             'fabric_type_id' => $validated['fabric_type_id'] ?? null,
             'size_id' => $validated['size_id'] ?? null,
+            'quantity' => $validated['quantity'],
         ]);
 
         // Check if own_design_file was uploaded and store its URL (optional)
@@ -101,6 +105,28 @@ class CartController extends Controller
 
         return response()->json([
             'count' => $count,
+        ]);
+    }
+
+    public function destroy($id)
+    {
+        $cartItem = Cart::find($id);
+
+        if (!$cartItem) {
+            return response()->json([
+                'message' => 'Cart item not found.'
+            ], 404);
+        }
+
+        // Optionally, check user ownership here if desired:
+        if ($cartItem->user_id !== Auth::id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $cartItem->delete();
+
+        return response()->json([
+            'message' => 'Cart item deleted successfully.'
         ]);
     }
 }

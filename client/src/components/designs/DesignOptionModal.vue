@@ -86,10 +86,15 @@
         },
     })
 
-    // Form validation schema
+    // Form validation schema (add quantity validation)
     const schema = yup.object({
         fabricTypeId: yup.number().required('Fabric type is required'),
         sizeId: yup.number().required('Size is required'),
+        quantity: yup
+            .number()
+            .required('Quantity is required')
+            .min(1, 'Minimum quantity is 1')
+            .typeError('Quantity must be a number'),
     })
 
     const { handleSubmit, resetForm } = useForm({ validationSchema: schema })
@@ -98,6 +103,15 @@
     const { value: fabricTypeId, errorMessage: fabricTypeError } = useField<number>('fabricTypeId')
     const { value: sizeId, errorMessage: sizeIdError } = useField<number>('sizeId')
     const { value: color, errorMessage: colorError } = useField<string>('color')
+    const { value: quantity, errorMessage: quantityError, setValue: setQuantity } = useField<number>('quantity', undefined, { initialValue: 1 })
+
+    // For Shopee-style quantity adjustment
+    function decrementQuantity() {
+        if (quantity.value > 1) setQuantity(quantity.value - 1)
+    }
+    function incrementQuantity() {
+        setQuantity((quantity.value || 1) + 1)
+    }
 
     // Optional: Pre-select first item as available
     watch(
@@ -193,6 +207,7 @@
         }
         
         formData.append('color', values.color)
+        formData.append('quantity', values.quantity.toString())
 
         if (uploadedOwnDesignFile.value) {
             formData.append('own_design_file', uploadedOwnDesignFile.value)
@@ -326,51 +341,6 @@
                                             </p>
                                         </div> -->
 
-                                        <!-- Upload your own design field -->
-                                        <div class="my-10">
-                                            <p class="text-sm text-gray-600 mb-3">
-                                                Upload your own design (if preferred)
-                                            </p>
-                                            <input
-                                                ref="fileInputRef"
-                                                @change="handleFileUpload"
-                                                type="file"
-                                                accept="image/*"
-                                                class="w-full"
-                                            />
-
-                                            <!-- Image Preview -->
-                                            <div v-if="ownDesignPreviewUrl" class="mt-4">
-                                                <div class="relative inline-block">
-                                                    <img
-                                                        :src="ownDesignPreviewUrl"
-                                                        alt="Design Preview"
-                                                        class="max-w-full h-auto max-h-[200px] rounded-md border border-gray-300"
-                                                    />
-                                                    <button
-                                                        @click="clearOwnDesignFile"
-                                                        class="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full hover:cursor-pointer p-1 shadow-lg transition-colors"
-                                                        title="Remove image"
-                                                    >
-                                                        <svg
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            class="h-4 w-4"
-                                                            fill="none"
-                                                            viewBox="0 0 24 24"
-                                                            stroke="currentColor"
-                                                            stroke-width="2"
-                                                        >
-                                                            <path
-                                                                stroke-linecap="round"
-                                                                stroke-linejoin="round"
-                                                                d="M6 18L18 6M6 6l12 12"
-                                                            />
-                                                        </svg>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-
                                         <!-- Color Option -->
                                         <div class="mb-8">
                                             <label class="block text-sm text-gray-600 mb-1">
@@ -459,6 +429,44 @@
                                             </div>
                                             <p class="text-sm text-red-500 mt-1">
                                                 {{ sizeIdError }}
+                                            </p>
+                                        </div>
+
+                                        <!-- Shopee-style quantity field copied from cart view -->
+                                        <div class="mb-5">
+                                            <label class="block text-sm text-gray-600 mb-1">
+                                                Quantity:
+                                            </label>
+                                            <div class="flex w-full h-10">
+                                                <button
+                                                    type="button"
+                                                    class="flex items-center justify-center bg-[#f1f1f1] border border-[#ccc] rounded-l w-10 h-full text-lg font-semibold select-none transition-colors duration-150 hover:bg-[#e1e1e1] disabled:opacity-50"
+                                                    @click="decrementQuantity"
+                                                    :disabled="quantity <= 1"
+                                                    aria-label="Decrease"
+                                                >
+                                                    <span>-</span>
+                                                </button>
+                                                <input
+                                                    :value="quantity"
+                                                    type="text"
+                                                    min="1"
+                                                    class="w-full max-w-[40px] appearance-none border-t border-b border-[#ccc] bg-white text-center focus:outline-none focus:ring-0 px-0 py-0 font-medium text-base"
+                                                    style="height: 40px"
+                                                    readonly
+                                                    tabindex="-1"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    class="flex items-center justify-center bg-[#f1f1f1] border border-[#ccc] rounded-r w-10 h-full text-lg font-semibold select-none transition-colors duration-150 hover:bg-[#e1e1e1]"
+                                                    @click="incrementQuantity"
+                                                    aria-label="Increase"
+                                                >
+                                                    <span>+</span>
+                                                </button>
+                                            </div>
+                                            <p class="text-sm text-red-500 mt-1">
+                                                {{ quantityError }}
                                             </p>
                                         </div>
 
