@@ -82,13 +82,13 @@
         const id = route.params.id
         return id ? Number(id) : null
     })
-    
+
     // PRE-SELECT 1st CUSTOMER
     watch(
         () => customers.value,
         (customer) => {
             console.log("routeUserId.value: ", routeUserId.value);
-            
+
             if (routeUserId.value && customer && customer.length > 0) {
                 // Try to find the customer in the list that matches the routeUserId
                 const match = customer.find(cust => cust.id === routeUserId.value)

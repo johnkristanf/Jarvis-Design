@@ -106,12 +106,46 @@ class ChatController extends Controller
     {
         $userRoleID = Roles::where('name', 'user')->first()->id;
 
-        return User::with([
-            'conversations.messages', // Eager load messages for each conversation
+        // Fetch users with conversations and messages, and sort by the latest message created_at
+        $users = User::with([
+            'conversations.messages' => function ($query) {
+                $query->orderBy('created_at', 'desc');
+            }
         ])
             ->select('id', 'name', 'email')
             ->where('role_id', '=', $userRoleID)
             ->get();
+
+        // Sort users so that the user with the latest message comes first
+        $users = $users->sort(function($a, $b) {
+            // Get latest message time for user A
+            $aLatest = null;
+            foreach ($a->conversations as $conv) {
+                if ($conv->messages->isNotEmpty()) {
+                    $msgTime = $conv->messages->first()->created_at;
+                    if (is_null($aLatest) || $msgTime > $aLatest) {
+                        $aLatest = $msgTime;
+                    }
+                }
+            }
+            // Get latest message time for user B
+            $bLatest = null;
+            foreach ($b->conversations as $conv) {
+                if ($conv->messages->isNotEmpty()) {
+                    $msgTime = $conv->messages->first()->created_at;
+                    if (is_null($bLatest) || $msgTime > $bLatest) {
+                        $bLatest = $msgTime;
+                    }
+                }
+            }
+            // Users with newer messages come first
+            if ($aLatest === $bLatest) return 0;
+            if (is_null($aLatest)) return 1;  // If user A has no messages, B comes first
+            if (is_null($bLatest)) return -1; // If user B has no messages, A comes first
+            return $aLatest < $bLatest ? 1 : -1; // More recent first
+        })->values();
+
+        return $users;
     }
 
     public function markConversationAsRead($userId)

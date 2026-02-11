@@ -19,7 +19,7 @@
         isOpen: boolean
     }>()
 
-    // USER DATAc
+    // USER DATA
     const { authStore } = useFetchAuthenticatedUser()
 
     // MODAL EMITS
@@ -34,7 +34,7 @@
     const attachmentPreview = ref<string | null>(null)
     const toast = useToast()
 
-    // USE QUERY COVERSATION
+    // USE QUERY CONVERSATION
     const conversationQuery = useQuery({
         queryKey: ['user_conversation', authStore.currentUser?.id],
         queryFn: async () => {
@@ -46,7 +46,7 @@
         refetchOnMount: false,
     })
 
-    // USE QUERY COVERSATION
+    // USE QUERY ADMIN DATA
     const adminDataQuery = useQuery({
         queryKey: ['admin_data'],
         queryFn: async () => {
@@ -62,6 +62,13 @@
             messageContent.value = ''
             attachment.value = null
             attachmentPreview.value = null
+
+            // Invalidate both all_customers and ADMIN conversation, so admin UI updates in real time
+            queryClient.invalidateQueries({ queryKey: ['all_customers'] })
+            // This line below is the key, as it causes the ADMIN conversation panel to update when a customer sends a message
+            if (authStore.currentUser?.id) {
+                queryClient.invalidateQueries({ queryKey: ['admin_conversation', authStore.currentUser.id] })
+            }
         },
         onError: (error) => {
             console.error('Message send failed:', error)
@@ -134,7 +141,7 @@
                     console.log('📨 Event data:', event.message)
                     const eventMessage = event.message
 
-                    // 1. Optimistically update Vue Query cache
+                    // 1. Optimistically update Vue Query cache for customer/user view
                     queryClient.setQueryData(
                         ['user_conversation', eventMessage.conversation.user_id],
                         (oldData: any) => {
@@ -159,6 +166,16 @@
                             }
                         },
                     )
+
+                    // 2. ALSO: Update/invalidate the admin query so the admin panel sees the new message instantly
+                    if (eventMessage.conversation?.user_id) {
+                        queryClient.invalidateQueries({
+                            queryKey: ['admin_conversation', eventMessage.conversation.user_id],
+                        })
+                        queryClient.invalidateQueries({
+                            queryKey: ['all_customers'],
+                        })
+                    }
                 })
             }
         },
