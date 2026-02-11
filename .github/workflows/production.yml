@@ -45,7 +45,7 @@ jobs:
         with:
           app_key: ${{ secrets.APP_KEY }}
           db_connection: ${{ secrets.DB_CONNECTION }}
-          db_database: ${{ secrets.DB_DATABASE }}
+          db_database: ${{ secrets.DB_DATABASE }} 
           db_host: ${{ secrets.DB_HOST }}
           db_password: ${{ secrets.DB_PASSWORD }}
           db_port: ${{ secrets.DB_PORT }}
