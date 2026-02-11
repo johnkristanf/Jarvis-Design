@@ -127,7 +127,7 @@
             <div class="flex items-center hover:cursor-pointer hover:opacity-75">
                 <label
                     for="default-search"
-                    class="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white"
+                    class="mb-2 text-sm font-medium text-gray-900 sr-only class:text-white"
                 >
                     Search
                 </label>
@@ -136,7 +136,7 @@
                         class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none"
                     >
                         <svg
-                            class="w-4 h-4 text-gray-500 dark:text-gray-400"
+                            class="w-4 h-4 text-gray-500 class:text-gray-400"
                             aria-hidden="true"
                             xmlns="http://www.w3.org/2000/svg"
                             fill="none"
@@ -194,7 +194,7 @@
                 @click="() => openOrderDetails(order)"
             >
                 <div class="p-5">
-                    <p class="font-semibold text-gray-700 dark:text-gray-400">
+                    <p class="font-semibold text-gray-700 class:text-gray-400">
                         {{ order.order_number }}
                     </p>
                 </div>

@@ -112,14 +112,14 @@ import { truncateNonDecimal } from '@/helper/designs'
             />
 
             <!-- SEARCH FIELD -->
-            <div class="dark:bg-gray-900">
+            <div class="class:bg-gray-900">
                 <label for="table-search" class="sr-only">Search</label>
                 <div class="relative mt-1">
                     <div
                         class="absolute inset-y-0 rtl:inset-r-0 start-0 flex items-center ps-3 pointer-events-none"
                     >
                         <svg
-                            class="w-4 h-4 text-gray-500 dark:text-gray-400"
+                            class="w-4 h-4 text-gray-500 class:text-gray-400"
                             aria-hidden="true"
                             xmlns="http://www.w3.org/2000/svg"
                             fill="none"
@@ -137,7 +137,7 @@ import { truncateNonDecimal } from '@/helper/designs'
                     <input
                         type="text"
                         id="table-search"
-                        class="block pt-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                        class="block pt-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 class:bg-gray-700 class:border-gray-600 class:placeholder-gray-400 class:text-white class:focus:ring-blue-500 class:focus:border-blue-500"
                         placeholder="Search for fabrics"
                     />
                 </div>
@@ -145,10 +145,10 @@ import { truncateNonDecimal } from '@/helper/designs'
         </div>
 
         <table
-            class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 mt-6"
+            class="w-full text-sm text-left rtl:text-right text-gray-500 class:text-gray-400 mt-6"
         >
             <thead
-                class="text-xs uppercase bg-gray-800 text-white dark:bg-gray-700 dark:text-gray-400"
+                class="text-xs uppercase bg-gray-800 text-white class:bg-gray-700 class:text-gray-400"
             >
                 <tr>
                     <!-- <th scope="col" class="px-6 py-3">Material Category</th> -->
@@ -163,7 +163,7 @@ import { truncateNonDecimal } from '@/helper/designs'
                 <tr
                     v-for="material in designMaterials.data"
                     :key="material.id"
-                    class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600"
+                    class="bg-white border-b class:bg-gray-800 class:border-gray-700 border-gray-200 hover:bg-gray-50 class:hover:bg-gray-600"
                 >
                     <!-- <td class="px-6 py-4">{{ material.category?.name }}</td> -->
                     <td class="px-6 py-4">{{ material.name }}</td>

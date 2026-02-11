@@ -151,13 +151,19 @@
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="flex h-16 items-center">
                     <div class="flex items-center justify-between w-full">
-                        <a
-                            href="/"
-                            class="text-white text-3xl hover:cursor-pointer hover:opacity-75"
-                        >
-                            Jarvis
-                            <span class="text-yellow-600">Designs</span>
-                        </a>
+
+                        <div class="flex items-center">
+
+                            <img src="/jarvis-logo-circle.png" class="h-10 me-2" />
+
+                            <a
+                                href="/"
+                                class="text-white text-3xl hover:cursor-pointer hover:opacity-75"
+                            >
+                                Jarvis
+                                <span class="text-yellow-600">Designs</span>
+                            </a>
+                        </div>
 
                         <!-- MENU FOR SMALL SIZE -->
                         <div class="flex md:hidden">

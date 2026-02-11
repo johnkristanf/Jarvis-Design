@@ -244,11 +244,11 @@
     <div class="w-full h-[75vh] bg-gray-100 border border-gray-400 rounded-md flex">
         <!-- Sidebar with conversations -->
         <aside id="logo-sidebar" class="w-[25%] h-full" aria-label="Sidebar">
-            <div class="h-full px-3 py-4 overflow-y-auto bg-white dark:bg-gray-800">
+            <div class="h-full px-3 py-4 overflow-y-auto bg-white class:bg-gray-800">
                 <a href="#" class="flex items-center ps-2.5 mb-5">
                     <img src="/jarvis-logo-circle.png" class="h-6 me-3 sm:h-7" />
                     <div class="flex flex-col">
-                        <span class="text-xl font-semibold whitespace-nowrap dark:text-white">
+                        <span class="text-xl font-semibold whitespace-nowrap class:text-white">
                             Message
                         </span>
                         <p class="text-xs text-gray-500">Talk with the customer.</p>
@@ -265,8 +265,8 @@
                             :class="[
                                 'w-full flex items-center p-2 text-left rounded-lg group',
                                 selectedCustomerData.id === customer.id
-                                    ? 'bg-gray-100 dark:bg-gray-700'
-                                    : 'text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700',
+                                    ? 'bg-gray-100 class:bg-gray-700'
+                                    : 'text-gray-900 class:text-white hover:bg-gray-100 class:hover:bg-gray-700',
                             ]"
                         >
                             <div class="relative">

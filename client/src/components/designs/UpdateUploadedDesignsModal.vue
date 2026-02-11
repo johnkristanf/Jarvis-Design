@@ -121,7 +121,7 @@
                                     <div class="flex mb-2 items-center gap-1">
                                         <label
                                             for="price"
-                                            class="block text-sm font-medium text-gray-900 dark:text-white"
+                                            class="block text-sm font-medium text-gray-900 class:text-white"
                                         >
                                             Original Price (₱)
                                         </label>
@@ -153,14 +153,14 @@
                                         type="text"
                                         id="price"
                                         v-model="price"
-                                        class="font-medium shadow-xs bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-xs-light"
+                                        class="font-medium shadow-xs bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 class:bg-gray-700 class:border-gray-600 class:placeholder-gray-400 class:text-white class:focus:ring-blue-500 class:focus:border-blue-500 class:shadow-xs-light"
                                         required
                                     />
                                 </div>
 
                                 <button
                                     type="submit"
-                                    class="mt-4 text-white bg-gray-900 hover:opacity-75 hover:cursor-pointer focus:ring-4 hover:cursor-pointer focus:outline-none focus:ring-blue-300 rounded-md text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                                    class="mt-4 text-white bg-gray-900 hover:opacity-75 hover:cursor-pointer focus:ring-4 hover:cursor-pointer focus:outline-none focus:ring-blue-300 rounded-md text-sm px-5 py-2.5 text-center class:bg-blue-600 class:hover:bg-blue-700 class:focus:ring-blue-800"
                                 >
                                     Submit
                                 </button>

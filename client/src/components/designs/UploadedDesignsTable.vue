@@ -107,9 +107,9 @@ import UploadedImagesModal from './UploadedImagesModal.vue'
 <template>
     <div class="card mt-5">
         <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
-            <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+            <table class="w-full text-sm text-left rtl:text-right text-gray-500 class:text-gray-400">
                 <thead
-                    class="text-xs text-white uppercase bg-gray-900 dark:bg-gray-700 dark:text-gray-400"
+                    class="text-xs text-white uppercase bg-gray-900 class:bg-gray-700 class:text-gray-400"
                 >
                     <tr>
                         <th scope="col" class="px-16 py-3">
@@ -130,7 +130,7 @@ import UploadedImagesModal from './UploadedImagesModal.vue'
                             <button
                                 data-tooltip-target="tooltip-default"
                                 type="button"
-                                class="focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-1 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                                class="focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-1 py-2.5 text-center class:bg-blue-600 class:hover:bg-blue-700 class:focus:ring-blue-800"
                             >
                                 <InformationCircleIcon class="size-5" />
                             </button>
@@ -138,7 +138,7 @@ import UploadedImagesModal from './UploadedImagesModal.vue'
                             <div
                                 id="tooltip-default"
                                 role="tooltip"
-                                class="normal-case absolute z-10 px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-xs opacity-0 tooltip dark:bg-gray-700"
+                                class="normal-case absolute z-10 px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-xs opacity-0 tooltip class:bg-gray-700"
                             >
                                 Indicates the price state of your uploaded design: (PENDING,
                                 ACKNOWLEDGE, TAGGED)
@@ -154,9 +154,9 @@ import UploadedImagesModal from './UploadedImagesModal.vue'
                     <tr
                         v-for="design in data"
                         :key="design.id"
-                        class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600"
+                        class="bg-white border-b class:bg-gray-800 class:border-gray-700 border-gray-200 hover:bg-gray-50 class:hover:bg-gray-600"
                     >
-                        <td class="px-6 py-4 font-semibold text-gray-900 dark:text-white">
+                        <td class="px-6 py-4 font-semibold text-gray-900 class:text-white">
                             <button
                                 @click="handleOpenUploadedImagesModal(design.id)"
                                 class="text-gray-900 rounded-md p-2 hover:opacity-75 hover:cursor-pointer hover:underline font-medium"
@@ -165,23 +165,23 @@ import UploadedImagesModal from './UploadedImagesModal.vue'
                             </button>
                         </td>
 
-                        <td class="px-6 py-4 font-semibold text-gray-900 dark:text-white">
+                        <td class="px-6 py-4 font-semibold text-gray-900 class:text-white">
                             {{ formatCurrency(design.price.toString()) }}
                         </td>
 
-                        <td class="px-6 py-4 font-semibold text-gray-900 dark:text-white">
+                        <td class="px-6 py-4 font-semibold text-gray-900 class:text-white">
                             {{ design.quantity }}
                         </td>
 
-                        <td class="px-6 py-4 font-semibold text-gray-900 dark:text-white">
+                        <td class="px-6 py-4 font-semibold text-gray-900 class:text-white">
                             {{ formatCurrency((design.quantity * design.price).toString()) }}
                         </td>
 
-                        <td class="px-6 py-4 text-gray-900 dark:text-white">
+                        <td class="px-6 py-4 text-gray-900 class:text-white">
                             {{ design.color.name }}
                         </td>
 
-                        <td class="px-6 py-4 text-gray-900 dark:text-white">
+                        <td class="px-6 py-4 text-gray-900 class:text-white">
                             {{ design.size.name }}
                         </td>
 
@@ -200,7 +200,7 @@ import UploadedImagesModal from './UploadedImagesModal.vue'
                             </span>
                         </td>
 
-                        <td class="px-6 py-4 text-gray-900 dark:text-white">
+                        <td class="px-6 py-4 text-gray-900 class:text-white">
                             {{ formatDate(design.created_at) }}
                         </td>
 

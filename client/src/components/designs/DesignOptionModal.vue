@@ -341,6 +341,52 @@
                                             </p>
                                         </div> -->
 
+
+                                        <!-- Upload your own design field -->
+                                        <div class="my-10">
+                                            <p class="text-sm text-gray-600 mb-3">
+                                                Upload your own design (if preferred)
+                                            </p>
+                                            <input
+                                                ref="fileInputRef"
+                                                @change="handleFileUpload"
+                                                type="file"
+                                                accept="image/*"
+                                                class="w-full"
+                                            />
+
+                                            <!-- Image Preview -->
+                                            <div v-if="ownDesignPreviewUrl" class="mt-4">
+                                                <div class="relative inline-block">
+                                                    <img
+                                                        :src="ownDesignPreviewUrl"
+                                                        alt="Design Preview"
+                                                        class="max-w-full h-auto max-h-[200px] rounded-md border border-gray-300"
+                                                    />
+                                                    <button
+                                                        @click="clearOwnDesignFile"
+                                                        class="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full hover:cursor-pointer p-1 shadow-lg transition-colors"
+                                                        title="Remove image"
+                                                    >
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            class="h-4 w-4"
+                                                            fill="none"
+                                                            viewBox="0 0 24 24"
+                                                            stroke="currentColor"
+                                                            stroke-width="2"
+                                                        >
+                                                            <path
+                                                                stroke-linecap="round"
+                                                                stroke-linejoin="round"
+                                                                d="M6 18L18 6M6 6l12 12"
+                                                            />
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+
                                         <!-- Color Option -->
                                         <div class="mb-8">
                                             <label class="block text-sm text-gray-600 mb-1">

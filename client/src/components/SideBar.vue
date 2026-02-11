@@ -172,7 +172,7 @@
 
 <template>
     <nav
-        class="fixed top-0 z-50 w-full bg-gray-900 border-b border-gray-500 dark:bg-gray-800 dark:border-gray-700"
+        class="fixed top-0 z-50 w-full bg-gray-900 border-b border-gray-500 class:bg-gray-800 class:border-gray-700"
     >
         <div class="px-3 py-3 lg:px-5 lg:pl-3">
             <div class="flex items-center justify-between">
@@ -182,7 +182,7 @@
                         data-drawer-toggle="logo-sidebar"
                         aria-controls="logo-sidebar"
                         type="button"
-                        class="inline-flex items-center p-2 text-sm text-gray-500 rounded-lg sm:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
+                        class="inline-flex items-center p-2 text-sm text-gray-500 rounded-lg sm:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 class:text-gray-400 class:hover:bg-gray-700 class:focus:ring-gray-600"
                     >
                         <span class="sr-only">Open sidebar</span>
                         <svg
@@ -336,7 +336,7 @@
                         <div>
                             <button
                                 type="button"
-                                class="flex text-sm bg-gray-800 rounded-full focus:ring-1 focus:ring-gray-300 dark:focus:ring-gray-600 hover:cursor-pointer"
+                                class="flex text-sm bg-gray-800 rounded-full focus:ring-1 focus:ring-gray-300 class:focus:ring-gray-600 hover:cursor-pointer"
                                 aria-expanded="false"
                                 data-dropdown-toggle="dropdown-user"
                             >
@@ -354,15 +354,15 @@
 
                         <!-- DROPDOWN NAVBAR USER-->
                         <div
-                            class="bg-white z-50 hidden my-4 text-base list-none divide-y divide-gray-100 shadow-sm dark:bg-gray-700 dark:divide-gray-600"
+                            class="bg-white z-50 hidden my-4 text-base list-none divide-y divide-gray-100 shadow-sm class:bg-gray-700 class:divide-gray-600"
                             id="dropdown-user"
                         >
                             <div class="px-4 py-3" role="none">
-                                <p class="text-sm text-gray-900 dark:text-black" role="none">
+                                <p class="text-sm text-gray-900 class:text-black" role="none">
                                     {{ authStore.user?.name }}
                                 </p>
                                 <p
-                                    class="text-sm font-medium text-gray-900 truncate dark:text-gray-300"
+                                    class="text-sm font-medium text-gray-900 truncate class:text-gray-300"
                                     role="none"
                                 >
                                     {{ authStore.user?.username }}
@@ -372,7 +372,7 @@
                                 <li>
                                     <button
                                         @click="handleRedirectProfile"
-                                        class="w-full block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-black"
+                                        class="w-full block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 class:text-gray-300 class:hover:bg-gray-600 class:hover:text-black"
                                         role="menuitem"
                                     >
                                         Profile
@@ -382,7 +382,7 @@
                                 <li>
                                     <button
                                         @click="handleSignOut"
-                                        class="w-full block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-black"
+                                        class="w-full block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 class:text-gray-300 class:hover:bg-gray-600 class:hover:text-black"
                                         role="menuitem"
                                     >
                                         Sign Out
@@ -398,23 +398,23 @@
 
     <aside
         id="logo-sidebar"
-        class="fixed top-0 left-0 mt-14 z-40 w-64 h-screen transition-transform -translate-x-full border-r border-gray-200 sm:translate-x-0 dark:bg-gray-800 dark:border-gray-700"
+        class="fixed top-0 left-0 mt-14 z-40 w-64 h-screen transition-transform -translate-x-full border-r border-gray-200 sm:translate-x-0 class:bg-gray-800 class:border-gray-700"
         aria-label="Sidebar"
     >
-        <div class="h-full overflow-y-auto bg-gray-900 dark:bg-gray-800 pt-2">
+        <div class="h-full overflow-y-auto bg-gray-900 class:bg-gray-800 pt-2">
             <ul class="space-y-2 font-medium">
                 <li v-for="link in sideLinks" :key="link.to">
                     <RouterLink :to="link.to" custom v-slot="{ isActive, navigate }">
                         <a
                             @click="navigate"
                             :class="[
-                                'flex items-center p-2 text-white hover:cursor-pointer dark:text-black hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 group',
-                                isActive ? 'bg-gray-100 dark:bg-gray-700 ' : '',
+                                'flex items-center p-2 text-white hover:cursor-pointer class:text-black hover:text-gray-500 hover:bg-gray-100 class:hover:bg-gray-700 group',
+                                isActive ? 'bg-gray-100 class:bg-gray-700 ' : '',
                             ]"
                         >
                             <!-- You can change this icon per route if you want -->
                             <span
-                                class="w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-black"
+                                class="w-5 h-5 text-gray-500 class:text-gray-400 group-hover:text-gray-900 class:group-hover:text-black"
                                 v-html="link.icon"
                             />
 

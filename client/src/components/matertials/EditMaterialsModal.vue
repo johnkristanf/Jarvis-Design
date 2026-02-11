@@ -183,7 +183,7 @@
                         <div
                             id="unit-tooltip"
                             role="tooltip"
-                            class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700"
+                            class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip class:bg-gray-700"
                         >
                             (kg, ml, pcs, etc...)
                             <div class="tooltip-arrow" data-popper-arrow></div>
@@ -218,7 +218,7 @@
                         <div
                             id="quantity-tooltip"
                             role="tooltip"
-                            class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700"
+                            class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip class:bg-gray-700"
                         >
                             If the unit is in mililiter specify quantity in mililiter quantity,
                             <div class="tooltip-arrow" data-popper-arrow></div>

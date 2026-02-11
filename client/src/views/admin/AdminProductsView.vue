@@ -31,7 +31,7 @@
                 v-if="!refToggles.show_uploaded_designs_table"
                 type="button"
                 @click="refToggles.show_add_product_modal = true"
-                class="w-48 py-2 text-sm font-medium text-center inline-flex items-center justify-center gap-2 text-white bg-gray-900 hover:cursor-pointer rounded-lg hover:bg-gray-800 focus:ring-4 focus:outline-none focus:ring-gray-300 dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800"
+                class="w-48 py-2 text-sm font-medium text-center inline-flex items-center justify-center gap-2 text-white bg-gray-900 hover:cursor-pointer rounded-lg hover:bg-gray-800 focus:ring-4 focus:outline-none focus:ring-gray-300 class:bg-gray-600 class:hover:bg-gray-700 class:focus:ring-gray-800"
             >
                 <PlusIcon class="size-6" />
                 Add Product

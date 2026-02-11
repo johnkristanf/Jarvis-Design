@@ -10,6 +10,10 @@
 /* add Flowbite Vue directory using @source directive */
 @source "../node_modules/flowbite-vue";
 
+:root {
+    color-scheme: light;
+  }
+
 body {
     padding: 0;
     margin: 0;

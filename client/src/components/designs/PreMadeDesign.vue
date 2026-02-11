@@ -126,9 +126,9 @@
             <div v-for="category in designs" :key="category.id">
                 <h1
                     @click="toggleCategory(category.id)"
-                    class="text-xs font-bold text-gray-500 dark:text-white hover:opacity-75 hover:cursor-pointer"
+                    class="text-xs font-bold text-gray-500 class:text-white hover:opacity-75 hover:cursor-pointer"
                     :class="{
-                        'text-blue-600 dark:text-blue-400': expandedCategory === category.id,
+                        'text-blue-600 class:text-blue-400': expandedCategory === category.id,
                     }"
                 >
                     {{ category.name }}
@@ -166,11 +166,11 @@
 
                             <div class="p-4 w-full flex items-center justify-between">
                                 <div class="flex flex-col">
-                                    <h5 class="text-md font-medium text-gray-900 dark:text-white">
+                                    <h5 class="text-md font-medium text-gray-900 class:text-white">
                                         {{ product.name }}
                                         <!-- <span v-if="product.fabric_type">({{ product.fabric_type.name }})</span> -->
                                     </h5>
-                                    <p class="text-sm text-gray-700 dark:text-gray-400">
+                                    <p class="text-sm text-gray-700 class:text-gray-400">
                                         ₱{{ product.unit_price }}
                                     </p>
                                 </div>
@@ -181,7 +181,7 @@
                     <!-- NO PRODUCTS MESSAGE -->
                     <div
                         v-else
-                        class="text-sm text-gray-500 dark:text-gray-400 px-4 py-8 text-center"
+                        class="text-sm text-gray-500 class:text-gray-400 px-4 py-8 text-center"
                     >
                         No products in this category.
                     </div>

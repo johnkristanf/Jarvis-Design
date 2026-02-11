@@ -323,9 +323,9 @@
 
 <template>
     <div class="order-table relative h-full overflow-y-auto shadow-md sm:rounded-lg">
-        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+        <table class="w-full text-sm text-left rtl:text-right text-gray-500 class:text-gray-400">
             <thead
-                class="text-xs text-white uppercase bg-gray-900 dark:bg-gray-700 dark:text-gray-400"
+                class="text-xs text-white uppercase bg-gray-900 class:bg-gray-700 class:text-gray-400"
             >
                 <tr>
                     <!-- <th scope="col" class="px-16 py-3">
@@ -363,17 +363,17 @@
                 <tr
                     v-for="order in orders.data"
                     :key="order.id"
-                    class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600"
+                    class="bg-white border-b class:bg-gray-800 class:border-gray-700 border-gray-200 hover:bg-gray-50 class:hover:bg-gray-600"
                 >
-                    <td class="px-6 py-4 font-semibold text-gray-900 dark:text-white">
+                    <td class="px-6 py-4 font-semibold text-gray-900 class:text-white">
                         {{ order.order_number }}
                     </td>
 
-                    <td class="px-6 py-4 font-semibold text-gray-900 dark:text-white">
+                    <td class="px-6 py-4 font-semibold text-gray-900 class:text-white">
                         {{ order.product?.name }}
                     </td>
 
-                    <td class="px-6 py-4 font-semibold text-gray-900 dark:text-white">
+                    <td class="px-6 py-4 font-semibold text-gray-900 class:text-white">
                         <ProductAttributesModal
                             :sizes="order.sizes"
                             :color="order.color"
@@ -389,7 +389,7 @@
                         />
                     </td>
 
-                    <td class="px-6 py-4 font-semibold text-gray-900 dark:text-white">
+                    <td class="px-6 py-4 font-semibold text-gray-900 class:text-white">
                         {{ order.order_option.toUpperCase() }}
                     </td>
 
@@ -397,14 +397,14 @@
                         <StatusBadge :status="order.status" />
                     </td>
 
-                    <td class="px-6 py-4 font-semibold text-gray-900 dark:text-white">
+                    <td class="px-6 py-4 font-semibold text-gray-900 class:text-white">
                         {{ order.delivery_date ? formatDate(order.delivery_date) : 'N/A' }}
                     </td>
 
                     <!-- UPDATE STATUS ACTION BUTTON -->
                     <td
                         v-if="isAdmin"
-                        class="pr-5 py-4 font-semibold text-gray-900 dark:text-white"
+                        class="pr-5 py-4 font-semibold text-gray-900 class:text-white"
                     >
                         <div
                             v-if="

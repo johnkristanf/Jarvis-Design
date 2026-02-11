@@ -317,6 +317,17 @@
                 </div>
             </form>
         </div>
+
+        <!-- Login Message at the bottom -->
+        <div class="mt-6 sm:mx-auto sm:w-full sm:max-w-sm text-center">
+            <span class="text-sm text-gray-600">Already have an account?</span>
+            <router-link
+                to="/auth/login"
+                class="text-sm text-blue-600 underline ml-1 hover:text-blue-800"
+            >
+                Login here
+            </router-link>
+        </div>
     </div>
 
     <div v-if="isLoadingMutation">
