@@ -117,9 +117,9 @@
 </script>
 
 <template>
-    <div class="card mt-5 p-8">
+    <div class="card p-8 dark:bg-gray-900 dark:text-gray-100 h-screen">
         <div class="flex items-center justify-between">
-            <h2 class="text-2xl font-bold tracking-tight text-gray-900">
+            <h2 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
                 Orders & Shipping Details
             </h2>
 
@@ -127,7 +127,7 @@
             <div class="flex items-center hover:cursor-pointer hover:opacity-75">
                 <label
                     for="default-search"
-                    class="mb-2 text-sm font-medium text-gray-900 sr-only class:text-white"
+                    class="mb-2 text-sm font-medium text-gray-900 dark:text-white sr-only"
                 >
                     Search
                 </label>
@@ -136,7 +136,7 @@
                         class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none"
                     >
                         <svg
-                            class="w-4 h-4 text-gray-500 class:text-gray-400"
+                            class="w-4 h-4 text-gray-500 dark:text-gray-400"
                             aria-hidden="true"
                             xmlns="http://www.w3.org/2000/svg"
                             fill="none"
@@ -155,7 +155,7 @@
                         type="search"
                         v-model="searchTerm"
                         id="default-search"
-                        class="block w-full p-3 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-gray-900 focus:border-gray-900"
+                        class="block w-full p-3 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-gray-900 focus:border-gray-900 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-400 dark:border-gray-700 dark:focus:ring-gray-300 dark:focus:border-gray-300"
                         placeholder="Search Order No. or Status..."
                     />
                 </div>
@@ -164,16 +164,16 @@
 
         <!-- FLOATING MESSAGE ICON -->
         <div
-            class="fixed bottom-13 right-11 bg-gray-800 rounded-full z-[999] p-3 hover:cursor-pointer hover:opacity-75"
+            class="fixed bottom-13 right-11 bg-gray-800 dark:bg-gray-700 rounded-full z-[999] p-3 hover:cursor-pointer hover:opacity-75"
             @click="handleOpenChatBox"
         >
             <span
                 v-if="unreadMessagesCount > 0"
-                class="absolute -top-1 -left-2 bg-red-500 text-white text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center"
+                class="absolute -top-1 -left-2 bg-red-500 text-white text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center dark:bg-red-600"
             >
                 {{ unreadMessagesCount > 99 ? '99+' : unreadMessagesCount }}
             </span>
-            <ChatBubbleLeftRightIcon class="size-10 text-white" />
+            <ChatBubbleLeftRightIcon class="size-10 text-white dark:text-gray-100" />
         </div>
 
         <div v-if="isOpenChatBox">
@@ -190,11 +190,11 @@
                 :img-alt="order.name"
                 :img-src="order.temp_url"
                 variant="image"
-                class="w-xs hover:opacity-75 hover:cursor-pointer"
+                class="w-xs hover:opacity-75 hover:cursor-pointer dark:bg-gray-800 dark:text-gray-100"
                 @click="() => openOrderDetails(order)"
             >
                 <div class="p-5">
-                    <p class="font-semibold text-gray-700 class:text-gray-400">
+                    <p class="font-semibold text-gray-700 dark:text-gray-200">
                         {{ order.order_number }}
                     </p>
                 </div>
@@ -205,7 +205,7 @@
             v-else-if="!isLoading && orders && orders.data.length === 0"
             class="h-[50vh] flex items-center justify-center"
         >
-            <h1 class="text-gray-700 text-xl">No Order Found</h1>
+            <h1 class="text-gray-700 text-xl dark:text-gray-200">No Order Found</h1>
         </div>
 
         <OrderDetailsModal

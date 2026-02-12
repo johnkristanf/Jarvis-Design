@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Mail\EmailVerification;
+use App\Mail\PasswordReset;
 use App\Models\Roles;
 use App\Models\User;
 use App\Services\UserService;
@@ -10,8 +11,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
 
 class UserController extends Controller
@@ -183,5 +184,72 @@ class UserController extends Controller
         $request->session()->regenerateToken();
 
         return response()->json(['success' => true]);
+    }
+
+    public function forgotPassword(Request $request)
+    {
+        $request->validate(['email' => 'required|email']);
+
+        $user = User::where('email', $request->email)->first();
+
+        if (! $user) {
+            return response()->json([
+                'message' => 'If an account exists with that email, we have sent a password reset link.',
+            ], 200);
+        }
+
+        $token = Str::random(64);
+
+        $resetUrl = env('PASSWORD_RESET_URL')
+            ?? rtrim(env('CLIENT_APP_URL', env('APP_URL', 'http://localhost')), '/') . '/auth/reset-password';
+        $resetUrl .= '?token=' . urlencode($token) . '&email=' . urlencode($user->email);
+
+        DB::table('password_reset_tokens')->updateOrInsert(
+            ['email' => $user->email],
+            [
+                'token' => Hash::make($token),
+                'created_at' => now(),
+            ]
+        );
+
+        Mail::to($user->email)->send(new PasswordReset($user->email, $resetUrl));
+
+        return response()->json([
+            'message' => 'If an account exists with that email, we have sent a password reset link.',
+        ], 200);
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $validated = $request->validate([
+            'email' => 'required|email',
+            'token' => 'required|string',
+            'password' => 'required|min:8|confirmed',
+        ]);
+
+        $record = DB::table('password_reset_tokens')->where('email', $validated['email'])->first();
+
+        if (! $record || ! Hash::check($validated['token'], $record->token)) {
+            return response()->json(['message' => 'Invalid or expired reset token.'], 400);
+        }
+
+        $createdAt = \Carbon\Carbon::parse($record->created_at);
+        if ($createdAt->addMinutes(60)->isPast()) {
+            DB::table('password_reset_tokens')->where('email', $validated['email'])->delete();
+
+            return response()->json(['message' => 'This password reset link has expired.'], 400);
+        }
+
+        $user = User::where('email', $validated['email'])->first();
+        if (! $user) {
+            return response()->json(['message' => 'User not found.'], 404);
+        }
+
+        $user->password = Hash::make($validated['password']);
+        $user->save();
+
+        DB::table('password_reset_tokens')->where('email', $validated['email'])->delete();
+
+        return response()->json(['message' => 'Password has been reset successfully.'], 200);
     }
 }

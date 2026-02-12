@@ -69,9 +69,6 @@
         { name: 'sketch' },
     ])
 
-    // const { value: prompt } = useField<string>('prompt')
-    // const { value: style_preference } = useField<string>('style_preference')
-
     const prompt = ref(null)
     const style_preference = ref(null)
 
@@ -145,36 +142,36 @@
 </script>
 
 <template>
-    <div class="transform bg-white p-8 text-left">
+    <div class="transform bg-white dark:bg-gray-900 p-8 text-left transition-colors duration-200 min-h-screen">
         <div class="flex items-center justify-between my-4">
-            <h2 class="text-2xl font-bold text-gray-900 mb-6">Prompt your Desired AI Design</h2>
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6 transition-colors duration-200">
+                Prompt your Desired AI Design
+            </h2>
         </div>
 
         <form class="flex flex-col gap-7 w-full mb-8">
             <div class="flex flex-col gap-2 w-full">
                 <div class="flex justify-between items-center gap-2">
                     <div class="flex items-end justify-between w-full">
-                        <h1>Enter your Prompt:</h1>
-
+                        <h1 class="text-gray-900 dark:text-gray-100 transition-colors duration-200">Enter your Prompt:</h1>
                         <div class="flex flex-col items-center gap-2 w-[20%]">
-                            <h1 class="text-gray-500 text-sm">
+                            <h1 class="text-gray-500 dark:text-gray-400 text-sm transition-colors duration-200">
                                 Daily Prompt Limit:
                                 {{ authStore.currentUser?.prompt_limit }}
                             </h1>
-
                             <div class="flex items-center gap-1">
                                 <div class="relative group">
                                     <InformationCircleIcon
-                                        class="size-5 text-gray-900 cursor-pointer"
+                                        class="size-5 text-gray-900 dark:text-gray-100 cursor-pointer transition-colors duration-200"
                                     />
                                     <div
-                                        class="absolute right-6 top-1/2 z-20 w-60 -translate-y-1/2 rounded bg-gray-900 px-3 py-2 text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+                                        class="absolute right-6 top-1/2 z-20 w-60 -translate-y-1/2 rounded bg-gray-900 dark:bg-gray-700 px-3 py-2 text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
                                         style="white-space: normal;"
                                     >
                                         For every generation, it's equivalent to 5 credits, which will add up to your overall payment on your next order.
                                     </div>
                                 </div>
-                                <h1 class="text-gray-500 text-sm mr-13">
+                                <h1 class="text-gray-500 dark:text-gray-400 text-sm mr-13 transition-colors duration-200">
                                     Prompt credit: ₱ {{ authStore.currentUser?.prompt_credit }}
                                 </h1>
                             </div>
@@ -189,14 +186,14 @@
                     placeholder="Mock up: Volleyball Jersey
 Design: Curve Uniques Lines
 Color: Black and White"
-                    class="font-medium block w-full rounded-md bg-white px-3 text-base text-black placeholder:text-gray-400 focus:outline-none border border-gray-300"
+                    class="font-medium block w-full rounded-md bg-white dark:bg-gray-800 px-3 text-base text-black dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none border border-gray-300 dark:border-gray-700 transition-colors duration-200"
                 ></textarea>
 
                 <div class="flex flex-col gap-2">
-                    <h1>Style Preference:</h1>
+                    <h1 class="text-gray-900 dark:text-gray-100 transition-colors duration-200">Style Preference:</h1>
                     <select
                         v-model="style_preference"
-                        class="font-medium block w-full rounded-md bg-white px-3 text-base text-black border border-gray-300 focus:outline-none"
+                        class="font-medium block w-full rounded-md bg-white dark:bg-gray-800 px-3 text-base text-black dark:text-gray-100 border border-gray-300 dark:border-gray-700 focus:outline-none transition-colors duration-200"
                     >
                         <option :value="null" disabled selected>Select a style preference</option>
                         <option v-for="option in preferences" :key="option.name" :value="option">
@@ -210,7 +207,7 @@ Color: Black and White"
                 <button
                     type="button"
                     @click="onImageGenerate"
-                    class="px-4 py-2 rounded-md bg-gray-900 text-white hover:cursor-pointer hover:opacity-75"
+                    class="px-4 py-2 rounded-md bg-gray-900 dark:bg-blue-600 text-white hover:cursor-pointer hover:opacity-75 transition-colors duration-200"
                 >
                     Generate
                 </button>
@@ -218,7 +215,7 @@ Color: Black and White"
                 <button
                     type="button"
                     @click="handleCloseModal"
-                    class="px-4 py-2 rounded-md bg-gray-700 text-white hover:cursor-pointer hover:opacity-75"
+                    class="px-4 py-2 rounded-md bg-gray-700 dark:bg-gray-800 text-white hover:cursor-pointer hover:opacity-75 transition-colors duration-200"
                 >
                     Close
                 </button>
@@ -228,7 +225,7 @@ Color: Black and White"
         <!-- LIST OF AI GENERATED DESIGNS -->
         <div class="mt-5">
             <div v-if="imageUrls && imageUrls.length > 0">
-                <h1 class="mb-3">Generated AI Images:</h1>
+                <h1 class="mb-3 text-gray-900 dark:text-gray-100 transition-colors duration-200">Generated AI Images:</h1>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     <div
                         v-for="(imageUrl, index) in imageUrls"
@@ -238,20 +235,20 @@ Color: Black and White"
                         <!-- Download Button -->
                         <button
                             @click="downloadImage(imageUrl, index)"
-                            class="absolute top-2 right-2 z-10 p-1 bg-white/80 hover:bg-white rounded-full shadow-md transition cursor-pointer"
+                            class="absolute top-2 right-2 z-10 p-1 bg-white/80 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-700 rounded-full shadow-md transition cursor-pointer"
                             type="button"
                         >
-                            <ArrowDownTrayIcon class="w-5 h-5 text-gray-700 hover:text-black" />
+                            <ArrowDownTrayIcon class="w-5 h-5 text-gray-700 dark:text-gray-100 hover:text-black dark:hover:text-gray-200 transition-colors duration-200" />
                         </button>
 
                         <!-- Image -->
                         <img
                             :src="`${aiAPIURL}/generated/image/${imageUrl}`"
-                            class="aspect-square w-full rounded-md bg-gray-200 object-cover group-hover:opacity-75 transition"
+                            class="aspect-square w-full rounded-md bg-gray-200 dark:bg-gray-700 object-cover group-hover:opacity-75 transition"
                         />
 
                         <!-- Caption -->
-                        <h3 class="mt-2 text-sm text-center text-gray-700 font-medium">
+                        <h3 class="mt-2 text-sm text-center text-gray-700 dark:text-gray-100 font-medium transition-colors duration-200">
                             Generated Design {{ index + 1 }}
                         </h3>
                     </div>

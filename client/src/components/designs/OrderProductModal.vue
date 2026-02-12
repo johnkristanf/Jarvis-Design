@@ -49,8 +49,8 @@
         },
     })
 
+    // ...rest script unchanged...
     console.log("props.selectedCartIds", props.selectedCartIds);
-    
 
     const { sizes, loadingSizes } = useProductAttributes()
     const queryClient = useQueryClient()
@@ -71,16 +71,10 @@
         color: '',
         phone_number: authStore?.user?.phone_number || '',
         address: authStore?.user?.address || '',
-
-        // SOLO QUANTITY FOR FIXED PRICED PRODUCT
         solo_quantity: null as number | null,
-
-        // QUANTITY FOR EACH SIZE
         quantityPerSize: {} as Record<number, number>,
-
         designType: 'own-design',
         orderOption: null as SelectedOrderOption | null,
-
         ownDesignFile: null as File | null, // for 'own-design'
         businessDesignURL: '', // for 'business-design'
     })
@@ -143,22 +137,18 @@
     // SERIALIZING DATA TO THE FORMDATA
     const prepareFormData = () => {
         const data = new FormData()
-
         data.append('phone_number', formData.value.phone_number)
         data.append('address', formData.value.address)
         data.append('design_type', formData.value.designType)
         data.append('order_option', formData.value.orderOption?.name as string)
         data.append('selected_cart_ids', JSON.stringify(props.selectedCartIds))
 
-        console.log('paymentAttachmentFile: ', paymentAttachmentFile.value)
-        console.log('checkedOutProductsArray : ', checkedOutProductsArray.value)
-
         // Map through the checked out products, appending each product's details and its corresponding payment file
         checkedOutProductsArray.value.forEach((product, idx) => {
             data.append(`products[${idx}][product_id]`, product.id.toString())
             data.append(`products[${idx}][product_unit_price]`, product.unit_price.toString())
             data.append(`products[${idx}][product_color]`, product.color)
-            
+
             if (product.fabric_type_id) {
                 data.append(`products[${idx}][fabric_type_id]`, product.fabric_type_id.toString())
             }
@@ -190,20 +180,6 @@
             data.append(`products[${idx}][sizes]`, JSON.stringify(product.size))
         })
 
-        // Null if the product has no corresponding fabric like (mugs, lanyard, etc..)
-        // if (firstProduct.fabric_type && firstProduct.fabric_type.id) {
-        //     data.append('fabric_type_id', firstProduct.fabric_type.id.toString())
-        // }
-
-        // // Conditionally append size quantities or solo quantity
-        // if (shouldIncludeSizes.value) {
-        //     for (const [sizeId, qty] of Object.entries(formData.value.quantityPerSize)) {
-        //         data.append(`sizes[${sizeId}]`, qty.toString())
-        //     }
-        // } else {
-        //     data.append('solo_quantity', formData.value.solo_quantity?.toString() ?? '')
-        // }
-
         return data
     }
 
@@ -219,22 +195,6 @@
             Number(checkedOutProductsArray.value[0]?.unit_price || 0),
     )
 
-    // FINAL TOTAL QUANTITY THAT CATCHES CATEGORY THAT HAS
-    // MULTI SIZES (BASKET APPAREL) AND SOLO (MUGS, LANYARD, etc..)
-    // const totalQuantity = computed(() => {
-    // return shouldIncludeSizes.value
-    // ? totalQuantityForMultiSizes.value
-    // : (formData.value.solo_quantity ?? 0)
-    // })
-
-    // FINAL TOTAL PRICE THAT CATCHES CATEGORY THAT HAS MULTI SIZES AND SOLO
-    // const totalPrice = computed(() => {
-    //     return shouldIncludeSizes.value
-    //         ? totalPriceForMultiSizes.value
-    //         : (formData.value.solo_quantity ?? 0) *
-    //               Number(checkedOutProductsArray.value[0]?.unit_price ?? 0)
-    // })
-
     // PLACE ORDER MUTATION
     const mutation = useMutation({
         mutationFn: async (formData: FormData) => {
@@ -246,7 +206,7 @@
         onSuccess: (response) => {
             queryClient.invalidateQueries({ queryKey: ['order_notifications'] })
             queryClient.invalidateQueries({ queryKey: ['cart_items'] })
-            
+
             toast.add({
                 severity: 'success',
                 summary: 'Order Place Successfully!',
@@ -304,35 +264,16 @@
         if (!formData.value.phone_number) return true
         if (!formData.value.address.trim()) return true
         if (!formData.value.orderOption) return true
-
-        // Design validation
-        // if (formData.value.designType === 'own-design' && !formData.value.ownDesignFile) return true
-        // if (formData.value.designType === 'business-design' && !formData.value.businessDesignURL)
-        //     return true
-
-        // // Quantity validation
-        // if (shouldIncludeSizes.value) {
-        //     const hasQuantity = Object.values(formData.value.quantityPerSize).some(
-        //         (qty) => Number(qty) > 0,
-        //     )
-        //     if (!hasQuantity) return true
-        // } else {
-        //     if (!formData.value.solo_quantity || formData.value.solo_quantity <= 0) return true
-        // }
-
         return false
     })
 
     // SUBMIT ORDER HANDLER
     const handlePlaceOrder = async () => {
-        // CLOSE QRCODE MODAL FOR LOADER
         showQrCodePaymentModal.value = false
-
         const formData = prepareFormData()
         for (const pair of formData.entries()) {
             console.log(pair[0] + ':', pair[1])
         }
-
         mutation.mutate(formData)
     }
 
@@ -363,7 +304,7 @@
 <template>
     <TransitionRoot appear :show="true">
         <Dialog as="div" static @close="() => {}" class="relative z-[999]">
-            <div class="fixed inset-0 overflow-y-auto bg-gray-900/80 transition-opacity">
+            <div class="fixed inset-0 overflow-y-auto bg-gray-900/80 dark:bg-black/80 transition-opacity">
                 <div
                     class="flex flex-col lg:flex-row items-start lg:items-center justify-center p-4 text-center gap-4 lg:gap-8 min-h-screen"
                 >
@@ -376,18 +317,16 @@
                         leave-to="opacity-0 scale-95"
                     >
                         <DialogPanel
-                            class="w-[1000px] h-[35rem] transform overflow-y-auto bg-white p-6 text-left align-middle shadow-xl transition-all"
+                            class="w-[1000px] h-[35rem] transform overflow-y-auto bg-white dark:bg-gray-900 p-6 text-left align-middle shadow-xl transition-all"
                         >
-                            <DialogTitle as="h1" class="text-2xl text-gray-900 mb-4">
+                            <DialogTitle as="h1" class="text-2xl text-gray-900 dark:text-gray-100 mb-4">
                                 Product Order Details
                             </DialogTitle>
 
-                            
-
                             <div class="space-y-7">
                                 <!-- Products List Section -->
-                                <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                                    <h2 class="text-lg font-semibold text-gray-800 mb-3">
+                                <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                                    <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-3">
                                         Selected Products
                                     </h2>
 
@@ -395,14 +334,14 @@
                                         <div
                                             v-for="(product, index) in checkedOutProductsArray"
                                             :key="product.id + '-' + index"
-                                            class="bg-white rounded-md p-3 border border-gray-200"
+                                            class="bg-white dark:bg-gray-900 rounded-md p-3 border border-gray-200 dark:border-gray-700"
                                         >
                                             <div class="flex justify-between items-start">
                                                 <div class="flex-1">
-                                                    <p class="font-medium text-gray-900">
+                                                    <p class="font-medium text-gray-900 dark:text-gray-100">
                                                         {{ product.name }}
                                                     </p>
-                                                    <p class="text-sm text-gray-600 mt-1">
+                                                    <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">
                                                         Unit Price:
                                                         <strong>₱{{ product.unit_price }}</strong>
                                                     </p>
@@ -435,12 +374,12 @@
                                                             class="flex items-center mt-1"
                                                         >
                                                             <span
-                                                                class="inline-block px-2 py-0.5 rounded bg-blue-100 text-blue-800 text-xs font-semibold border border-blue-300"
+                                                                class="inline-block px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs font-semibold border border-blue-300 dark:border-blue-700"
                                                             >
                                                                 {{ product.size.name }}
                                                             </span>
                                                         </div>
-                                                        <p class="text-sm text-gray-600">
+                                                        <p class="text-sm text-gray-600 dark:text-gray-200">
                                                             Quantity:
                                                             <strong>
                                                                 {{ product.desired_quantity }}
@@ -450,7 +389,7 @@
                                                 </div>
 
                                                 <div class="text-right">
-                                                    <p class="font-semibold text-gray-900">
+                                                    <p class="font-semibold text-gray-900 dark:text-gray-100">
                                                         ₱{{
                                                             (
                                                                 Number(product.unit_price) *
@@ -464,9 +403,9 @@
                                     </div>
 
                                     <!-- Summary -->
-                                    <div class="mt-4 pt-3 border-t border-gray-300">
+                                    <div class="mt-4 pt-3 border-t border-gray-300 dark:border-gray-700">
                                         <div
-                                            class="flex justify-between text-sm text-gray-700 mb-1"
+                                            class="flex justify-between text-sm text-gray-700 dark:text-gray-200 mb-1"
                                         >
                                             <span>Total Items:</span>
                                             <span class="font-medium">
@@ -474,7 +413,7 @@
                                             </span>
                                         </div>
                                         <div
-                                            class="flex justify-between text-sm text-gray-700 mb-1"
+                                            class="flex justify-between text-sm text-gray-700 dark:text-gray-200 mb-1"
                                         >
                                             <span>Total Quantity:</span>
                                             <span class="font-medium">
@@ -482,7 +421,7 @@
                                             </span>
                                         </div>
                                         <div
-                                            class="flex justify-between text-base font-semibold text-gray-900"
+                                            class="flex justify-between text-base font-semibold text-gray-900 dark:text-gray-100"
                                         >
                                             <span>Total Amount:</span>
                                             <span>
@@ -494,7 +433,7 @@
                                                             .prompt_credit === 'number' &&
                                                         authStore.currentUser.prompt_credit > 0
                                                     "
-                                                    class="text-base text-red-500"
+                                                    class="text-base text-red-500 dark:text-red-400"
                                                 >
                                                     +{{ authStore.currentUser.prompt_credit }}
                                                     (prompt credits)
@@ -505,16 +444,16 @@
                                 </div>
 
                                 <!-- Phone number and address as plain text at the top -->
-                                <div class="mb-4 bg-gray-100 p-4 rounded-lg border border-gray-200">
+                                <div class="mb-4 bg-gray-100 dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
                                     <div class="mb-2">
-                                        <span class="font-semibold text-gray-700 text-sm">Phone Number:</span>
-                                        <span class="ml-2 text-gray-800 text-sm">
+                                        <span class="font-semibold text-gray-700 dark:text-gray-200 text-sm">Phone Number:</span>
+                                        <span class="ml-2 text-gray-800 dark:text-gray-100 text-sm">
                                             {{ formData.phone_number }}
                                         </span>
                                     </div>
                                     <div>
-                                        <span class="font-semibold text-gray-700  text-sm">Full Address:</span>
-                                        <span class="ml-2 text-gray-800 text-sm">
+                                        <span class="font-semibold text-gray-700 dark:text-gray-200 text-sm">Full Address:</span>
+                                        <span class="ml-2 text-gray-800 dark:text-gray-100 text-sm">
                                             {{ formData.address }}
                                         </span>
                                     </div>
@@ -522,7 +461,7 @@
 
                                 <!-- ORDER OPTION -->
                                 <div class="mb-8">
-                                    <label class="block text-sm text-gray-600 mb-1">
+                                    <label class="block text-sm text-gray-600 dark:text-gray-200 mb-1">
                                         Order Option:
                                     </label>
                                     <div class="mt-4 w-full">
@@ -534,38 +473,15 @@
                                     </div>
                                 </div>
 
-                                <!-- Price Display -->
-                                <!-- <div class="mb-4">
-                                    <label class="block text-sm text-gray-600 mb-2">
-                                        Pricing Details:
-                                    </label>
-
-                                    <div class="mb-4 bg-gray-400 text-white rounded-md p-3">
-                                        <div class="flex justify-between text-md mb-1">
-                                            <h1>
-                                                Total Quantity:
-                                                <br />
-                                                {{ totalQuantity }}
-                                            </h1>
-                                            <h1>
-                                                Total Price:
-                                                <br />
-                                                ₱
-                                                {{ totalPrice }}
-                                            </h1>
-                                        </div>
-                                    </div>
-                                </div> -->
-
                                 <!-- Place Order Button -->
                                 <button
                                     :disabled="isFormInvalid"
                                     @click="openQrCodePaymentModal(checkedOutProductsArray)"
                                     :class="[
-                                        'w-full font-medium py-3 px-4 rounded-md transition-colors duration-200',
+                                        'w-full font-medium py-3 px-4 rounded-md transition-colors duration-200 ',
                                         isFormInvalid
-                                            ? 'bg-gray-400 text-white cursor-not-allowed'
-                                            : 'bg-gray-800 text-white hover:opacity-75 hover:bg-gray-600',
+                                            ? 'bg-gray-400 dark:bg-gray-700 text-white cursor-not-allowed'
+                                            : 'bg-gray-800 dark:bg-white text-white hover:cursor-pointer dark:text-gray-900 hover:opacity-75 hover:bg-gray-600 dark:hover:bg-gray-200',
                                     ]"
                                 >
                                     Generate QR Code Payment
@@ -574,11 +490,19 @@
                                 <!-- Cancel Button -->
                                 <button
                                     @click="handleClose"
-                                    class="w-full bg-black hover:opacity-75 hover:bg-gray-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium py-3 px-4 rounded-md transition-colors duration-200"
+                                    class="w-full bg-black dark:bg-gray-700 hover:opacity-75 hover:cursor-pointer hover:bg-gray-600 dark:hover:bg-gray-500 disabled:bg-gray-300 dark:disabled:bg-gray-800 disabled:cursor-not-allowed text-white font-medium py-3 px-4 rounded-md transition-colors duration-200"
                                 >
                                     Cancel
                                 </button>
                             </div>
+
+                            <QrCodePaymentModal
+                                v-if="showQrCodePaymentModal"
+                                :selectedProductsData="selectedProductsData"
+                                @close="showQrCodePaymentModal = false"
+                                @place_order="handlePlaceOrder"
+                                @fileSelected="handlePaymentAttachmentFile"
+                            />
                         </DialogPanel>
                     </TransitionChild>
                 </div>
@@ -587,14 +511,6 @@
     </TransitionRoot>
 
     <Loader v-if="mutation.isPending.value" msg="Placing Order..." />
-
-    <QrCodePaymentModal
-        v-if="showQrCodePaymentModal"
-        :selectedProductsData="selectedProductsData"
-        @close="showQrCodePaymentModal = false"
-        @place_order="handlePlaceOrder"
-        @fileSelected="handlePaymentAttachmentFile"
-    />
-
     <Toast />
+    
 </template>

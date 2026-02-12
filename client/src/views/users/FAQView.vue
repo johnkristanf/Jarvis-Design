@@ -1,21 +1,21 @@
 <script lang="ts" setup></script>
 
 <template>
-    <section class="bg-white class:bg-gray-900">
+    <section class="bg-white dark:bg-gray-900 transition-colors duration-200 min-h-screen">
         <div class="py-8 px-4 mx-auto max-w-screen-xl sm:py-12 lg:px-6">
-            <h2 class="mb-8 text-4xl tracking-tight font-extrabold text-gray-900 class:text-white">
+            <h2 class="mb-8 text-4xl tracking-tight font-extrabold text-gray-900 dark:text-gray-100 transition-colors duration-200">
                 Frequently Asked Questions
             </h2>
             <div
-                class="grid pt-8 text-left border-t border-gray-200 md:gap-16 class:border-gray-700 md:grid-cols-2"
+                class="grid pt-8 text-left border-t border-gray-200 dark:border-gray-700 md:gap-16 md:grid-cols-2 transition-colors duration-200"
             >
                 <div>
                     <div class="mb-10">
                         <h3
-                            class="flex items-center mb-4 text-lg font-medium text-gray-900 class:text-white"
+                            class="flex items-center mb-4 text-lg font-medium text-gray-900 dark:text-gray-100 transition-colors duration-200"
                         >
                             <svg
-                                class="flex-shrink-0 mr-2 w-5 h-5 text-gray-500 class:text-gray-400"
+                                class="flex-shrink-0 mr-2 w-5 h-5 text-gray-500 dark:text-gray-400"
                                 fill="currentColor"
                                 viewBox="0 0 20 20"
                                 xmlns="http://www.w3.org/2000/svg"
@@ -28,7 +28,7 @@
                             </svg>
                             What types of items do you print on?
                         </h3>
-                        <p class="text-gray-500 class:text-gray-400">
+                        <p class="text-gray-500 dark:text-gray-400 transition-colors duration-200">
                             We offer sublimation and printing services on shirts, mugs, tote bags,
                             tumblers, phone cases, and more! Our full product catalog is available
                             on the homepage.
@@ -36,10 +36,10 @@
                     </div>
                     <div class="mb-10">
                         <h3
-                            class="flex items-center mb-4 text-lg font-medium text-gray-900 class:text-white"
+                            class="flex items-center mb-4 text-lg font-medium text-gray-900 dark:text-gray-100 transition-colors duration-200"
                         >
                             <svg
-                                class="flex-shrink-0 mr-2 w-5 h-5 text-gray-500 class:text-gray-400"
+                                class="flex-shrink-0 mr-2 w-5 h-5 text-gray-500 dark:text-gray-400"
                                 fill="currentColor"
                                 viewBox="0 0 20 20"
                                 xmlns="http://www.w3.org/2000/svg"
@@ -52,7 +52,7 @@
                             </svg>
                             Can I upload my own design?
                         </h3>
-                        <p class="text-gray-500 class:text-gray-400">
+                        <p class="text-gray-500 dark:text-gray-400 transition-colors duration-200">
                             Absolutely! You can upload your custom design directly during the
                             ordering process. Make sure the file is high resolution (300 DPI) for
                             best results.
@@ -63,10 +63,10 @@
                 <div>
                     <div class="mb-10">
                         <h3
-                            class="flex items-center mb-4 text-lg font-medium text-gray-900 class:text-white"
+                            class="flex items-center mb-4 text-lg font-medium text-gray-900 dark:text-gray-100 transition-colors duration-200"
                         >
                             <svg
-                                class="flex-shrink-0 mr-2 w-5 h-5 text-gray-500 class:text-gray-400"
+                                class="flex-shrink-0 mr-2 w-5 h-5 text-gray-500 dark:text-gray-400"
                                 fill="currentColor"
                                 viewBox="0 0 20 20"
                                 xmlns="http://www.w3.org/2000/svg"
@@ -79,17 +79,17 @@
                             </svg>
                             How long does it take to fulfill an order?
                         </h3>
-                        <p class="text-gray-500 class:text-gray-400">
+                        <p class="text-gray-500 dark:text-gray-400 transition-colors duration-200">
                             Order fulfillment typically takes 3–5 business days. You'll receive a
                             tracking number once your item has shipped.
                         </p>
                     </div>
                     <!-- <div class="mb-10">
                         <h3
-                            class="flex items-center mb-4 text-lg font-medium text-gray-900 class:text-white"
+                            class="flex items-center mb-4 text-lg font-medium text-gray-900 dark:text-gray-100 transition-colors duration-200"
                         >
                             <svg
-                                class="flex-shrink-0 mr-2 w-5 h-5 text-gray-500 class:text-gray-400"
+                                class="flex-shrink-0 mr-2 w-5 h-5 text-gray-500 dark:text-gray-400"
                                 fill="currentColor"
                                 viewBox="0 0 20 20"
                                 xmlns="http://www.w3.org/2000/svg"
@@ -102,7 +102,7 @@
                             </svg>
                             Do you offer bulk or wholesale pricing?
                         </h3>
-                        <p class="text-gray-500 class:text-gray-400">
+                        <p class="text-gray-500 dark:text-gray-400 transition-colors duration-200">
                             Yes! For bulk orders or wholesale partnerships, please contact us
                             directly. We offer discounted rates for large quantity purchases.
                         </p>

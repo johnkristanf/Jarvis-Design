@@ -21,7 +21,9 @@ return [
         'broadcasting/auth',  // Add this line
         'register',
         'login',
-        'logout'
+        'logout',
+        'forgot-password',
+        'reset-password'
     ],
 
     'allowed_methods' => ['*'],

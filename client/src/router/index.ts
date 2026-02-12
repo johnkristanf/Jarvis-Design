@@ -3,6 +3,8 @@ import DefaultLayout from '@/layout/UserLayout.vue'
 import DesignsView from '@/views/users/DesignsView.vue'
 import HomeView from '@/views/users/HomeView.vue'
 import LoginView from '@/views/users/LoginView.vue'
+import ForgotPasswordView from '@/views/users/ForgotPasswordView.vue'
+import ResetPasswordView from '@/views/users/ResetPasswordView.vue'
 import NotFoundView from '@/views/NotFoundView.vue'
 import RegisterView from '@/views/users/RegisterView.vue'
 import { createRouter, createWebHistory } from 'vue-router'
@@ -71,6 +73,16 @@ const router = createRouter({
                 {
                     path: 'auth/register',
                     component: RegisterView,
+                },
+
+                {
+                    path: 'auth/forgot-password',
+                    component: ForgotPasswordView,
+                },
+
+                {
+                    path: 'auth/reset-password',
+                    component: ResetPasswordView,
                 },
 
                 {

@@ -154,7 +154,7 @@
 
                         <div class="flex items-center">
 
-                            <img src="/jarvis-logo-circle.png" class="h-10 me-2" />
+                            <img src="/jarvis-logo-white.jpeg" class="h-10 me-2 rounded-full" />
 
                             <a
                                 href="/"

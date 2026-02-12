@@ -120,15 +120,19 @@
 </script>
 
 <template>
-    <div v-if="!showUploadedDesignsTableRef && designs" class="w-full">
+    <!-- Added dark mode support using dark:bg-* and dark:text-* classes, as seen in LoginView.vue -->
+    <div
+        v-if="!showUploadedDesignsTableRef && designs"
+        class="w-full bg-white dark:bg-gray-900 transition-colors duration-200 rounded-xl p-3 md:p-6"
+    >
         <!-- CATEGORY FILTERS -->
         <div class="flex items-center gap-8 mb-6">
             <div v-for="category in designs" :key="category.id">
                 <h1
                     @click="toggleCategory(category.id)"
-                    class="text-xs font-bold text-gray-500 class:text-white hover:opacity-75 hover:cursor-pointer"
+                    class="text-xs font-bold text-gray-500 dark:text-gray-100 hover:opacity-75 hover:cursor-pointer"
                     :class="{
-                        'text-blue-600 class:text-blue-400': expandedCategory === category.id,
+                        'text-blue-600 dark:text-blue-400': expandedCategory === category.id,
                     }"
                 >
                     {{ category.name }}
@@ -148,7 +152,7 @@
                         <fwb-card
                             v-for="product in category.products"
                             :key="product.id"
-                            class="hover:cursor-pointer hover:opacity-75"
+                            class="hover:cursor-pointer hover:opacity-75 bg-white dark:bg-gray-800 transition-colors duration-200 border border-gray-200 dark:border-gray-700"
                             @click="openDesignOptionModal(product)"
                         >
                             <div class="flex gap-2 p-2 justify-start">
@@ -160,17 +164,17 @@
                                     :key="product.designs[0].id"
                                     :src="product.designs[0].temp_url"
                                     alt="Product Design"
-                                    class="object-cover rounded shadow border border-gray-200"
+                                    class="object-cover rounded shadow border border-gray-200 dark:border-gray-700 max-h-44 max-w-full bg-white dark:bg-gray-900"
                                 />
                             </div>
 
                             <div class="p-4 w-full flex items-center justify-between">
                                 <div class="flex flex-col">
-                                    <h5 class="text-md font-medium text-gray-900 class:text-white">
+                                    <h5 class="text-md font-medium text-gray-900 dark:text-gray-100 transition-colors duration-200">
                                         {{ product.name }}
                                         <!-- <span v-if="product.fabric_type">({{ product.fabric_type.name }})</span> -->
                                     </h5>
-                                    <p class="text-sm text-gray-700 class:text-gray-400">
+                                    <p class="text-sm text-gray-700 dark:text-gray-400 transition-colors duration-200">
                                         ₱{{ product.unit_price }}
                                     </p>
                                 </div>
@@ -181,7 +185,7 @@
                     <!-- NO PRODUCTS MESSAGE -->
                     <div
                         v-else
-                        class="text-sm text-gray-500 class:text-gray-400 px-4 py-8 text-center"
+                        class="text-sm text-gray-500 dark:text-gray-400 px-4 py-8 text-center transition-colors duration-200"
                     >
                         No products in this category.
                     </div>

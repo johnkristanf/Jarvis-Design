@@ -201,7 +201,7 @@
                     </button>
 
                     <RouterLink to="/admin/dashboard" class="flex ms-2 md:me-24">
-                        <img src="/jarvis-logo-circle.png" class="h-8 me-3" />
+                        <img src="/jarvis-logo-white.jpeg" class="h-8 me-2 rounded-full" />
 
                         <h1 class="text-white text-2xl hover:cursor-pointer hover:opacity-75">
                             Jarvis

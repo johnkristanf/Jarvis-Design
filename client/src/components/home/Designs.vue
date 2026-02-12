@@ -25,13 +25,13 @@ const handleGoToDesigns = () => {
 </script>
 
 <template>
-    <div class="bg-white">
+    <div class="bg-white dark:bg-gray-900 transition-colors duration-200">
         <div class="mx-auto px-4 sm:px-6 lg:px-8">
             <div class="mx-auto py-16 sm:py-24">
                 <div class="flex items-center justify-between">
                     <div class="flex flex-col">
-                        <h2 class="text-5xl font-bold text-gray-900">Designs</h2>
-                        <h2 class="text-md text-gray-500 mb-6">
+                        <h2 class="text-5xl font-bold text-gray-900 dark:text-gray-100">Designs</h2>
+                        <h2 class="text-md text-gray-500 dark:text-gray-300 mb-6">
                             PM us now for orders. We have big discounts and freebies!
                         </h2>
                     </div>
@@ -41,12 +41,12 @@ const handleGoToDesigns = () => {
                         to="/designs"
                         class="flex hover:cursor-pointer opacity-75 text-lg"
                     >
-                        <h1 class="text-gray-900 hover:opacity-40">View All</h1>
+                        <h1 class="text-gray-900 dark:text-gray-100 hover:opacity-40">View All</h1>
                     </router-link>
                 </div>
 
-                <div v-if="isLoading" class="py-10 text-gray-500">Loading designs...</div>
-                <div v-else-if="isError" class="py-10 text-red-600">Failed to load designs.</div>
+                <div v-if="isLoading" class="py-10 text-gray-500 dark:text-gray-300">Loading designs...</div>
+                <div v-else-if="isError" class="py-10 text-red-600 dark:text-red-400">Failed to load designs.</div>
 
                 <div v-else class="space-y-12 lg:grid lg:grid-cols-3 lg:space-y-0 lg:gap-x-6">
                     <div
@@ -58,12 +58,12 @@ const handleGoToDesigns = () => {
                         <img
                             :src="product.design_images?.[0]?.temp_url || '/jersey-1.jpg'"
                             :alt="product.name"
-                            class="w-full rounded-lg bg-white object-cover group-hover:opacity-75 max-sm:h-80 sm:aspect-2/1 lg:aspect-square"
+                            class="w-full rounded-lg bg-white dark:bg-gray-800 object-cover group-hover:opacity-75 max-sm:h-80 sm:aspect-2/1 lg:aspect-square transition-colors duration-200"
                         />
-                        <h3 class="mt-6 text-sm text-gray-500">
+                        <h3 class="mt-6 text-sm text-gray-500 dark:text-gray-400">
                             {{ product.name }}
                         </h3>
-                        <p class="text-base font-semibold text-gray-900">₱ {{ product.unit_price }}</p>
+                        <p class="text-base font-semibold text-gray-900 dark:text-gray-100">₱ {{ product.unit_price }}</p>
                     </div>
                 </div>
             </div>

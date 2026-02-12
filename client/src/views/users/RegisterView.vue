@@ -119,10 +119,10 @@
 </script>
 
 <template>
-    <div class="flex flex-col pt-4 px-6 lg:px-8 h-[150vh] bg-white">
+    <div class="flex flex-col pt-4 px-6 lg:px-8 h-[150vh] bg-white dark:bg-gray-900 transition-colors duration-300">
         <div class="sm:mx-auto sm:w-full sm:max-w-sm">
-            <img class="mx-auto w-[20%]" src="/jarvis-logo-circle.png" alt="Your Company" />
-            <h2 class="mt-3 text-center text-2xl/9 font-bold tracking-tight">
+            <img class="mx-auto w-[20%] rounded-full" src="/jarvis-logo-white.jpeg" alt="Your Company" />
+            <h2 class="mt-3 text-center text-2xl/9 font-bold tracking-tight text-gray-900 dark:text-white">
                 Register to get started
             </h2>
         </div>
@@ -131,7 +131,7 @@
             <form class="space-y-4 grid grid-cols-2 gap-3" @submit="onSubmit" method="POST">
                 <!-- First Name -->
                 <div>
-                    <label for="first_name" class="block text-sm/6 font-medium">
+                    <label for="first_name" class="block text-sm/6 font-medium text-gray-900 dark:text-gray-200">
                         First Name
                         <span class="text-red-500">*</span>
                     </label>
@@ -140,17 +140,17 @@
                             type="text"
                             id="first_name"
                             v-model="firstName"
-                            class="font-medium block w-full rounded-md bg-white px-3 py-1.5 text-base text-black outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:outline-none sm:text-sm/6"
+                            class="font-medium block w-full rounded-md bg-white dark:bg-gray-900 px-3 py-1.5 text-base text-black dark:text-white outline-1 outline-gray-300 dark:outline-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-2 focus:outline-none sm:text-sm/6"
                         />
                     </div>
-                    <p v-if="firstNameError" class="mt-1 text-red-500 text-sm">
+                    <p v-if="firstNameError" class="mt-1 text-red-500 dark:text-red-400 text-sm">
                         {{ firstNameError }}
                     </p>
                 </div>
 
                 <!-- Last Name -->
                 <div>
-                    <label for="last_name" class="block text-sm/6 font-medium">
+                    <label for="last_name" class="block text-sm/6 font-medium text-gray-900 dark:text-gray-200">
                         Last Name
                         <span class="text-red-500">*</span>
                     </label>
@@ -159,17 +159,17 @@
                             type="text"
                             id="last_name"
                             v-model="lastName"
-                            class="font-medium block w-full rounded-md bg-white px-3 py-1.5 text-base text-black outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:outline-none sm:text-sm/6"
+                            class="font-medium block w-full rounded-md bg-white dark:bg-gray-900 px-3 py-1.5 text-base text-black dark:text-white outline-1 outline-gray-300 dark:outline-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-2 focus:outline-none sm:text-sm/6"
                         />
                     </div>
-                    <p v-if="lastNameError" class="mt-1 text-red-500 text-sm">
+                    <p v-if="lastNameError" class="mt-1 text-red-500 dark:text-red-400 text-sm">
                         {{ lastNameError }}
                     </p>
                 </div>
 
                 <!-- Username -->
                 <div>
-                    <label for="username" class="block text-sm/6 font-medium">
+                    <label for="username" class="block text-sm/6 font-medium text-gray-900 dark:text-gray-200">
                         Username
                         <span class="text-red-500">*</span>
                     </label>
@@ -178,17 +178,17 @@
                             type="text"
                             id="username"
                             v-model="username"
-                            class="font-medium block w-full rounded-md bg-white px-3 py-1.5 text-base text-black outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-none sm:text-sm/6"
+                            class="font-medium block w-full rounded-md bg-white dark:bg-gray-900 px-3 py-1.5 text-base text-black dark:text-white outline-1 -outline-offset-1 outline-gray-300 dark:outline-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-none sm:text-sm/6"
                         />
                     </div>
-                    <p v-if="usernameError" class="mt-1 text-red-500 text-sm">
+                    <p v-if="usernameError" class="mt-1 text-red-500 dark:text-red-400 text-sm">
                         {{ usernameError }}
                     </p>
                 </div>
 
                 <!-- Email -->
                 <div>
-                    <label for="email" class="block text-sm/6 font-medium">
+                    <label for="email" class="block text-sm/6 font-medium text-gray-900 dark:text-gray-200">
                         Email
                         <span class="text-red-500">*</span>
                     </label>
@@ -197,19 +197,19 @@
                             type="email"
                             id="email"
                             v-model="email"
-                            class="font-medium block w-full rounded-md bg-white px-3 py-1.5 text-base text-black outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-none sm:text-sm/6"
+                            class="font-medium block w-full rounded-md bg-white dark:bg-gray-900 px-3 py-1.5 text-base text-black dark:text-white outline-1 -outline-offset-1 outline-gray-300 dark:outline-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-none sm:text-sm/6"
                         />
                     </div>
-                    <p v-if="emailError" class="mt-1 text-red-500 text-sm">{{ emailError }}</p>
+                    <p v-if="emailError" class="mt-1 text-red-500 dark:text-red-400 text-sm">{{ emailError }}</p>
                 </div>
                 <!-- Phone Number -->
                 <div class="col-span-2">
-                    <label for="phone_number" class="block text-sm/6 font-medium">
+                    <label for="phone_number" class="block text-sm/6 font-medium text-gray-900 dark:text-gray-200">
                         Phone Number
                     </label>
                     <div class="mt-2 flex rounded-md shadow-sm">
                         <span
-                            class="inline-flex items-center rounded-l-md border border-r-0 border-gray-300 bg-gray-50 px-3 text-gray-500 text-sm/6"
+                            class="inline-flex items-center rounded-l-md border border-r-0 border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 text-gray-500 dark:text-gray-400 text-sm/6"
                         >
                             +63
                         </span>
@@ -217,35 +217,35 @@
                             type="number"
                             id="phone_number"
                             v-model="phoneNumber"
-                            class="font-medium block w-full min-w-0 flex-1 rounded-none rounded-r-md bg-white px-3 py-1.5 text-base text-black outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:outline-none sm:text-sm/6"
+                            class="font-medium block w-full min-w-0 flex-1 rounded-none rounded-r-md bg-white dark:bg-gray-900 px-3 py-1.5 text-base text-black dark:text-white outline-1 outline-gray-300 dark:outline-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-2 focus:outline-none sm:text-sm/6"
                             placeholder="9123456789"
                             min="0"
                         />
                     </div>
-                    <p v-if="phoneNumberError" class="mt-1 text-red-500 text-sm">
+                    <p v-if="phoneNumberError" class="mt-1 text-red-500 dark:text-red-400 text-sm">
                         {{ phoneNumberError }}
                     </p>
                 </div>
 
                 <!-- Address -->
                 <div class="col-span-2">
-                    <label for="address" class="block text-sm/6 font-medium">Address</label>
+                    <label for="address" class="block text-sm/6 font-medium text-gray-900 dark:text-gray-200">Address</label>
                     <div class="mt-2">
                         <input
                             type="text"
                             id="address"
                             v-model="address"
-                            class="font-medium block w-full rounded-md bg-white px-3 py-1.5 text-base text-black outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:outline-none sm:text-sm/6"
+                            class="font-medium block w-full rounded-md bg-white dark:bg-gray-900 px-3 py-1.5 text-base text-black dark:text-white outline-1 outline-gray-300 dark:outline-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-2 focus:outline-none sm:text-sm/6"
                         />
                     </div>
-                    <p v-if="addressError" class="mt-1 text-red-500 text-sm">
+                    <p v-if="addressError" class="mt-1 text-red-500 dark:text-red-400 text-sm">
                         {{ addressError }}
                     </p>
                 </div>
 
                 <!-- Password with Eye Toggle -->
                 <div class="col-span-2">
-                    <label for="password" class="block text-sm/6 font-medium">
+                    <label for="password" class="block text-sm/6 font-medium text-gray-900 dark:text-gray-200">
                         Password
                         <span class="text-red-500">*</span>
                     </label>
@@ -255,12 +255,12 @@
                             id="password"
                             v-model="password"
                             autocomplete="current-password"
-                            class="font-medium block w-full rounded-md bg-white px-3 py-1.5 pr-10 text-base text-black outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-none sm:text-sm/6"
+                            class="font-medium block w-full rounded-md bg-white dark:bg-gray-900 px-3 py-1.5 pr-10 text-base text-black dark:text-white outline-1 -outline-offset-1 outline-gray-300 dark:outline-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-none sm:text-sm/6"
                         />
                         <button
                             type="button"
                             @click="showPassword = !showPassword"
-                            class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-gray-700"
+                            class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
                             tabindex="-1"
                         >
                             <component
@@ -269,14 +269,14 @@
                             />
                         </button>
                     </div>
-                    <p v-if="passwordError" class="mt-1 text-red-500 text-sm">
+                    <p v-if="passwordError" class="mt-1 text-red-500 dark:text-red-400 text-sm">
                         {{ passwordError }}
                     </p>
                 </div>
 
                 <!-- Confirm Password -->
                 <div class="col-span-2">
-                    <label for="confirmPassword" class="block text-sm/6 font-medium">
+                    <label for="confirmPassword" class="block text-sm/6 font-medium text-gray-900 dark:text-gray-200">
                         Confirm Password
                         <span class="text-red-500">*</span>
                     </label>
@@ -286,12 +286,12 @@
                             id="confirmPassword"
                             v-model="confirmPassword"
                             autocomplete="new-password"
-                            class="font-medium block w-full rounded-md bg-white px-3 py-1.5 pr-10 text-base text-black outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-none sm:text-sm/6"
+                            class="font-medium block w-full rounded-md bg-white dark:bg-gray-900 px-3 py-1.5 pr-10 text-base text-black dark:text-white outline-1 -outline-offset-1 outline-gray-300 dark:outline-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-none sm:text-sm/6"
                         />
                         <button
                             type="button"
                             @click="showConfirmPassword = !showConfirmPassword"
-                            class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-gray-700"
+                            class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
                             tabindex="-1"
                         >
                             <component
@@ -300,7 +300,7 @@
                             />
                         </button>
                     </div>
-                    <p v-if="confirmPasswordError" class="mt-1 text-red-500 text-sm">
+                    <p v-if="confirmPasswordError" class="mt-1 text-red-500 dark:text-red-400 text-sm">
                         {{ confirmPasswordError }}
                     </p>
                 </div>
@@ -310,7 +310,7 @@
                     <button
                         type="submit"
                         :disabled="isSubmitting"
-                        class="flex w-full text-white justify-center rounded-md bg-black px-3 py-1.5 text-sm/6 font-semibold shadow-xs hover:opacity-75 hover:cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-none"
+                        class="flex w-full text-white justify-center rounded-md bg-black dark:bg-blue-600 px-3 py-1.5 text-sm/6 font-semibold shadow-xs hover:opacity-75 hover:cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-none transition-colors duration-200"
                     >
                         Register
                     </button>
@@ -320,10 +320,10 @@
 
         <!-- Login Message at the bottom -->
         <div class="mt-6 sm:mx-auto sm:w-full sm:max-w-sm text-center">
-            <span class="text-sm text-gray-600">Already have an account?</span>
+            <span class="text-sm text-gray-600 dark:text-gray-300">Already have an account?</span>
             <router-link
                 to="/auth/login"
-                class="text-sm text-blue-600 underline ml-1 hover:text-blue-800"
+                class="text-sm text-blue-600 dark:text-blue-400 underline ml-1 hover:text-blue-800 dark:hover:text-blue-300"
             >
                 Login here
             </router-link>

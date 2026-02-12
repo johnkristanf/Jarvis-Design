@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-    import { ref, computed, watch, onMounted, nextTick } from 'vue'
+    import { ref, computed, watch, onMounted } from 'vue'
     import {
         Dialog,
         DialogPanel,
@@ -34,6 +34,21 @@
     import { useRouter } from 'vue-router'
     import { colorOptions, colorPalette } from '@/utils/color'
 
+    // Detect dark mode with composition API
+    const isDark = ref(false);
+    if (typeof window !== 'undefined') {
+        isDark.value =
+            window.matchMedia &&
+            window.matchMedia('(prefers-color-scheme: dark)').matches
+    }
+
+    // Optionally listen for changes
+    if (typeof window !== 'undefined' && window.matchMedia) {
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+            isDark.value = e.matches
+        })
+    }
+
     const props = defineProps({
         product: {
             type: Object as PropType<Product>,
@@ -42,7 +57,6 @@
     })
     onMounted(() => {
         console.log("props.product: ", props.product);
-        
     })
 
     const emit = defineEmits(['close'])
@@ -268,7 +282,10 @@
 <template>
     <TransitionRoot appear :show="isModalOpen">
         <Dialog as="div" class="relative z-[999]" :open="isModalOpen" @close="onDialogClose">
-            <div class="fixed inset-0 overflow-y-auto bg-gray-900/80 transition-opacity">
+            <!-- Modal overlay -->
+            <div
+                class="fixed inset-0 overflow-y-auto transition-opacity dark:bg-black/60"
+            >
                 <div
                     class="flex flex-col lg:flex-row items-start lg:items-center justify-center p-4 text-center gap-4 lg:gap-8 min-h-screen"
                 >
@@ -281,9 +298,18 @@
                         leave-to="opacity-0 scale-95"
                     >
                         <DialogPanel
-                            class="w-[600px] max-w-7xl h-[30rem] transform overflow-y-auto bg-white p-6 text-left align-middle shadow-xl transition-all"
+                            class="w-[600px] max-w-7xl h-[30rem] transform overflow-y-auto p-6 text-left align-middle shadow-xl transition-all"
+                            :class="[
+                                isDark
+                                    ? 'bg-zinc-900 border border-zinc-700'
+                                    : 'bg-white',
+                            ]"
                         >
-                            <DialogTitle as="h1" class="text-2xl text-gray-900">
+                            <DialogTitle
+                                as="h1"
+                                class="text-2xl"
+                                :class="isDark ? 'text-gray-100' : 'text-gray-900'"
+                            >
                                 Product Order Option
                             </DialogTitle>
 
@@ -291,11 +317,17 @@
                                 <!-- T-shirt Section -->
                                 <div>
                                     <div class="flex flex-col mb-5 text-sm">
-                                        <p class="font-medium text-gray-700">
+                                        <p :class="[
+                                                'font-medium',
+                                                isDark ? 'text-gray-200' : 'text-gray-700'
+                                            ]">
                                             Product:
                                             <strong>{{ props.product.name }}</strong>
                                         </p>
-                                        <p class="font-medium text-gray-700">
+                                        <p :class="[
+                                                'font-medium',
+                                                isDark ? 'text-gray-200' : 'text-gray-700'
+                                            ]">
                                             Unit Price:
                                             <strong>₱{{ props.product.unit_price }}</strong>
                                         </p>
@@ -308,21 +340,31 @@
                                             <img
                                                 :src="props.product.designs[0].temp_url"
                                                 alt="Product Design"
-                                                class="w-full h-full object-contain absolute inset-0 bg-white"
+                                                class="w-full h-full object-contain absolute inset-0"
+                                                :class="isDark ? 'bg-zinc-800' : 'bg-white'"
                                             />
                                         </div>
                                     </div>
 
                                     <form @submit.prevent="onSubmit" class="space-y-4">
                                         <!-- Fabric Type Input -->
-                                        <!-- <div class="mb-5">
-                                            <label class="block text-sm text-gray-600 mb-1">
+                                        <!--
+                                        <div class="mb-5">
+                                            <label :class="[
+                                                    'block text-sm mb-1',
+                                                    isDark ? 'text-gray-400' : 'text-gray-600'
+                                                ]">
                                                 Fabric Type:
                                             </label>
                                             <div class="flex gap-2">
                                                 <select
                                                     v-model="fabricTypeId"
-                                                    class="font-medium w-full border px-3 py-2 rounded mt-1"
+                                                    :class="[
+                                                        'font-medium w-full border px-3 py-2 rounded mt-1',
+                                                        isDark
+                                                            ? 'bg-zinc-900 border-zinc-600 text-gray-100'
+                                                            : ''
+                                                    ]"
                                                 >
                                                     <option :value="null" disabled>
                                                         Select fabric type
@@ -339,12 +381,17 @@
                                             <p class="text-sm text-red-500 mt-1">
                                                 {{ fabricTypeError }}
                                             </p>
-                                        </div> -->
-
+                                        </div>
+                                        -->
 
                                         <!-- Upload your own design field -->
                                         <div class="my-10">
-                                            <p class="text-sm text-gray-600 mb-3">
+                                            <p
+                                                :class="[
+                                                    'text-sm mb-3',
+                                                    isDark ? 'text-gray-400' : 'text-gray-600'
+                                                ]"
+                                            >
                                                 Upload your own design (if preferred)
                                             </p>
                                             <input
@@ -361,7 +408,8 @@
                                                     <img
                                                         :src="ownDesignPreviewUrl"
                                                         alt="Design Preview"
-                                                        class="max-w-full h-auto max-h-[200px] rounded-md border border-gray-300"
+                                                        class="max-w-full h-auto max-h-[200px] rounded-md border"
+                                                        :class="isDark ? 'border-zinc-700' : 'border-gray-300'"
                                                     />
                                                     <button
                                                         @click="clearOwnDesignFile"
@@ -389,14 +437,19 @@
 
                                         <!-- Color Option -->
                                         <div class="mb-8">
-                                            <label class="block text-sm text-gray-600 mb-1">
+                                            <label :class="['block text-sm mb-1', isDark ? 'text-gray-400' : 'text-gray-600']">
                                                 Color:
                                             </label>
                                             <div class="flex gap-2">
                                                 <!-- Select Dropdown -->
                                                 <select
                                                     v-model="selectedColorOption"
-                                                    class="w-1/3 px-3 py-2 border font-medium border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
+                                                    :class="[
+                                                        'w-1/3 px-3 py-2 border font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500',
+                                                        isDark
+                                                            ? 'bg-zinc-900 border-zinc-600 text-gray-100'
+                                                            : 'border-gray-300'
+                                                    ]"
                                                 >
                                                     <option value="">-- Select --</option>
                                                     <option
@@ -411,7 +464,8 @@
 
                                                 <!-- Swatch -->
                                                 <div
-                                                    class="w-6 h-6 rounded border border-gray-300 shrink-0"
+                                                    class="w-6 h-6 rounded border shrink-0"
+                                                    :class="isDark ? 'border-zinc-700' : 'border-gray-300'"
                                                     :style="{
                                                         backgroundColor:
                                                             swatchColor || 'transparent',
@@ -429,7 +483,12 @@
                                                     v-model="color"
                                                     type="text"
                                                     placeholder="Enter custom color"
-                                                    class="w-full px-3 py-2 border font-medium border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
+                                                    :class="[
+                                                        'w-full px-3 py-2 border font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500',
+                                                        isDark
+                                                            ? 'bg-zinc-900 border-zinc-600 text-gray-100 placeholder:text-gray-400'
+                                                            : 'border-gray-300'
+                                                    ]"
                                                 />
 
                                                 <!-- Auto-set if dropdown selected -->
@@ -437,7 +496,12 @@
                                                     v-else
                                                     :value="color"
                                                     disabled
-                                                    class="w-full px-3 py-2 border font-medium border-gray-300 rounded-md bg-gray-100 cursor-not-allowed"
+                                                    :class="[
+                                                        'w-full px-3 py-2 border font-medium rounded-md cursor-not-allowed',
+                                                        isDark
+                                                            ? 'bg-zinc-900 border-zinc-700 text-gray-400'
+                                                            : 'bg-gray-100 border-gray-300'
+                                                    ]"
                                                 />
                                             </div>
                                         </div>
@@ -447,7 +511,8 @@
                                             v-if="props.product.fabric_type"
                                             class="mb-5"
                                         >
-                                            <label class="block text-sm text-gray-600 mb-1">
+                                            <label
+                                                :class="['block text-sm mb-1', isDark ? 'text-gray-400' : 'text-gray-600']">
                                                 Size:
                                             </label>
                                             <div class="flex items-center gap-2 flex-wrap">
@@ -455,12 +520,14 @@
                                                     <button
                                                         v-for="size in sizes"
                                                         :key="size.id"
-                                                        class="inline-flex items-center px-2 py-0.5 rounded-md text-sm font-semibold border transition-colors"
-                                                        :class="
+                                                        :class="[
+                                                            'inline-flex items-center px-2 py-0.5 rounded-md text-sm font-semibold border transition-colors',
                                                             sizeId === size.id
                                                                 ? 'bg-blue-600 text-white border-blue-600'
-                                                                : 'bg-gray-100 text-gray-700 border-gray-300 hover:opacity-75'
-                                                        "
+                                                                : isDark
+                                                                    ? 'bg-zinc-800 text-gray-200 border-zinc-700 hover:bg-zinc-700'
+                                                                    : 'bg-gray-100 text-gray-700 border-gray-300 hover:opacity-75'
+                                                        ]"
                                                         type="button"
                                                         @click="sizeId = size.id"
                                                     >
@@ -468,7 +535,7 @@
                                                     </button>
                                                 </template>
                                                 <template v-else>
-                                                    <span class="text-gray-500 text-sm italic">
+                                                    <span :class="isDark ? 'text-gray-400' : 'text-gray-500' + ' text-sm italic'">
                                                         Loading sizes...
                                                     </span>
                                                 </template>
@@ -480,13 +547,18 @@
 
                                         <!-- Shopee-style quantity field copied from cart view -->
                                         <div class="mb-5">
-                                            <label class="block text-sm text-gray-600 mb-1">
+                                            <label :class="['block text-sm mb-1', isDark ? 'text-gray-400' : 'text-gray-600']">
                                                 Quantity:
                                             </label>
                                             <div class="flex w-full h-10">
                                                 <button
                                                     type="button"
-                                                    class="flex items-center justify-center bg-[#f1f1f1] border border-[#ccc] rounded-l w-10 h-full text-lg font-semibold select-none transition-colors duration-150 hover:bg-[#e1e1e1] disabled:opacity-50"
+                                                    :class="[
+                                                        'flex items-center justify-center border rounded-l w-10 h-full text-lg font-semibold select-none transition-colors duration-150 disabled:opacity-50',
+                                                        isDark
+                                                            ? 'bg-zinc-800 border-zinc-700 text-gray-200 hover:bg-zinc-700'
+                                                            : 'bg-[#f1f1f1] border-[#ccc] hover:bg-[#e1e1e1]'
+                                                    ]"
                                                     @click="decrementQuantity"
                                                     :disabled="quantity <= 1"
                                                     aria-label="Decrease"
@@ -497,14 +569,24 @@
                                                     :value="quantity"
                                                     type="text"
                                                     min="1"
-                                                    class="w-full max-w-[40px] appearance-none border-t border-b border-[#ccc] bg-white text-center focus:outline-none focus:ring-0 px-0 py-0 font-medium text-base"
+                                                    :class="[
+                                                        'w-full max-w-[40px] appearance-none text-center focus:outline-none focus:ring-0 px-0 py-0 font-medium text-base',
+                                                        isDark
+                                                            ? 'bg-zinc-900 border-t border-b border-zinc-700 text-gray-100'
+                                                            : 'bg-white border-t border-b border-[#ccc]'
+                                                    ]"
                                                     style="height: 40px"
                                                     readonly
                                                     tabindex="-1"
                                                 />
                                                 <button
                                                     type="button"
-                                                    class="flex items-center justify-center bg-[#f1f1f1] border border-[#ccc] rounded-r w-10 h-full text-lg font-semibold select-none transition-colors duration-150 hover:bg-[#e1e1e1]"
+                                                    :class="[
+                                                        'flex items-center justify-center border rounded-r w-10 h-full text-lg font-semibold select-none transition-colors duration-150',
+                                                        isDark
+                                                            ? 'bg-gray-900 border-zinc-700 text-gray-200 hover:bg-zinc-700'
+                                                            : 'bg-[#f1f1f1] border-[#ccc] hover:bg-[#e1e1e1]'
+                                                    ]"
                                                     @click="incrementQuantity"
                                                     aria-label="Increase"
                                                 >
@@ -522,7 +604,12 @@
                                                     selectedOrderAction = OrderAction.ADD_TO_CART
                                                 "
                                                 type="submit"
-                                                class="flex items-center gap-1 px-4 py-2 bg-gray-900 hover:opacity-75 hover:cursor-pointer text-white text-xs font-semibold rounded transition-colors"
+                                                :class="[
+                                                    'flex items-center gap-1 px-4 py-2 hover:opacity-75 hover:cursor-pointer text-white text-xs font-semibold rounded transition-colors',
+                                                    isDark
+                                                        ? 'bg-zinc-800'
+                                                        : 'bg-gray-900'
+                                                ]"
                                                 :disabled="addToCartMutation.isPending.value"
                                             >
                                                 <ShoppingCartIcon class="size-4" />
@@ -532,7 +619,12 @@
                                             <button
                                                 @click="selectedOrderAction = OrderAction.BUY_NOW"
                                                 type="submit"
-                                                class="flex items-center gap-1 px-4 py-2 bg-blue-600 hover:opacity-75 hover:cursor-pointer text-white text-xs font-semibold rounded transition-colors"
+                                                :class="[
+                                                    'flex items-center gap-1 px-4 py-2 text-white text-xs font-semibold rounded transition-colors hover:opacity-75 hover:cursor-pointer',
+                                                    isDark
+                                                        ? 'bg-blue-700'
+                                                        : 'bg-blue-600'
+                                                ]"
                                                 :disabled="addToCartMutation.isPending.value"
                                             >
                                                 <BanknotesIcon class="size-4" />

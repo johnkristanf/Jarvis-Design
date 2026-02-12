@@ -78,26 +78,26 @@
 </script>
 
 <template>
-    <div class="flex flex-col pt-10 px-6 lg:px-8 h-[80vh] bg-white">
+    <div class="flex flex-col pt-10 px-6 lg:px-8 h-[80vh] bg-white dark:bg-gray-900 transition-colors duration-200">
         <div class="sm:mx-auto sm:w-full sm:max-w-sm">
-            <img class="mx-auto w-[20%]" src="/jarvis-logo-circle.png" alt="Your Company" />
-            <h2 class="mt-3 text-center text-2xl/9 font-bold tracking-tight">Login your account</h2>
+            <img class="mx-auto w-[20%] rounded-full" src="/jarvis-logo-white.jpeg" alt="Your Company" />
+            <h2 class="mt-3 text-center text-2xl/9 font-bold tracking-tight text-gray-900 dark:text-gray-100">Login your account</h2>
         </div>
 
         <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-sm">
             <form class="space-y-6" @submit="onSubmit" method="POST">
                 <!-- Username -->
                 <div>
-                    <label for="username" class="block text-sm/6 font-medium">Username</label>
+                    <label for="username" class="block text-sm/6 font-medium text-gray-900 dark:text-gray-100">Username</label>
                     <div class="mt-2">
                         <input
                             type="text"
                             id="username"
                             v-model="username"
-                            class="font-medium block w-full rounded-md bg-white px-3 py-1.5 text-base text-black outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-none sm:text-sm/6"
+                            class="font-medium block w-full rounded-md bg-white dark:bg-gray-800 px-3 py-1.5 text-base text-black dark:text-gray-100 outline-1 -outline-offset-1 outline-gray-300 dark:outline-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-none sm:text-sm/6 transition-colors duration-200"
                         />
                     </div>
-                    <p v-if="usernameError" class="mt-1 text-red-500 text-sm">
+                    <p v-if="usernameError" class="mt-1 text-red-500 dark:text-red-400 text-sm">
                         {{ usernameError }}
                     </p>
                 </div>
@@ -105,8 +105,13 @@
                 <!-- Password with toggle and forgot -->
                 <div>
                     <div class="flex items-center justify-between">
-                        <label for="password" class="block text-sm/6 font-medium">Password</label>
-                       
+                        <label for="password" class="block text-sm/6 font-medium text-gray-900 dark:text-gray-100">Password</label>
+                        <router-link
+                            to="/auth/forgot-password"
+                            class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
+                        >
+                            Forgot password?
+                        </router-link>
                     </div>
 
                     <div class="mt-2 relative">
@@ -115,12 +120,12 @@
                             id="password"
                             v-model="password"
                             autocomplete="current-password"
-                            class="font-medium block w-full rounded-md bg-white px-3 py-1.5 pr-10 text-base text-black outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-none sm:text-sm/6"
+                            class="font-medium block w-full rounded-md bg-white dark:bg-gray-800 px-3 py-1.5 pr-10 text-base text-black dark:text-gray-100 outline-1 -outline-offset-1 outline-gray-300 dark:outline-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-none sm:text-sm/6 transition-colors duration-200"
                         />
                         <button
                             type="button"
                             @click="showPassword = !showPassword"
-                            class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-gray-700"
+                            class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
                             tabindex="-1"
                         >
                             <component
@@ -130,7 +135,7 @@
                         </button>
                     </div>
 
-                    <p v-if="passwordError" class="mt-1 text-red-500 text-sm">
+                    <p v-if="passwordError" class="mt-1 text-red-500 dark:text-red-400 text-sm">
                         {{ passwordError }}
                     </p>
                 </div>
@@ -140,7 +145,7 @@
                     <button
                         type="submit"
                         :disabled="isSubmitting"
-                        class="flex w-full justify-center rounded-md bg-black px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:opacity-75 hover:cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-none"
+                        class="flex w-full justify-center rounded-md bg-black dark:bg-blue-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:opacity-75 hover:cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-none transition-colors duration-200"
                     >
                         Login
                     </button>
@@ -150,10 +155,10 @@
 
         <!-- Register Message at the bottom -->
         <div class="mt-6 sm:mx-auto sm:w-full sm:max-w-sm text-center">
-            <span class="text-sm text-gray-600">Don't have an account?</span>
+            <span class="text-sm text-gray-600 dark:text-gray-300">Don't have an account?</span>
             <router-link
                 to="/auth/register"
-                class="text-sm text-blue-600 underline ml-1 hover:text-blue-800"
+                class="text-sm text-blue-600 dark:text-blue-400 underline ml-1 hover:text-blue-800 dark:hover:text-blue-300"
             >
                 Register here
             </router-link>

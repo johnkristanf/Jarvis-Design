@@ -1,53 +1,15 @@
-<!-- <script lang="ts" setup></script>
-
 <template>
-    <div class="w-full h-full flex flex-col items-center justify-center text-white gap-8">
-
-        <div class="flex flex-col items-center">
-            <h1 class="text-7xl">JARVIS DESIGNS</h1>
-            <h2 class="text-xl opacity-75">Unleash Your Style with Custom-Crafted Coolness!</h2>
-
-            <p class="text-center text-sm opacity-75">
-                Transform your ideas into vibrant realities with our premium printing and sublimation services.
-            </p>
-
-            <p class="text-center text-sm opacity-75">
-                Experience the power of personalized products – start designing your masterpiece today!
-            </p>
-        </div>
-
-        <div class="w-full flex justify-center items-center ">
-
-            <input
-                type="text"
-                class="placeholder:opacity-75 placeholder:text-sm text-gray-500 border-none p-[11.3px] w-[35%]"
-                placeholder="Your Work Email"
-            />
-
-
-            <button
-                class="text-sm bg-gray-900 p-[14px] hover:opacity-75 hover:cursor-pointer"
-            >
-                Start Ordering
-            </button>
-        </div>
-
-    </div>
-</template> -->
-
-<template>
-    <div class="relative overflow-hidden bg-white">
+    <div class="relative overflow-hidden bg-white dark:bg-gray-900 transition-colors duration-200">
         <div class="sm:pt-24 sm:pb-40 lg:pt-48 lg:pb-[15rem]">
             <div class="relative mx-auto max-w-7xl px-4 sm:static sm:px-6 lg:px-8">
                 <div class="sm:max-w-lg">
-                    <h1 class="text-6xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+                    <h1 class="text-6xl font-bold tracking-tight text-gray-900 dark:text-gray-100 sm:text-4xl">
                         JARVIS DESIGNS
                     </h1>
-                    <h2 class="text-xl opacity-75">
+                    <h2 class="text-xl opacity-75 text-gray-800 dark:text-gray-200">
                         Unleash Your Style with Custom-Crafted Coolness!
                     </h2>
-
-                    <p class="text-md text-gray-600 opacity-75 mt-2">
+                    <p class="text-md text-gray-600 dark:text-gray-300 opacity-75 mt-2">
                         Transform your ideas into vibrant realities with our premium printing and
                         sublimation services.
                     </p>
@@ -102,13 +64,7 @@
                                 </div>
                             </div>
                         </div>
-
-                        <!-- <router-link
-                            to="/designs"
-                            class="inline-block rounded-md border border-transparent bg-gray-900 px-8 py-3 text-center font-medium text-white hover:opacity-75"
-                        >
-                            Shop Designs
-                        </router-link> -->
+                        <!-- Optionally, you can add a button with dark mode support here in the future -->
                     </div>
                 </div>
             </div>

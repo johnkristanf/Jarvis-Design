@@ -112,8 +112,6 @@
 
     // Delete cart handler
     function handleDeleteCart(id: number) {
-        console.log("WEWE");
-        
         if (deleteCartMutation.isPending.value) return
         deleteCartMutation.mutate(id)
     }
@@ -145,8 +143,6 @@
             selectedCartIds.value.includes(item.id),
         )
 
-        console.log('selectedItems: ', selectedItems)
-
         if (selectedItems && selectedItems.length > 0) {
             // Build an array containing each selected product with its quantity
             const checkoutProductDetails: ProductDetails[] = selectedItems.map((item) => {
@@ -166,8 +162,6 @@
                 return baseProduct
             })
 
-            console.log('checkoutProductDetails: ', checkoutProductDetails)
-
             handleShowCheckoutModal(checkoutProductDetails)
         }
     }
@@ -180,22 +174,22 @@
 
 <template>
     <div
-        class="mx-auto min-h-screen px-4 pt-10 pb-18 bg-gradient-to-b from-black to-gray-900 text-white relative"
+        class="mx-auto min-h-screen px-4 pt-10 pb-18 bg-gradient-to-b from-white to-gray-50 text-gray-900 relative dark:from-black dark:to-gray-900 dark:text-white"
     >
         <!-- Header -->
         <div class="flex justify-between items-center">
             <div class="flex items-center justify-between gap-3">
-                <h2 class="text-2xl font-bold tracking-tight text-gray-900">Shopping Cart</h2>
+                <h2 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Shopping Cart</h2>
                 <template v-if="cartItems && cartItems.length > 0">
                     <button
                         @click="selectAllCarts"
-                        class="text-xs ml-5 font-semibold underline text-blue-500 hover:text-blue-700"
+                        class="text-xs ml-5 font-semibold underline text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
                     >
                         Select All
                     </button>
                     <button
                         @click="clearAllCarts"
-                        class="text-xs font-semibold underline text-red-500 hover:text-red-700"
+                        class="text-xs font-semibold underline text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
                     >
                         Clear All
                     </button>
@@ -208,38 +202,37 @@
             <div
                 v-for="item in cartItems"
                 :key="item.id"
-                class="bg-white rounded-2xl p-4 mb-3 border border-white/10 slide-in flex items-center gap-3"
+                class="bg-white rounded-2xl p-4 mb-3 border border-white/10 slide-in flex items-center gap-3 dark:bg-gray-800 dark:border-gray-700"
             >
                 <!-- Checkbox for selection -->
                 <input
                     type="checkbox"
                     :checked="selectedCartIds.includes(item.id)"
                     @change="toggleSelectCart(item.id)"
-                    class="h-5 w-5 accent-blue-600 border-gray-300 mr-2"
+                    class="h-5 w-5 accent-blue-600 border-gray-300 mr-2 dark:border-gray-600"
                 />
 
                 <!-- Image -->
-
                 <img
                     v-if="item.own_design_url"
                     :src="getCartItemImageSrc(item)"
                     alt="Own Design"
-                    class="w-24 h-24 rounded-xl object-cover bg-white/10"
+                    class="w-24 h-24 rounded-xl object-cover bg-white/10 dark:bg-gray-700"
                 />
                 <img
                     v-else
                     :src="getCartItemImageSrc(item)"
                     :alt="item.product.name"
-                    class="w-24 h-24 rounded-xl object-cover bg-white/10"
+                    class="w-24 h-24 rounded-xl object-cover bg-white/10 dark:bg-gray-700"
                 />
 
                 <!-- Details -->
                 <div class="flex-1 flex flex-col gap-2">
-                    <h3 class="font-semibold text-gray-900 leading-tight">
+                    <h3 class="font-semibold text-gray-900 leading-tight dark:text-white">
                         {{ item.product.name }}
                     </h3>
                     <div class="flex items-center gap-2">
-                        <p class="text-lg font-bold text-gray-400">
+                        <p class="text-lg font-bold text-gray-400 dark:text-gray-200">
                             ₱
                             {{
                                 (() => {
@@ -254,10 +247,10 @@
                             }}
                         </p>
                         <!-- Quantity Increment/Decrement - display only -->
-                        <div class="flex items-center ml-3 border rounded px-1 bg-gray-100">
+                        <div class="flex items-center ml-3 border rounded px-1 bg-gray-100 border-gray-300 dark:bg-gray-900 dark:border-gray-700">
                             <button
                                 @click="decrementQuantity(item.id)"
-                                class="px-2 py-1 text-gray-600 hover:text-black font-bold disabled:opacity-30"
+                                class="px-2 py-1 text-gray-600 hover:text-black font-bold disabled:opacity-30 dark:text-gray-200 dark:hover:text-white"
                                 :disabled="cartQuantities[item.id] <= 1"
                                 aria-label="Decrease quantity"
                                 type="button"
@@ -265,13 +258,13 @@
                                 -
                             </button>
                             <span
-                                class="mx-2 min-w-[2ch] text-center select-none text-lg text-gray-900 font-medium"
+                                class="mx-2 min-w-[2ch] text-center select-none text-lg text-gray-900 font-medium dark:text-white"
                             >
                                 {{ cartQuantities[item.id] ?? 1 }}
                             </span>
                             <button
                                 @click="incrementQuantity(item.id)"
-                                class="px-2 py-1 text-gray-600 hover:text-black font-bold"
+                                class="px-2 py-1 text-gray-600 hover:text-black font-bold dark:text-gray-200 dark:hover:text-white"
                                 aria-label="Increase quantity"
                                 type="button"
                             >
@@ -293,7 +286,7 @@
 
                         <span
                             v-if="item.size"
-                            class="w-[4%] inline-block bg-blue-100 text-blue-800 text-xs text-center font-semibold px-2 py-1 rounded-md"
+                            class="w-[4%] inline-block bg-blue-100 text-blue-800 text-xs text-center font-semibold px-2 py-1 rounded-md dark:bg-blue-900 dark:text-blue-200"
                         >
                             {{ item.size.name }}
                         </span>
@@ -303,7 +296,7 @@
                 <!-- Quantity Control -->
                 <div class="flex items-center gap-3">
                     <button
-                        class="p-2 text-xs rounded-md bg-red-500/20 text-red-500 hover:opacity-75 hover:cursor-pointer active:scale-95 transition-all flex items-center justify-center"
+                        class="p-2 text-xs rounded-md bg-red-500/20 text-red-500 hover:opacity-75 hover:cursor-pointer active:scale-95 transition-all flex items-center justify-center dark:bg-red-900/40 dark:text-red-300"
                         @click="handleDeleteCart(item.id)"
                         :disabled="deleteCartMutation.isPending.value"
                     >
@@ -321,12 +314,12 @@
             <!-- Footer Cart Summary -->
             <div class="w-full mt-5 z-40 sticky bottom-12" style="pointer-events: auto">
                 <div
-                    class="mx-auto px-4 py-4 bg-gray-900/98 border-t border-white/10 flex flex-col md:flex-row items-center md:justify-between gap-3"
+                    class="mx-auto px-4 py-4 bg-gray-900/98 border-t border-white/10 flex flex-col md:flex-row items-center md:justify-between gap-3 dark:bg-gray-950 dark:border-gray-700"
                 >
                     <div class="flex items-center gap-3 w-full md:w-auto">
-                        <span class="font-semibold text-lg text-white">Total Price:</span>
+                        <span class="font-semibold text-lg text-white dark:text-blue-300">Total Price:</span>
                         <span
-                            class="flex items-center gap-2 font-bold text-2xl text-blue-300 tracking-wide"
+                            class="flex items-center gap-2 font-bold text-2xl text-blue-300 tracking-wide dark:text-blue-400"
                         >
                             ₱ {{ totalPrice.toLocaleString() }}
 
@@ -336,19 +329,19 @@
                                     typeof authStore.currentUser.prompt_credit === 'number' &&
                                     authStore.currentUser.prompt_credit > 0
                                 "
-                                class="text-base text-red-500"
+                                class="text-base text-red-500 dark:text-red-400"
                             >
                                 +{{ authStore.currentUser.prompt_credit }} (prompt credits)
                             </span>
                         </span>
-                        <span v-if="selectedCartIds.length === 0" class="text-sm text-red-400 ml-2">
+                        <span v-if="selectedCartIds.length === 0" class="text-sm text-red-400 ml-2 dark:text-red-300">
                             No items selected
                         </span>
                     </div>
                     <button
                         @click="handleFullCheckout"
                         :disabled="selectedCartIds.length === 0"
-                        class="mt-2 md:mt-0 inline-flex items-center gap-2 px-8 py-2 rounded-md font-semibold bg-blue-700 hover:bg-blue-800 transition-colors text-white text-md shadow-lg active:scale-[.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                        class="mt-2 md:mt-0 inline-flex items-center gap-2 px-8 py-2 rounded-md font-semibold bg-blue-700 hover:bg-blue-800 transition-colors text-white text-md shadow-lg active:scale-[.98] disabled:opacity-50 disabled:cursor-not-allowed dark:bg-blue-600 dark:hover:bg-blue-700"
                     >
                         <ShoppingCartIcon class="size-5" />
                         Checkout
@@ -359,8 +352,8 @@
         <!-- Empty State -->
         <div v-else class="text-center px-5 py-20">
             <div class="text-8xl mb-5 opacity-50">🛒</div>
-            <p class="text-xl text-gray-900/60 mb-2">Your cart is empty</p>
-            <p class="text-sm text-gray-900/60">Add items to get started</p>
+            <p class="text-xl text-gray-900/60 mb-2 dark:text-white/60">Your cart is empty</p>
+            <p class="text-sm text-gray-900/60 dark:text-white/60">Add items to get started</p>
         </div>
 
         <OrderProductModal

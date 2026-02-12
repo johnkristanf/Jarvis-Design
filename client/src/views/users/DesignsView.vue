@@ -19,14 +19,16 @@
 </script>
 
 <template>
-    <div class="bg-white">
+    <div class="bg-white dark:bg-gray-900 transition-colors duration-200 h-screen">
         <div class="mx-auto px-4 pt-10 pb-18 sm:px-6 sm:py-24 lg:max-w-7xl lg:px-8">
             <div class="flex items-center justify-between">
-                <h2 class="text-2xl font-bold tracking-tight text-gray-900">Explore our designs</h2>
+                <h2 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100 transition-colors duration-200">
+                    Explore our designs
+                </h2>
                 <button
                     v-if="authStore.currentUser"
                     @click="showAIDesignModal = true"
-                    class="rounded-md bg-gray-900 text-white p-2 text-sm hover:cursor-pointer hover:opacity-75"
+                    class="rounded-md bg-gray-900 dark:bg-blue-600 text-white p-2 text-sm hover:cursor-pointer hover:opacity-75 transition-colors duration-200"
                 >
                     Explore AI Generated Designs
                 </button>

@@ -105,6 +105,7 @@ runs:
           
           CLIENT_APP_URL=https://jarvis-designs.it.com
           EMAIL_VERIFICATION_URL="${CLIENT_APP_URL}/email/verified"
+          PASSWORD_RESET_URL="${CLIENT_APP_URL}/auth/reset-password"
 
           MAIL_USERNAME=${{ inputs.mail_username }}
           MAIL_PASSWORD=${{ inputs.mail_password }}

@@ -62,7 +62,7 @@
                 leave-from="opacity-100"
                 leave-to="opacity-0"
             >
-                <div class="fixed inset-0 bg-black/25" />
+                <div class="fixed inset-0 bg-black/25 dark:bg-black/60" />
             </TransitionChild>
 
             <div class="fixed inset-0 overflow-y-auto">
@@ -77,10 +77,10 @@
                         leave-to="opacity-0 scale-95"
                     >
                         <DialogPanel
-                            class="relative w-full max-w-3xl transform overflow-hidden bg-white shadow-2xl transition-all"
+                            class="relative w-full max-w-3xl transform overflow-hidden bg-white dark:bg-gray-900 shadow-2xl transition-all"
                         >
                             <!-- Header -->
-                            <div class="bg-gray-900 text-white p-6 border-b border-gray-200">
+                            <div class="bg-gray-900 text-white p-6 border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
                                 <div class="flex items-center justify-between">
                                     <DialogTitle as="h2" class="text-xl font-bold">
                                         Order Details
@@ -107,21 +107,21 @@
                             </div>
 
                             <!-- Content -->
-                            <div class="p-6 max-h-96 overflow-y-auto">
+                            <div class="p-6 max-h-96 overflow-y-auto dark:bg-gray-900">
                                 <!-- Order Header Info -->
                                 <div
-                                    class="grid grid-cols-2 gap-4 mb-6 pb-6 border-b border-gray-200"
+                                    class="grid grid-cols-2 gap-4 mb-6 pb-6 border-b border-gray-200 dark:border-gray-700"
                                 >
                                     <div>
-                                        <h3 class="text-sm font-medium text-gray-600 tracking-wide">
+                                        <h3 class="text-sm font-medium text-gray-600 tracking-wide dark:text-gray-400">
                                             Order Number
                                         </h3>
-                                        <p class="text-lg font-bold text-black mt-1">
+                                        <p class="text-lg font-bold text-black mt-1 dark:text-white">
                                             {{ orderDetails.order_number }}
                                         </p>
                                     </div>
                                     <div>
-                                        <h3 class="text-sm font-medium text-gray-600 tracking-wide">
+                                        <h3 class="text-sm font-medium text-gray-600 tracking-wide dark:text-gray-400">
                                             Status
                                         </h3>
                                         <div class="mt-1">
@@ -129,23 +129,23 @@
                                         </div>
                                     </div>
                                     <div>
-                                        <h3 class="text-sm font-medium text-gray-600 tracking-wide">
+                                        <h3 class="text-sm font-medium text-gray-600 tracking-wide dark:text-gray-400">
                                             Date Ordered
                                         </h3>
-                                        <p class="text-sm text-black mt-1">
+                                        <p class="text-sm text-black mt-1 dark:text-white">
                                             {{ formatDate(orderDetails.created_at) }}
                                         </p>
                                     </div>
 
                                     <div>
-                                        <h3 class="text-sm font-medium text-gray-600 tracking-wide">
+                                        <h3 class="text-sm font-medium text-gray-600 tracking-wide dark:text-gray-400">
                                             {{
                                                 orderDetails.order_option === OrderOptions.DELIVERY
                                                     ? 'Delivery Date'
                                                     : 'Pick-up Date'
                                             }}
                                         </h3>
-                                        <p class="text-sm text-black mt-1">
+                                        <p class="text-sm text-black mt-1 dark:text-white">
                                             {{
                                                 orderDetails.delivery_date
                                                     ? formatDate(orderDetails.delivery_date)
@@ -155,10 +155,10 @@
                                     </div>
 
                                     <div>
-                                        <h3 class="text-sm font-medium text-gray-600 tracking-wide">
+                                        <h3 class="text-sm font-medium text-gray-600 tracking-wide dark:text-gray-400">
                                             Expected Delivery Days
                                         </h3>
-                                        <p class="text-sm text-green-600 mt-1">
+                                        <p class="text-sm text-green-600 mt-1 dark:text-green-400">
                                             {{
                                                 orderDetails.total_quantity < 100
                                                     ? '5-7 business days'
@@ -169,35 +169,35 @@
                                 </div>
 
                                 <!-- Customer Info -->
-                                <div class="mb-6 pb-6 border-b border-gray-200">
+                                <div class="mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
                                     <h3
-                                        class="text-lg font-semibold text-black mb-3 border-l-4 border-black pl-3"
+                                        class="text-lg font-semibold text-black mb-3 border-l-4 border-black pl-3 dark:text-white dark:border-white"
                                     >
                                         Customer Information
                                     </h3>
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div>
-                                            <p class="text-sm text-gray-600">Name</p>
-                                            <p class="font-medium text-black">
+                                            <p class="text-sm text-gray-600 dark:text-gray-400">Name</p>
+                                            <p class="font-medium text-black dark:text-white">
                                                 {{ orderDetails.user?.name }}
                                             </p>
                                         </div>
                                         <div>
-                                            <p class="text-sm text-gray-600">Phone Number</p>
-                                            <p class="font-medium text-black">
+                                            <p class="text-sm text-gray-600 dark:text-gray-400">Phone Number</p>
+                                            <p class="font-medium text-black dark:text-white">
                                                 +63 {{ orderDetails.phone_number }}
                                             </p>
                                         </div>
                                         <div>
-                                            <p class="text-sm text-gray-600">Address</p>
-                                            <p class="font-medium text-black">
+                                            <p class="text-sm text-gray-600 dark:text-gray-400">Address</p>
+                                            <p class="font-medium text-black dark:text-white">
                                                 {{ orderDetails.address }}
                                             </p>
                                         </div>
 
                                         <div>
-                                            <p class="text-sm text-gray-600">Email</p>
-                                            <p class="font-medium text-black">
+                                            <p class="text-sm text-gray-600 dark:text-gray-400">Email</p>
+                                            <p class="font-medium text-black dark:text-white">
                                                 {{ orderDetails.user?.email }}
                                             </p>
                                         </div>
@@ -205,9 +205,9 @@
                                 </div>
 
                                 <!-- Product Info -->
-                                <div class="mb-6 pb-6 border-b border-gray-200">
+                                <div class="mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
                                     <h3
-                                        class="text-lg font-semibold text-black mb-3 border-l-4 border-black pl-3"
+                                        class="text-lg font-semibold text-black mb-3 border-l-4 border-black pl-3 dark:text-white dark:border-white"
                                     >
                                         Product Details
                                     </h3>
@@ -222,7 +222,7 @@
                                                     orderDetails.temp_url || orderDetails.image_path
                                                 "
                                                 :alt="`Design ${orderDetails.design_id}`"
-                                                class="w-20 h-20 object-cover border-2 border-gray-300"
+                                                class="w-20 h-20 object-cover border-2 border-gray-300 dark:border-gray-700"
                                             />
                                         </div>
 
@@ -230,16 +230,16 @@
                                         <div class="flex-1">
                                             <div class="grid grid-cols-2 gap-4">
                                                 <div>
-                                                    <p class="text-sm text-gray-600">Color</p>
+                                                    <p class="text-sm text-gray-600 dark:text-gray-400">Color</p>
                                                     <div class="flex items-center gap-2">
-                                                        <p class="font-medium text-black">
+                                                        <p class="font-medium text-black dark:text-white">
                                                             {{ orderDetails.color }}
                                                         </p>
                                                     </div>
                                                 </div>
                                                 <div>
-                                                    <p class="text-sm text-gray-600">Option</p>
-                                                    <p class="font-medium text-black">
+                                                    <p class="text-sm text-gray-600 dark:text-gray-400">Option</p>
+                                                    <p class="font-medium text-black dark:text-white">
                                                         {{
                                                             orderDetails.order_option ===
                                                             OrderOptions.DELIVERY
@@ -257,15 +257,15 @@
                                         v-if="orderDetails.sizes && orderDetails.sizes.length > 0"
                                         class="mt-4"
                                     >
-                                        <p class="text-sm text-gray-600 mb-2">Sizes & Quantities</p>
+                                        <p class="text-sm text-gray-600 mb-2 dark:text-gray-400">Sizes & Quantities</p>
                                         <div class="flex flex-wrap gap-2">
                                             <div
                                                 v-for="size in orderDetails.sizes"
                                                 :key="size.id"
-                                                class="bg-gray-100 border border-gray-300 px-3 py-1 text-sm"
+                                                class="bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 px-3 py-1 text-sm"
                                             >
-                                                <span class="font-medium">{{ size.name }}</span>
-                                                <span v-if="size.pivot" class="text-gray-600 ml-1">
+                                                <span class="font-medium dark:text-white">{{ size.name }}</span>
+                                                <span v-if="size.pivot" class="text-gray-600 ml-1 dark:text-gray-400">
                                                     ({{ size.pivot.quantity || 'N/A' }})
                                                 </span>
                                             </div>
@@ -283,7 +283,7 @@
                                 >
                                     <div class="flex items-center justify-between mb-3">
                                         <h3
-                                            class="text-lg font-semibold text-black mb-3 border-l-4 border-black pl-3"
+                                            class="text-lg font-semibold text-black mb-3 border-l-4 border-black pl-3 dark:text-white dark:border-white"
                                         >
                                             Payment History
                                         </h3>
@@ -298,11 +298,11 @@
                                             <!-- Show fully paid message if at least one payment is fully paid -->
                                             <p
                                                 v-else
-                                                class="mt-4 text-green-600 font-semibold text-sm flex items-center gap-2"
+                                                class="mt-4 text-green-600 font-semibold text-sm flex items-center gap-2 dark:text-green-400"
                                             >
                                                 <svg
                                                     xmlns="http://www.w3.org/2000/svg"
-                                                    class="w-5 h-5 text-green-600"
+                                                    class="w-5 h-5 text-green-600 dark:text-green-400"
                                                     fill="none"
                                                     viewBox="0 0 24 24"
                                                     stroke="currentColor"
@@ -322,15 +322,15 @@
                                         <div
                                             v-for="payment in orderDetails.order_payments"
                                             :key="payment.id"
-                                            class="bg-white border-2 border-gray-200 p-4 hover:border-gray-300 transition-colors duration-200"
+                                            class="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 p-4 hover:border-gray-300 dark:hover:border-gray-600 transition-colors duration-200"
                                         >
                                             <!-- Payment Header -->
                                             <div
-                                                class="flex items-center justify-between mb-3 pb-3 border-b border-gray-200"
+                                                class="flex items-center justify-between mb-3 pb-3 border-b border-gray-200 dark:border-gray-700"
                                             >
                                                 <div class="flex items-center gap-3">
                                                     <div
-                                                        class="w-10 h-10 bg-gray-900 rounded-full flex items-center justify-center flex-shrink-0"
+                                                        class="w-10 h-10 bg-gray-900 dark:bg-gray-700 rounded-full flex items-center justify-center flex-shrink-0"
                                                     >
                                                         <svg
                                                             class="w-5 h-5 text-white"
@@ -347,10 +347,10 @@
                                                         </svg>
                                                     </div>
                                                     <div>
-                                                        <p class="font-semibold text-black text-sm">
+                                                        <p class="font-semibold text-black text-sm dark:text-white">
                                                             {{ payment.payment_number }}
                                                         </p>
-                                                        <p class="text-xs text-gray-600">
+                                                        <p class="text-xs text-gray-600 dark:text-gray-400">
                                                             {{ payment.payment_methods.name }}
                                                         </p>
                                                     </div>
@@ -378,13 +378,13 @@
                                 <!-- No Payments State -->
                                 <div v-else class="mb-6">
                                     <h3
-                                        class="text-lg font-semibold text-black mb-3 border-l-4 border-black pl-3"
+                                        class="text-lg font-semibold text-black mb-3 border-l-4 border-black pl-3 dark:text-white dark:border-white"
                                     >
                                         Payment History
                                     </h3>
-                                    <div class="bg-gray-50 border border-gray-200 p-8 text-center">
+                                    <div class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-8 text-center">
                                         <svg
-                                            class="w-12 h-12 text-gray-400 mx-auto mb-3"
+                                            class="w-12 h-12 text-gray-400 mx-auto mb-3 dark:text-gray-600"
                                             fill="none"
                                             stroke="currentColor"
                                             viewBox="0 0 24 24"
@@ -396,7 +396,7 @@
                                                 d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"
                                             />
                                         </svg>
-                                        <p class="text-gray-600 text-sm">
+                                        <p class="text-gray-600 text-sm dark:text-gray-400">
                                             No payments recorded yet
                                         </p>
                                     </div>
@@ -409,24 +409,24 @@
                                     orderDetails.order_payments &&
                                     orderDetails.order_payments.length > 0
                                 "
-                                class="absolute bottom-0 w-full border-t border-gray-200 bg-gray-50 px-6 py-4 flex-shrink-0"
+                                class="absolute bottom-0 w-full border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-6 py-4 flex-shrink-0"
                             >
                                 <div class="grid grid-cols-3 gap-4">
                                     <div>
-                                        <p class="text-sm text-gray-900 mb-1">Order Total Price</p>
-                                        <p class="text-xl font-bold text-gray-900">
+                                        <p class="text-sm text-gray-900 dark:text-gray-100 mb-1">Order Total Price</p>
+                                        <p class="text-xl font-bold text-gray-900 dark:text-white">
                                             ₱{{ props.orderDetails.total_price.toLocaleString() }}
                                         </p>
                                     </div>
                                     <div>
-                                        <p class="text-sm text-gray-900 mb-1">Total Paid Amount</p>
-                                        <p class="text-xl font-bold text-green-600">
+                                        <p class="text-sm text-gray-900 dark:text-gray-100 mb-1">Total Paid Amount</p>
+                                        <p class="text-xl font-bold text-green-600 dark:text-green-400">
                                             ₱{{ props.orderDetails.total_paid }}
                                         </p>
                                     </div>
                                     <div>
-                                        <p class="text-sm text-gray-900 mb-1">Remaining Balance</p>
-                                        <p class="text-xl font-bold text-amber-600">
+                                        <p class="text-sm text-gray-900 dark:text-gray-100 mb-1">Remaining Balance</p>
+                                        <p class="text-xl font-bold text-amber-600 dark:text-amber-400">
                                             ₱{{ props.orderDetails.balance }}
                                         </p>
                                     </div>
