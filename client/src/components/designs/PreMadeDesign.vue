@@ -170,11 +170,15 @@
 
                             <div class="p-4 w-full flex items-center justify-between">
                                 <div class="flex flex-col">
-                                    <h5 class="text-md font-medium text-gray-900 dark:text-gray-100 transition-colors duration-200">
+                                    <h5
+                                        class="text-md font-medium text-gray-900 dark:text-gray-100 transition-colors duration-200"
+                                    >
                                         {{ product.name }}
                                         <!-- <span v-if="product.fabric_type">({{ product.fabric_type.name }})</span> -->
                                     </h5>
-                                    <p class="text-sm text-gray-700 dark:text-gray-400 transition-colors duration-200">
+                                    <p
+                                        class="text-sm text-gray-700 dark:text-gray-400 transition-colors duration-200"
+                                    >
                                         ₱{{ product.unit_price }}
                                     </p>
                                 </div>
@@ -204,7 +208,7 @@
         :isOpen="openDesignModal"
         @close="openDesignModal = false"
     />
-<!-- 
+    <!-- 
     <OrderProductModal
         v-if="showOrderModal && selectedCategoryRef && selectedProductRef"
         :categoryName="selectedCategoryRef"

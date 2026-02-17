@@ -142,8 +142,6 @@ class PaymentController extends Controller
     {
         $validated = $request->validated();
     
-        Log::info('Validated Place Order Request: ' . json_encode($validated, JSON_PRETTY_PRINT));
-
         $orders = DB::transaction(function () use ($validated, $request) {
     
             $createdOrders = [];
