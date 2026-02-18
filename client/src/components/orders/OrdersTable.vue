@@ -332,6 +332,7 @@
                         <span>Order ID</span>
                     </th> -->
                     <th scope="col" class="px-6 py-3">Order No.</th>
+                    <th scope="col" class="px-6 py-3">Customer</th>
 
                     <th scope="col" class="px-6 py-3">Product name</th>
                     <th scope="col" class="px-6 py-3">Product attributes</th>
@@ -367,6 +368,10 @@
                 >
                     <td class="px-6 py-4 font-semibold text-gray-900 class:text-white">
                         {{ order.order_number }}
+                    </td>
+
+                    <td class="px-6 py-4 font-semibold text-gray-900 class:text-white">
+                        {{ order.user?.name || 'N/A' }}
                     </td>
 
                     <td class="px-6 py-4 font-semibold text-gray-900 class:text-white">
@@ -683,6 +688,7 @@
     <OrderPaymentsModal
         v-if="showOrderPaymentsModal && selectedOrderData"
         :orders="selectedOrderData"
+        :isAdmin="isAdmin"
         @close="handleCloseOrderPaymentsModal"
         @status-change="(orderId, status) => handleStatusChange(orderId, status, () => {})"
     />

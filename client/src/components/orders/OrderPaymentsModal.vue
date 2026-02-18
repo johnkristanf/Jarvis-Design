@@ -16,6 +16,7 @@
 
     const props = defineProps<{
         orders: Orders
+        isAdmin?: boolean
     }>()
 
     // MODAL CLOSING EMITS
@@ -29,8 +30,69 @@
     const toast = useToast()
     const queryClient = useQueryClient()
 
-    // Local reactive total_paid to track payment updates
-    const totalPaid = ref(props.orders.total_paid)
+    // CASH PAYMENT STATES
+    const showCashPaymentForm = ref(false)
+    const cashAmount = ref<number | null>(null)
+
+    // ADD CASH PAYMENT MUTATION
+    const addCashPaymentMutation = useMutation({
+        mutationFn: async (data: FormData) => {
+            return await apiService.post('/api/add/payment', data)
+        },
+        onSuccess: () => {
+            toast.add({
+                severity: 'success',
+                summary: 'Cash Payment Recorded',
+                life: 1500,
+            })
+
+            showCashPaymentForm.value = false
+            cashAmount.value = null
+
+            // Invalidate queries
+            queryClient.invalidateQueries({ queryKey: ['payments_by_order', props.orders.id] })
+            queryClient.invalidateQueries({ queryKey: ['orders'] })
+        },
+        onError: (error) => {
+            console.error('Error adding cash payment:', error)
+            toast.add({
+                severity: 'error',
+                summary: 'Failed to record payment',
+                detail: 'Please try again',
+                life: 3000,
+            })
+        },
+    })
+
+    const submitCashPayment = () => {
+        if (!cashAmount.value || cashAmount.value <= 0) {
+            toast.add({
+                severity: 'warn',
+                summary: 'Invalid Amount',
+                detail: 'Please enter a valid amount',
+                life: 2000,
+            })
+            return
+        }
+
+        const formData = new FormData()
+        formData.append('order_id', String(props.orders.id))
+        formData.append('payment_method_code', 'cash')
+        formData.append('amount', String(cashAmount.value))
+
+        addCashPaymentMutation.mutate(formData)
+    }
+
+    // Local computed properties to track payment updates dynamically
+    const currentTotalPaid = computed(() => {
+        if (!payments.value) return props.orders.total_paid || 0
+        return payments.value.reduce((sum, payment) => sum + Number(payment.amount_applied), 0)
+    })
+
+    const currentBalance = computed(() => {
+        const balance = props.orders.total_price - currentTotalPaid.value
+        return Math.max(0, balance)
+    })
 
     // FETCH ALL PAYMENTS BY ORDER ID
     const {
@@ -41,11 +103,12 @@
         queryKey: ['payments_by_order', props.orders.id],
         queryFn: async () => {
             const respData = await apiService.get<Payment[]>(`/api/get/payments/${props.orders.id}`)
-            console.log('respData payments:', payments)
-
             return respData
         },
     })
+    // ... (rest of the script)
+
+    // ... (inside template)
 
     const { data: paymentMethods } = useQuery({
         queryKey: ['payment_methods'],
@@ -78,9 +141,9 @@
                 queryKey: ['payments_by_order', props.orders.id],
             })
 
-            setTimeout(() => {
-                window.location.href = '/admin/orders'
-            }, 1500)
+            // setTimeout(() => {
+            //     window.location.href = '/admin/orders'
+            // }, 1500)
         },
         onError: (error, variables) => {
             console.error('Failed to update payment:', error)
@@ -228,19 +291,64 @@
                         <h1 class="text-xl font-bold">Payment Management</h1>
                         <p class="text-gray-300 text-sm">Order # {{ props.orders.order_number }}</p>
                     </div>
-                    <button
-                        @click="handleCloseModal"
-                        class="text-gray-300 hover:text-white p-2 rounded-lg hover:bg-gray-800 transition-colors"
-                    >
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M6 18L18 6M6 6l12 12"
+                    <div class="flex items-center gap-3">
+                        <button
+                            v-if="props.isAdmin"
+                            @click="showCashPaymentForm = !showCashPaymentForm"
+                            class="text-sm bg-white text-gray-900 px-3 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors"
+                        >
+                            {{
+                                showCashPaymentForm ? 'Cancel Cash Payment' : 'Receive Cash Payment'
+                            }}
+                        </button>
+                        <button
+                            @click="handleCloseModal"
+                            class="text-gray-300 hover:text-white p-2 rounded-lg hover:bg-gray-800 transition-colors"
+                        >
+                            <svg
+                                class="w-6 h-6"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12"
+                                />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Cash Payment Form -->
+                <div v-if="showCashPaymentForm" class="bg-gray-50 border-b border-gray-200 p-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Record Cash Payment</h3>
+                    <div class="flex gap-4 items-end">
+                        <div class="flex-1">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                Amount Received (₱)
+                            </label>
+                            <input
+                                v-model="cashAmount"
+                                type="number"
+                                min="1"
+                                step="0.01"
+                                placeholder="Enter amount"
+                                class="w-full rounded-lg border-gray-300 shadow-sm focus:border-gray-900 focus:ring-gray-900"
+                                @keypress.enter="submitCashPayment"
                             />
-                        </svg>
-                    </button>
+                        </div>
+                        <button
+                            @click="submitCashPayment"
+                            :disabled="addCashPaymentMutation.isPending.value || !cashAmount"
+                            class="bg-gray-900 text-white px-4 py-2 rounded-lg font-medium hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 disabled:opacity-50 disabled:cursor-not-allowed h-[42px]"
+                        >
+                            <span v-if="addCashPaymentMutation.isPending.value">Processing...</span>
+                            <span v-else>Confirm Payment</span>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Content -->
@@ -324,8 +432,9 @@
                                         <div class="flex items-center gap-2">
                                             <PaymentStatusBadge :status="payment.status" />
                                             <PaymentAttachmentPopOver
+                                                v-if="payment.payment_attachments"
                                                 :paymentAttachmentURL="
-                                                    payment.payment_attachments.temp_url
+                                                    payment.payment_attachments?.temp_url
                                                 "
                                             />
                                         </div>
@@ -642,7 +751,7 @@
                     >
                         <div class="grid grid-cols-3 gap-4">
                             <div>
-                                <p class="text-sm text-gray-600 mb-1">Order Total Price</p>
+                                <p class="text-sm text-gray-600 mb-1">Total Price</p>
                                 <p class="text-xl font-bold text-gray-900">
                                     ₱{{ orders.total_price.toLocaleString() }}
                                 </p>
@@ -650,13 +759,13 @@
                             <div>
                                 <p class="text-sm text-gray-600 mb-1">Total Paid Amount</p>
                                 <p class="text-xl font-bold text-green-600">
-                                    ₱{{ orders.total_paid.toLocaleString() }}
+                                    ₱{{ currentTotalPaid.toLocaleString() }}
                                 </p>
                             </div>
                             <div>
                                 <p class="text-sm text-gray-600 mb-1">Remaining Balance</p>
                                 <p class="text-xl font-bold text-amber-600">
-                                    ₱{{ orders.balance.toLocaleString() }}
+                                    ₱{{ currentBalance.toLocaleString() }}
                                 </p>
                             </div>
                         </div>

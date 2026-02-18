@@ -49,42 +49,98 @@ class PaymentController extends Controller
 
     public function store(Request $request)
     {
-        // ✅ Validate incoming form data
-        $validated = $request->validate([
+        // 1️⃣ Validate common checks first
+        $request->validate([
             'order_id' => 'required|exists:orders,id',
-            'payment_attachment' => 'required|file|mimes:jpg,jpeg,png|max:2048', // adjust rules
+            'payment_method_code' => 'required|string|exists:payment_methods,code',
         ]);
 
-        $order = Orders::findOrFail($validated['order_id']);
-        $attachmentURL = $this->uploadToS3(
-            root: 'payment',
-            sub: Auth::user()->id,
-            file: $request->file('payment_attachment')
+        $isCash = $request->input('payment_method_code') === 'cash';
+
+        // 2️⃣ Conditional Validation
+        if ($isCash) {
+            if (!Auth::user()->isAdmin()) {
+                return response()->json(['message' => 'Unauthorized. Only admins can record cash payments.'], 403);
+            }
+            
+            $validated = $request->validate([
+                'amount' => 'required|numeric|min:1',
+            ]);
+        } else {
+            // Online payments (GCash, Maya, etc.) require an attachment
+            $request->validate([
+                'payment_attachment' => 'required|file|mimes:jpg,jpeg,png|max:2048',
+            ]);
+        }
+
+        $order = Orders::findOrFail($request->input('order_id'));
+        $attachmentURL = null;
+
+        // 3️⃣ Handle File Upload (if not cash)
+        if (!$isCash && $request->hasFile('payment_attachment')) {
+            $attachmentURL = $this->uploadToS3(
+                root: 'payment',
+                sub: Auth::user()->id,
+                file: $request->file('payment_attachment')
+            );
+        }
+
+        // 4️⃣ Get Payment Method ID
+        $paymentMethodID = PaymentMethod::where('code', $request->input('payment_method_code'))->value('id');
+
+        // 5️⃣ Determine Status & Amount
+        $amount = $isCash ? $request->input('amount') : 0;
+        
+        // For cash, we can auto-verify (PARTIALLY_PAID) or set to IN_REVIEW. 
+        // Since admin enters it, let's assume it's verified immediately as PARTIALLY_PAID (or FULLY_PAID if covers all).
+        // For simplicity, let's set it to PARTIALLY_PAID initially if cash, or IN_REVIEW for online.
+        
+        $status = OrderPayment::IN_REVIEW;
+        if ($isCash) {
+            $status = OrderPayment::PARTIALLY_PAID;
+            
+            // Calculate total paid so far
+            $totalPaid = OrderPayment::where('order_id', $order->id)->sum('amount_applied');
+            
+            // Check if fully paid (existing + current)
+             if (($totalPaid + $amount) >= $order->total_price) {
+                 $status = OrderPayment::FULLY_PAID;
+             }
+        }
+
+        // 6️⃣ Create Payment Record
+        $orderPayment = $this->paymentService->createAndLoadOrderPayment(
+            $paymentMethodID, 
+            $order->id, 
+            Auth::user()->id, 
+            $attachmentURL,
+            $amount,
+            $status
         );
 
-        $paymentMethodID = PaymentMethod::where('code', PaymentMethod::GCASH)->value('id') ?? 0;
-
-        $orderPayment = $this->paymentService->createAndLoadOrderPayment($paymentMethodID, $order->id, Auth::user()->id, $attachmentURL);
-
-
         $orderPayment->load(['users']);
+        
+        // Notify
         $message = sprintf(
-            "💰 Payment Received!\n\n" .
+            "💰 Payment Received (%s)!\n\n" .
                 "Order No: %s\n" .
                 "Customer: %s\n" .
-                "Product: %s (%s)\n",
+                "Product: %s (%s)\n" .
+                "Amount: ₱%s\n",
 
+            strtoupper($request->input('payment_method_code')),
             $order->order_number,
             $orderPayment->users->name ?? 'Guest',
             $order->product->name ?? 'N/A',
             ucfirst($order->color),
+            number_format($amount > 0 ? $amount : 0, 2)
         );
 
         $this->notificationService->notifyAdmin(AdminNotification::ORDER_NOTIFICATION_TYPE, $message);
 
         return response()->json([
             'success' => true,
-            'message' => 'Payment uploaded successfully!',
+            'message' => 'Payment recorded successfully!',
             'data' => $orderPayment
         ]);
     }

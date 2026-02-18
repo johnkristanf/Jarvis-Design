@@ -69,7 +69,9 @@
         { name: 'sketch' },
     ])
 
-    const prompt = ref(null)
+    const prompt = ref(`Mock up: Volleyball Jersey
+Design: Curve Uniques Lines
+Color: Black and White`)
     const style_preference = ref(null)
 
     const onImageGenerate = () => {
@@ -142,9 +144,13 @@
 </script>
 
 <template>
-    <div class="transform bg-white dark:bg-gray-900 p-8 text-left transition-colors duration-200 min-h-screen">
+    <div
+        class="transform bg-white dark:bg-gray-900 p-8 text-left transition-colors duration-200 min-h-screen"
+    >
         <div class="flex items-center justify-between my-4">
-            <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6 transition-colors duration-200">
+            <h2
+                class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6 transition-colors duration-200"
+            >
                 Prompt your Desired AI Design
             </h2>
         </div>
@@ -153,9 +159,13 @@
             <div class="flex flex-col gap-2 w-full">
                 <div class="flex justify-between items-center gap-2">
                     <div class="flex items-end justify-between w-full">
-                        <h1 class="text-gray-900 dark:text-gray-100 transition-colors duration-200">Enter your Prompt:</h1>
+                        <h1 class="text-gray-900 dark:text-gray-100 transition-colors duration-200">
+                            Enter your Prompt:
+                        </h1>
                         <div class="flex flex-col items-center gap-2 w-[20%]">
-                            <h1 class="text-gray-500 dark:text-gray-400 text-sm transition-colors duration-200">
+                            <h1
+                                class="text-gray-500 dark:text-gray-400 text-sm transition-colors duration-200"
+                            >
                                 Daily Prompt Limit:
                                 {{ authStore.currentUser?.prompt_limit }}
                             </h1>
@@ -166,17 +176,27 @@
                                     />
                                     <div
                                         class="absolute right-6 top-1/2 z-20 w-60 -translate-y-1/2 rounded bg-gray-900 dark:bg-gray-700 px-3 py-2 text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
-                                        style="white-space: normal;"
+                                        style="white-space: normal"
                                     >
-                                        For every generation, it's equivalent to 5 credits, which will add up to your overall payment on your next order.
+                                        For every generation, it's equivalent to 5 credits, which
+                                        will add up to your overall payment on your next order.
                                     </div>
                                 </div>
-                                <h1 class="text-gray-500 dark:text-gray-400 text-sm mr-13 transition-colors duration-200">
+                                <h1
+                                    class="text-gray-500 dark:text-gray-400 text-sm mr-13 transition-colors duration-200"
+                                >
                                     Prompt credit: ₱ {{ authStore.currentUser?.prompt_credit }}
                                 </h1>
                             </div>
                         </div>
                     </div>
+                </div>
+
+                <div class="flex justify-end w-full">
+                    <h1 class="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                        Mock-up: Input type of Shirt, Design: Input type of Design, Color: Input
+                        type of color
+                    </h1>
                 </div>
 
                 <textarea
@@ -190,7 +210,9 @@ Color: Black and White"
                 ></textarea>
 
                 <div class="flex flex-col gap-2">
-                    <h1 class="text-gray-900 dark:text-gray-100 transition-colors duration-200">Style Preference:</h1>
+                    <h1 class="text-gray-900 dark:text-gray-100 transition-colors duration-200">
+                        Style Preference:
+                    </h1>
                     <select
                         v-model="style_preference"
                         class="font-medium block w-full rounded-md bg-white dark:bg-gray-800 px-3 text-base text-black dark:text-gray-100 border border-gray-300 dark:border-gray-700 focus:outline-none transition-colors duration-200"
@@ -225,7 +247,9 @@ Color: Black and White"
         <!-- LIST OF AI GENERATED DESIGNS -->
         <div class="mt-5">
             <div v-if="imageUrls && imageUrls.length > 0">
-                <h1 class="mb-3 text-gray-900 dark:text-gray-100 transition-colors duration-200">Generated AI Images:</h1>
+                <h1 class="mb-3 text-gray-900 dark:text-gray-100 transition-colors duration-200">
+                    Generated AI Images:
+                </h1>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     <div
                         v-for="(imageUrl, index) in imageUrls"
@@ -238,7 +262,9 @@ Color: Black and White"
                             class="absolute top-2 right-2 z-10 p-1 bg-white/80 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-700 rounded-full shadow-md transition cursor-pointer"
                             type="button"
                         >
-                            <ArrowDownTrayIcon class="w-5 h-5 text-gray-700 dark:text-gray-100 hover:text-black dark:hover:text-gray-200 transition-colors duration-200" />
+                            <ArrowDownTrayIcon
+                                class="w-5 h-5 text-gray-700 dark:text-gray-100 hover:text-black dark:hover:text-gray-200 transition-colors duration-200"
+                            />
                         </button>
 
                         <!-- Image -->
@@ -248,7 +274,9 @@ Color: Black and White"
                         />
 
                         <!-- Caption -->
-                        <h3 class="mt-2 text-sm text-center text-gray-700 dark:text-gray-100 font-medium transition-colors duration-200">
+                        <h3
+                            class="mt-2 text-sm text-center text-gray-700 dark:text-gray-100 font-medium transition-colors duration-200"
+                        >
                             Generated Design {{ index + 1 }}
                         </h3>
                     </div>

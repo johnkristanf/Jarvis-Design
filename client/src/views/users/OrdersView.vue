@@ -4,7 +4,7 @@
     import OrderDetailsModal from '@/components/orders/OrderDetailsModal.vue'
     import { ChatBubbleLeftRightIcon } from '@heroicons/vue/20/solid'
     import { computed, onMounted, ref, watch } from 'vue'
-    import { FwbCard } from 'flowbite-vue'
+
     import { useQuery, useQueryClient } from '@tanstack/vue-query'
     import Loader from '@/components/Loader.vue'
     import type { Orders } from '@/types/order'
@@ -65,7 +65,7 @@
         queryFn: async () => {
             // Wait until the user id is available before calling
             while (!authStore.currentUser?.id) {
-                await new Promise(resolve => setTimeout(resolve, 50))
+                await new Promise((resolve) => setTimeout(resolve, 50))
             }
             return await getConversation(authStore.currentUser.id)
         },
@@ -117,7 +117,9 @@
 </script>
 
 <template>
-    <div class="card p-8 dark:bg-gray-900 dark:text-gray-100 h-screen">
+    <div
+        class="card p-8 dark:bg-gray-900 dark:text-gray-100 h-[calc(100vh-6rem)] overflow-y-auto minimal-scrollbar mr-2"
+    >
         <div class="flex items-center justify-between">
             <h2 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
                 Orders & Shipping Details
@@ -184,21 +186,21 @@
             class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 mt-5 pb-10 gap-5"
             v-if="!isLoading && orders && orders.data.length > 0"
         >
-            <fwb-card
+            <div
                 v-for="order in orders.data"
                 :key="order.id"
-                :img-alt="order.name"
-                :img-src="order.temp_url"
-                variant="image"
-                class="w-xs hover:opacity-75 hover:cursor-pointer dark:bg-gray-800 dark:text-gray-100"
+                class="w-full bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 hover:opacity-75 hover:cursor-pointer overflow-hidden"
                 @click="() => openOrderDetails(order)"
             >
+                <div class="w-full">
+                    <img :alt="order.name" :src="order.temp_url" class="w-full h-auto" />
+                </div>
                 <div class="p-5">
                     <p class="font-semibold text-gray-700 dark:text-gray-200">
-                        {{ order.order_number }}
+                        {{ order.order_number }} 2123
                     </p>
                 </div>
-            </fwb-card>
+            </div>
         </div>
 
         <div
@@ -217,3 +219,28 @@
         <Loader v-if="isLoading" msg="Loading Orders..." />
     </div>
 </template>
+
+<style scoped>
+    /* Minimal scrollbar */
+    .minimal-scrollbar::-webkit-scrollbar {
+        width: 6px;
+    }
+    .minimal-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .minimal-scrollbar::-webkit-scrollbar-thumb {
+        background-color: #cbd5e1; /* slate-300 */
+        border-radius: 20px;
+        border: 2px solid transparent; /* padding around thumb */
+        background-clip: content-box;
+    }
+    .dark .minimal-scrollbar::-webkit-scrollbar-thumb {
+        background-color: #4b5563; /* gray-600 */
+    }
+    .minimal-scrollbar::-webkit-scrollbar-thumb:hover {
+        background-color: #94a3b8; /* slate-400 */
+    }
+    .dark .minimal-scrollbar::-webkit-scrollbar-thumb:hover {
+        background-color: #6b7280; /* gray-500 */
+    }
+</style>

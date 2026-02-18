@@ -155,7 +155,7 @@
                             class="hover:cursor-pointer hover:opacity-75 bg-white dark:bg-gray-800 transition-colors duration-200 border border-gray-200 dark:border-gray-700"
                             @click="openDesignOptionModal(product)"
                         >
-                            <div class="flex gap-2 p-2 justify-start">
+                            <div class="flex gap-2 p-2 justify-center">
                                 <!-- FOR LOOP BUSINESS DESIGNS HERE -->
 
                                 <!-- Loop over product designs and show images -->
@@ -164,7 +164,7 @@
                                     :key="product.designs[0].id"
                                     :src="product.designs[0].temp_url"
                                     alt="Product Design"
-                                    class="object-cover rounded shadow border border-gray-200 dark:border-gray-700 max-h-44 max-w-full bg-white dark:bg-gray-900"
+                                    class="object-cover rounded shadow border border-gray-200 dark:border-gray-700 max-h-44 w-full bg-white dark:bg-gray-900"
                                 />
                             </div>
 

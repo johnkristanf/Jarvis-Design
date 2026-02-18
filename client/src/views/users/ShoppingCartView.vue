@@ -174,7 +174,7 @@
 
 <template>
     <div
-        class="mx-auto min-h-screen px-4 pt-10 pb-18 bg-gradient-to-b from-white to-gray-50 text-gray-900 relative dark:from-black dark:to-gray-900 dark:text-white"
+        class="mx-auto min-h-screen px-4 pt-10 pb-18 bg-gradient-to-b from-white to-gray-50 text-gray-900 relative dark:bg-gray-900 dark:text-white"
     >
         <!-- Header -->
         <div class="flex justify-between items-center">

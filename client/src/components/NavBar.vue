@@ -151,9 +151,7 @@
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="flex h-16 items-center">
                     <div class="flex items-center justify-between w-full">
-
                         <div class="flex items-center">
-
                             <img src="/jarvis-logo-white.jpeg" class="h-10 me-2 rounded-full" />
 
                             <a
@@ -250,7 +248,7 @@
                                     <Drawer
                                         v-model:visible="visibleRight"
                                         position="right"
-                                        class="bg-white !w-full md:!w-80 lg:!w-[30rem] z-[999999]"
+                                        class="bg-white !w-full md:!w-80 lg:!w-[30rem] z-[999999] dark:text-white dark:!bg-gray-900"
                                     >
                                         <template #header>
                                             <div class="w-full flex items-center justify-between">
@@ -299,7 +297,9 @@
                                                 <div
                                                     :class="[
                                                         'flex flex-col text-sm ',
-                                                        !notif.is_read ? 'text-white' : '',
+                                                        !notif.is_read
+                                                            ? 'text-white'
+                                                            : 'text-gray-900',
                                                     ]"
                                                 >
                                                     <OrderMessages
@@ -361,11 +361,7 @@
                                         v-if="cartCount && cartCount > 0"
                                         class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full min-w-5 h-5 flex items-center justify-center px-1"
                                     >
-                                        {{
-                                            cartCount > 99
-                                                ? '99+'
-                                                : cartCount
-                                        }}
+                                        {{ cartCount > 99 ? '99+' : cartCount }}
                                     </span>
                                 </router-link>
 
@@ -420,7 +416,7 @@
                                         leave-to-class="transform opacity-0 scale-95"
                                     >
                                         <MenuItems
-                                            class="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black/5 focus:outline-hidden"
+                                            class="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white dark:bg-gray-900 py-1 shadow-lg ring-1 ring-black/5 focus:outline-hidden"
                                         >
                                             <div
                                                 class="flex flex-col font-medium mb-3 border-b border-gray-300 p-3"
@@ -445,8 +441,10 @@
                                                         }
                                                     "
                                                     :class="[
-                                                        active ? 'bg-gray-100 outline-hidden' : '',
-                                                        'block px-4 py-2 text-sm text-gray-700 hover:cursor-pointer',
+                                                        active
+                                                            ? 'bg-gray-100 dark:bg-gray-800 outline-hidden'
+                                                            : '',
+                                                        'block px-4 py-2 text-sm dark:text-white text-gray-700 hover:cursor-pointer',
                                                     ]"
                                                 >
                                                     {{ item.name }}
@@ -511,7 +509,7 @@
                                         close()
                                     }
                                 "
-                                class="block rounded-md px-3 py-2 text-base font-medium text-gray-400 hover:bg-gray-700 hover:text-white"
+                                class="block rounded-md px-3 py-2 text-base dark:text-white font-medium text-gray-400 hover:bg-gray-700 hover:text-white"
                             >
                                 {{ item.name }}
                             </DisclosureButton>

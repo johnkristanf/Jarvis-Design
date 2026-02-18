@@ -106,21 +106,23 @@ class PaymentService
         SendOrderConfirmation::dispatch($orders)->afterCommit();
     }
 
-    public function createAndLoadOrderPayment($paymentMethodID, $orderID, $userID, $attachmentURL)
+    public function createAndLoadOrderPayment($paymentMethodID, $orderID, $userID, $attachmentURL, $amount = 0, $status = OrderPayment::IN_REVIEW)
     {
         $orderPayment = OrderPayment::create([
             'payment_number'    => $this->generatePaymentNumber(),
             'payment_method_id' => $paymentMethodID,
             'order_id'          => $orderID,
             'user_id'           => $userID,
-            'amount_applied'    => 0, // admin updates later
-            'status'            => OrderPayment::IN_REVIEW,
+            'amount_applied'    => $amount,
+            'status'            => $status,
         ]);
 
-        PaymentAttachment::create([
-            'order_payment_id' => $orderPayment->id,
-            'url'      => $attachmentURL,
-        ]);
+        if ($attachmentURL) {
+            PaymentAttachment::create([
+                'order_payment_id' => $orderPayment->id,
+                'url'      => $attachmentURL,
+            ]);
+        }
 
         return $orderPayment;
     }

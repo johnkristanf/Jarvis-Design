@@ -112,6 +112,7 @@
             .required('Quantity is required')
             .min(1, 'Minimum quantity is 1')
             .typeError('Quantity must be a number'),
+        color: yup.string().required('Color is required'),
     })
 
     const { handleSubmit, resetForm } = useForm({ validationSchema: schema })
@@ -224,31 +225,43 @@
     })
 
     // Submit handler
-    const onSubmit = handleSubmit((values) => {
-        const formData = new FormData()
-        formData.append('product_id', props.product.id.toString())
-        if (values.fabricTypeId) {
-            formData.append('fabric_type_id', values.fabricTypeId.toString())
-        }
+    const onSubmit = handleSubmit(
+        (values) => {
+            const formData = new FormData()
+            formData.append('product_id', props.product.id.toString())
+            if (values.fabricTypeId) {
+                formData.append('fabric_type_id', values.fabricTypeId.toString())
+            }
 
-        if (props.product.fabric_type && values.sizeId) {
-            formData.append('size_id', values.sizeId.toString())
-        }
+            if (props.product.fabric_type && values.sizeId) {
+                formData.append('size_id', values.sizeId.toString())
+            }
 
-        formData.append('color', values.color)
-        formData.append('quantity', values.quantity.toString())
+            formData.append('color', values.color)
+            formData.append('quantity', values.quantity.toString())
 
-        if (uploadedOwnDesignFile.value) {
-            formData.append('own_design_file', uploadedOwnDesignFile.value)
-        }
+            if (uploadedOwnDesignFile.value) {
+                formData.append('own_design_file', uploadedOwnDesignFile.value)
+            }
 
-        // Peek FormData key-values for debugging
-        for (const pair of formData.entries()) {
-            console.log(pair[0] + ': ' + pair[1])
-        }
+            // Peek FormData key-values for debugging
+            for (const pair of formData.entries()) {
+                console.log(pair[0] + ': ' + pair[1])
+            }
 
-        addToCartMutation.mutate(formData)
-    })
+            addToCartMutation.mutate(formData)
+        },
+        ({ errors }) => {
+            if (errors.color) {
+                toast.add({
+                    severity: 'warn',
+                    summary: 'Selection Required',
+                    detail: 'Please select or enter a color to proceed with your order.',
+                    life: 3000,
+                })
+            }
+        },
+    )
 
     const swatchColor = computed<string | null>(() => {
         // If custom, use the free-text input; otherwise the selected option label
@@ -290,6 +303,8 @@
     watch(selectedColorOption, (newVal) => {
         if (newVal && newVal !== 'custom') {
             color.value = newVal // auto-set color to selected option
+        } else if (!newVal) {
+            color.value = ''
         }
     })
 </script>

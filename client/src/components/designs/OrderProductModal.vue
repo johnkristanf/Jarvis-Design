@@ -49,9 +49,6 @@
         },
     })
 
-    // ...rest script unchanged...
-    console.log("props.selectedCartIds", props.selectedCartIds);
-
     const { sizes, loadingSizes } = useProductAttributes()
     const queryClient = useQueryClient()
     const showAIDesignModal = ref<boolean>(false)
@@ -304,7 +301,9 @@
 <template>
     <TransitionRoot appear :show="true">
         <Dialog as="div" static @close="() => {}" class="relative z-[999]">
-            <div class="fixed inset-0 overflow-y-auto bg-gray-900/80 dark:bg-black/80 transition-opacity">
+            <div
+                class="fixed inset-0 overflow-y-auto bg-gray-900/80 dark:bg-black/80 transition-opacity"
+            >
                 <div
                     class="flex flex-col lg:flex-row items-start lg:items-center justify-center p-4 text-center gap-4 lg:gap-8 min-h-screen"
                 >
@@ -319,16 +318,50 @@
                         <DialogPanel
                             class="w-[1000px] h-[35rem] transform overflow-y-auto bg-white dark:bg-gray-900 p-6 text-left align-middle shadow-xl transition-all"
                         >
-                            <DialogTitle as="h1" class="text-2xl text-gray-900 dark:text-gray-100 mb-4">
+                            <DialogTitle
+                                as="h1"
+                                class="text-2xl text-gray-900 dark:text-gray-100 mb-6"
+                            >
                                 Product Order Details
                             </DialogTitle>
 
                             <div class="space-y-7">
                                 <!-- Products List Section -->
-                                <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-                                    <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-3">
-                                        Selected Products
-                                    </h2>
+                                <div
+                                    class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700"
+                                >
+                                    <div class="flex justify-between items-center mb-3">
+                                        <h2
+                                            class="text-lg font-semibold text-gray-800 dark:text-gray-100"
+                                        >
+                                            Selected Products
+                                        </h2>
+                                        <div class="text-right">
+                                            <div class="flex items-baseline gap-2 justify-end">
+                                                <span
+                                                    class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider"
+                                                >
+                                                    Total:
+                                                </span>
+                                                <span
+                                                    class="text-2xl font-bold text-blue-600 dark:text-blue-400"
+                                                >
+                                                    ₱{{ totalPriceAllProducts.toFixed(2) }}
+                                                </span>
+                                            </div>
+                                            <div
+                                                v-if="
+                                                    authStore.currentUser &&
+                                                    typeof authStore.currentUser.prompt_credit ===
+                                                        'number' &&
+                                                    authStore.currentUser.prompt_credit > 0
+                                                "
+                                                class="text-[10px] text-red-500 dark:text-red-400 font-semibold"
+                                            >
+                                                +{{ authStore.currentUser.prompt_credit }} (credits)
+                                            </div>
+                                        </div>
+                                    </div>
 
                                     <div class="space-y-3">
                                         <div
@@ -338,10 +371,14 @@
                                         >
                                             <div class="flex justify-between items-start">
                                                 <div class="flex-1">
-                                                    <p class="font-medium text-gray-900 dark:text-gray-100">
+                                                    <p
+                                                        class="font-medium text-gray-900 dark:text-gray-100"
+                                                    >
                                                         {{ product.name }}
                                                     </p>
-                                                    <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                                                    <p
+                                                        class="text-sm text-gray-600 dark:text-gray-300 mt-1"
+                                                    >
                                                         Unit Price:
                                                         <strong>₱{{ product.unit_price }}</strong>
                                                     </p>
@@ -379,7 +416,9 @@
                                                                 {{ product.size.name }}
                                                             </span>
                                                         </div>
-                                                        <p class="text-sm text-gray-600 dark:text-gray-200">
+                                                        <p
+                                                            class="text-sm text-gray-600 dark:text-gray-200"
+                                                        >
                                                             Quantity:
                                                             <strong>
                                                                 {{ product.desired_quantity }}
@@ -389,7 +428,9 @@
                                                 </div>
 
                                                 <div class="text-right">
-                                                    <p class="font-semibold text-gray-900 dark:text-gray-100">
+                                                    <p
+                                                        class="font-semibold text-gray-900 dark:text-gray-100"
+                                                    >
                                                         ₱{{
                                                             (
                                                                 Number(product.unit_price) *
@@ -403,7 +444,9 @@
                                     </div>
 
                                     <!-- Summary -->
-                                    <div class="mt-4 pt-3 border-t border-gray-300 dark:border-gray-700">
+                                    <div
+                                        class="mt-4 pt-3 border-t border-gray-300 dark:border-gray-700"
+                                    >
                                         <div
                                             class="flex justify-between text-sm text-gray-700 dark:text-gray-200 mb-1"
                                         >
@@ -420,39 +463,29 @@
                                                 {{ totalQuantityAllProducts }}
                                             </span>
                                         </div>
-                                        <div
-                                            class="flex justify-between text-base font-semibold text-gray-900 dark:text-gray-100"
-                                        >
-                                            <span>Total Amount:</span>
-                                            <span>
-                                                ₱{{ totalPriceAllProducts.toFixed(2) }}
-                                                <span
-                                                    v-if="
-                                                        authStore.currentUser &&
-                                                        typeof authStore.currentUser
-                                                            .prompt_credit === 'number' &&
-                                                        authStore.currentUser.prompt_credit > 0
-                                                    "
-                                                    class="text-base text-red-500 dark:text-red-400"
-                                                >
-                                                    +{{ authStore.currentUser.prompt_credit }}
-                                                    (prompt credits)
-                                                </span>
-                                            </span>
-                                        </div>
                                     </div>
                                 </div>
 
                                 <!-- Phone number and address as plain text at the top -->
-                                <div class="mb-4 bg-gray-100 dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+                                <div
+                                    class="mb-4 bg-gray-100 dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700"
+                                >
                                     <div class="mb-2">
-                                        <span class="font-semibold text-gray-700 dark:text-gray-200 text-sm">Phone Number:</span>
+                                        <span
+                                            class="font-semibold text-gray-700 dark:text-gray-200 text-sm"
+                                        >
+                                            Phone Number:
+                                        </span>
                                         <span class="ml-2 text-gray-800 dark:text-gray-100 text-sm">
                                             {{ formData.phone_number }}
                                         </span>
                                     </div>
                                     <div>
-                                        <span class="font-semibold text-gray-700 dark:text-gray-200 text-sm">Full Address:</span>
+                                        <span
+                                            class="font-semibold text-gray-700 dark:text-gray-200 text-sm"
+                                        >
+                                            Full Address:
+                                        </span>
                                         <span class="ml-2 text-gray-800 dark:text-gray-100 text-sm">
                                             {{ formData.address }}
                                         </span>
@@ -461,7 +494,9 @@
 
                                 <!-- ORDER OPTION -->
                                 <div class="mb-8">
-                                    <label class="block text-sm text-gray-600 dark:text-gray-200 mb-1">
+                                    <label
+                                        class="block text-sm text-gray-600 dark:text-gray-200 mb-1"
+                                    >
                                         Order Option:
                                     </label>
                                     <div class="mt-4 w-full">
@@ -512,5 +547,4 @@
 
     <Loader v-if="mutation.isPending.value" msg="Placing Order..." />
     <Toast />
-    
 </template>
