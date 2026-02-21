@@ -111,6 +111,24 @@
         selectedOrderData.value = null
     }
 
+    const handleShowDesignModal = (designId: number) => {
+        console.log('handleShowDesignModal called with designId:', designId)
+        if (!designId) {
+            console.warn('designId is falsy, modal may not show')
+        }
+        selectedDesignID.value = designId
+        showUploadedImageModal.value = true
+    }
+
+    // DESIGN IMAGE PREVIEW DIALOG
+    const showDesignPreviewDialog = ref<boolean>(false)
+    const selectedDesignImageUrl = ref<string>('')
+
+    const handleShowDesignPreview = (tempUrl: string) => {
+        selectedDesignImageUrl.value = tempUrl
+        showDesignPreviewDialog.value = true
+    }
+
     // PREFERRED ORDER OPTION FOR SETTING STATUS FILTERING
     const selectedOrderOption = ref<string>('')
 
@@ -331,13 +349,13 @@
                     <!-- <th scope="col" class="px-16 py-3">
                         <span>Order ID</span>
                     </th> -->
-                    <th scope="col" class="px-6 py-3">Order No.</th>
-                    <th scope="col" class="px-6 py-3">Customer</th>
+                    <th scope="col" class="px-3 py-3">Order No.</th>
+                    <th scope="col" class="px-3 py-3">Customer</th>
 
-                    <th scope="col" class="px-6 py-3">Product name</th>
-                    <th scope="col" class="px-6 py-3">Product attributes</th>
+                    <th scope="col" class="px-3 py-3">Product name</th>
+                    <th scope="col" class="px-3 py-3">Product attributes</th>
 
-                    <th scope="col" class="px-16 py-3">
+                    <th scope="col" class="px-4 py-3">
                         <span>Design</span>
                     </th>
 
@@ -351,13 +369,13 @@
                     <th scope="col" class="px-6 py-3">Color</th> -->
 
                     <!-- <th scope="col" class="px-6 py-3">Total Price</th> -->
-                    <th scope="col" class="px-6 py-3">Option</th>
+                    <th scope="col" class="px-3 py-3">Option</th>
 
-                    <th scope="col" class="px-6 py-3">Status</th>
+                    <th scope="col" class="px-3 py-3">Status</th>
 
-                    <th scope="col" class="px-6 py-3">Delivery / Pick-Up Date</th>
+                    <th scope="col" class="px-3 py-3">Delivery / Pick-Up Date</th>
 
-                    <th v-if="isAdmin" scope="col" class="px-6 py-3">Actions</th>
+                    <th v-if="isAdmin" scope="col" class="px-3 py-3">Actions</th>
                 </tr>
             </thead>
             <tbody v-if="orders">
@@ -366,19 +384,19 @@
                     :key="order.id"
                     class="bg-white border-b class:bg-gray-800 class:border-gray-700 border-gray-200 hover:bg-gray-50 class:hover:bg-gray-600"
                 >
-                    <td class="px-6 py-4 font-semibold text-gray-900 class:text-white">
+                    <td class="px-3 py-4 font-semibold text-gray-900 class:text-white">
                         {{ order.order_number }}
                     </td>
 
-                    <td class="px-6 py-4 font-semibold text-gray-900 class:text-white">
+                    <td class="px-3 py-4 font-semibold text-gray-900 class:text-white">
                         {{ order.user?.name || 'N/A' }}
                     </td>
 
-                    <td class="px-6 py-4 font-semibold text-gray-900 class:text-white">
+                    <td class="px-3 py-4 font-semibold text-gray-900 class:text-white">
                         {{ order.product?.name }}
                     </td>
 
-                    <td class="px-6 py-4 font-semibold text-gray-900 class:text-white">
+                    <td class="px-3 py-4 font-semibold text-gray-900 class:text-white">
                         <ProductAttributesModal
                             :sizes="order.sizes"
                             :color="order.color"
@@ -389,27 +407,28 @@
                     <td class="p-4">
                         <img
                             :src="order.temp_url"
-                            class="w-24 h-24 object-cover rounded-md border"
+                            class="w-24 h-24 object-cover rounded-md border cursor-pointer hover:opacity-75 transition-opacity duration-150"
                             alt="Design Image"
+                            @click="handleShowDesignPreview(order.temp_url)"
                         />
                     </td>
 
-                    <td class="px-6 py-4 font-semibold text-gray-900 class:text-white">
+                    <td class="px-3 py-4 font-semibold text-gray-900 class:text-white">
                         {{ order.order_option.toUpperCase() }}
                     </td>
 
-                    <td class="px-6 py-4">
+                    <td class="px-3 py-4">
                         <StatusBadge :status="order.status" />
                     </td>
 
-                    <td class="px-6 py-4 font-semibold text-gray-900 class:text-white">
+                    <td class="px-3 py-4 font-semibold text-gray-900 class:text-white">
                         {{ order.delivery_date ? formatDate(order.delivery_date) : 'N/A' }}
                     </td>
 
                     <!-- UPDATE STATUS ACTION BUTTON -->
                     <td
                         v-if="isAdmin"
-                        class="pr-5 py-4 font-semibold text-gray-900 class:text-white"
+                        class="px-3 py-4 font-semibold text-gray-900 class:text-white"
                     >
                         <div
                             v-if="
@@ -670,9 +689,53 @@
 
     <Loader v-if="setDateMutation.isPending.value" msg="Updating Delivery / Pick-Up Date..." />
 
+    <!-- DESIGN IMAGE PREVIEW DIALOG -->
+    <Teleport to="body">
+        <div
+            v-if="showDesignPreviewDialog"
+            class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 backdrop-blur-[2px]"
+            @click.self="showDesignPreviewDialog = false"
+        >
+            <div
+                class="relative max-w-3xl w-full mx-4 bg-white rounded-2xl shadow-2xl overflow-hidden"
+            >
+                <!-- Header -->
+                <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+                    <h2 class="text-base font-semibold text-gray-900">Design Preview</h2>
+                    <button
+                        @click="showDesignPreviewDialog = false"
+                        class="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-1.5 transition-colors duration-150 cursor-pointer"
+                        aria-label="Close"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="w-5 h-5"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                        >
+                            <path
+                                fill-rule="evenodd"
+                                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                clip-rule="evenodd"
+                            />
+                        </svg>
+                    </button>
+                </div>
+                <!-- Image -->
+                <div class="flex items-center justify-center bg-gray-50 p-8 min-h-[75vh]">
+                    <img
+                        :src="selectedDesignImageUrl"
+                        alt="Design Preview"
+                        class="max-h-[82vh] max-w-full object-contain rounded-lg shadow-md"
+                    />
+                </div>
+            </div>
+        </div>
+    </Teleport>
+
     <!-- UPLOADED IMAGE MODAL -->
     <UploadedImagesModal
-        v-if="showUploadedImageModal && selectedDesignID"
+        v-if="showUploadedImageModal && selectedDesignID !== undefined"
         :selectedDesignID="selectedDesignID"
         :isAdmin="isAdmin"
         @close="showUploadedImageModal = false"

@@ -398,10 +398,10 @@
 
     <aside
         id="logo-sidebar"
-        class="fixed top-0 left-0 mt-14 z-40 w-64 h-screen transition-transform -translate-x-full border-r border-gray-200 sm:translate-x-0 class:bg-gray-800 class:border-gray-700"
+        class="fixed top-0 left-0 mt-14 z-40 w-64 h-screen transition-transform -translate-x-full  sm:translate-x-0 class:bg-gray-800 class:border-gray-700"
         aria-label="Sidebar"
     >
-        <div class="h-full overflow-y-auto bg-gray-900 class:bg-gray-800 pt-2">
+        <div class="h-full overflow-y-auto bg-gray-900 w-[75%] class:bg-gray-800 pt-2">
             <ul class="space-y-2 font-medium">
                 <li v-for="link in sideLinks" :key="link.to">
                     <RouterLink :to="link.to" custom v-slot="{ isActive, navigate }">

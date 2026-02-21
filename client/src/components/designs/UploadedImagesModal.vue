@@ -3,6 +3,7 @@
     import type { UploadedDesignsByID } from '@/types/design'
     import { Dialog, DialogPanel } from '@headlessui/vue'
     import { useQuery } from '@tanstack/vue-query'
+    import { onMounted } from 'vue'
     import Loader from '../Loader.vue'
 
     // DESIGN RELATED PROPS
@@ -19,14 +20,18 @@
     const { isLoading, data: uploadedImages } = useQuery({
         queryKey: ['uploaded-designs', props.selectedDesignID],
         queryFn: async () => {
-            console.log('selectedDesignID: ', props.selectedDesignID)
+            console.log('selectedDesignID refetching: ', props.selectedDesignID)
 
             const respData = await apiService.get<UploadedDesignsByID[]>(
                 `/api/uploaded/${props.selectedDesignID}/design`,
             )
-            console.log('respData uplaoded image by ID: ', respData)
+            console.log('respData uploaded image by ID: ', respData)
             return respData
         },
+    })
+
+    onMounted(() => {
+        console.log('UploadedImagesModal mounted with designID:', props.selectedDesignID)
     })
 </script>
 
@@ -34,7 +39,7 @@
     <Dialog
         :open="true"
         @close="handleCloseModal"
-        class="fixed inset-0 z-[999] flex items-center justify-center bg-gray-900/70 bg-opacity-50"
+        class="fixed inset-0 z-[9999999] flex items-center justify-center bg-gray-900/70 bg-opacity-50"
     >
         <DialogPanel>
             <div class="w-[560px] bg-white max-h-[90vh] overflow-y-auto p-6 rounded-2xl shadow-xl">

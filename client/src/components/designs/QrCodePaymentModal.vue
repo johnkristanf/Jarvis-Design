@@ -47,19 +47,19 @@
     }
 
     const triggerFileSelect = (idx: number) => {
-        console.log("123123");
-        
+        console.log('123123')
+
         const input = fileInputRefs[idx]
         if (!input) return
 
         // Give the browser one tick + a little delay — mobile needs it more often
         setTimeout(() => {
             try {
-            input.click()
+                input.click()
             } catch (err) {
-            console.warn('Direct click failed, trying focus + click', err)
-            input.focus()
-            input.click()
+                console.warn('Direct click failed, trying focus + click', err)
+                input.focus()
+                input.click()
             }
         }, 80)
     }
@@ -103,6 +103,13 @@
         return qty * unitPrice
     }
 
+    const grandTotal = computed(() => {
+        if (!props.selectedProductsData) return 0
+        return props.selectedProductsData.reduce((acc, product) => {
+            return acc + getProductTotal(product)
+        }, 0)
+    })
+
     // Prepare maps if not set
     onMounted(() => {
         if (props.selectedProductsData) {
@@ -118,12 +125,7 @@
 
 <template>
     <TransitionRoot appear :show="true" as="template">
-        <Dialog
-  as="div"
-  @close="handleCloseModal"
-  class="relative z-[9999]"
-  :open="true"  
->
+        <Dialog as="div" @close="handleCloseModal" class="relative z-[9999]" :open="true">
             <TransitionChild
                 as="template"
                 enter="duration-300 ease-out"
@@ -137,7 +139,9 @@
             </TransitionChild>
 
             <div class="fixed inset-0 overflow-y-auto">
-                <div class="flex min-h-full items-center justify-center p-4 text-center bg-black/60 dark:bg-gray-900">
+                <div
+                    class="flex min-h-full items-center justify-center p-4 text-center bg-black/60 dark:bg-gray-900"
+                >
                     <TransitionChild
                         as="template"
                         enter="duration-300 ease-out"
@@ -148,31 +152,55 @@
                         leave-to="opacity-0 scale-95"
                     >
                         <DialogPanel
-                            class="w-full max-w-[1000px] transform overflow-hidden rounded-2xl bg-white dark:bg-gray-800 dark:border dark:border-gray-700 p-4 sm:p-6 mb-8 text-left align-middle shadow-xl transition-all"
+                            class="relative w-full max-w-[1000px] transform overflow-hidden rounded-2xl bg-white dark:bg-gray-800 dark:border dark:border-gray-700 p-4 sm:p-6 mb-8 text-left align-middle shadow-xl transition-all"
                         >
+                            <!-- Overall Total Price Display (Absolute) -->
+                            <div
+                                v-if="props.selectedProductsData?.length"
+                                class="absolute top-4 right-4 sm:top-6 sm:right-6 text-right"
+                            >
+                                <p
+                                    class="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-semibold"
+                                >
+                                    Overall Total Price
+                                </p>
+                                <p class="text-2xl sm:text-3xl font-bold text-blue-500">
+                                    ₱{{ grandTotal }}
+                                </p>
+                            </div>
+
                             <DialogTitle
                                 as="h3"
-                                class="text-base sm:text-lg font-medium leading-6 text-gray-900 dark:text-gray-100"
+                                class="text-base sm:text-lg font-medium leading-6 text-gray-900 dark:text-gray-100 mb-4"
                             >
                                 Scan Payment Method QR Code
                             </DialogTitle>
 
                             <div class="mt-2">
                                 <template
-                                    v-if="props.selectedProductsData && props.selectedProductsData.length === 1"
+                                    v-if="
+                                        props.selectedProductsData &&
+                                        props.selectedProductsData.length === 1
+                                    "
                                 >
                                     <p class="text-sm text-gray-500 dark:text-gray-300">
                                         Product Name: {{ props.selectedProductsData[0].name }}
                                     </p>
                                     <p class="text-sm text-gray-500 dark:text-gray-300">
-                                        Quantity: {{ props.selectedProductsData[0].desired_quantity ?? 1 }}
+                                        Quantity:
+                                        {{ props.selectedProductsData[0].desired_quantity ?? 1 }}
                                     </p>
                                     <p class="text-sm text-gray-500 dark:text-gray-300">
-                                        Total Price: ₱{{ getProductTotal(props.selectedProductsData[0]) }}
+                                        Total Price: ₱{{
+                                            getProductTotal(props.selectedProductsData[0])
+                                        }}
                                     </p>
                                 </template>
                                 <template
-                                    v-else-if="props.selectedProductsData && props.selectedProductsData.length > 1"
+                                    v-else-if="
+                                        props.selectedProductsData &&
+                                        props.selectedProductsData.length > 1
+                                    "
                                 >
                                     <div>
                                         <p class="text-sm text-gray-500 dark:text-gray-300 mb-1">
@@ -180,21 +208,29 @@
                                                 Order includes the following products:
                                             </span>
                                         </p>
-                                        <ul class="ml-2 text-xs text-gray-500 dark:text-gray-300 list-disc">
+                                        <ul
+                                            class="ml-2 text-xs text-gray-500 dark:text-gray-300 list-disc"
+                                        >
                                             <li
                                                 v-for="(product, idx) in props.selectedProductsData"
                                                 :key="`prod-${idx}`"
                                             >
                                                 {{ product.name }}
-                                                <span v-if="product.size?.name">({{ product.size?.name }})</span>
-                                                - Qty: {{ product.desired_quantity ?? 1 }}, ₱{{ getProductTotal(product) }}
+                                                <span v-if="product.size?.name">
+                                                    ({{ product.size?.name }})
+                                                </span>
+                                                - Qty: {{ product.desired_quantity ?? 1 }}, ₱{{
+                                                    getProductTotal(product)
+                                                }}
                                             </li>
                                         </ul>
                                     </div>
                                 </template>
                             </div>
 
-                            <p class="text-xs sm:text-sm text-center my-4 sm:my-5 text-gray-700 dark:text-gray-200">
+                            <p
+                                class="text-xs sm:text-sm text-center my-4 sm:my-5 text-gray-700 dark:text-gray-200"
+                            >
                                 <strong class="text-base sm:text-lg">Note:</strong>
                                 <br />
                                 A minimum payment of
@@ -204,7 +240,9 @@
                             </p>
 
                             <div
-                                v-if="props.selectedProductsData && props.selectedProductsData.length"
+                                v-if="
+                                    props.selectedProductsData && props.selectedProductsData.length
+                                "
                                 class="flex flex-col gap-6 sm:gap-10"
                             >
                                 <div
@@ -214,11 +252,17 @@
                                 >
                                     <!-- Product Info -->
                                     <div class="mb-2">
-                                        <h2 class="font-bold text-sm sm:text-base text-gray-900 dark:text-gray-100">
+                                        <h2
+                                            class="font-bold text-sm sm:text-base text-gray-900 dark:text-gray-100"
+                                        >
                                             {{ product.name }}
-                                            <span v-if="product.size?.name">({{ product.size?.name }})</span>
+                                            <span v-if="product.size?.name">
+                                                ({{ product.size?.name }})
+                                            </span>
                                         </h2>
-                                        <div class="text-xs sm:text-sm text-gray-600 dark:text-gray-300">
+                                        <div
+                                            class="text-xs sm:text-sm text-gray-600 dark:text-gray-300"
+                                        >
                                             Quantity:
                                             <b>{{ product.desired_quantity ?? 1 }}</b>
                                             <br />
@@ -226,24 +270,36 @@
                                             <br />
                                             <span>
                                                 Total Price:
-                                                <span class="font-bold text-blue-700 dark:text-blue-400">
+                                                <span
+                                                    class="font-bold text-blue-700 dark:text-blue-400"
+                                                >
                                                     ₱{{ getProductTotal(product) }}
                                                 </span>
                                             </span>
                                         </div>
                                     </div>
-                                    
+
                                     <!-- QR Codes - responsive grid -->
-                                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 lg:gap-12 mb-0">
+                                    <div
+                                        class="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 lg:gap-12 mb-0"
+                                    >
                                         <div class="flex flex-col items-center justify-center">
                                             <img
                                                 src="/jarvis-gcash-qr.webp"
                                                 alt="Generated QR CODE"
                                                 class="w-40 sm:w-44 lg:w-48"
                                             />
-                                            <h1 class="text-gray-500 dark:text-gray-300 text-xs sm:text-sm mt-2">JA**N S.</h1>
+                                            <h1
+                                                class="text-gray-500 dark:text-gray-300 text-xs sm:text-sm mt-2"
+                                            >
+                                                JA**N S.
+                                            </h1>
                                             <h1 class="text-gray-500 dark:text-gray-300 flex gap-2">
-                                                <p class="text-blue-600 dark:text-blue-500 text-xs sm:text-sm">Gcash</p>
+                                                <p
+                                                    class="text-blue-600 dark:text-blue-500 text-xs sm:text-sm"
+                                                >
+                                                    Gcash
+                                                </p>
                                             </h1>
                                         </div>
                                         <div class="flex flex-col items-center justify-center">
@@ -252,11 +308,17 @@
                                                 alt="Generated QR CODE"
                                                 class="w-40 sm:w-44 lg:w-48"
                                             />
-                                            <h1 class="text-gray-500 dark:text-gray-300 text-xs sm:text-sm mt-2">
+                                            <h1
+                                                class="text-gray-500 dark:text-gray-300 text-xs sm:text-sm mt-2"
+                                            >
                                                 Roanne Mae Na Anunciado
                                             </h1>
                                             <h1 class="text-gray-500 dark:text-gray-300 flex gap-2">
-                                                <p class="text-green-600 dark:text-green-400 text-xs sm:text-sm">Maya</p>
+                                                <p
+                                                    class="text-green-600 dark:text-green-400 text-xs sm:text-sm"
+                                                >
+                                                    Maya
+                                                </p>
                                             </h1>
                                         </div>
                                         <div class="flex flex-col items-center justify-center">
@@ -265,21 +327,29 @@
                                                 alt="Generated QR CODE"
                                                 class="w-40 sm:w-44 lg:w-48"
                                             />
-                                            <h1 class="text-gray-500 dark:text-gray-300 text-xs sm:text-sm mt-2">
+                                            <h1
+                                                class="text-gray-500 dark:text-gray-300 text-xs sm:text-sm mt-2"
+                                            >
                                                 Roanne Mae Na Anunciado
                                             </h1>
                                             <h1 class="text-gray-500 dark:text-gray-300 flex gap-2">
-                                                <p class="text-orange-600 dark:text-orange-400 text-xs sm:text-sm">UnionBank</p>
+                                                <p
+                                                    class="text-orange-600 dark:text-orange-400 text-xs sm:text-sm"
+                                                >
+                                                    UnionBank
+                                                </p>
                                             </h1>
                                         </div>
                                     </div>
-                                    
+
                                     <!-- Payment Screenshot Upload -->
                                     <div class="flex flex-col gap-2 w-full">
-                                        <label class="text-xs sm:text-sm font-medium mb-1 text-gray-700 dark:text-gray-200">
+                                        <label
+                                            class="text-xs sm:text-sm font-medium mb-1 text-gray-700 dark:text-gray-200"
+                                        >
                                             Screenshot of Payment Confirmation
                                         </label>
-                                        
+
                                         <!-- Hidden file input with mobile-friendly attributes -->
                                         <input
                                             :ref="
@@ -293,7 +363,7 @@
                                             class="hidden"
                                             @change="(e) => handleFileChange(e, idx)"
                                         />
-                                        
+
                                         <div
                                             class="w-full border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-md p-4 flex flex-col items-center justify-center relative min-h-[170px] bg-white dark:bg-gray-800"
                                         >
@@ -333,7 +403,9 @@
                                                         d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
                                                     />
                                                 </svg>
-                                                <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-2 px-2">
+                                                <p
+                                                    class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-2 px-2"
+                                                >
                                                     Screenshot of Payment Confirmation
                                                 </p>
                                                 <button
@@ -350,7 +422,9 @@
                             </div>
 
                             <div v-else class="py-10">
-                                <h1 class="text-center text-gray-500 dark:text-gray-300 text-sm">No product selected.</h1>
+                                <h1 class="text-center text-gray-500 dark:text-gray-300 text-sm">
+                                    No product selected.
+                                </h1>
                             </div>
 
                             <div class="mt-4 flex flex-col sm:flex-row justify-end gap-2 sm:gap-3">

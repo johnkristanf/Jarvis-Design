@@ -15,27 +15,6 @@
             and management.
         </p>
 
-        <!-- <div class="py-3 flex justify-end">
-            <h1
-                v-if="!isOrderLogsOpen"
-                @click="isOrderLogsOpen = true"
-                class="text-gray-400 flex gap-1 hover:cursor-pointer hover:opacity-75"
-            >
-                Logs
-                <ArrowRightIcon class="size-6" />
-            </h1>
-
-            <h1
-                v-else
-                @click="isOrderLogsOpen = false"
-                class="text-gray-400 flex gap-1 hover:cursor-pointer hover:opacity-75"
-            >
-                <ArrowLeftIcon class="size-6" />
-                Orders
-            </h1>
-        </div> -->
-
-        <!-- <OrderLogsTable v-if="isOrderLogsOpen" /> -->
         <OrdersTable  />
     </div>
 </template>
