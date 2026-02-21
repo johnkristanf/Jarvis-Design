@@ -128,6 +128,12 @@
         return notificationsQuery.data.value.filter((notification) => !notification.is_read).length
     })
 
+    const filteredNavigation = computed(() => {
+        return navigation.filter(
+            (nav) => !['Orders', 'Message'].includes(nav.name) || authStore.currentUser,
+        )
+    })
+
     // WATCH EVERY NEW NOTIFICATION
     onMounted(() => {
         const echo = initializeEcho()
@@ -207,11 +213,7 @@
                         <div class="hidden md:block">
                             <div class="ml-6 flex items-baseline space-x-4">
                                 <router-link
-                                    v-for="item in navigation.filter(
-                                        (nav) =>
-                                            !['Orders', 'Message'].includes(nav.name) ||
-                                            authStore.currentUser,
-                                    )"
+                                    v-for="item in filteredNavigation"
                                     :key="item.name"
                                     :to="item.to"
                                     :class="[
@@ -475,27 +477,48 @@
                                     {{ authStore.currentUser.name }}
                                 </div>
                             </div>
-                            <button
-                                type="button"
-                                @click="visibleRight = true"
-                                class="relative ml-auto shrink-0 rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800 focus:outline-hidden"
-                            >
-                                <span class="absolute -inset-1.5" />
-                                <span class="sr-only">View notifications</span>
-                                <BellIcon class="size-6" aria-hidden="true" />
-
-                                <!-- Notification badge on bell icon -->
-                                <span
-                                    v-if="unreadNotificationsCount > 0"
-                                    class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full min-w-5 h-5 flex items-center justify-center px-1"
+                            <div class="ml-auto flex items-center">
+                                <!-- Shopping cart icon -->
+                                <router-link
+                                    to="/orders/cart"
+                                    @click="close"
+                                    class="relative rounded-full bg-gray-800 p-1.5 mr-2 text-gray-400 hover:text-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800 focus:outline-hidden"
                                 >
-                                    {{
-                                        unreadNotificationsCount > 99
-                                            ? '99+'
-                                            : unreadNotificationsCount
-                                    }}
-                                </span>
-                            </button>
+                                    <span class="absolute -inset-1.5" />
+                                    <span class="sr-only">View cart</span>
+                                    <ShoppingCartIcon class="size-6" aria-hidden="true" />
+
+                                    <!-- Notification badge on cart icon -->
+                                    <span
+                                        v-if="cartCount && cartCount > 0"
+                                        class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full min-w-5 h-5 flex items-center justify-center px-1"
+                                    >
+                                        {{ cartCount > 99 ? '99+' : cartCount }}
+                                    </span>
+                                </router-link>
+
+                                <button
+                                    type="button"
+                                    @click="visibleRight = true"
+                                    class="relative shrink-0 rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800 focus:outline-hidden"
+                                >
+                                    <span class="absolute -inset-1.5" />
+                                    <span class="sr-only">View notifications</span>
+                                    <BellIcon class="size-6" aria-hidden="true" />
+
+                                    <!-- Notification badge on bell icon -->
+                                    <span
+                                        v-if="unreadNotificationsCount > 0"
+                                        class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full min-w-5 h-5 flex items-center justify-center px-1"
+                                    >
+                                        {{
+                                            unreadNotificationsCount > 99
+                                                ? '99+'
+                                                : unreadNotificationsCount
+                                        }}
+                                    </span>
+                                </button>
+                            </div>
                         </div>
 
                         <div class="mt-3 space-y-1 px-2">
@@ -525,7 +548,7 @@
 
                 <div class="space-y-1 px-2 pt-2 pb-3">
                     <router-link
-                        v-for="item in navigation"
+                        v-for="item in filteredNavigation"
                         :key="item.name"
                         :to="item.to"
                         @click="close"

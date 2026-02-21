@@ -312,11 +312,12 @@
 <template>
     <TransitionRoot appear :show="isModalOpen">
         <Dialog as="div" class="relative z-[999]" :open="isModalOpen" @close="onDialogClose">
-            <!-- Modal overlay -->
-            <div class="fixed inset-0 overflow-y-auto transition-opacity dark:bg-black/60">
-                <div
-                    class="flex flex-col lg:flex-row items-start lg:items-center justify-center p-4 text-center gap-4 lg:gap-8 min-h-screen"
-                >
+            <!-- Backdrop -->
+            <div class="fixed inset-0 bg-black/50 transition-opacity" aria-hidden="true" />
+
+            <!-- Full-screen scroll container -->
+            <div class="fixed inset-0 overflow-y-auto">
+                <div class="flex min-h-full items-center justify-center p-4 sm:p-6 lg:p-8">
                     <TransitionChild
                         enter="duration-300 ease-out"
                         enter-from="opacity-0 scale-95"
@@ -326,363 +327,340 @@
                         leave-to="opacity-0 scale-95"
                     >
                         <DialogPanel
-                            class="w-[600px] max-w-7xl h-[30rem] transform overflow-y-auto p-6 text-left align-middle shadow-xl transition-all"
+                            class="w-full max-w-xl sm:max-w-3xl lg:max-w-5xl max-h-[90vh] overflow-y-auto transform rounded-lg p-6 text-left shadow-2xl transition-all"
                             :class="[isDark ? 'bg-zinc-900 border border-zinc-700' : 'bg-white']"
                         >
-                            <DialogTitle
-                                as="h1"
-                                class="text-2xl"
-                                :class="isDark ? 'text-gray-100' : 'text-gray-900'"
-                            >
-                                Product Order Option
-                            </DialogTitle>
-
-                            <div class="space-y-7">
-                                <!-- T-shirt Section -->
-                                <div>
-                                    <div class="flex flex-col mb-5 text-sm">
-                                        <p
-                                            :class="[
-                                                'font-medium',
-                                                isDark ? 'text-gray-200' : 'text-gray-700',
-                                            ]"
-                                        >
-                                            Product:
-                                            <strong>{{ props.product.name }}</strong>
-                                        </p>
-                                        <p
-                                            :class="[
-                                                'font-medium',
-                                                isDark ? 'text-gray-200' : 'text-gray-700',
-                                            ]"
-                                        >
-                                            Unit Price:
-                                            <strong>₱{{ props.product.unit_price }}</strong>
-                                        </p>
-                                    </div>
-                                    <div
-                                        v-if="props.product.designs && props.product.designs.length"
-                                        class="w-full flex"
+                            <!-- Header -->
+                            <div class="flex items-center justify-between mb-5">
+                                <DialogTitle
+                                    as="h1"
+                                    class="text-xl font-semibold"
+                                    :class="isDark ? 'text-gray-100' : 'text-gray-900'"
+                                >
+                                    Product Order Option
+                                </DialogTitle>
+                                <button
+                                    type="button"
+                                    @click="handleClose"
+                                    class="rounded-md p-1.5 transition-colors hover:cursor-pointer"
+                                    :class="
+                                        isDark
+                                            ? 'text-gray-400 hover:bg-zinc-800 hover:text-gray-200'
+                                            : 'text-gray-400 hover:bg-gray-100 hover:text-gray-600'
+                                    "
+                                >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        class="h-5 w-5"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                        stroke-width="2"
                                     >
-                                        <div class="w-full aspect-video relative">
-                                            <img
-                                                :src="props.product.designs[0].temp_url"
-                                                alt="Product Design"
-                                                class="w-full h-full object-contain absolute inset-0"
-                                                :class="isDark ? 'bg-zinc-800' : 'bg-white'"
-                                            />
-                                        </div>
-                                    </div>
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            d="M6 18L18 6M6 6l12 12"
+                                        />
+                                    </svg>
+                                </button>
+                            </div>
 
-                                    <form @submit.prevent="onSubmit" class="space-y-4">
-                                        <!-- Fabric Type Input -->
-                                        <!--
-                                        <div class="mb-5">
-                                            <label :class="[
-                                                    'block text-sm mb-1',
-                                                    isDark ? 'text-gray-400' : 'text-gray-600'
-                                                ]">
-                                                Fabric Type:
-                                            </label>
-                                            <div class="flex gap-2">
-                                                <select
-                                                    v-model="fabricTypeId"
-                                                    :class="[
-                                                        'font-medium w-full border px-3 py-2 rounded mt-1',
-                                                        isDark
-                                                            ? 'bg-zinc-900 border-zinc-600 text-gray-100'
-                                                            : ''
-                                                    ]"
-                                                >
-                                                    <option :value="null" disabled>
-                                                        Select fabric type
-                                                    </option>
-                                                    <option
-                                                        v-for="fab in fabricTypes"
-                                                        :key="fab.id"
-                                                        :value="fab.id"
-                                                    >
-                                                        {{ fab.name }}
-                                                    </option>
-                                                </select>
-                                            </div>
-                                            <p class="text-sm text-red-500 mt-1">
-                                                {{ fabricTypeError }}
-                                            </p>
-                                        </div>
-                                        -->
+                            <div class="space-y-5">
+                                <!-- Product info -->
+                                <div class="flex flex-col text-sm">
+                                    <p
+                                        :class="[
+                                            'font-medium',
+                                            isDark ? 'text-gray-200' : 'text-gray-700',
+                                        ]"
+                                    >
+                                        Product:
+                                        <strong>{{ props.product.name }}</strong>
+                                    </p>
+                                    <p
+                                        :class="[
+                                            'font-medium',
+                                            isDark ? 'text-gray-200' : 'text-gray-700',
+                                        ]"
+                                    >
+                                        Unit Price:
+                                        <strong>₱{{ props.product.unit_price }}</strong>
+                                    </p>
+                                </div>
 
-                                        <!-- Upload your own design field -->
-                                        <div class="my-10">
-                                            <p
-                                                :class="[
-                                                    'text-sm mb-3',
-                                                    isDark ? 'text-gray-400' : 'text-gray-600',
-                                                ]"
-                                            >
-                                                Upload your own design (if preferred)
-                                            </p>
-                                            <input
-                                                ref="fileInputRef"
-                                                @change="handleFileUpload"
-                                                type="file"
-                                                accept="image/*"
-                                                class="w-full"
-                                            />
+                                <!-- Product design image -->
+                                <div
+                                    v-if="props.product.designs && props.product.designs.length"
+                                    class="w-full rounded-md overflow-hidden"
+                                    :class="isDark ? 'bg-zinc-800' : 'bg-gray-50'"
+                                >
+                                    <img
+                                        :src="props.product.designs[0].temp_url"
+                                        alt="Product Design"
+                                        class="w-full h-auto object-contain max-h-48 sm:max-h-64 lg:max-h-80"
+                                    />
+                                </div>
 
-                                            <!-- Image Preview -->
-                                            <div v-if="ownDesignPreviewUrl" class="mt-4">
-                                                <div class="relative inline-block">
-                                                    <img
-                                                        :src="ownDesignPreviewUrl"
-                                                        alt="Design Preview"
-                                                        class="max-w-full h-auto max-h-[200px] rounded-md border"
-                                                        :class="
-                                                            isDark
-                                                                ? 'border-zinc-700'
-                                                                : 'border-gray-300'
-                                                        "
-                                                    />
-                                                    <button
-                                                        @click="clearOwnDesignFile"
-                                                        class="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full hover:cursor-pointer p-1 shadow-lg transition-colors"
-                                                        title="Remove image"
-                                                    >
-                                                        <svg
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            class="h-4 w-4"
-                                                            fill="none"
-                                                            viewBox="0 0 24 24"
-                                                            stroke="currentColor"
-                                                            stroke-width="2"
-                                                        >
-                                                            <path
-                                                                stroke-linecap="round"
-                                                                stroke-linejoin="round"
-                                                                d="M6 18L18 6M6 6l12 12"
-                                                            />
-                                                        </svg>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Color Option -->
-                                        <div class="mb-8">
-                                            <label
-                                                :class="[
-                                                    'block text-sm mb-1',
-                                                    isDark ? 'text-gray-400' : 'text-gray-600',
-                                                ]"
-                                            >
-                                                Color:
-                                            </label>
-                                            <div class="flex gap-2">
-                                                <!-- Select Dropdown -->
-                                                <select
-                                                    v-model="selectedColorOption"
-                                                    :class="[
-                                                        'w-1/3 px-3 py-2 border font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500',
-                                                        isDark
-                                                            ? 'bg-zinc-900 border-zinc-600 text-gray-100'
-                                                            : 'border-gray-300',
-                                                    ]"
-                                                >
-                                                    <option value="">-- Select --</option>
-                                                    <option
-                                                        v-for="color in colorOptions"
-                                                        :key="color"
-                                                        :value="color"
-                                                    >
-                                                        {{ color }}
-                                                    </option>
-                                                    <option value="custom">Custom</option>
-                                                </select>
-
-                                                <!-- Swatch -->
-                                                <div
-                                                    class="w-6 h-6 rounded border shrink-0"
+                                <form @submit.prevent="onSubmit" class="space-y-5">
+                                    <!-- Upload your own design -->
+                                    <div>
+                                        <p
+                                            :class="[
+                                                'text-sm mb-2',
+                                                isDark ? 'text-gray-400' : 'text-gray-600',
+                                            ]"
+                                        >
+                                            Upload your own design
+                                            <span class="italic">(if preferred)</span>
+                                        </p>
+                                        <input
+                                            ref="fileInputRef"
+                                            @change="handleFileUpload"
+                                            type="file"
+                                            accept="image/*"
+                                            class="w-full text-sm"
+                                        />
+                                        <!-- Image Preview -->
+                                        <div v-if="ownDesignPreviewUrl" class="mt-3">
+                                            <div class="relative inline-block">
+                                                <img
+                                                    :src="ownDesignPreviewUrl"
+                                                    alt="Design Preview"
+                                                    class="max-w-full h-auto max-h-48 rounded-md border"
                                                     :class="
                                                         isDark
                                                             ? 'border-zinc-700'
                                                             : 'border-gray-300'
                                                     "
-                                                    :style="{
-                                                        backgroundColor:
-                                                            swatchColor || 'transparent',
-                                                    }"
-                                                    :title="
-                                                        swatchColor
-                                                            ? `Preview: ${swatchColor}`
-                                                            : 'No color selected/invalid color'
-                                                    "
-                                                ></div>
-
-                                                <!-- Free Text Input -->
-                                                <input
-                                                    v-if="selectedColorOption === 'custom'"
-                                                    v-model="color"
-                                                    type="text"
-                                                    placeholder="Enter custom color"
-                                                    :class="[
-                                                        'w-full px-3 py-2 border font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500',
-                                                        isDark
-                                                            ? 'bg-zinc-900 border-zinc-600 text-gray-100 placeholder:text-gray-400'
-                                                            : 'border-gray-300',
-                                                    ]"
                                                 />
+                                                <button
+                                                    @click="clearOwnDesignFile"
+                                                    class="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full hover:cursor-pointer p-1 shadow-lg transition-colors"
+                                                    title="Remove image"
+                                                >
+                                                    <svg
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        class="h-4 w-4"
+                                                        fill="none"
+                                                        viewBox="0 0 24 24"
+                                                        stroke="currentColor"
+                                                        stroke-width="2"
+                                                    >
+                                                        <path
+                                                            stroke-linecap="round"
+                                                            stroke-linejoin="round"
+                                                            d="M6 18L18 6M6 6l12 12"
+                                                        />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
 
-                                                <!-- Auto-set if dropdown selected -->
-                                                <input
-                                                    v-else
+                                    <!-- Color -->
+                                    <div>
+                                        <label
+                                            :class="[
+                                                'block text-sm mb-1',
+                                                isDark ? 'text-gray-400' : 'text-gray-600',
+                                            ]"
+                                        >
+                                            Color:
+                                        </label>
+                                        <div class="flex gap-2">
+                                            <select
+                                                v-model="selectedColorOption"
+                                                :class="[
+                                                    'w-1/3 px-3 py-2 border font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500',
+                                                    isDark
+                                                        ? 'bg-zinc-900 border-zinc-600 text-gray-100'
+                                                        : 'border-gray-300',
+                                                ]"
+                                            >
+                                                <option value="">-- Select --</option>
+                                                <option
+                                                    v-for="color in colorOptions"
+                                                    :key="color"
                                                     :value="color"
-                                                    disabled
-                                                    :class="[
-                                                        'w-full px-3 py-2 border font-medium rounded-md cursor-not-allowed',
-                                                        isDark
-                                                            ? 'bg-zinc-900 border-zinc-700 text-gray-400'
-                                                            : 'bg-gray-100 border-gray-300',
-                                                    ]"
-                                                />
-                                            </div>
-                                        </div>
-
-                                        <!-- Size Selection -->
-                                        <div v-if="props.product.fabric_type" class="mb-5">
-                                            <label
-                                                :class="[
-                                                    'block text-sm mb-1',
-                                                    isDark ? 'text-gray-400' : 'text-gray-600',
-                                                ]"
-                                            >
-                                                Size:
-                                            </label>
-                                            <div class="flex items-center gap-2 flex-wrap">
-                                                <template v-if="!loadingSizes">
-                                                    <button
-                                                        v-for="size in sizes"
-                                                        :key="size.id"
-                                                        :class="[
-                                                            'inline-flex items-center px-2 py-0.5 rounded-md text-sm font-semibold border transition-colors',
-                                                            sizeId === size.id
-                                                                ? 'bg-blue-600 text-white border-blue-600'
-                                                                : isDark
-                                                                  ? 'bg-zinc-800 text-gray-200 border-zinc-700 hover:bg-zinc-700'
-                                                                  : 'bg-gray-100 text-gray-700 border-gray-300 hover:opacity-75',
-                                                        ]"
-                                                        type="button"
-                                                        @click="sizeId = size.id"
-                                                    >
-                                                        {{ size.name }}
-                                                    </button>
-                                                </template>
-                                                <template v-else>
-                                                    <span
-                                                        :class="
-                                                            isDark
-                                                                ? 'text-gray-400'
-                                                                : 'text-gray-500' +
-                                                                  ' text-sm italic'
-                                                        "
-                                                    >
-                                                        Loading sizes...
-                                                    </span>
-                                                </template>
-                                            </div>
-                                            <p class="text-sm text-red-500 mt-1">
-                                                {{ sizeIdError }}
-                                            </p>
-                                        </div>
-
-                                        <!-- Shopee-style quantity field copied from cart view -->
-                                        <div class="mb-5">
-                                            <label
-                                                :class="[
-                                                    'block text-sm mb-1',
-                                                    isDark ? 'text-gray-400' : 'text-gray-600',
-                                                ]"
-                                            >
-                                                Quantity:
-                                            </label>
-                                            <div class="flex w-full h-10">
-                                                <button
-                                                    type="button"
-                                                    :class="[
-                                                        'flex items-center justify-center border rounded-l w-10 h-full text-lg font-semibold select-none transition-colors duration-150 disabled:opacity-50',
-                                                        isDark
-                                                            ? 'bg-zinc-800 border-zinc-700 text-gray-200 hover:bg-zinc-700'
-                                                            : 'bg-[#f1f1f1] border-[#ccc] hover:bg-[#e1e1e1]',
-                                                    ]"
-                                                    @click="decrementQuantity"
-                                                    :disabled="quantity <= 1"
-                                                    aria-label="Decrease"
                                                 >
-                                                    <span>-</span>
-                                                </button>
-                                                <input
-                                                    :value="quantity"
-                                                    type="text"
-                                                    min="1"
-                                                    :class="[
-                                                        'w-full max-w-[40px] appearance-none text-center focus:outline-none focus:ring-0 px-0 py-0 font-medium text-base',
-                                                        isDark
-                                                            ? 'bg-zinc-900 border-t border-b border-zinc-700 text-gray-100'
-                                                            : 'bg-white border-t border-b border-[#ccc]',
-                                                    ]"
-                                                    style="height: 40px"
-                                                    readonly
-                                                    tabindex="-1"
-                                                />
-                                                <button
-                                                    type="button"
-                                                    :class="[
-                                                        'flex items-center justify-center border rounded-r w-10 h-full text-lg font-semibold select-none transition-colors duration-150',
-                                                        isDark
-                                                            ? 'bg-gray-900 border-zinc-700 text-gray-200 hover:bg-zinc-700'
-                                                            : 'bg-[#f1f1f1] border-[#ccc] hover:bg-[#e1e1e1]',
-                                                    ]"
-                                                    @click="incrementQuantity"
-                                                    aria-label="Increase"
-                                                >
-                                                    <span>+</span>
-                                                </button>
-                                            </div>
-                                            <p class="text-sm text-red-500 mt-1">
-                                                {{ quantityError }}
-                                            </p>
-                                        </div>
+                                                    {{ color }}
+                                                </option>
+                                                <option value="custom">Custom</option>
+                                            </select>
 
-                                        <div class="flex justify-end items-center gap-5">
-                                            <button
-                                                @click="
-                                                    selectedOrderAction = OrderAction.ADD_TO_CART
+                                            <!-- Swatch -->
+                                            <div
+                                                class="w-6 h-6 rounded border shrink-0 self-center"
+                                                :class="
+                                                    isDark ? 'border-zinc-700' : 'border-gray-300'
                                                 "
-                                                type="submit"
-                                                :class="[
-                                                    'flex items-center gap-1 px-4 py-2 hover:opacity-75 hover:cursor-pointer text-white text-xs font-semibold rounded transition-colors',
-                                                    isDark ? 'bg-zinc-800' : 'bg-gray-900',
-                                                ]"
-                                                :disabled="addToCartMutation.isPending.value"
-                                            >
-                                                <ShoppingCartIcon class="size-4" />
-                                                Add to Cart
-                                            </button>
+                                                :style="{
+                                                    backgroundColor: swatchColor || 'transparent',
+                                                }"
+                                                :title="
+                                                    swatchColor
+                                                        ? `Preview: ${swatchColor}`
+                                                        : 'No color selected/invalid color'
+                                                "
+                                            />
 
-                                            <button
-                                                @click="selectedOrderAction = OrderAction.BUY_NOW"
-                                                type="submit"
+                                            <!-- Free Text Input -->
+                                            <input
+                                                v-if="selectedColorOption === 'custom'"
+                                                v-model="color"
+                                                type="text"
+                                                placeholder="Enter custom color"
                                                 :class="[
-                                                    'flex items-center gap-1 px-4 py-2 text-white text-xs font-semibold rounded transition-colors hover:opacity-75 hover:cursor-pointer',
-                                                    isDark ? 'bg-blue-700' : 'bg-blue-600',
+                                                    'w-full px-3 py-2 border font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500',
+                                                    isDark
+                                                        ? 'bg-zinc-900 border-zinc-600 text-gray-100 placeholder:text-gray-400'
+                                                        : 'border-gray-300',
                                                 ]"
-                                                :disabled="addToCartMutation.isPending.value"
+                                            />
+                                            <!-- Auto-set if dropdown selected -->
+                                            <input
+                                                v-else
+                                                :value="color"
+                                                disabled
+                                                :class="[
+                                                    'w-full px-3 py-2 border font-medium rounded-md cursor-not-allowed',
+                                                    isDark
+                                                        ? 'bg-zinc-900 border-zinc-700 text-gray-400'
+                                                        : 'bg-gray-100 border-gray-300',
+                                                ]"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <!-- Size -->
+                                    <div v-if="props.product.fabric_type">
+                                        <label
+                                            :class="[
+                                                'block text-sm mb-1',
+                                                isDark ? 'text-gray-400' : 'text-gray-600',
+                                            ]"
+                                        >
+                                            Size:
+                                        </label>
+                                        <div class="flex items-center gap-2 flex-wrap">
+                                            <template v-if="!loadingSizes">
+                                                <button
+                                                    v-for="size in sizes"
+                                                    :key="size.id"
+                                                    :class="[
+                                                        'inline-flex items-center px-2 py-0.5 rounded-md text-sm font-semibold border transition-colors',
+                                                        sizeId === size.id
+                                                            ? 'bg-blue-600 text-white border-blue-600'
+                                                            : isDark
+                                                              ? 'bg-zinc-800 text-gray-200 border-zinc-700 hover:bg-zinc-700'
+                                                              : 'bg-gray-100 text-gray-700 border-gray-300 hover:opacity-75',
+                                                    ]"
+                                                    type="button"
+                                                    @click="sizeId = size.id"
+                                                >
+                                                    {{ size.name }}
+                                                </button>
+                                            </template>
+                                            <template v-else>
+                                                <span
+                                                    :class="[
+                                                        'text-sm italic',
+                                                        isDark ? 'text-gray-400' : 'text-gray-500',
+                                                    ]"
+                                                >
+                                                    Loading sizes...
+                                                </span>
+                                            </template>
+                                        </div>
+                                        <p class="text-sm text-red-500 mt-1">{{ sizeIdError }}</p>
+                                    </div>
+
+                                    <!-- Quantity -->
+                                    <div>
+                                        <label
+                                            :class="[
+                                                'block text-sm mb-1',
+                                                isDark ? 'text-gray-400' : 'text-gray-600',
+                                            ]"
+                                        >
+                                            Quantity:
+                                        </label>
+                                        <div class="flex h-10 w-fit">
+                                            <button
+                                                type="button"
+                                                :class="[
+                                                    'flex items-center justify-center border rounded-l w-10 h-full text-lg font-semibold select-none transition-colors duration-150 disabled:opacity-50',
+                                                    isDark
+                                                        ? 'bg-zinc-800 border-zinc-700 text-gray-200 hover:bg-zinc-700'
+                                                        : 'bg-[#f1f1f1] border-[#ccc] hover:bg-[#e1e1e1]',
+                                                ]"
+                                                @click="decrementQuantity"
+                                                :disabled="quantity <= 1"
+                                                aria-label="Decrease"
                                             >
-                                                <BanknotesIcon class="size-4" />
-                                                Buy Now
+                                                <span>-</span>
+                                            </button>
+                                            <input
+                                                :value="quantity"
+                                                type="text"
+                                                min="1"
+                                                :class="[
+                                                    'w-12 appearance-none text-center focus:outline-none focus:ring-0 px-0 py-0 font-medium text-base',
+                                                    isDark
+                                                        ? 'bg-zinc-900 border-t border-b border-zinc-700 text-gray-100'
+                                                        : 'bg-white border-t border-b border-[#ccc]',
+                                                ]"
+                                                style="height: 40px"
+                                                readonly
+                                                tabindex="-1"
+                                            />
+                                            <button
+                                                type="button"
+                                                :class="[
+                                                    'flex items-center justify-center border rounded-r w-10 h-full text-lg font-semibold select-none transition-colors duration-150',
+                                                    isDark
+                                                        ? 'bg-zinc-800 border-zinc-700 text-gray-200 hover:bg-zinc-700'
+                                                        : 'bg-[#f1f1f1] border-[#ccc] hover:bg-[#e1e1e1]',
+                                                ]"
+                                                @click="incrementQuantity"
+                                                aria-label="Increase"
+                                            >
+                                                <span>+</span>
                                             </button>
                                         </div>
-                                    </form>
-                                </div>
+                                        <p class="text-sm text-red-500 mt-1">{{ quantityError }}</p>
+                                    </div>
+
+                                    <!-- Action Buttons -->
+                                    <div class="flex justify-end items-center gap-5 pt-2">
+                                        <button
+                                            @click="selectedOrderAction = OrderAction.ADD_TO_CART"
+                                            type="submit"
+                                            :class="[
+                                                'flex items-center gap-1 px-4 py-2 hover:opacity-75 hover:cursor-pointer text-white text-xs font-semibold rounded transition-colors',
+                                                isDark ? 'bg-zinc-800' : 'bg-gray-900',
+                                            ]"
+                                            :disabled="addToCartMutation.isPending.value"
+                                        >
+                                            <ShoppingCartIcon class="size-4" />
+                                            Add to Cart
+                                        </button>
+
+                                        <button
+                                            @click="selectedOrderAction = OrderAction.BUY_NOW"
+                                            type="submit"
+                                            :class="[
+                                                'flex items-center gap-1 px-4 py-2 text-white text-xs font-semibold rounded transition-colors hover:opacity-75 hover:cursor-pointer',
+                                                isDark ? 'bg-blue-700' : 'bg-blue-600',
+                                            ]"
+                                            :disabled="addToCartMutation.isPending.value"
+                                        >
+                                            <BanknotesIcon class="size-4" />
+                                            Buy Now
+                                        </button>
+                                    </div>
+                                </form>
                             </div>
                         </DialogPanel>
                     </TransitionChild>
@@ -700,10 +678,4 @@
         v-if="addToCartMutation.isPending.value && selectedOrderAction === OrderAction.BUY_NOW"
         msg="Processing Order..."
     />
-
-    <!-- <OrderProductModal
-        v-if="showOrderProductModal"
-        :product="{}"
-        @close="showOrderProductModal = false"
-    /> -->
 </template>

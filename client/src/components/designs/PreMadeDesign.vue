@@ -126,8 +126,8 @@
         class="w-full bg-white dark:bg-gray-900 transition-colors duration-200 rounded-xl p-3 md:p-6"
     >
         <!-- CATEGORY FILTERS -->
-        <div class="flex items-center gap-8 mb-6">
-            <div v-for="category in designs" :key="category.id">
+        <div class="flex flex-wrap items-center gap-x-8 gap-y-4 mb-6">
+            <div v-for="category in designs" :key="category.id" class="shrink-0">
                 <h1
                     @click="toggleCategory(category.id)"
                     class="text-xs font-bold text-gray-500 dark:text-gray-100 hover:opacity-75 hover:cursor-pointer"

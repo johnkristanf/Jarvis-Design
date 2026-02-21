@@ -179,7 +179,9 @@
         <!-- Header -->
         <div class="flex justify-between items-center">
             <div class="flex items-center justify-between gap-3">
-                <h2 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Shopping Cart</h2>
+                <h2 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+                    Shopping Cart
+                </h2>
                 <template v-if="cartItems && cartItems.length > 0">
                     <button
                         @click="selectAllCarts"
@@ -247,7 +249,9 @@
                             }}
                         </p>
                         <!-- Quantity Increment/Decrement - display only -->
-                        <div class="flex items-center ml-3 border rounded px-1 bg-gray-100 border-gray-300 dark:bg-gray-900 dark:border-gray-700">
+                        <div
+                            class="flex items-center ml-3 border rounded px-1 bg-gray-100 border-gray-300 dark:bg-gray-900 dark:border-gray-700"
+                        >
                             <button
                                 @click="decrementQuantity(item.id)"
                                 class="px-2 py-1 text-gray-600 hover:text-black font-bold disabled:opacity-30 dark:text-gray-200 dark:hover:text-white"
@@ -301,12 +305,8 @@
                         :disabled="deleteCartMutation.isPending.value"
                     >
                         <TrashIcon class="size-3" />
-                        <span v-if="deleteCartMutation.isPending.value">
-                            Removing...
-                        </span>
-                        <span v-else>
-                            Remove
-                        </span>
+                        <span v-if="deleteCartMutation.isPending.value">Removing...</span>
+                        <span v-else>Remove</span>
                     </button>
                 </div>
             </div>
@@ -317,7 +317,9 @@
                     class="mx-auto px-4 py-4 bg-gray-900/98 border-t border-white/10 flex flex-col md:flex-row items-center md:justify-between gap-3 dark:bg-gray-950 dark:border-gray-700"
                 >
                     <div class="flex items-center gap-3 w-full md:w-auto">
-                        <span class="font-semibold text-lg text-white dark:text-blue-300">Total Price:</span>
+                        <span class="font-semibold text-lg text-white dark:text-blue-300">
+                            Total Price:
+                        </span>
                         <span
                             class="flex items-center gap-2 font-bold text-2xl text-blue-300 tracking-wide dark:text-blue-400"
                         >
@@ -334,7 +336,10 @@
                                 +{{ authStore.currentUser.prompt_credit }} (prompt credits)
                             </span>
                         </span>
-                        <span v-if="selectedCartIds.length === 0" class="text-sm text-red-400 ml-2 dark:text-red-300">
+                        <span
+                            v-if="selectedCartIds.length === 0"
+                            class="text-sm text-red-400 ml-2 dark:text-red-300"
+                        >
                             No items selected
                         </span>
                     </div>
