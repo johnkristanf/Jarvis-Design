@@ -261,11 +261,19 @@
                             >
                                 -
                             </button>
-                            <span
-                                class="mx-2 min-w-[2ch] text-center select-none text-lg text-gray-900 font-medium dark:text-white"
-                            >
-                                {{ cartQuantities[item.id] ?? 1 }}
-                            </span>
+                            <input
+                                v-model.number="cartQuantities[item.id]"
+                                type="number"
+                                min="1"
+                                class="mx-2 w-12 text-center text-lg text-gray-900 font-medium bg-transparent border-none focus:outline-none focus:ring-0 dark:text-white p-0 appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                style="appearance: textfield; -moz-appearance: textfield"
+                                @blur="
+                                    () => {
+                                        if (!cartQuantities[item.id] || cartQuantities[item.id] < 1)
+                                            cartQuantities[item.id] = 1
+                                    }
+                                "
+                            />
                             <button
                                 @click="incrementQuantity(item.id)"
                                 class="px-2 py-1 text-gray-600 hover:text-black font-bold dark:text-gray-200 dark:hover:text-white"

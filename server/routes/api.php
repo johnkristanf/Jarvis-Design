@@ -118,7 +118,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/get/payments/{orderID}', [PaymentController::class, 'paymentsByOrderID']);
     Route::get('/get/payment/methods', [PaymentController::class, 'getPaymentMethods']);
     Route::patch('/record/payment/{paymentID}', [PaymentController::class, 'recordPayment']);
-
+    Route::patch('/decline/payment/{paymentID}', [PaymentController::class, 'declinePayment']);
+    Route::post('/reupload/payment/{paymentID}', [PaymentController::class, 'reuploadPayment']);
     // PROTECTED CART ROUTES
     Route::get('/get/all/cart', [CartController::class, 'index']);
     Route::get('/get/cart/count', [CartController::class, 'count']);

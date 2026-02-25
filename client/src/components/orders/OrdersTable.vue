@@ -22,8 +22,10 @@
     import PaginationControls from '../PaginationControls.vue'
     import type { PaginatedResponse } from '@/types/pagination'
     import OrderPaymentsModal from './OrderPaymentsModal.vue'
+    import CustomerInfoModal from './CustomerInfoModal.vue'
     // @ts-expect-error bug
     import ProductAttributesModal from '../designs/ProductAttributesModal.vue'
+    import { initializeEcho } from '@/services/echo'
 
     const { isAdmin } = useAuthorization()
     const isStatusUpdating = ref<boolean>(false)
@@ -46,6 +48,8 @@
             const respData = await apiService.get<PaginatedResponse<Orders>>(
                 `/api/get/orders?page=${currentPage.value}`,
             )
+            console.log('respData: ', respData)
+
             return respData
         },
         enabled: true,
@@ -98,13 +102,18 @@
     const toast = useToast()
 
     const showOrderPaymentsModal = ref<boolean>(false)
-    const selectedOrderData = ref<Orders | null>(null)
+    const selectedOrderId = ref<number | null>(null)
 
     const handleShowOrderPaymentsModal = (orders: Orders, close: () => void) => {
         close()
+        selectedOrderId.value = orders.id
         showOrderPaymentsModal.value = true
-        selectedOrderData.value = orders
     }
+
+    const selectedOrderData = computed(() => {
+        if (!selectedOrderId.value || !orders.value?.data) return null
+        return orders.value.data.find((o) => o.id === selectedOrderId.value)
+    })
 
     const handleCloseOrderPaymentsModal = () => {
         showOrderPaymentsModal.value = false
@@ -282,6 +291,22 @@
         if (container) {
             container.addEventListener('scroll', onTableScroll, { passive: true })
         }
+
+        const echo = initializeEcho()
+
+        echo.private(`payments.update`)
+            .subscribed(() => {
+                console.log('Admin: Private Channel authorized & subscribed')
+            })
+            .listen('.payment.update', (event: any) => {
+                if (event.payment) {
+                    console.log('Payment update received, invalidating orders...')
+                    queryClient.invalidateQueries({ queryKey: ['orders'] })
+                }
+            })
+            .error((error: any) => {
+                console.error('❌ Websocket Authorization failed:', error)
+            })
     })
 
     onBeforeMount(() => {
@@ -350,7 +375,7 @@
                         <span>Order ID</span>
                     </th> -->
                     <th scope="col" class="px-3 py-3">Order No.</th>
-                    <th scope="col" class="px-3 py-3">Customer</th>
+                    <th scope="col" class="px-3 py-3">Customer Information</th>
 
                     <th scope="col" class="px-3 py-3">Product name</th>
                     <th scope="col" class="px-3 py-3">Product attributes</th>
@@ -389,7 +414,12 @@
                     </td>
 
                     <td class="px-3 py-4 font-semibold text-gray-900 class:text-white">
-                        {{ order.user?.name || 'N/A' }}
+                        <CustomerInfoModal
+                            :customer-name="order.user?.name"
+                            :email="order.user?.email"
+                            :phone-number="order.phone_number || order.user?.phone_number"
+                            :address="order.address || order.user?.address"
+                        />
                     </td>
 
                     <td class="px-3 py-4 font-semibold text-gray-900 class:text-white">

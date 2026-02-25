@@ -50,12 +50,17 @@ class PaymentController extends Controller
     public function store(Request $request)
     {
         // 1️⃣ Validate common checks first
-        $request->validate([
+        $validated = $request->validate([
             'order_id' => 'required|exists:orders,id',
-            'payment_method_code' => 'required|string|exists:payment_methods,code',
+            'payment_method_code' => 'nullable|string|exists:payment_methods,code',
         ]);
 
-        $isCash = $request->input('payment_method_code') === 'cash';
+        Log::info(json_encode($validated, JSON_PRETTY_PRINT));
+
+        $paymentMethodCode = $validated['payment_method_code'] ?? 'gcash';
+        $isCash = $paymentMethodCode === 'cash';
+
+        Log::info(json_encode($paymentMethodCode, JSON_PRETTY_PRINT));
 
         // 2️⃣ Conditional Validation
         if ($isCash) {
@@ -73,7 +78,7 @@ class PaymentController extends Controller
             ]);
         }
 
-        $order = Orders::findOrFail($request->input('order_id'));
+        $order = Orders::findOrFail($validated['order_id']);
         $attachmentURL = null;
 
         // 3️⃣ Handle File Upload (if not cash)
@@ -86,10 +91,10 @@ class PaymentController extends Controller
         }
 
         // 4️⃣ Get Payment Method ID
-        $paymentMethodID = PaymentMethod::where('code', $request->input('payment_method_code'))->value('id');
+        $paymentMethodID = PaymentMethod::where('code', $paymentMethodCode)->value('id');
 
         // 5️⃣ Determine Status & Amount
-        $amount = $isCash ? $request->input('amount') : 0;
+        $amount = $isCash ? $validated['amount'] : 0;
         
         // For cash, we can auto-verify (PARTIALLY_PAID) or set to IN_REVIEW. 
         // Since admin enters it, let's assume it's verified immediately as PARTIALLY_PAID (or FULLY_PAID if covers all).
@@ -128,7 +133,7 @@ class PaymentController extends Controller
                 "Product: %s (%s)\n" .
                 "Amount: ₱%s\n",
 
-            strtoupper($request->input('payment_method_code')),
+            strtoupper($paymentMethodCode),
             $order->order_number,
             $orderPayment->users->name ?? 'Guest',
             $order->product->name ?? 'N/A',
@@ -602,6 +607,86 @@ class PaymentController extends Controller
             'payment' => $payment->fresh(['payment_methods']),
             'total_applied' => $currentTotalAmount,
             'order_total' => $payment->orders->total_price
+        ]);
+    }
+
+    public function declinePayment($paymentID, Request $request)
+    {
+        if (!Auth::user()->isAdmin()) {
+            return response()->json(['message' => 'Unauthorized. Only admins can decline payments.'], 403);
+        }
+
+        $validated = $request->validate([
+            'remarks' => 'required|string|max:500',
+        ]);
+
+        $payment = OrderPayment::with('orders')->findOrFail($paymentID);
+
+        $payment->update([
+            'status' => OrderPayment::DECLINED,
+            'remarks' => $validated['remarks'],
+        ]);
+
+        broadcast(new PaymentUpdated($payment));
+        $this->notificationService->notifyUserOrder($payment->orders, $payment->user_id, OrderPayment::PAYMENT_UPDATED);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Payment declined successfully.',
+            'payment' => $payment->fresh(['payment_methods'])
+        ]);
+    }
+
+    public function reuploadPayment($paymentID, Request $request)
+    {
+        $validated = $request->validate([
+            'payment_attachment' => 'required|file|mimes:jpg,jpeg,png|max:2048',
+        ]);
+
+        $payment = OrderPayment::with('payment_attachments', 'orders')->findOrFail($paymentID);
+
+        // Upload the new attachment
+        $attachmentURL = $this->uploadToS3(
+            root: 'payment',
+            sub: Auth::user()->id,
+            file: $request->file('payment_attachment')
+        );
+
+        // Update the attachment record
+        if ($payment->payment_attachments) {
+            $payment->payment_attachments->update([
+                'url' => $attachmentURL,
+            ]);
+        } else {
+            $payment->payment_attachments()->create([
+                'url' => $attachmentURL,
+            ]);
+        }
+
+        // Reset payment status and remarks
+        $payment->update([
+            'status' => OrderPayment::IN_REVIEW,
+            'remarks' => null,
+        ]);
+
+        broadcast(new PaymentUpdated($payment));
+        // Notify admin about re-upload
+        $message = sprintf(
+            "🔄 Payment Re-uploaded!\n\n" .
+                "Order No: %s\n" .
+                "Payment Number: %s\n" .
+                "Amount Applied: ₱%s\n",
+            $payment->orders->order_number,
+            $payment->payment_number,
+            number_format($payment->amount_applied > 0 ? $payment->amount_applied : 0, 2)
+        );
+
+        $this->notificationService->notifyAdmin(AdminNotification::ORDER_NOTIFICATION_TYPE, $message);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Payment attachment re-uploaded successfully.',
+            'payment' => $payment->fresh(['payment_methods', 'payment_attachments'])
         ]);
     }
 }

@@ -19,6 +19,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users');
             $table->decimal('amount_applied', 10, 2)->default(0);
             $table->string('status');
+            $table->text('remarks')->nullable();
             $table->timestamps();
         });
     }

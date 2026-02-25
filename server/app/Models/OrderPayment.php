@@ -9,6 +9,7 @@ class OrderPayment extends Model
     const IN_REVIEW = 'in_review';
     const PARTIALLY_PAID = 'partially_paid';
     const FULLY_PAID = 'fully_paid';
+    const DECLINED = 'declined';
 
     const PAYMENT_UPDATED  = 'payment_updated';
 

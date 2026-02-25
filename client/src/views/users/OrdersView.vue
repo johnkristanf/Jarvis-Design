@@ -17,7 +17,7 @@
 
     const isOpenChatBox = ref<boolean>(false)
     const isOrderDetailsOpen = ref<boolean>(false)
-    const orderDetails = ref<Orders>()
+    const selectedOrderId = ref<number | null>(null)
     const searchTerm = ref<string>('')
     const toast = useToast()
     const queryClient = useQueryClient()
@@ -56,9 +56,14 @@
     )
 
     const openOrderDetails = (order: Orders) => {
+        selectedOrderId.value = order.id
         isOrderDetailsOpen.value = true
-        orderDetails.value = order
     }
+
+    const orderDetails = computed(() => {
+        if (!selectedOrderId.value || !orders.value?.data) return null
+        return orders.value.data.find((o) => o.id === selectedOrderId.value)
+    })
 
     const conversationQuery = useQuery({
         queryKey: computed(() => ['user_conversation', authStore.currentUser?.id]),
@@ -197,7 +202,7 @@
                 </div>
                 <div class="p-5">
                     <p class="font-semibold text-gray-700 dark:text-gray-200">
-                        {{ order.order_number }} 2123
+                        {{ order.order_number }}
                     </p>
                 </div>
             </div>

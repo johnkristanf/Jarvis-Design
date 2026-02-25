@@ -1,11 +1,12 @@
 import type { Orders } from './order'
 
-export type PaymentStatus = 'in_review' | 'partially_paid' | 'fully_paid'
+export type PaymentStatus = 'in_review' | 'partially_paid' | 'fully_paid' | 'declined'
 
 export const PaymentStatus = {
     IN_REVIEW: 'in_review',
     PARTIALLY_PAID: 'partially_paid',
     FULLY_PAID: 'fully_paid',
+    DECLINED: 'declined',
 }
 
 export interface Payment {
@@ -17,6 +18,7 @@ export interface Payment {
     payment_attachments: PaymentAttachments
     payment_methods: PaymentMethods
     status: PaymentStatus
+    remarks?: string | null
     orders: Orders
     created_at: string
     updated_at: string

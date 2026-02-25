@@ -193,6 +193,59 @@
         },
     })
 
+    // DECLINE PAYMENT MUTATION & STATE
+    const showDeclineModal = ref(false)
+    const declineRemarks = ref('')
+    const paymentToDecline = ref<number | null>(null)
+
+    const declinePaymentMutation = useMutation({
+        mutationFn: async ({ paymentId, remarks }: { paymentId: number; remarks: string }) => {
+            return await apiService.patch(`/api/decline/payment/${paymentId}`, { remarks })
+        },
+        onSuccess: () => {
+            toast.add({
+                severity: 'success',
+                summary: 'Payment Declined',
+                life: 1500,
+            })
+            showDeclineModal.value = false
+            declineRemarks.value = ''
+            paymentToDecline.value = null
+
+            queryClient.invalidateQueries({
+                queryKey: ['payments_by_order', props.orders.id],
+            })
+        },
+        onError: (error) => {
+            console.error('Failed to decline payment:', error)
+            toast.add({
+                severity: 'error',
+                summary: 'Failed to Decline Payment',
+                detail: 'Please try again',
+                life: 3000,
+            })
+        },
+    })
+
+    const openDeclineModal = (paymentId: number) => {
+        paymentToDecline.value = paymentId
+        declineRemarks.value = ''
+        showDeclineModal.value = true
+    }
+
+    const submitDecline = () => {
+        if (!declineRemarks.value.trim()) {
+            toast.add({ severity: 'warn', summary: 'Remarks are required', life: 2000 })
+            return
+        }
+        if (paymentToDecline.value) {
+            declinePaymentMutation.mutate({
+                paymentId: paymentToDecline.value,
+                remarks: declineRemarks.value,
+            })
+        }
+    }
+
     // Payment amount editing functions
     const startEditing = (paymentId: number, currentAmount: number) => {
         editingPayments.value[paymentId] = currentAmount
@@ -437,6 +490,15 @@
                                                     payment.payment_attachments?.temp_url
                                                 "
                                             />
+                                            <button
+                                                v-if="
+                                                    props.isAdmin && payment.status !== 'declined'
+                                                "
+                                                @click="openDeclineModal(payment.id)"
+                                                class="text-xs bg-red-800 text-white px-3 py-1.5 rounded-lg font-medium hover:opacity-75 hover:cursor-pointer transition-colors"
+                                            >
+                                                Decline
+                                            </button>
                                         </div>
                                     </div>
 
@@ -773,5 +835,43 @@
                 </div>
             </div>
         </DialogPanel>
+        <!-- Decline Payment Modal -->
+        <Dialog
+            :open="showDeclineModal"
+            @close="showDeclineModal = false"
+            class="fixed inset-0 z-[1000] flex items-center justify-center bg-gray-900/70"
+        >
+            <DialogPanel class="w-full max-w-md mx-4 bg-white rounded-xl shadow-2xl p-6">
+                <h3 class="text-lg font-bold text-gray-900 mb-4">Decline Payment</h3>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Remarks / Reason for Decline
+                    </label>
+                    <textarea
+                        v-model="declineRemarks"
+                        rows="4"
+                        class="w-full rounded-lg border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
+                        placeholder="Enter reason for declining this payment..."
+                    ></textarea>
+                </div>
+                <div class="flex justify-end gap-3">
+                    <button
+                        @click="showDeclineModal = false"
+                        class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                        :disabled="declinePaymentMutation.isPending.value"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        @click="submitDecline"
+                        class="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors disabled:opacity-50"
+                        :disabled="declinePaymentMutation.isPending.value || !declineRemarks.trim()"
+                    >
+                        <span v-if="declinePaymentMutation.isPending.value">Declining...</span>
+                        <span v-else>Confirm Decline</span>
+                    </button>
+                </div>
+            </DialogPanel>
+        </Dialog>
     </Dialog>
 </template>

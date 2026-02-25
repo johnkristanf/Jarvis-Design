@@ -15,6 +15,7 @@
     import { computed, ref } from 'vue'
     import AddNewButton from '../AddNewButton.vue'
     import AddNewPaymentModal from './AddNewPaymentModal.vue'
+    import ReuploadPaymentModal from './ReuploadPaymentModal.vue'
     import { usePayments } from '@/composables/usePayments'
 
     const props = defineProps<{
@@ -23,7 +24,9 @@
     }>()
 
     const showAddNewPaymentModal = ref<boolean>(false)
+    const showReuploadPaymentModal = ref<boolean>(false)
     const qrCodePaymentData = ref<QrCodePaymentData | null>(null)
+    const activePaymentIdForReupload = ref<number | null>(null)
 
     const handleShowNewPaymentModal = () => {
         showAddNewPaymentModal.value = true
@@ -38,6 +41,23 @@
 
     const handleCloseNewPaymentModal = () => {
         showAddNewPaymentModal.value = false
+        qrCodePaymentData.value = null
+    }
+
+    const handleShowReuploadPaymentModal = (paymentId: number) => {
+        activePaymentIdForReupload.value = paymentId
+        qrCodePaymentData.value = {
+            product_name: props.orderDetails.product!.name!,
+            total_quantity: props.orderDetails.total_quantity,
+            total_price: props.orderDetails.total_price,
+            order_id: props.orderDetails.id,
+        }
+        showReuploadPaymentModal.value = true
+    }
+
+    const handleCloseReuploadPaymentModal = () => {
+        showReuploadPaymentModal.value = false
+        activePaymentIdForReupload.value = null
         qrCodePaymentData.value = null
     }
 
@@ -80,7 +100,9 @@
                             class="relative w-full max-w-3xl transform overflow-hidden bg-white dark:bg-gray-900 shadow-2xl transition-all"
                         >
                             <!-- Header -->
-                            <div class="bg-gray-900 text-white p-6 border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+                            <div
+                                class="bg-gray-900 text-white p-6 border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700"
+                            >
                                 <div class="flex items-center justify-between">
                                     <DialogTitle as="h2" class="text-xl font-bold">
                                         Order Details
@@ -113,15 +135,21 @@
                                     class="grid grid-cols-2 gap-4 mb-6 pb-6 border-b border-gray-200 dark:border-gray-700"
                                 >
                                     <div>
-                                        <h3 class="text-sm font-medium text-gray-600 tracking-wide dark:text-gray-400">
+                                        <h3
+                                            class="text-sm font-medium text-gray-600 tracking-wide dark:text-gray-400"
+                                        >
                                             Order Number
                                         </h3>
-                                        <p class="text-lg font-bold text-black mt-1 dark:text-white">
+                                        <p
+                                            class="text-lg font-bold text-black mt-1 dark:text-white"
+                                        >
                                             {{ orderDetails.order_number }}
                                         </p>
                                     </div>
                                     <div>
-                                        <h3 class="text-sm font-medium text-gray-600 tracking-wide dark:text-gray-400">
+                                        <h3
+                                            class="text-sm font-medium text-gray-600 tracking-wide dark:text-gray-400"
+                                        >
                                             Status
                                         </h3>
                                         <div class="mt-1">
@@ -129,7 +157,9 @@
                                         </div>
                                     </div>
                                     <div>
-                                        <h3 class="text-sm font-medium text-gray-600 tracking-wide dark:text-gray-400">
+                                        <h3
+                                            class="text-sm font-medium text-gray-600 tracking-wide dark:text-gray-400"
+                                        >
                                             Date Ordered
                                         </h3>
                                         <p class="text-sm text-black mt-1 dark:text-white">
@@ -138,7 +168,9 @@
                                     </div>
 
                                     <div>
-                                        <h3 class="text-sm font-medium text-gray-600 tracking-wide dark:text-gray-400">
+                                        <h3
+                                            class="text-sm font-medium text-gray-600 tracking-wide dark:text-gray-400"
+                                        >
                                             {{
                                                 orderDetails.order_option === OrderOptions.DELIVERY
                                                     ? 'Delivery Date'
@@ -155,7 +187,9 @@
                                     </div>
 
                                     <div>
-                                        <h3 class="text-sm font-medium text-gray-600 tracking-wide dark:text-gray-400">
+                                        <h3
+                                            class="text-sm font-medium text-gray-600 tracking-wide dark:text-gray-400"
+                                        >
                                             Expected Delivery Days
                                         </h3>
                                         <p class="text-sm text-green-600 mt-1 dark:text-green-400">
@@ -169,7 +203,9 @@
                                 </div>
 
                                 <!-- Customer Info -->
-                                <div class="mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
+                                <div
+                                    class="mb-6 pb-6 border-b border-gray-200 dark:border-gray-700"
+                                >
                                     <h3
                                         class="text-lg font-semibold text-black mb-3 border-l-4 border-black pl-3 dark:text-white dark:border-white"
                                     >
@@ -177,26 +213,34 @@
                                     </h3>
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div>
-                                            <p class="text-sm text-gray-600 dark:text-gray-400">Name</p>
+                                            <p class="text-sm text-gray-600 dark:text-gray-400">
+                                                Name
+                                            </p>
                                             <p class="font-medium text-black dark:text-white">
                                                 {{ orderDetails.user?.name }}
                                             </p>
                                         </div>
                                         <div>
-                                            <p class="text-sm text-gray-600 dark:text-gray-400">Phone Number</p>
+                                            <p class="text-sm text-gray-600 dark:text-gray-400">
+                                                Phone Number
+                                            </p>
                                             <p class="font-medium text-black dark:text-white">
                                                 +63 {{ orderDetails.phone_number }}
                                             </p>
                                         </div>
                                         <div>
-                                            <p class="text-sm text-gray-600 dark:text-gray-400">Address</p>
+                                            <p class="text-sm text-gray-600 dark:text-gray-400">
+                                                Address
+                                            </p>
                                             <p class="font-medium text-black dark:text-white">
                                                 {{ orderDetails.address }}
                                             </p>
                                         </div>
 
                                         <div>
-                                            <p class="text-sm text-gray-600 dark:text-gray-400">Email</p>
+                                            <p class="text-sm text-gray-600 dark:text-gray-400">
+                                                Email
+                                            </p>
                                             <p class="font-medium text-black dark:text-white">
                                                 {{ orderDetails.user?.email }}
                                             </p>
@@ -205,7 +249,9 @@
                                 </div>
 
                                 <!-- Product Info -->
-                                <div class="mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
+                                <div
+                                    class="mb-6 pb-6 border-b border-gray-200 dark:border-gray-700"
+                                >
                                     <h3
                                         class="text-lg font-semibold text-black mb-3 border-l-4 border-black pl-3 dark:text-white dark:border-white"
                                     >
@@ -230,16 +276,28 @@
                                         <div class="flex-1">
                                             <div class="grid grid-cols-2 gap-4">
                                                 <div>
-                                                    <p class="text-sm text-gray-600 dark:text-gray-400">Color</p>
+                                                    <p
+                                                        class="text-sm text-gray-600 dark:text-gray-400"
+                                                    >
+                                                        Color
+                                                    </p>
                                                     <div class="flex items-center gap-2">
-                                                        <p class="font-medium text-black dark:text-white">
+                                                        <p
+                                                            class="font-medium text-black dark:text-white"
+                                                        >
                                                             {{ orderDetails.color }}
                                                         </p>
                                                     </div>
                                                 </div>
                                                 <div>
-                                                    <p class="text-sm text-gray-600 dark:text-gray-400">Option</p>
-                                                    <p class="font-medium text-black dark:text-white">
+                                                    <p
+                                                        class="text-sm text-gray-600 dark:text-gray-400"
+                                                    >
+                                                        Option
+                                                    </p>
+                                                    <p
+                                                        class="font-medium text-black dark:text-white"
+                                                    >
                                                         {{
                                                             orderDetails.order_option ===
                                                             OrderOptions.DELIVERY
@@ -257,15 +315,22 @@
                                         v-if="orderDetails.sizes && orderDetails.sizes.length > 0"
                                         class="mt-4"
                                     >
-                                        <p class="text-sm text-gray-600 mb-2 dark:text-gray-400">Sizes & Quantities</p>
+                                        <p class="text-sm text-gray-600 mb-2 dark:text-gray-400">
+                                            Sizes & Quantities
+                                        </p>
                                         <div class="flex flex-wrap gap-2">
                                             <div
                                                 v-for="size in orderDetails.sizes"
                                                 :key="size.id"
                                                 class="bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 px-3 py-1 text-sm"
                                             >
-                                                <span class="font-medium dark:text-white">{{ size.name }}</span>
-                                                <span v-if="size.pivot" class="text-gray-600 ml-1 dark:text-gray-400">
+                                                <span class="font-medium dark:text-white">
+                                                    {{ size.name }}
+                                                </span>
+                                                <span
+                                                    v-if="size.pivot"
+                                                    class="text-gray-600 ml-1 dark:text-gray-400"
+                                                >
                                                     ({{ size.pivot.quantity || 'N/A' }})
                                                 </span>
                                             </div>
@@ -347,22 +412,39 @@
                                                         </svg>
                                                     </div>
                                                     <div>
-                                                        <p class="font-semibold text-black text-sm dark:text-white">
+                                                        <p
+                                                            class="font-semibold text-black text-sm dark:text-white"
+                                                        >
                                                             {{ payment.payment_number }}
                                                         </p>
-                                                        <p class="text-xs text-gray-600 dark:text-gray-400">
+                                                        <p
+                                                            class="text-xs text-gray-600 dark:text-gray-400"
+                                                        >
                                                             {{ payment.payment_methods.name }}
                                                         </p>
                                                     </div>
                                                 </div>
 
                                                 <div class="flex items-center gap-2">
+                                                   
                                                     <PaymentStatusBadge :status="payment.status" />
                                                     <PaymentAttachmentPopOver
                                                         :paymentAttachmentURL="
                                                             payment.payment_attachments.temp_url
                                                         "
                                                     />
+
+                                                     <button
+                                                        v-if="payment.status === 'declined'"
+                                                        @click="
+                                                            handleShowReuploadPaymentModal(
+                                                                payment.id,
+                                                            )
+                                                        "
+                                                        class="text-xs bg-green-800 text-white px-3 py-1.5 rounded-lg font-medium hover:opacity-75 hover:cursor-pointer transition-colors"
+                                                    >
+                                                        Re-upload payment
+                                                    </button>
                                                 </div>
                                             </div>
 
@@ -370,6 +452,7 @@
                                             <PaymentAmountApplied
                                                 :amount="payment.amount_applied"
                                                 :status="payment.status"
+                                                :remarks="payment.remarks"
                                             />
                                         </div>
                                     </div>
@@ -382,7 +465,9 @@
                                     >
                                         Payment History
                                     </h3>
-                                    <div class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-8 text-center">
+                                    <div
+                                        class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-8 text-center"
+                                    >
                                         <svg
                                             class="w-12 h-12 text-gray-400 mx-auto mb-3 dark:text-gray-600"
                                             fill="none"
@@ -413,20 +498,30 @@
                             >
                                 <div class="grid grid-cols-3 gap-4">
                                     <div>
-                                        <p class="text-sm text-gray-900 dark:text-gray-100 mb-1">Order Total Price</p>
+                                        <p class="text-sm text-gray-900 dark:text-gray-100 mb-1">
+                                            Order Total Price
+                                        </p>
                                         <p class="text-xl font-bold text-gray-900 dark:text-white">
                                             ₱{{ props.orderDetails.total_price.toLocaleString() }}
                                         </p>
                                     </div>
                                     <div>
-                                        <p class="text-sm text-gray-900 dark:text-gray-100 mb-1">Total Paid Amount</p>
-                                        <p class="text-xl font-bold text-green-600 dark:text-green-400">
+                                        <p class="text-sm text-gray-900 dark:text-gray-100 mb-1">
+                                            Total Paid Amount
+                                        </p>
+                                        <p
+                                            class="text-xl font-bold text-green-600 dark:text-green-400"
+                                        >
                                             ₱{{ props.orderDetails.total_paid }}
                                         </p>
                                     </div>
                                     <div>
-                                        <p class="text-sm text-gray-900 dark:text-gray-100 mb-1">Remaining Balance</p>
-                                        <p class="text-xl font-bold text-amber-600 dark:text-amber-400">
+                                        <p class="text-sm text-gray-900 dark:text-gray-100 mb-1">
+                                            Remaining Balance
+                                        </p>
+                                        <p
+                                            class="text-xl font-bold text-amber-600 dark:text-amber-400"
+                                        >
                                             ₱{{ props.orderDetails.balance }}
                                         </p>
                                     </div>
@@ -443,5 +538,12 @@
         v-if="showAddNewPaymentModal && qrCodePaymentData"
         :paymentData="qrCodePaymentData"
         @closeModal="handleCloseNewPaymentModal"
+    />
+
+    <ReuploadPaymentModal
+        v-if="showReuploadPaymentModal && qrCodePaymentData && activePaymentIdForReupload"
+        :paymentData="qrCodePaymentData"
+        :paymentId="activePaymentIdForReupload"
+        @closeModal="handleCloseReuploadPaymentModal"
     />
 </template>

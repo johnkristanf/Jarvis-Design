@@ -29,7 +29,7 @@ class PaymentService
     {
 
             $query = Orders::with([
-                'user:id,name,email',
+                'user:id,name,email,phone_number,address',
                 'sizes',
                 'product:id,name',
                 'order_payments' => function ($q) {
@@ -40,6 +40,7 @@ class PaymentService
                         'order_id',
                         'amount_applied',
                         'status',
+                        'remarks',
                     ])
                     ->with([
                         'payment_attachments:id,order_payment_id,url',

@@ -602,18 +602,26 @@
                                                 <span>-</span>
                                             </button>
                                             <input
-                                                :value="quantity"
-                                                type="text"
+                                                v-model.number="quantity"
+                                                type="number"
                                                 min="1"
                                                 :class="[
-                                                    'w-12 appearance-none text-center focus:outline-none focus:ring-0 px-0 py-0 font-medium text-base',
+                                                    'w-12 appearance-none text-center focus:outline-none focus:ring-0 px-0 py-0 font-medium text-base [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none',
                                                     isDark
                                                         ? 'bg-zinc-900 border-t border-b border-zinc-700 text-gray-100'
                                                         : 'bg-white border-t border-b border-[#ccc]',
                                                 ]"
-                                                style="height: 40px"
-                                                readonly
-                                                tabindex="-1"
+                                                style="
+                                                    height: 40px;
+                                                    appearance: textfield;
+                                                    -moz-appearance: textfield;
+                                                "
+                                                @blur="
+                                                    () => {
+                                                        if (!quantity || quantity < 1)
+                                                            setQuantity(1)
+                                                    }
+                                                "
                                             />
                                             <button
                                                 type="button"
