@@ -23,3 +23,13 @@ export async function getAllUploadedDesigns(): Promise<UploadedDesign[]> {
 
     return respData
 }
+
+export interface SavedAiDesign {
+    s3_key: string
+    temp_url: string
+}
+
+export async function getSavedAiDesigns(): Promise<SavedAiDesign[]> {
+    const respData = await apiService.get<SavedAiDesign[]>('/api/get/ai/designs')
+    return respData
+}

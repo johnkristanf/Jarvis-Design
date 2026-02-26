@@ -33,6 +33,7 @@
     import OrderProductModal from './OrderProductModal.vue'
     import { useRouter } from 'vue-router'
     import { colorOptions, colorPalette } from '@/utils/color'
+    import { getSavedAiDesigns, type SavedAiDesign } from '@/api/get/designs'
 
     // Detect dark mode with composition API
     const isDark = ref(false)
@@ -56,6 +57,7 @@
     })
     onMounted(() => {
         console.log('props.product: ', props.product)
+        fetchSavedAiDesigns()
     })
 
     const emit = defineEmits(['close'])
@@ -86,6 +88,22 @@
     // File upload refs
     const uploadedOwnDesignFile = ref<File | null>(null)
     const fileInputRef = ref<HTMLInputElement | null>(null)
+
+    // Saved AI designs
+    const savedAiDesigns = ref<SavedAiDesign[]>([])
+    const selectedAiDesignS3Key = ref<string | null>(null)
+    const isLoadingAiDesigns = ref(false)
+
+    const fetchSavedAiDesigns = async () => {
+        isLoadingAiDesigns.value = true
+        try {
+            savedAiDesigns.value = await getSavedAiDesigns()
+        } catch (e) {
+            console.error('Failed to fetch saved AI designs:', e)
+        } finally {
+            isLoadingAiDesigns.value = false
+        }
+    }
 
     const queryClient = useQueryClient()
     const toast = useToast()
@@ -242,6 +260,9 @@
 
             if (uploadedOwnDesignFile.value) {
                 formData.append('own_design_file', uploadedOwnDesignFile.value)
+            } else if (selectedAiDesignS3Key.value) {
+                // User selected a previously saved AI design — pass the S3 key directly
+                formData.append('own_design_url', selectedAiDesignS3Key.value)
             }
 
             // Peek FormData key-values for debugging
@@ -279,6 +300,20 @@
     const handleFileUpload = (event) => {
         const file = event.target.files[0]
         uploadedOwnDesignFile.value = file
+        // Clear AI design selection when a local file is picked
+        selectedAiDesignS3Key.value = null
+    }
+
+    const selectAiDesign = (s3Key: string) => {
+        // Toggle: clicking the same one deselects
+        if (selectedAiDesignS3Key.value === s3Key) {
+            selectedAiDesignS3Key.value = null
+        } else {
+            selectedAiDesignS3Key.value = s3Key
+            // Clear any uploaded local file
+            uploadedOwnDesignFile.value = null
+            if (fileInputRef.value) fileInputRef.value.value = ''
+        }
     }
 
     const handleShowCheckoutModal = (checkoutProductDetails: ProductDetails[]) => {
@@ -456,6 +491,78 @@
                                                 </button>
                                             </div>
                                         </div>
+
+                                        <!-- Saved AI Designs Picker -->
+                                        <div v-if="savedAiDesigns.length > 0" class="mt-4">
+                                            <p
+                                                :class="[
+                                                    'text-xs font-semibold mb-2',
+                                                    isDark ? 'text-gray-400' : 'text-gray-500',
+                                                ]"
+                                            >
+                                                Or pick from your saved AI designs:
+                                            </p>
+                                            <div class="flex flex-wrap gap-2">
+                                                <div
+                                                    v-for="design in savedAiDesigns"
+                                                    :key="design.s3_key"
+                                                    @click="selectAiDesign(design.s3_key)"
+                                                    class="relative w-16 h-16 rounded-md overflow-hidden cursor-pointer border-2 transition-all duration-150 shrink-0"
+                                                    :class="[
+                                                        selectedAiDesignS3Key === design.s3_key
+                                                            ? 'border-blue-500 ring-2 ring-blue-400'
+                                                            : isDark
+                                                              ? 'border-zinc-600 hover:border-zinc-400'
+                                                              : 'border-gray-300 hover:border-gray-500',
+                                                    ]"
+                                                    :title="'Select this AI design'"
+                                                >
+                                                    <img
+                                                        :src="design.temp_url"
+                                                        alt="Saved AI design"
+                                                        class="w-full h-full object-cover"
+                                                    />
+                                                    <!-- Selected overlay -->
+                                                    <div
+                                                        v-if="
+                                                            selectedAiDesignS3Key === design.s3_key
+                                                        "
+                                                        class="absolute inset-0 bg-blue-500/30 flex items-center justify-center"
+                                                    >
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            class="h-6 w-6 text-white drop-shadow"
+                                                            viewBox="0 0 20 20"
+                                                            fill="currentColor"
+                                                        >
+                                                            <path
+                                                                fill-rule="evenodd"
+                                                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                                clip-rule="evenodd"
+                                                            />
+                                                        </svg>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <p
+                                                v-if="selectedAiDesignS3Key"
+                                                :class="[
+                                                    'text-xs mt-1 font-medium',
+                                                    isDark ? 'text-blue-400' : 'text-blue-600',
+                                                ]"
+                                            >
+                                                ✓ AI design selected
+                                            </p>
+                                        </div>
+                                        <p
+                                            v-else-if="isLoadingAiDesigns"
+                                            :class="[
+                                                'text-xs mt-3',
+                                                isDark ? 'text-gray-400' : 'text-gray-500',
+                                            ]"
+                                        >
+                                            Loading saved AI designs...
+                                        </p>
                                     </div>
 
                                     <!-- Color -->

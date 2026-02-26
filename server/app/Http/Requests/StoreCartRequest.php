@@ -27,6 +27,7 @@ class StoreCartRequest extends FormRequest
             'size_id' => ['nullable', 'integer', 'exists:sizes,id'],
             'color' => ['required', 'string'],
             'own_design_file' => ['nullable', 'file'],
+            'own_design_url' => ['nullable', 'string'],
             'quantity' => ['required', 'integer', 'min:1'],
         ];
     }

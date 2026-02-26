@@ -1,10 +1,16 @@
 <script lang="ts" setup>
     import { generateImageDesign } from '@/api/post/generate'
+    import { saveAiDesign } from '@/api/post/design'
     import { useMutation } from '@tanstack/vue-query'
     import Loader from '../Loader.vue'
     import { ref } from 'vue'
     import type { DesignGenerate } from '@/types/design'
-    import { ArrowDownTrayIcon, InformationCircleIcon } from '@heroicons/vue/20/solid'
+    import {
+        ArrowDownTrayIcon,
+        BookmarkIcon,
+        CheckIcon,
+        InformationCircleIcon,
+    } from '@heroicons/vue/20/solid'
     import { useToast } from 'primevue/usetoast'
     import { deductPromptLimit } from '@/api/put/user'
     import { useFetchAuthenticatedUser } from '@/composables/useFetchAuthenticatedUser'
@@ -19,6 +25,9 @@
     const loaderMsg = ref<string>('')
     const imageUrls = ref([])
 
+    // Track save state per image: 'idle' | 'saving' | 'saved'
+    const savedStates = ref<Record<number, 'idle' | 'saving' | 'saved'>>({})
+
     const { authStore, refetchUser } = useFetchAuthenticatedUser()
     const toast = useToast()
 
@@ -30,6 +39,9 @@
 
             if (response && response.data.image_urls) {
                 imageUrls.value = response.data.image_urls
+
+                // Reset save states for new images
+                savedStates.value = {}
 
                 toast.add({
                     severity: 'success',
@@ -137,6 +149,45 @@ Color: Black and White`)
                 severity: 'error',
                 summary: 'Download Failed',
                 detail: 'Failed to download image. Please try again.',
+                life: 3000,
+            })
+        }
+    }
+
+    const saveDesign = async (imageUrl: string, index: number) => {
+        if (savedStates.value[index] === 'saving' || savedStates.value[index] === 'saved') return
+
+        savedStates.value[index] = 'saving'
+
+        try {
+            const response = await fetch(`${aiAPIURL}/download/image/${imageUrl}`)
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch image for saving')
+            }
+
+            const blob = await response.blob()
+            const file = new File([blob], `ai-design-${index + 1}.png`, {
+                type: blob.type || 'image/png',
+            })
+
+            await saveAiDesign(file)
+
+            savedStates.value[index] = 'saved'
+
+            toast.add({
+                severity: 'success',
+                summary: 'Design Saved',
+                detail: 'AI design saved to your account. You can select it when placing an order.',
+                life: 3000,
+            })
+        } catch (error) {
+            console.error('Error saving design:', error)
+            savedStates.value[index] = 'idle'
+            toast.add({
+                severity: 'error',
+                summary: 'Save Failed',
+                detail: 'Failed to save design. Please try again.',
                 life: 3000,
             })
         }
@@ -256,16 +307,48 @@ Color: Black and White"
                         :key="'generated-' + index"
                         class="group relative overflow-hidden rounded-md"
                     >
-                        <!-- Download Button -->
-                        <button
-                            @click="downloadImage(imageUrl, index)"
-                            class="absolute top-2 right-2 z-10 p-1 bg-white/80 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-700 rounded-full shadow-md transition cursor-pointer"
-                            type="button"
-                        >
-                            <ArrowDownTrayIcon
-                                class="w-5 h-5 text-gray-700 dark:text-gray-100 hover:text-black dark:hover:text-gray-200 transition-colors duration-200"
-                            />
-                        </button>
+                        <!-- Action buttons row -->
+                        <div class="absolute top-2 right-2 z-10 flex items-center gap-1">
+                            <!-- Save Button -->
+                            <button
+                                @click="saveDesign(imageUrl, index)"
+                                :disabled="
+                                    savedStates[index] === 'saving' ||
+                                    savedStates[index] === 'saved'
+                                "
+                                :title="
+                                    savedStates[index] === 'saved' ? 'Design saved!' : 'Save design'
+                                "
+                                class="p-1 rounded-full shadow-md transition cursor-pointer"
+                                :class="[
+                                    savedStates[index] === 'saved'
+                                        ? 'bg-green-500 text-white'
+                                        : 'bg-white/80 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-700',
+                                    savedStates[index] === 'saving' ? 'opacity-60 cursor-wait' : '',
+                                ]"
+                                type="button"
+                            >
+                                <CheckIcon
+                                    v-if="savedStates[index] === 'saved'"
+                                    class="w-5 h-5 text-white"
+                                />
+                                <BookmarkIcon
+                                    v-else
+                                    class="w-5 h-5 text-gray-700 dark:text-gray-100 hover:text-black dark:hover:text-gray-200 transition-colors duration-200"
+                                />
+                            </button>
+
+                            <!-- Download Button -->
+                            <button
+                                @click="downloadImage(imageUrl, index)"
+                                class="p-1 bg-white/80 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-700 rounded-full shadow-md transition cursor-pointer"
+                                type="button"
+                            >
+                                <ArrowDownTrayIcon
+                                    class="w-5 h-5 text-gray-700 dark:text-gray-100 hover:text-black dark:hover:text-gray-200 transition-colors duration-200"
+                                />
+                            </button>
+                        </div>
 
                         <!-- Image -->
                         <img
@@ -278,6 +361,12 @@ Color: Black and White"
                             class="mt-2 text-sm text-center text-gray-700 dark:text-gray-100 font-medium transition-colors duration-200"
                         >
                             Generated Design {{ index + 1 }}
+                            <span
+                                v-if="savedStates[index] === 'saved'"
+                                class="ml-1 text-xs text-green-600 dark:text-green-400 font-semibold"
+                            >
+                                ✓ Saved
+                            </span>
                         </h3>
                     </div>
                 </div>

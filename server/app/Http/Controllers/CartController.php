@@ -89,6 +89,10 @@ class CartController extends Controller
             );
             $cart->own_design_url = $ownDesignS3Key;
             $cart->save();
+        } elseif (!empty($validated['own_design_url'])) {
+            // A previously saved AI design S3 key was passed directly — no re-upload needed
+            $cart->own_design_url = $validated['own_design_url'];
+            $cart->save();
         }
 
         return response()->json([

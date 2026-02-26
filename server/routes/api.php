@@ -54,6 +54,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // THIS DESIGNS IS FOR THE ADMIN SIDE THAT SEE ALL DESIGN WITHOUT FILTER
     Route::get('/get/all/designs', [DesignsController::class, 'getAllDesigns']);
 
+    // AI GENERATED DESIGN ROUTES
+    Route::post('/save/ai/design', [DesignsController::class, 'saveAiGeneratedDesign']);
+    Route::get('/get/ai/designs', [DesignsController::class, 'getSavedAiDesigns']);
+
     // PAYMONGO PAYMENT ROUTE
     Route::post('/paymongo/create-qr-source', [PaymentController::class, 'createQrPhSource']);
 

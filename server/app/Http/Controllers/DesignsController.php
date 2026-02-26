@@ -9,14 +9,17 @@ use App\Models\Products;
 use App\Models\UploadedDesign;
 use App\OrderType;
 use App\Services\DesignsService;
+use App\Traits\HandleAttachments;
 use Illuminate\Http\Request;
 use Illuminate\Filesystem\FilesystemAdapter;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class DesignsController extends Controller
 {
+    use HandleAttachments;
     protected $designsService;
 
     public function __construct(DesignsService $designsService)
@@ -117,41 +120,6 @@ class DesignsController extends Controller
         });
 
         return response()->json($result, 200);
-
-        // Apply category filter
-        // if (!empty($categoriesArray)) {
-        //     $query->whereIn('category_id', $categoriesArray);
-        // }
-
-        // // Apply sort
-        // switch ($sort) {
-        //     case 'high_low':
-        //         $query->orderBy('price', 'desc');
-        //         break;
-        //     case 'low_high':
-        //         $query->orderBy('price', 'asc');
-        //         break;
-        //     default: // newest
-        //         $query->orderBy('created_at', 'desc');
-        //         break;
-        // }
-
-        // $designs = $query->get()->transform(function ($design) {
-        //     $design->image_path = Storage::disk('s3')->temporaryUrl(
-        //         $design->image_path,
-        //         now()->addMinutes(60) // You can adjust the expiry time
-        //     );
-
-        //     return $design;
-        // });
-
-        // $grouped = $designs
-        //     ->groupBy(fn($design) => $design->design_categories->name ?? 'Uncategorized')
-        //     ->map(function ($group) {
-        //         return $group->groupBy('tag');
-        //     });
-
-        // return response()->json($grouped);
     }
 
     public function getAllDesigns()
@@ -164,8 +132,6 @@ class DesignsController extends Controller
     public function getAllProducts(Request $request)
     {
 
-        Log::info("ENDPOINT HIT: ");
-
         $limit = $request->get('limit', 5);
         $products = Products::select('id', 'name', 'unit_price', 'category_id', 'fabric_quantity')
             ->with([
@@ -174,9 +140,6 @@ class DesignsController extends Controller
             ])
             ->latest()
             ->paginate($limit);
-
-        Log::info("products: ", [$products]);
-
 
         // Map each product and generate signed URLs for designs
         $products->getCollection()->transform(function ($product) {
@@ -242,7 +205,6 @@ class DesignsController extends Controller
 
     public function uploadDesign(Request $request)
     {
-
         try {
 
             $request->validate([
@@ -251,10 +213,6 @@ class DesignsController extends Controller
             ]);
 
             $uploadedFiles = $request->file('multi_file_upload');
-
-            Log::info('uploadedFiles: ', [
-                'uploadedFiles' => $uploadedFiles,
-            ]);
 
             $orderOption = $request->input('order_option');
             $colorId = $request->input('color');
@@ -577,5 +535,65 @@ class DesignsController extends Controller
         $categories = Materials::select('id', 'name', 'unit')->get();
 
         return response()->json($categories);
+    }
+
+    /**
+     * Save an AI-generated design image to S3.
+     * S3 path: ai_generated_designs/{user_id}/{unique_filename}
+     */
+    public function saveAiGeneratedDesign(Request $request)
+    {
+        try {
+            $request->validate([
+                'ai_design_file' => 'required|file|mimes:jpg,jpeg,png,webp|max:10240',
+            ]);
+
+            $userId = Auth::id();
+            $s3Key = $this->uploadToS3(
+                root: 'ai_generated_designs',
+                sub: $userId,
+                file: $request->file('ai_design_file')
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => 'AI design saved successfully',
+                's3_key'  => $s3Key,
+            ], 200);
+        } catch (\Exception $e) {
+            Log::error('Error saving AI design: ' . $e->getMessage());
+            return response()->json([
+                'error'   => true,
+                'message' => 'Failed to save AI design',
+            ], 500);
+        }
+    }
+
+    /**
+     * Retrieve all saved AI-generated designs for the authenticated user.
+     * Returns an array of { s3_key, temp_url } objects.
+     */
+    public function getSavedAiDesigns()
+    {
+        try {
+            $userId = Auth::id();
+            $prefix = "ai_generated_designs/{$userId}";
+            $files  = Storage::disk('s3')->files($prefix);
+
+            $designs = array_map(function ($filePath) {
+                return [
+                    's3_key'   => $filePath,
+                    'temp_url' => $this->s3TemporaryUrl($filePath, 10),
+                ];
+            }, $files);
+
+            return response()->json($designs, 200);
+        } catch (\Exception $e) {
+            Log::error('Error fetching saved AI designs: ' . $e->getMessage());
+            return response()->json([
+                'error'   => true,
+                'message' => 'Failed to fetch saved AI designs',
+            ], 500);
+        }
     }
 }
