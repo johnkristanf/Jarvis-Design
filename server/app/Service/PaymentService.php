@@ -30,8 +30,8 @@ class PaymentService
 
             $query = Orders::with([
                 'user:id,name,email,phone_number,address',
-                'sizes',
-                'product:id,name',
+                'items.sizes',
+                'items.product:id,name',
                 'order_payments' => function ($q) {
                     $q->select([
                         'id',
@@ -68,6 +68,9 @@ class PaymentService
             }
 
             $orders = $query->latest()->paginate($limit);
+            // $orders = clone $orders; -> this doesn't do deep cloning
+            // If transformOrderDesignToS3Temp expects $order->product, it will need updating
+            // Let's modify transformOrderDesignToS3Temp to handle items
             return $this->transformOrderDesignToS3Temp($orders);
 
     }

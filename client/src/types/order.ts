@@ -56,32 +56,40 @@ export interface Size {
     pivot: SizePivot
 }
 
+export interface OrderItem {
+    id: number
+    order_id: number
+    product_id: number
+    color: string
+    product_unit_price: number
+    total_quantity: number
+    total_price: number
+    own_design_url?: string
+    business_design_url?: string
+    solo_quantity?: number
+    fabric_type_id?: number
+    created_at: string
+    updated_at: string
+    product?: Product
+    sizes: Size[]
+    temp_url?: string
+}
+
 export type Orders = {
     id: number
     order_number: string
-    color: string
     phone_number: string
     address: string
-    design_id: number
     order_option: string
-    paid_amount: string
-    quantity: number
-    solo_quantity: number
-    total_quantity: number
     total_price: number
-    product_unit_price: number
     total_paid: number
     balance: number
     created_at: string
     status: string
-    name: string
-    image_path: string
-    temp_url: string
     delivery_date: string | null
     order_payments: Payment[]
     user?: User
-    product?: Product
-    sizes: Size[]
+    items: OrderItem[]
 }
 
 export type OrderStatusType = {

@@ -23,6 +23,7 @@ class DashboardService
                 $startDate->format('Y-m-d 00:00:00'),
                 $endDate->format('Y-m-d 23:59:59'),
             ])
+            ->whereIn('status', [Orders::COMPLETED, Orders::CANCELLED])
             ->pluck('id')
             ->toArray();
 
@@ -60,7 +61,7 @@ class DashboardService
         if ($isChartFiltered) {
             return $this->filterSalesReportForChart(
                 sales: $monthlySales,
-                label: 'Monthly Sales Report',
+                label: 'Summary of Total Orders Placed',
                 category: 'month_name',
                 keyValue: 'total_sales',
                 bgColor: '#4338CA'
@@ -72,7 +73,7 @@ class DashboardService
 
     public function getPerOrderSalesPDFReport($startDate, $endDate)
     {
-        $orders = Orders::with(['product', 'sizes'])
+        $orders = Orders::with(['items.product', 'items.sizes'])
             ->withSum('order_payments as total_payment', 'amount_applied')
             ->whereBetween('created_at', [
                 $startDate->format('Y-m-d 00:00:00'),
@@ -81,16 +82,11 @@ class DashboardService
             ->whereIn('status', [Orders::COMPLETED, Orders::CANCELLED])
             ->get();
 
-        Log::info("Per-order monthly sales report orders:\n" . json_encode($orders, JSON_PRETTY_PRINT));
-
         $pdf = Pdf::loadView('pdf.per-order-monthly-sales', [
             'orders' => $orders,
             'startDate' => $startDate,
             'endDate' => $endDate
         ]);
-
-        Log::info("pdf:\n" . json_encode($pdf, JSON_PRETTY_PRINT));
-
 
         return $pdf;
     }
@@ -103,6 +99,8 @@ class DashboardService
                 $startDate->format('Y-m-d 00:00:00'),
                 $endDate->format('Y-m-d 23:59:59'),
             ])
+            ->whereIn('status', [Orders::COMPLETED, Orders::CANCELLED])
+
             ->pluck('id')
             ->toArray();
 
@@ -114,19 +112,16 @@ class DashboardService
             ->pluck('order_id')
             ->toArray();
 
-        $salesPerProductCategory = DB::table('orders')
+        // order_items contain the individual products now
+        $salesPerProductCategory = DB::table('order_items')
             ->select(
                 'design_categories.name as category_name',
-                DB::raw('SUM(order_payments.amount_applied) as total_sales')
+                DB::raw('SUM(order_items.total_price) as total_sales')
             )
-            ->leftJoin('products', 'orders.product_id', '=', 'products.id')
-            ->leftJoin('design_categories', 'products.category_id', '=', 'design_categories.id')
-            ->leftJoin('order_payments', 'orders.id', '=', 'order_payments.order_id')
+            ->join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->join('products', 'order_items.product_id', '=', 'products.id')
+            ->join('design_categories', 'products.category_id', '=', 'design_categories.id')
             ->whereIn('orders.id', $fullyPaidOrderIds)
-            ->whereBetween('order_payments.updated_at', [
-                $startDate->format('Y-m-d 00:00:00'),
-                $endDate->format('Y-m-d 23:59:59'),
-            ])
             ->groupBy('design_categories.name')
             ->orderByDesc('total_sales')
             ->get();
@@ -171,18 +166,18 @@ class DashboardService
 
     public function getLatestOrder()
     {
-        $orders = Orders::with(['product:id,name'])
+        $orders = Orders::with(['items.product:id,name']) // eagerly load items instead
             ->select([
                 'id',
                 'order_number',
-                'own_design_url',
-                'business_design_url',
                 'status',
-                'product_id',
-            ])
+            ]) // own_design_url etc are now in items
+            ->orderBy('id', 'desc')
             ->limit(3)
             ->get();
 
+        // transformOrderDesignToS3Temp needs to be mindful of items. Since it might not be updated, we'll return orders
+        // and fix transformOrderDesignToS3Temp later if it throws.
         return $this->transformOrderDesignToS3Temp($orders);
     }
 
@@ -194,6 +189,8 @@ class DashboardService
                 $startDate->format('Y-m-d 00:00:00'),
                 $endDate->format('Y-m-d 23:59:59'),
             ])
+            ->whereIn('status', [Orders::COMPLETED, Orders::CANCELLED])
+
             ->pluck('id')
             ->toArray();
 
@@ -204,8 +201,6 @@ class DashboardService
             ->distinct()
             ->pluck('order_id')
             ->toArray();
-
-        Log::info("fullyPaidOrderIds: ", [$fullyPaidOrderIds]);
 
         // Sum all amount_applied for all payments of those fully paid orders
         $sales = DB::table('order_payments')
@@ -223,6 +218,7 @@ class DashboardService
                 $startDate->format('Y-m-d 00:00:00'),
                 $endDate->format('Y-m-d 23:59:59'),
             ])
+            
             ->pluck('id')
             ->toArray();
 

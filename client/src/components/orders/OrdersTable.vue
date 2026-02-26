@@ -117,7 +117,7 @@
 
     const handleCloseOrderPaymentsModal = () => {
         showOrderPaymentsModal.value = false
-        selectedOrderData.value = null
+        selectedOrderId.value = null
     }
 
     const handleShowDesignModal = (designId: number) => {
@@ -417,30 +417,46 @@
                         <CustomerInfoModal
                             :customer-name="order.user?.name"
                             :email="order.user?.email"
-                            :phone-number="order.phone_number || order.user?.phone_number"
-                            :address="order.address || order.user?.address"
+                            :phone-number="order.phone_number"
+                            :address="order.address"
                         />
                     </td>
 
                     <td class="px-3 py-4 font-semibold text-gray-900 class:text-white">
-                        {{ order.product?.name }}
+                        <div class="flex flex-col gap-2">
+                            <div v-for="item in order.items" :key="'name-' + item.id">
+                                {{ item.product?.name }}
+                                <span class="text-xs text-gray-500">
+                                    (x{{ item.total_quantity || 1 }})
+                                </span>
+                            </div>
+                        </div>
                     </td>
 
                     <td class="px-3 py-4 font-semibold text-gray-900 class:text-white">
-                        <ProductAttributesModal
-                            :sizes="order.sizes"
-                            :color="order.color"
-                            :solo_quantity="order.solo_quantity"
-                        />
+                        <div class="flex flex-col gap-4">
+                            <div v-for="item in order.items" :key="'attr-' + item.id">
+                                <ProductAttributesModal
+                                    :sizes="item.sizes"
+                                    :color="item.color"
+                                    :solo_quantity="item.solo_quantity"
+                                />
+                            </div>
+                        </div>
                     </td>
 
                     <td class="p-4">
-                        <img
-                            :src="order.temp_url"
-                            class="w-24 h-24 object-cover rounded-md border cursor-pointer hover:opacity-75 transition-opacity duration-150"
-                            alt="Design Image"
-                            @click="handleShowDesignPreview(order.temp_url)"
-                        />
+                        <div class="flex flex-wrap gap-2">
+                            <template v-for="item in order.items" :key="'img-' + item.id">
+                                <img
+                                    v-if="item.temp_url"
+                                    :src="item.temp_url"
+                                    class="w-16 h-16 sm:w-24 sm:h-24 object-cover rounded-md border cursor-pointer hover:opacity-75 transition-opacity duration-150"
+                                    alt="Design Image"
+                                    @click="handleShowDesignPreview(item.temp_url)"
+                                />
+                            </template>
+                        </div>
                     </td>
 
                     <td class="px-3 py-4 font-semibold text-gray-900 class:text-white">

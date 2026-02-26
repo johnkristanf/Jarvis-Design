@@ -385,13 +385,13 @@
                         <fwb-table-head-cell class="text-xs text-white uppercase bg-gray-900">
                             Order No.
                         </fwb-table-head-cell>
+                        <fwb-table-head-cell class="text-xs text-white uppercase bg-gray-900">
+                            Product Name
+                        </fwb-table-head-cell>
                         <fwb-table-head-cell
                             class="px-16 py-3 text-xs text-white uppercase bg-gray-900"
                         >
                             Design
-                        </fwb-table-head-cell>
-                        <fwb-table-head-cell class="text-xs text-white uppercase bg-gray-900">
-                            Name
                         </fwb-table-head-cell>
                         <fwb-table-head-cell class="text-xs text-white uppercase bg-gray-900">
                             Status
@@ -402,13 +402,27 @@
                         <fwb-table-row v-for="order in latestOrders" :key="order.id">
                             <fwb-table-cell>{{ order.order_number }}</fwb-table-cell>
                             <fwb-table-cell>
-                                <img
-                                    :src="order.temp_url"
-                                    class="w-16 h-16 object-cover rounded-md border"
-                                    alt="Design Image"
-                                />
+                                <div class="flex flex-col gap-2">
+                                    <div v-for="item in order.items" :key="'name-' + item.id">
+                                        {{ item.product?.name }}
+                                        <span class="text-xs text-gray-500">
+                                            (x{{ item.total_quantity || 1 }})
+                                        </span>
+                                    </div>
+                                </div>
                             </fwb-table-cell>
-                            <fwb-table-cell>{{ order.product.name }}</fwb-table-cell>
+                            <fwb-table-cell>
+                                <div class="flex flex-wrap gap-2">
+                                    <template v-for="item in order.items" :key="'img-' + item.id">
+                                        <img
+                                            v-if="item.temp_url"
+                                            :src="item.temp_url"
+                                            class="w-16 h-16 object-cover rounded-md border"
+                                            alt="Design Image"
+                                        />
+                                    </template>
+                                </div>
+                            </fwb-table-cell>
                             <fwb-table-cell>
                                 <StatusBadge :status="order.status" />
                             </fwb-table-cell>

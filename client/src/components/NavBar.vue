@@ -306,7 +306,9 @@
                                                 >
                                                     <OrderMessages
                                                         :status="notif.status"
-                                                        :product_name="notif.orders.product?.name"
+                                                        :product_name="
+                                                            notif.orders.items?.[0]?.product?.name
+                                                        "
                                                     />
 
                                                     <div

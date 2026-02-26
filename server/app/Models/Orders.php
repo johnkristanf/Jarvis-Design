@@ -22,8 +22,6 @@ class Orders extends Model
 
     protected $casts = [
         'total_price' => 'float', 
-        'total_paid'  => 'float',
-        'balance'     => 'float',
     ];
 
     public function user(): BelongsTo
@@ -32,9 +30,9 @@ class Orders extends Model
     }
 
 
-    public function product(): BelongsTo
+    public function items(): HasMany
     {
-        return $this->belongsTo(Products::class, 'product_id');
+        return $this->hasMany(OrderItem::class, 'order_id');
     }
 
 
@@ -43,11 +41,7 @@ class Orders extends Model
         return $this->hasMany(OrderPayment::class, 'order_id');
     }
 
-    public function sizes(): BelongsToMany
-    {
-        return $this->belongsToMany(Sizes::class, 'order_quantity_size', 'order_id', 'size_id')
-            ->withPivot('quantity')
-            ->withTimestamps();
-    }
+    // Sizes are now on OrderItem, but if needed we can leave it or remove it.
+    // We'll remove it as sizes are per-item now.
 
 }

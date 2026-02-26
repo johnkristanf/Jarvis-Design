@@ -84,15 +84,15 @@
     const businessProductDesign = ref<BusinessProductDesign[]>([])
     const isLoadingBusinessDesigns = ref<boolean>(false)
     const showQrCodePaymentModal = ref<boolean>(false)
-    const paymentAttachmentFile = ref<ProductIndexPayment[] | null>(null)
+    const paymentAttachmentFile = ref<File | null>(null)
     const toast = useToast()
 
     const selectedBusinessDesignId = ref<number | null>(null)
     const selectedProductsData = ref<ProductDetails[] | null>(null)
 
     // HANDLE PAYMENT ATTACHMENT FILE
-    const handlePaymentAttachmentFile = (product_payment_file: ProductIndexPayment[]) => {
-        paymentAttachmentFile.value = product_payment_file
+    const handlePaymentAttachmentFile = (file: File | null) => {
+        paymentAttachmentFile.value = file
     }
 
     // FILTER SELECTED PRODUCT CATEGORY IF NEEDED THE SIZES INPUT (IF MUGS SELECTED THEREFORE NO SIZES IS AVAILABLE)
@@ -140,7 +140,12 @@
         data.append('order_option', formData.value.orderOption?.name as string)
         data.append('selected_cart_ids', JSON.stringify(props.selectedCartIds))
 
-        // Map through the checked out products, appending each product's details and its corresponding payment file
+        // Append the single payment attachment for the entire order
+        if (paymentAttachmentFile.value) {
+            data.append('payment_attachment', paymentAttachmentFile.value)
+        }
+
+        // Map through the checked out products, appending each product's details
         checkedOutProductsArray.value.forEach((product, idx) => {
             data.append(`products[${idx}][product_id]`, product.id.toString())
             data.append(`products[${idx}][product_unit_price]`, product.unit_price.toString())
@@ -152,17 +157,6 @@
 
             if (formData.value.designType === 'own-design' && product.own_design_url) {
                 data.append(`products[${idx}][own_design_url]`, product.own_design_url)
-            }
-
-            if (
-                Array.isArray(paymentAttachmentFile.value) &&
-                paymentAttachmentFile.value[idx] &&
-                paymentAttachmentFile.value[idx].file
-            ) {
-                data.append(
-                    `products[${idx}][payment_attachment]`,
-                    paymentAttachmentFile.value[idx].file,
-                )
             }
 
             if (product.desired_quantity) {

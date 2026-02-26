@@ -271,12 +271,14 @@
             @foreach($orders as $order)
                 <tr>
                     <td>{{ date('M d, Y', strtotime($order->created_at)) }}</td>
-                    <td>{{ $order->total_quantity }} pcs</td>
-                    <td>{{ $order->product->name }}</td>
+                    <td>{{ $order->items->sum('total_quantity') }} pcs</td>
+                    <td>{{ $order->items->map(fn($item) => $item->product ? $item->product->name : '')->filter()->unique()->implode(', ') }}</td>
                     <td>
                         <div class="size-list">
-                            @foreach($order->sizes as $size)
-                                <span class="size-badge">{{ $size->name }}</span>
+                            @foreach($order->items as $item)
+                                @foreach($item->sizes as $size)
+                                    <span class="size-badge">{{ $size->name }}</span>
+                                @endforeach
                             @endforeach
                         </div>
                     </td>

@@ -203,196 +203,154 @@ class PaymentController extends Controller
     {
         $validated = $request->validated();
     
-        $orders = DB::transaction(function () use ($validated, $request) {
-    
-            $createdOrders = [];
-    
+        $order = DB::transaction(function () use ($validated, $request) {
+            
+            // 1. Calculate the overall total price for the entire order
+            $overallTotalPrice = 0;
+            foreach ($validated['products'] as $product) {
+                $overallTotalPrice += $product['total_price'];
+            }
+
+            // 2. Create the single Order record
+            $orderNumber = $this->generateOrderNumber();
+            $order = Orders::create([
+                'order_number' => $orderNumber,
+                'phone_number' => $validated['phone_number'],
+                'address' => $validated['address'],
+                'design_type' => $validated['design_type'],
+                'order_option' => $validated['order_option'],
+                'total_price' => $overallTotalPrice,
+                'user_id' => Auth::id(),
+            ]);
+
+            // 3. Process the single payment for the entire order
+            if ($request->hasFile('payment_attachment')) {
+                $this->paymentService->processPayment($order->id, $request->file('payment_attachment'));
+            }
+
+            // 4. Create OrderItems for each product
             foreach ($validated['products'] as $index => $product) {
-    
-                $orderNumber = $this->generateOrderNumber();
                 
-                $order = Orders::create([
-                    'order_number' => $orderNumber,
-                    'phone_number' => $validated['phone_number'],
-                    'address' => $validated['address'],
-                    'design_type' => $validated['design_type'],
-                    'order_option' => $validated['order_option'],
-    
-                    // product-specific
-                    'color' => $product['product_color'],
+                $orderItem = \App\Models\OrderItem::create([
+                    'order_id' => $order->id,
                     'product_id' => $product['product_id'],
+                    'color' => $product['product_color'],
                     'product_unit_price' => $product['product_unit_price'],
                     'total_quantity' => $product['total_quantity'],
                     'total_price' => $product['total_price'],
-    
                     'solo_quantity' => $validated['solo_quantity'] ?? null,
-                    'user_id' => Auth::id(),
+                    'fabric_type_id' => $product['fabric_type_id'] ?? null,
                 ]);
 
-                // If the user didn't upload an own design, set the business design url to the first design of the product
-                if (array_key_exists('own_design_url', $product) && !is_null($product['own_design_url']) && $product['own_design_url'] !== '') {
-                    $order->own_design_url = $product['own_design_url'];
-                    $order->save();
+                // Handle design URLs per item
+                if (array_key_exists('own_design_url', $product) && !empty($product['own_design_url'])) {
+                    $orderItem->own_design_url = $product['own_design_url'];
+                    $orderItem->save();
                 } else {
                     $productModel = Products::with('designs')->find($product['product_id']);
                     if ($productModel && $productModel->designs && $productModel->designs->count() > 0) {
                         $firstDesign = $productModel->designs->first();
                         if ($firstDesign && isset($firstDesign->image_url)) {
-                            $order->business_design_url = $firstDesign->image_url;
-                            $order->save();
+                            $orderItem->business_design_url = $firstDesign->image_url;
+                            $orderItem->save();
                         }
                     }
                 }
 
-
-                $decodedCartIds = json_decode($validated['selected_cart_ids']);
+                // Handle sizes attached to the item
                 $decodedSizes = json_decode($product['sizes'], true);
-
-                if(!empty($decodedCartIds)){
-                    foreach ($decodedCartIds as $cartId) {
-                        $cart = Cart::find($cartId);
-                        if ($cart) {
-                            $cart->delete();
-                        }
-                    }
-                }
-
-                if (! empty($decodedSizes)) {
-                    if ($product['total_quantity'] > 0) {
-                        $order->sizes()->attach($decodedSizes['id'], ['quantity' => $product['total_quantity']]);
-                    }
+                if (!empty($decodedSizes) && $product['total_quantity'] > 0) {
+                    $orderItem->sizes()->attach($decodedSizes['id'], ['quantity' => $product['total_quantity']]);
                 }
     
-                // 2️⃣ Upload per-product payment attachment
-                if ($paymentFile = $request->file("products.$index.payment_attachment")) {
-                    $paymentPath = $this->uploadToS3(
-                        root: 'orders/payments',
-                        sub: $order->id,
-                        file: $paymentFile
-                    );
-    
-                    $order->update([
-                        'payment_attachment_path' => $paymentPath,
-                    ]);
-                }
-    
-    
-                // 4️⃣ Deduct material stock (per product)
-                if (! empty($product['fabric_type_id'])) {
-    
+                // Deduct material stock per item
+                if (!empty($product['fabric_type_id'])) {
                     $fabric = Materials::lockForUpdate()->findOrFail($product['fabric_type_id']);
-
                     $deduction = 0;
 
-                    // If the fabric's unit is roll, the decimal computation happens
-                    if($fabric && $fabric->unit == 'rolls'){
-                        
+                    if ($fabric && $fabric->unit == 'rolls') {
                         $baseFabricQuantityUsed = 0;
-                        $deduction = 0;
-
                         $sizeName = isset($decodedSizes['name']) ? $decodedSizes['name'] : null;
                         switch ($sizeName) {
-                            case 'XXS':
-                                $baseFabricQuantityUsed = 0.003125;
-                                break;
-                            case 'XS':
-                                $baseFabricQuantityUsed = 0.00625;
-                                break;
-                            case 'S':
-                                $baseFabricQuantityUsed = 0.0125;
-                                break;
-                            case 'M':
-                                $baseFabricQuantityUsed = 0.025;
-                                break;
-                            case 'L':
-                                $baseFabricQuantityUsed = 0.05;
-                                break;
-                            case 'XL':
-                                $baseFabricQuantityUsed = 0.1;
-                                break;
-                            case 'XXL':
-                                $baseFabricQuantityUsed = 0.2;
-                                break;
-                            default:
-                                $baseFabricQuantityUsed = 0.003125; // Default to XXS value
+                            case 'XXS': $baseFabricQuantityUsed = 0.003125; break;
+                            case 'XS': $baseFabricQuantityUsed = 0.00625; break;
+                            case 'S': $baseFabricQuantityUsed = 0.0125; break;
+                            case 'M': $baseFabricQuantityUsed = 0.025; break;
+                            case 'L': $baseFabricQuantityUsed = 0.05; break;
+                            case 'XL': $baseFabricQuantityUsed = 0.1; break;
+                            case 'XXL': $baseFabricQuantityUsed = 0.2; break;
+                            default: $baseFabricQuantityUsed = 0.003125;
                         }
-
                         $deduction = (float) ($baseFabricQuantityUsed * (float) $product['total_quantity']);
-
-                        Log::info("decodedSizes: ", [$decodedSizes]);
-                    
                     } else {
                         $fabricUsedPerUnit = (float) $fabric->products()
                             ->where('products.id', $product['product_id'])
                             ->value('fabric_quantity');
-        
                         $deduction = $product['total_quantity'] * $fabricUsedPerUnit;
                     }
 
-                    // if ($fabric->quantity < $deduction) {
-                    //     throw new \Exception("Not enough material stock for {$fabric->name}");
-                    // }
-
-                    // Cap deduction to the available quantity (min 0)
                     $deduction = max(0, min($deduction, $fabric->quantity));
-                    
                     $fabric->decrement('quantity', $deduction);
     
                     OrderLogs::create([
                         'user_id' => Auth::id(),
-                        'order_id' => $order->id,
+                        'order_id' => $order->id, // Logs still reference the main order
                         'material_name' => $fabric->name,
                         'unit' => $fabric->unit,
                         'total_quantity_used' => (float) $deduction,
                     ]);
                 }
-
-                // Process order payment
-                if (isset($product['payment_attachment'])) {
-                    $paymentAttachmentFile = $product['payment_attachment'];
-                    $this->paymentService->processPayment($order->id, $paymentAttachmentFile);
-                }
-
-                $createdOrders[] = $order;
             }
+            
+            // 5. Delete picked cart items
+            $decodedCartIds = json_decode($validated['selected_cart_ids'], true);
+            if (!empty($decodedCartIds)) {
+                Cart::whereIn('id', $decodedCartIds)->delete();
+            }
+
+            // Remove the remaining credit of the user
+            $user = User::findOrFail(Auth::id());
+            $user->prompt_credit = 0;
+            $user->save();
     
-            return $createdOrders;
+            return $order;
         });
     
-        foreach ($orders as $order) {
+        $this->notificationService->notifyUserOrder($order, Auth::id(), Orders::PENDING);
 
-            $this->notificationService->notifyUserOrder($order, Auth::user()->id, Orders::PENDING);
-
-            $message = sprintf(
-                "🆕 New Order Placed!\n\n" .
-                    "Order No: %s\n" .
-                    "Customer: %s\n" .
-                    "Product: %s (%s)\n" .
-                    "Quantity: %d pcs\n" .
-                    "Total Price: ₱%s\n",
-                $order->order_number,
-                Auth::user()->name ?? 'Guest',
-                $order->product->name ?? 'N/A',
-                ucfirst($order->color),
-                $order->total_quantity,
-                number_format($order->total_price, 2),
-            );
-
-            $this->notificationService->notifyAdmin(AdminNotification::ORDER_NOTIFICATION_TYPE, $message);
-
-            $this->paymentService->sendOrderConfirmationEmail($order);
-
+        // Summarise the order for the admin notification
+        $totalItemsCount = 0;
+        $productNames = [];
+        foreach ($validated['products'] as $p) {
+            $totalItemsCount += (int) $p['total_quantity'];
+            $productModel = Products::find($p['product_id']);
+            if ($productModel) {
+                $productNames[] = $productModel->name;
+            }
         }
+        
+        $uniqueProductsString = implode(', ', array_unique($productNames));
 
-        // Remove the remaining credit of the user
-        $user = User::findOrFail(Auth::id());
-        $user->prompt_credit = 0;
-        $user->save();
+        $message = sprintf(
+            "🆕 New Order Placed!\n\n" .
+                "Order No: %s\n" .
+                "Customer: %s\n" .
+                "Products: %s\n" .
+                "Total Items: %d pcs\n" .
+                "Total Price: ₱%s\n",
+            $order->order_number,
+            Auth::user()->name ?? 'Guest',
+            $uniqueProductsString ?: 'N/A',
+            $totalItemsCount,
+            number_format($order->total_price, 2)
+        );
 
-    
+        $this->notificationService->notifyAdmin(AdminNotification::ORDER_NOTIFICATION_TYPE, $message);
+        $this->paymentService->sendOrderConfirmationEmail($order);
+
         return response()->json([
             'message' => 'Order placed successfully',
-            'items' => count($orders),
+            'order_id' => $order->id,
         ]);
     }
     

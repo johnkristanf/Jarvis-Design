@@ -198,7 +198,11 @@
                 @click="() => openOrderDetails(order)"
             >
                 <div class="w-full">
-                    <img :alt="order.name" :src="order.temp_url" class="w-full h-auto" />
+                    <img
+                        :alt="order.items?.[0]?.product?.name || 'Order Item'"
+                        :src="order.items?.[0]?.temp_url"
+                        class="w-full h-auto"
+                    />
                 </div>
                 <div class="p-5">
                     <p class="font-semibold text-gray-700 dark:text-gray-200">

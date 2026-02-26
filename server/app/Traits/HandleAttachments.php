@@ -45,11 +45,26 @@ trait HandleAttachments
             : $orders;
 
         $collection->transform(function ($order) {
-            $filePath = $order->own_design_url ?: $order->business_design_url;
+            
+            // Handle the new 1-to-many relationship
+            if ($order->relationLoaded('items') && $order->items->isNotEmpty()) {
+                $order->items->transform(function ($item) {
+                    $filePath = $item->own_design_url ?: $item->business_design_url;
+                    $item->temp_url = $filePath
+                        ? Storage::disk('s3')->temporaryUrl($filePath, Carbon::now()->addMinutes(10))
+                        : null;
+                    return $item;
+                });
+            } else {
+                // Fallback for legacy access or DashboardService if it selects directly from orders (with joins)
+                $filePath = $order->own_design_url ?? $order->business_design_url ?? null;
 
-            $order->temp_url = $filePath
-                ? Storage::disk('s3')->temporaryUrl($filePath, Carbon::now()->addMinutes(10))
-                : null;
+                if ($filePath) {
+                    $order->temp_url = Storage::disk('s3')->temporaryUrl($filePath, Carbon::now()->addMinutes(10));
+                } else {
+                    $order->temp_url = null;
+                }
+            }
 
             return $order;
         });

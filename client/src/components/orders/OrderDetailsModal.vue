@@ -31,9 +31,12 @@
     const handleShowNewPaymentModal = () => {
         showAddNewPaymentModal.value = true
 
+        const totalQty =
+            props.orderDetails.items?.reduce((sum, item) => sum + (item.total_quantity || 0), 0) ||
+            0
         qrCodePaymentData.value = {
-            product_name: props.orderDetails.product!.name!,
-            total_quantity: props.orderDetails.total_quantity,
+            product_name: props.orderDetails.items?.[0]?.product?.name || 'Order Items',
+            total_quantity: totalQty,
             total_price: props.orderDetails.total_price,
             order_id: props.orderDetails.id,
         }
@@ -46,9 +49,13 @@
 
     const handleShowReuploadPaymentModal = (paymentId: number) => {
         activePaymentIdForReupload.value = paymentId
+
+        const totalQty =
+            props.orderDetails.items?.reduce((sum, item) => sum + (item.total_quantity || 0), 0) ||
+            0
         qrCodePaymentData.value = {
-            product_name: props.orderDetails.product!.name!,
-            total_quantity: props.orderDetails.total_quantity,
+            product_name: props.orderDetails.items?.[0]?.product?.name || 'Order Items',
+            total_quantity: totalQty,
             total_price: props.orderDetails.total_price,
             order_id: props.orderDetails.id,
         }
@@ -194,7 +201,10 @@
                                         </h3>
                                         <p class="text-sm text-green-600 mt-1 dark:text-green-400">
                                             {{
-                                                orderDetails.total_quantity < 100
+                                                (orderDetails.items?.reduce(
+                                                    (sum, item) => sum + (item.total_quantity || 0),
+                                                    0,
+                                                ) || 0) < 100
                                                     ? '5-7 business days'
                                                     : '13-15 business days'
                                             }}
@@ -248,7 +258,7 @@
                                     </div>
                                 </div>
 
-                                <!-- Product Info -->
+                                <!-- Product Info (Iterating over items) -->
                                 <div
                                     class="mb-6 pb-6 border-b border-gray-200 dark:border-gray-700"
                                 >
@@ -257,83 +267,96 @@
                                     >
                                         Product Details
                                     </h3>
-                                    <div class="flex gap-4">
-                                        <!-- Product Image -->
-                                        <div
-                                            v-if="orderDetails.image_path || orderDetails.temp_url"
-                                            class="flex-shrink-0"
-                                        >
-                                            <img
-                                                :src="
-                                                    orderDetails.temp_url || orderDetails.image_path
-                                                "
-                                                :alt="`Design ${orderDetails.design_id}`"
-                                                class="w-20 h-20 object-cover border-2 border-gray-300 dark:border-gray-700"
-                                            />
-                                        </div>
 
-                                        <!-- Product Details -->
-                                        <div class="flex-1">
-                                            <div class="grid grid-cols-2 gap-4">
-                                                <div>
-                                                    <p
-                                                        class="text-sm text-gray-600 dark:text-gray-400"
-                                                    >
-                                                        Color
-                                                    </p>
-                                                    <div class="flex items-center gap-2">
+                                    <div class="space-y-6">
+                                        <div
+                                            v-for="item in orderDetails.items"
+                                            :key="item.id"
+                                            class="flex gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg"
+                                        >
+                                            <!-- Product Image -->
+                                            <div v-if="item.temp_url" class="flex-shrink-0">
+                                                <img
+                                                    :src="item.temp_url"
+                                                    :alt="`Design ${item.id}`"
+                                                    class="w-24 h-24 object-cover border-2 border-gray-300 dark:border-gray-700 rounded-md"
+                                                />
+                                            </div>
+
+                                            <!-- Product Details -->
+                                            <div class="flex-1">
+                                                <h4
+                                                    class="font-bold text-lg text-black dark:text-white mb-2"
+                                                >
+                                                    {{ item.product?.name }}
+                                                    <span class="text-sm font-normal text-gray-500">
+                                                        (x{{ item.total_quantity || 1 }})
+                                                    </span>
+                                                </h4>
+                                                <div class="grid grid-cols-2 gap-4">
+                                                    <div>
                                                         <p
-                                                            class="font-medium text-black dark:text-white"
+                                                            class="text-sm text-gray-600 dark:text-gray-400"
                                                         >
-                                                            {{ orderDetails.color }}
+                                                            Color
                                                         </p>
+                                                        <div class="flex items-center gap-2">
+                                                            <p
+                                                                class="font-medium text-black dark:text-white"
+                                                            >
+                                                                {{ item.color }}
+                                                            </p>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                                <div>
+
+                                                <!-- Sizes -->
+                                                <div
+                                                    v-if="item.sizes && item.sizes.length > 0"
+                                                    class="mt-4"
+                                                >
                                                     <p
-                                                        class="text-sm text-gray-600 dark:text-gray-400"
+                                                        class="text-sm text-gray-600 mb-2 dark:text-gray-400"
                                                     >
-                                                        Option
+                                                        Sizes & Quantities
                                                     </p>
-                                                    <p
-                                                        class="font-medium text-black dark:text-white"
-                                                    >
-                                                        {{
-                                                            orderDetails.order_option ===
-                                                            OrderOptions.DELIVERY
-                                                                ? 'Delivery'
-                                                                : 'Pick-up'
-                                                        }}
-                                                    </p>
+                                                    <div class="flex flex-wrap gap-2">
+                                                        <div
+                                                            v-for="size in item.sizes"
+                                                            :key="size.id"
+                                                            class="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 px-3 py-1 text-sm rounded-md shadow-sm"
+                                                        >
+                                                            <span
+                                                                class="font-medium dark:text-white"
+                                                            >
+                                                                {{ size.name }}
+                                                            </span>
+                                                            <span
+                                                                v-if="size.pivot"
+                                                                class="text-gray-600 ml-1 dark:text-gray-400"
+                                                            >
+                                                                ({{ size.pivot.quantity || 'N/A' }})
+                                                            </span>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <!-- Sizes -->
-                                    <div
-                                        v-if="orderDetails.sizes && orderDetails.sizes.length > 0"
-                                        class="mt-4"
-                                    >
-                                        <p class="text-sm text-gray-600 mb-2 dark:text-gray-400">
-                                            Sizes & Quantities
-                                        </p>
-                                        <div class="flex flex-wrap gap-2">
-                                            <div
-                                                v-for="size in orderDetails.sizes"
-                                                :key="size.id"
-                                                class="bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 px-3 py-1 text-sm"
-                                            >
-                                                <span class="font-medium dark:text-white">
-                                                    {{ size.name }}
-                                                </span>
-                                                <span
-                                                    v-if="size.pivot"
-                                                    class="text-gray-600 ml-1 dark:text-gray-400"
-                                                >
-                                                    ({{ size.pivot.quantity || 'N/A' }})
-                                                </span>
-                                            </div>
+                                    <div class="mt-4 grid grid-cols-2 gap-4">
+                                        <div>
+                                            <p class="text-sm text-gray-600 dark:text-gray-400">
+                                                Option
+                                            </p>
+                                            <p class="font-medium text-black dark:text-white">
+                                                {{
+                                                    orderDetails.order_option ===
+                                                    OrderOptions.DELIVERY
+                                                        ? 'Delivery'
+                                                        : 'Pick-up'
+                                                }}
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
@@ -426,7 +449,6 @@
                                                 </div>
 
                                                 <div class="flex items-center gap-2">
-                                                   
                                                     <PaymentStatusBadge :status="payment.status" />
                                                     <PaymentAttachmentPopOver
                                                         :paymentAttachmentURL="
@@ -434,7 +456,7 @@
                                                         "
                                                     />
 
-                                                     <button
+                                                    <button
                                                         v-if="payment.status === 'declined'"
                                                         @click="
                                                             handleShowReuploadPaymentModal(

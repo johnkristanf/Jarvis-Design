@@ -19,37 +19,19 @@
         console.log('QrCodePaymentModal selectedProductsData:', props.selectedProductsData)
     })
 
-    // -- Emits updated to match flexible array of { index, file } --
+    // -- Emits updated to match single file structure --
     const emit = defineEmits(['close', 'place_order', 'fileSelected'])
     const handleCloseModal = () => emit('close')
     const handleTriggerPlaceOrder = () => emit('place_order')
     const toast = useToast()
 
-    /**
-     * In order to allow for duplicate "products" in the order (e.g. same product, same size, but ordered separately by user),
-     * we use the PRODUCT'S INDEX in the selectedProductsData array as the mapping key for payment proofs.
-     */
-    const paymentFiles = reactive<Record<number, File | null>>({})
-    const previewUrls = reactive<Record<number, string | undefined>>({})
-    const fileInputRefs = reactive<Record<number, HTMLInputElement | null>>({})
+    // 1 Order = 1 Payment File
+    const paymentFile = ref<File | null>(null)
+    const previewUrl = ref<string | undefined>(undefined)
+    const fileInputRef = ref<HTMLInputElement | null>(null)
 
-    // Maintain a flexible array for all file selections (index mapped)
-    const selectedPaymentProofs = ref<ProductIndexPayment[]>([])
-
-    // Helper to return the array for emit and keep it normalized
-    const updateSelectedPaymentProofs = () => {
-        if (!props.selectedProductsData) return
-        selectedPaymentProofs.value = props.selectedProductsData.map((product, idx) => ({
-            index: idx,
-            file: paymentFiles[idx] || null,
-        }))
-        emit('fileSelected', selectedPaymentProofs.value)
-    }
-
-    const triggerFileSelect = (idx: number) => {
-        console.log('123123')
-
-        const input = fileInputRefs[idx]
+    const triggerFileSelect = () => {
+        const input = fileInputRef.value
         if (!input) return
 
         // Give the browser one tick + a little delay — mobile needs it more often
@@ -64,7 +46,7 @@
         }, 80)
     }
 
-    const handleFileChange = (e: Event, idx: number) => {
+    const handleFileChange = (e: Event) => {
         const target = e.target as HTMLInputElement
         if (target && target.files && target.files[0]) {
             const selectedFile = target.files[0]
@@ -77,24 +59,21 @@
                 target.value = ''
                 return
             }
-            paymentFiles[idx] = selectedFile
-            previewUrls[idx] = URL.createObjectURL(selectedFile) || undefined
-            updateSelectedPaymentProofs()
+            paymentFile.value = selectedFile
+            previewUrl.value = URL.createObjectURL(selectedFile)
+            emit('fileSelected', paymentFile.value)
         }
     }
 
-    const clearFile = (idx: number) => {
-        paymentFiles[idx] = null
-        previewUrls[idx] = undefined
-        const inputRef = fileInputRefs[idx]
-        if (inputRef) inputRef.value = ''
-        updateSelectedPaymentProofs()
+    const clearFile = () => {
+        paymentFile.value = null
+        previewUrl.value = undefined
+        if (fileInputRef.value) fileInputRef.value.value = ''
+        emit('fileSelected', null)
     }
 
-    // Can only place order if ALL products (by index) have an image attached
     const isAllPaymentsAttached = computed(() => {
-        if (!props.selectedProductsData) return false
-        return props.selectedProductsData.every((_, idx) => paymentFiles[idx] && previewUrls[idx])
+        return !!paymentFile.value && !!previewUrl.value
     })
 
     const getProductTotal = (p: ProductDetails) => {
@@ -108,18 +87,6 @@
         return props.selectedProductsData.reduce((acc, product) => {
             return acc + getProductTotal(product)
         }, 0)
-    })
-
-    // Prepare maps if not set
-    onMounted(() => {
-        if (props.selectedProductsData) {
-            props.selectedProductsData.forEach((_product, idx) => {
-                if (!(idx in paymentFiles)) paymentFiles[idx] = null
-                if (!(idx in previewUrls)) previewUrls[idx] = undefined
-                if (!(idx in fileInputRefs)) fileInputRefs[idx] = null
-            })
-            updateSelectedPaymentProofs()
-        }
     })
 </script>
 
@@ -246,39 +213,8 @@
                                 class="flex flex-col gap-6 sm:gap-10"
                             >
                                 <div
-                                    v-for="(product, idx) in props.selectedProductsData"
-                                    :key="`upload-section-${idx}`"
                                     class="border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-4 sm:p-6 flex flex-col gap-4 sm:gap-5 bg-gray-50 dark:bg-gray-900"
                                 >
-                                    <!-- Product Info -->
-                                    <div class="mb-2">
-                                        <h2
-                                            class="font-bold text-sm sm:text-base text-gray-900 dark:text-gray-100"
-                                        >
-                                            {{ product.name }}
-                                            <span v-if="product.size?.name">
-                                                ({{ product.size?.name }})
-                                            </span>
-                                        </h2>
-                                        <div
-                                            class="text-xs sm:text-sm text-gray-600 dark:text-gray-300"
-                                        >
-                                            Quantity:
-                                            <b>{{ product.desired_quantity ?? 1 }}</b>
-                                            <br />
-                                            Price per unit: ₱{{ product.unit_price }}
-                                            <br />
-                                            <span>
-                                                Total Price:
-                                                <span
-                                                    class="font-bold text-blue-700 dark:text-blue-400"
-                                                >
-                                                    ₱{{ getProductTotal(product) }}
-                                                </span>
-                                            </span>
-                                        </div>
-                                    </div>
-
                                     <!-- QR Codes - responsive grid -->
                                     <div
                                         class="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 lg:gap-12 mb-0"
@@ -343,7 +279,9 @@
                                     </div>
 
                                     <!-- Payment Screenshot Upload -->
-                                    <div class="flex flex-col gap-2 w-full">
+                                    <div
+                                        class="flex flex-col gap-2 w-full mt-4 border-t pt-4 dark:border-gray-700"
+                                    >
                                         <label
                                             class="text-xs sm:text-sm font-medium mb-1 text-gray-700 dark:text-gray-200"
                                         >
@@ -352,33 +290,28 @@
 
                                         <!-- Hidden file input with mobile-friendly attributes -->
                                         <input
-                                            :ref="
-                                                (el) => {
-                                                    fileInputRefs[idx] =
-                                                        el as HTMLInputElement | null
-                                                }
-                                            "
+                                            ref="fileInputRef"
                                             type="file"
                                             accept="image/*"
                                             class="hidden"
-                                            @change="(e) => handleFileChange(e, idx)"
+                                            @change="handleFileChange"
                                         />
 
                                         <div
                                             class="w-full border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-md p-4 flex flex-col items-center justify-center relative min-h-[170px] bg-white dark:bg-gray-800"
                                         >
                                             <div
-                                                v-if="previewUrls[idx]"
-                                                class="relative w-full h-full"
+                                                v-if="previewUrl"
+                                                class="relative w-full h-full flex justify-center"
                                             >
                                                 <img
-                                                    :src="previewUrls[idx]!"
+                                                    :src="previewUrl"
                                                     alt="Payment Preview"
-                                                    class="w-full h-full object-cover rounded-md"
+                                                    class="h-48 object-contain rounded-md"
                                                 />
                                                 <button
                                                     type="button"
-                                                    @click="clearFile(idx)"
+                                                    @click="clearFile"
                                                     class="absolute top-[-12px] right-0 text-red-800 dark:text-red-300 text-xl rounded-md p-1 hover:cursor-pointer focus:outline-none"
                                                     aria-label="Remove image"
                                                 >
@@ -406,11 +339,12 @@
                                                 <p
                                                     class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-2 px-2"
                                                 >
-                                                    Screenshot of Payment Confirmation
+                                                    Screenshot of Payment Confirmation for Entire
+                                                    Order
                                                 </p>
                                                 <button
                                                     type="button"
-                                                    @click="() => triggerFileSelect(idx)"
+                                                    @click="triggerFileSelect"
                                                     class="mt-3 px-4 py-2 touch-manipulation bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 active:bg-gray-100 dark:active:bg-gray-700"
                                                 >
                                                     Select File
