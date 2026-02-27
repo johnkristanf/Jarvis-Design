@@ -309,25 +309,6 @@
     // Payment composable
     const { hasFullyPaid } = usePayments(computed(() => payments.value || []))
 
-    // // Function to check 50% condition and auto-update status
-    // const checkAndUpdateStatus = () => {
-    //     const currentTotalPaid = totalPaid.value
-    //     const halfTotalPrice = props.orders.total_price / 2
-
-    //     if (
-    //         currentTotalPaid >= halfTotalPrice &&
-    //         props.orders.status !== OrderStatus.COMPLETED &&
-    //         props.orders.status !== OrderStatus.IN_PROGRESS &&
-    //         props.orders.status !== OrderStatus.CANCELLED
-    //     ) {
-    //         console.log('50 PERCENT NA - Auto updating status to IN_PROGRESS')
-    //         emit('status-change', props.orders.id, OrderStatus.IN_PROGRESS)
-    //     }
-    // }
-
-    // onMounted(() => {
-    //     checkAndUpdateStatus()
-    // })
 </script>
 
 <template>

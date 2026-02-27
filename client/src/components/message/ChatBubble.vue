@@ -3,9 +3,11 @@
     import { useFetchAuthenticatedUser } from '@/composables/useFetchAuthenticatedUser'
     import type { Message, UpdateChat } from '@/types/message'
     import { useMutation, useQueryClient } from '@tanstack/vue-query'
-    import { ref } from 'vue'
+    import { ref, computed } from 'vue'
     import ToolTipMenu from './ToolTipMenu.vue'
     import { XMarkIcon } from '@heroicons/vue/20/solid'
+    import { marked } from 'marked'
+    import DOMPurify from 'dompurify'
 
     const props = defineProps<{
         messages: Message[] | undefined
@@ -57,7 +59,40 @@
         editingMessageId.value = null
         editedContent.value = ''
     }
+
+    // Parse and sanitize markdown content
+    const formatMessageContent = (content: string) => {
+        if (!content) return ''
+        const rawHtml = marked.parse(content, { gfm: true, breaks: true }) as string
+        return DOMPurify.sanitize(rawHtml)
+    }
 </script>
+
+<style scoped>
+/* Scoped styles to ensure markdown renders nicely inside the bubble */
+:deep(.markdown-body p) {
+    margin-bottom: 0.5rem;
+}
+:deep(.markdown-body p:last-child) {
+    margin-bottom: 0;
+}
+:deep(.markdown-body strong) {
+    font-weight: 700;
+}
+:deep(.markdown-body ul) {
+    list-style-type: disc;
+    padding-left: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+:deep(.markdown-body ol) {
+    list-style-type: decimal;
+    padding-left: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+:deep(.markdown-body a) {
+    text-decoration: underline;
+}
+</style>
 
 <template>
     <div
@@ -118,7 +153,10 @@
                     </template>
 
                     <template v-else>
-                        {{ msg.content }}
+                        <div 
+                            class="markdown-body text-sm break-words" 
+                            v-html="formatMessageContent(msg.content)"
+                        ></div>
                     </template>
                 </div>
             </div>

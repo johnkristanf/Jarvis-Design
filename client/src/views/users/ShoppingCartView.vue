@@ -33,6 +33,7 @@
         onSuccess: () => {
             // Refresh cart items after successful delete
             queryClient.invalidateQueries({ queryKey: ['cart_items'] })
+            queryClient.invalidateQueries({ queryKey: ['cart_count'] })
         },
     })
 
@@ -204,118 +205,116 @@
             <div
                 v-for="item in cartItems"
                 :key="item.id"
-                class="bg-white rounded-2xl p-4 mb-3 border border-white/10 slide-in flex items-center gap-3 dark:bg-gray-800 dark:border-gray-700"
+                class="bg-white rounded-2xl p-4 mb-3 border border-white/10 slide-in flex flex-row items-center gap-3 sm:gap-4 dark:bg-gray-800 dark:border-gray-700 w-full"
             >
-                <!-- Checkbox for selection -->
-                <input
-                    type="checkbox"
-                    :checked="selectedCartIds.includes(item.id)"
-                    @change="toggleSelectCart(item.id)"
-                    class="h-5 w-5 accent-blue-600 border-gray-300 mr-2 dark:border-gray-600"
-                />
+                <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+                    <!-- Checkbox for selection -->
+                    <input
+                        type="checkbox"
+                        :checked="selectedCartIds.includes(item.id)"
+                        @change="toggleSelectCart(item.id)"
+                        class="h-4 w-4 sm:h-5 sm:w-5 accent-blue-600 border-gray-300 dark:border-gray-600"
+                    />
 
-                <!-- Image -->
-                <img
-                    v-if="item.own_design_url"
-                    :src="getCartItemImageSrc(item)"
-                    alt="Own Design"
-                    class="w-24 h-24 rounded-xl object-cover bg-white/10 dark:bg-gray-700"
-                />
-                <img
-                    v-else
-                    :src="getCartItemImageSrc(item)"
-                    :alt="item.product.name"
-                    class="w-24 h-24 rounded-xl object-cover bg-white/10 dark:bg-gray-700"
-                />
+                    <!-- Image -->
+                    <img
+                        :src="getCartItemImageSrc(item)"
+                        :alt="item.product?.name || 'Design'"
+                        class="w-16 h-16 sm:w-24 sm:h-24 rounded-lg sm:rounded-xl object-cover bg-white/10 dark:bg-gray-700"
+                    />
+                </div>
 
-                <!-- Details -->
-                <div class="flex-1 flex flex-col gap-2">
-                    <h3 class="font-semibold text-gray-900 leading-tight dark:text-white">
-                        {{ item.product.name }}
-                    </h3>
-                    <div class="flex items-center gap-2">
-                        <p class="text-lg font-bold text-gray-400 dark:text-gray-200">
-                            ₱
-                            {{
-                                (() => {
-                                    const price = item.product.unit_price
-                                    if (typeof price === 'number') return price
-                                    if (typeof price === 'string') {
-                                        const parsed = parseFloat(price)
-                                        return !Number.isNaN(parsed) ? parsed.toLocaleString() : '-'
-                                    }
-                                    return '-'
-                                })()
-                            }}
-                        </p>
-                        <!-- Quantity Increment/Decrement - display only -->
-                        <div
-                            class="flex items-center ml-3 border rounded px-1 bg-gray-100 border-gray-300 dark:bg-gray-900 dark:border-gray-700"
-                        >
-                            <button
-                                @click="decrementQuantity(item.id)"
-                                class="px-2 py-1 text-gray-600 hover:text-black font-bold disabled:opacity-30 dark:text-gray-200 dark:hover:text-white"
-                                :disabled="cartQuantities[item.id] <= 1"
-                                aria-label="Decrease quantity"
-                                type="button"
+                <!-- Content (Details + Actions) -->
+                <div class="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 w-full min-w-0">
+                    <!-- Details -->
+                    <div class="flex flex-col gap-1 sm:gap-2 items-start text-left min-w-0 flex-1">
+                        <h3 class="font-semibold text-sm sm:text-base text-gray-900 leading-tight dark:text-white truncate w-full">
+                            {{ item.product.name }}
+                        </h3>
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 w-full">
+                            <p class="text-sm sm:text-lg font-bold text-gray-400 dark:text-gray-200">
+                                ₱
+                                {{
+                                    (() => {
+                                        const price = item.product.unit_price
+                                        if (typeof price === 'number') return price
+                                        if (typeof price === 'string') {
+                                            const parsed = parseFloat(price)
+                                            return !Number.isNaN(parsed) ? parsed.toLocaleString() : '-'
+                                        }
+                                        return '-'
+                                    })()
+                                }}
+                            </p>
+                            <!-- Quantity Increment/Decrement - display only -->
+                            <div
+                                class="flex items-center w-max border rounded px-1 sm:px-1 bg-gray-100 border-gray-300 dark:bg-gray-900 dark:border-gray-700 scale-90 sm:scale-100 origin-left"
                             >
-                                -
-                            </button>
-                            <input
-                                v-model.number="cartQuantities[item.id]"
-                                type="number"
-                                min="1"
-                                class="mx-2 w-12 text-center text-lg text-gray-900 font-medium bg-transparent border-none focus:outline-none focus:ring-0 dark:text-white p-0 appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                                style="appearance: textfield; -moz-appearance: textfield"
-                                @blur="
-                                    () => {
-                                        if (!cartQuantities[item.id] || cartQuantities[item.id] < 1)
-                                            cartQuantities[item.id] = 1
-                                    }
-                                "
-                            />
-                            <button
-                                @click="incrementQuantity(item.id)"
-                                class="px-2 py-1 text-gray-600 hover:text-black font-bold dark:text-gray-200 dark:hover:text-white"
-                                aria-label="Increase quantity"
-                                type="button"
+                                <button
+                                    @click="decrementQuantity(item.id)"
+                                    class="px-2 py-1 text-gray-600 hover:text-black font-bold disabled:opacity-30 dark:text-gray-200 dark:hover:text-white"
+                                    :disabled="cartQuantities[item.id] <= 1"
+                                    aria-label="Decrease quantity"
+                                    type="button"
+                                >
+                                    -
+                                </button>
+                                <input
+                                    v-model.number="cartQuantities[item.id]"
+                                    type="number"
+                                    min="1"
+                                    class="mx-1 sm:mx-2 w-8 sm:w-12 text-center text-base sm:text-lg text-gray-900 font-medium bg-transparent border-none focus:outline-none focus:ring-0 dark:text-white p-0 appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                    style="appearance: textfield; -moz-appearance: textfield"
+                                    @blur="
+                                        () => {
+                                            if (!cartQuantities[item.id] || cartQuantities[item.id] < 1)
+                                                cartQuantities[item.id] = 1
+                                        }
+                                    "
+                                />
+                                <button
+                                    @click="incrementQuantity(item.id)"
+                                    class="px-2 py-1 text-gray-600 hover:text-black font-bold dark:text-gray-200 dark:hover:text-white"
+                                    aria-label="Increase quantity"
+                                    type="button"
+                                >
+                                    +
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-start gap-1 sm:gap-2 mt-0">
+                            <span
+                                class="inline-block text-[10px] sm:text-xs text-center font-semibold px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md whitespace-nowrap"
+                                :style="{
+                                    backgroundColor: colorPalette[item.color] || '#2563eb',
+                                    color: 'white',
+                                }"
                             >
-                                +
-                            </button>
+                                {{ item.color ? item.color : 'No color' }}
+                            </span>
+
+                            <span
+                                v-if="item.size"
+                                class="inline-block bg-blue-100 text-blue-800 text-[10px] sm:text-xs text-center font-semibold px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md dark:bg-blue-900 dark:text-blue-200 whitespace-nowrap"
+                            >
+                                {{ item.size.name }}
+                            </span>
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-2">
-                        <span
-                            class="inline-block text-xs text-center font-semibold px-2 py-1 rounded-md"
-                            :style="{
-                                backgroundColor: colorPalette[item.color] || '#2563eb',
-                                color: 'white',
-                            }"
+                    <!-- Quantity Control (Remove Button) -->
+                    <div class="flex items-center sm:self-auto justify-end sm:justify-start w-auto shrink-0 mt-0">
+                        <button
+                            class="p-1.5 sm:p-2 w-auto text-[10px] sm:text-xs rounded-md bg-red-500/20 text-red-500 hover:opacity-75 hover:cursor-pointer active:scale-95 transition-all flex items-center justify-center dark:bg-red-900/40 dark:text-red-300"
+                            @click="handleDeleteCart(item.id)"
+                            :disabled="deleteCartMutation.isPending.value"
                         >
-                            {{ item.color ? item.color : 'No color' }}
-                        </span>
-
-                        <span
-                            v-if="item.size"
-                            class="w-[4%] inline-block bg-blue-100 text-blue-800 text-xs text-center font-semibold px-2 py-1 rounded-md dark:bg-blue-900 dark:text-blue-200"
-                        >
-                            {{ item.size.name }}
-                        </span>
+                            <TrashIcon class="size-3 sm:size-3 mr-1" />
+                            <span v-if="deleteCartMutation.isPending.value">Removing...</span>
+                            <span v-else>Remove</span>
+                        </button>
                     </div>
-                </div>
-
-                <!-- Quantity Control -->
-                <div class="flex items-center gap-3">
-                    <button
-                        class="p-2 text-xs rounded-md bg-red-500/20 text-red-500 hover:opacity-75 hover:cursor-pointer active:scale-95 transition-all flex items-center justify-center dark:bg-red-900/40 dark:text-red-300"
-                        @click="handleDeleteCart(item.id)"
-                        :disabled="deleteCartMutation.isPending.value"
-                    >
-                        <TrashIcon class="size-3" />
-                        <span v-if="deleteCartMutation.isPending.value">Removing...</span>
-                        <span v-else>Remove</span>
-                    </button>
                 </div>
             </div>
 

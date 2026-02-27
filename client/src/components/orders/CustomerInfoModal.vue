@@ -39,7 +39,7 @@
 </script>
 
 <template>
-    <div class="flex items-center justify-center -ml-2">
+    <div class="flex items-center justify-start ml-2">
         <button
             type="button"
             @click="openModal"

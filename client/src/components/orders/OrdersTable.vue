@@ -23,9 +23,9 @@
     import type { PaginatedResponse } from '@/types/pagination'
     import OrderPaymentsModal from './OrderPaymentsModal.vue'
     import CustomerInfoModal from './CustomerInfoModal.vue'
-    // @ts-expect-error bug
-    import ProductAttributesModal from '../designs/ProductAttributesModal.vue'
+    import ProductInformationModal from './ProductInformationModal.vue'
     import { initializeEcho } from '@/services/echo'
+    import { sendChatMessageApi } from '@/api/post/message'
 
     const { isAdmin } = useAuthorization()
     const isStatusUpdating = ref<boolean>(false)
@@ -71,6 +71,17 @@
                     // Call handleStatusChange to update the status in the DB
                     alreadyUpdatedOrders.add(order.id)
                     handleStatusChange(order.id, OrderStatus.IN_PROGRESS, () => {})
+                    
+                    if (order.user?.id) {
+                        const itemsList = order.items && order.items.length > 0 
+                            ? order.items.map(item => item.product?.name || 'Product').join(', ')
+                            : 'your items'
+                            
+                        const formData = new FormData()
+                        formData.append('content', `🎉 Hello ${order.user.name || 'Customer'}!\n\n\nGood news! Your order **#${order.order_number}** for **${itemsList}** has reached the 50% payment threshold (₱${currentTotalPaid.toLocaleString()}). ✅\n\n\nWe will now begin processing your order. Thank you for your business! 👕✨`)
+                        formData.append('user_id', order.user.id.toString())
+                        sendChatMessageApi(formData).catch((err: any) => console.error('Failed to send automated message:', err))
+                    }
                 }
             })
 
@@ -377,12 +388,7 @@
                     <th scope="col" class="px-3 py-3">Order No.</th>
                     <th scope="col" class="px-3 py-3">Customer Information</th>
 
-                    <th scope="col" class="px-3 py-3">Product name</th>
-                    <th scope="col" class="px-3 py-3">Product attributes</th>
-
-                    <th scope="col" class="px-4 py-3">
-                        <span>Design</span>
-                    </th>
+                    <th scope="col" class="px-3 py-3">Product Information</th>
 
                     <!-- <th scope="col" class="px-6 py-3">Name</th>
 
@@ -423,40 +429,7 @@
                     </td>
 
                     <td class="px-3 py-4 font-semibold text-gray-900 class:text-white">
-                        <div class="flex flex-col gap-2">
-                            <div v-for="item in order.items" :key="'name-' + item.id">
-                                {{ item.product?.name }}
-                                <span class="text-xs text-gray-500">
-                                    (x{{ item.total_quantity || 1 }})
-                                </span>
-                            </div>
-                        </div>
-                    </td>
-
-                    <td class="px-3 py-4 font-semibold text-gray-900 class:text-white">
-                        <div class="flex flex-col gap-4">
-                            <div v-for="item in order.items" :key="'attr-' + item.id">
-                                <ProductAttributesModal
-                                    :sizes="item.sizes"
-                                    :color="item.color"
-                                    :solo_quantity="item.solo_quantity"
-                                />
-                            </div>
-                        </div>
-                    </td>
-
-                    <td class="p-4">
-                        <div class="flex flex-wrap gap-2">
-                            <template v-for="item in order.items" :key="'img-' + item.id">
-                                <img
-                                    v-if="item.temp_url"
-                                    :src="item.temp_url"
-                                    class="w-16 h-16 sm:w-24 sm:h-24 object-cover rounded-md border cursor-pointer hover:opacity-75 transition-opacity duration-150"
-                                    alt="Design Image"
-                                    @click="handleShowDesignPreview(item.temp_url)"
-                                />
-                            </template>
-                        </div>
+                        <ProductInformationModal :items="order.items" />
                     </td>
 
                     <td class="px-3 py-4 font-semibold text-gray-900 class:text-white">

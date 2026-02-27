@@ -254,9 +254,7 @@ Color: Black and White`)
                     type="text"
                     id="prompt"
                     v-model="prompt"
-                    placeholder="Mock up: Volleyball Jersey
-Design: Curve Uniques Lines
-Color: Black and White"
+                    placeholder="Enter your prompt here"
                     class="font-medium block w-full rounded-md bg-white dark:bg-gray-800 px-3 text-base text-black dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none border border-gray-300 dark:border-gray-700 transition-colors duration-200"
                 ></textarea>
 

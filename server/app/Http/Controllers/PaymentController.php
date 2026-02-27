@@ -215,6 +215,9 @@ class PaymentController extends Controller
     public function placeOrder(StoreOrderRequest $request)
     {
         $validated = $request->validated();
+
+Log::info(json_encode($validated, JSON_PRETTY_PRINT));
+
     
         $order = DB::transaction(function () use ($validated, $request) {
             
@@ -278,40 +281,43 @@ class PaymentController extends Controller
     
                 // Deduct material stock per item
                 if (!empty($product['fabric_type_id'])) {
-                    $fabric = Materials::lockForUpdate()->findOrFail($product['fabric_type_id']);
-                    $deduction = 0;
+                    $fabric = Materials::lockForUpdate()->find($product['fabric_type_id']);
+                    
+                    if ($fabric) {
+                        $deduction = 0;
 
-                    if ($fabric && $fabric->unit == 'rolls') {
-                        $baseFabricQuantityUsed = 0;
-                        $sizeName = isset($decodedSizes['name']) ? $decodedSizes['name'] : null;
-                        switch ($sizeName) {
-                            case 'XXS': $baseFabricQuantityUsed = 0.003125; break;
-                            case 'XS': $baseFabricQuantityUsed = 0.00625; break;
-                            case 'S': $baseFabricQuantityUsed = 0.0125; break;
-                            case 'M': $baseFabricQuantityUsed = 0.025; break;
-                            case 'L': $baseFabricQuantityUsed = 0.05; break;
-                            case 'XL': $baseFabricQuantityUsed = 0.1; break;
-                            case 'XXL': $baseFabricQuantityUsed = 0.2; break;
-                            default: $baseFabricQuantityUsed = 0.003125;
+                        if ($fabric->unit == 'rolls') {
+                            $baseFabricQuantityUsed = 0;
+                            $sizeName = isset($decodedSizes['name']) ? $decodedSizes['name'] : null;
+                            switch ($sizeName) {
+                                case 'XXS': $baseFabricQuantityUsed = 0.003125; break;
+                                case 'XS': $baseFabricQuantityUsed = 0.00625; break;
+                                case 'S': $baseFabricQuantityUsed = 0.0125; break;
+                                case 'M': $baseFabricQuantityUsed = 0.025; break;
+                                case 'L': $baseFabricQuantityUsed = 0.05; break;
+                                case 'XL': $baseFabricQuantityUsed = 0.1; break;
+                                case 'XXL': $baseFabricQuantityUsed = 0.2; break;
+                                default: $baseFabricQuantityUsed = 0.003125;
+                            }
+                            $deduction = (float) ($baseFabricQuantityUsed * (float) $product['total_quantity']);
+                        } else {
+                            $fabricUsedPerUnit = (float) $fabric->products()
+                                ->where('products.id', $product['product_id'])
+                                ->value('fabric_quantity');
+                            $deduction = $product['total_quantity'] * $fabricUsedPerUnit;
                         }
-                        $deduction = (float) ($baseFabricQuantityUsed * (float) $product['total_quantity']);
-                    } else {
-                        $fabricUsedPerUnit = (float) $fabric->products()
-                            ->where('products.id', $product['product_id'])
-                            ->value('fabric_quantity');
-                        $deduction = $product['total_quantity'] * $fabricUsedPerUnit;
-                    }
 
-                    $deduction = max(0, min($deduction, $fabric->quantity));
-                    $fabric->decrement('quantity', $deduction);
-    
-                    OrderLogs::create([
-                        'user_id' => Auth::id(),
-                        'order_id' => $order->id, // Logs still reference the main order
-                        'material_name' => $fabric->name,
-                        'unit' => $fabric->unit,
-                        'total_quantity_used' => (float) $deduction,
-                    ]);
+                        $deduction = max(0, min($deduction, $fabric->quantity));
+                        $fabric->decrement('quantity', $deduction);
+        
+                        OrderLogs::create([
+                            'user_id' => Auth::id(),
+                            'order_id' => $order->id, // Logs still reference the main order
+                            'material_name' => $fabric->name,
+                            'unit' => $fabric->unit,
+                            'total_quantity_used' => (float) $deduction,
+                        ]);
+                    }
                 }
             }
             

@@ -188,6 +188,7 @@
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['cart_items'] })
+            queryClient.invalidateQueries({ queryKey: ['cart_count'] })
 
             isCartAddingSuccessful.value = true
 

@@ -197,6 +197,7 @@
         onSuccess: (response) => {
             queryClient.invalidateQueries({ queryKey: ['order_notifications'] })
             queryClient.invalidateQueries({ queryKey: ['cart_items'] })
+            queryClient.invalidateQueries({ queryKey: ['cart_count'] })
 
             toast.add({
                 severity: 'success',
@@ -310,7 +311,7 @@
                         leave-to="opacity-0 scale-95"
                     >
                         <DialogPanel
-                            class="w-[1000px] h-[35rem] transform overflow-y-auto bg-white dark:bg-gray-900 p-6 text-left align-middle shadow-xl transition-all"
+                            class="w-[1000px] max-h-[calc(100vh-16rem)] md:max-h-[calc(100vh-12rem)] transform overflow-y-auto bg-white dark:bg-gray-900 p-6 text-left align-middle shadow-xl transition-all"
                         >
                             <DialogTitle
                                 as="h1"
@@ -416,6 +417,12 @@
                                                             Quantity:
                                                             <strong>
                                                                 {{ product.desired_quantity }}
+                                                            </strong>
+                                                            <strong
+                                                                v-if="Math.floor((product.desired_quantity || 0) / 15) > 0"
+                                                                class="ml-2 text-green-600 dark:text-green-400"
+                                                            >
+                                                                (+ {{ Math.floor((product.desired_quantity || 0) / 15) }} free)
                                                             </strong>
                                                         </p>
                                                     </div>

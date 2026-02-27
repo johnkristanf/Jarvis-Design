@@ -136,7 +136,7 @@
                             </div>
 
                             <!-- Content -->
-                            <div class="p-6 max-h-96 overflow-y-auto dark:bg-gray-900">
+                            <div class="p-6 max-h-[calc(100vh-16rem)] md:max-h-[calc(100vh-12rem)] overflow-y-auto dark:bg-gray-900">
                                 <!-- Order Header Info -->
                                 <div
                                     class="grid grid-cols-2 gap-4 mb-6 pb-6 border-b border-gray-200 dark:border-gray-700"
@@ -291,6 +291,12 @@
                                                     {{ item.product?.name }}
                                                     <span class="text-sm font-normal text-gray-500">
                                                         (x{{ item.total_quantity || 1 }})
+                                                    </span>
+                                                    <span
+                                                        v-if="Math.floor((item.total_quantity || 0) / 15) > 0"
+                                                        class="ml-2 text-sm font-bold text-green-600 dark:text-green-400"
+                                                    >
+                                                        (+ {{ Math.floor((item.total_quantity || 0) / 15) }} free)
                                                     </span>
                                                 </h4>
                                                 <div class="grid grid-cols-2 gap-4">

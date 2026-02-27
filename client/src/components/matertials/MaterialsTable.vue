@@ -76,7 +76,7 @@ import { truncateNonDecimal } from '@/helper/designs'
         (newMaterials) => {
             if (newMaterials) {
                 const lowStockItems = newMaterials.filter(
-                    (material) => material.quantity <= material.reorder_level,
+                    (material) => Number(material.quantity) <= Number(material.reorder_level),
                 )
 
                 if (lowStockItems.length > 0) {
@@ -171,7 +171,7 @@ import { truncateNonDecimal } from '@/helper/designs'
 
                     <td
                         :class="[
-                            material.quantity <= material.reorder_level ? 'text-red-900' : '',
+                            Number(material.quantity) <= Number(material.reorder_level) ? 'text-red-900' : '',
                             'px-6 py-4',
                         ]"
                     >
