@@ -27,7 +27,7 @@ class NotificationController extends Controller
 
     public function orderNotificationsPerUser()
     {
-        $orderNotifications = Notifications::with(['orders.product', 'users']) // eager load related order
+        $orderNotifications = Notifications::with(['orders.items.product', 'users']) // eager load related order items' product
             ->select('id', 'order_id', 'user_id', 'created_at', 'status', 'is_read')
             ->where('user_id', Auth::id())
             ->orderByDesc('created_at')

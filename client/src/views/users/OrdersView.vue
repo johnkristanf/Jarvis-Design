@@ -2,6 +2,7 @@
 <script lang="ts" setup>
     import CustomerChatBox from '@/components/message/CustomerChatBox.vue'
     import OrderDetailsModal from '@/components/orders/OrderDetailsModal.vue'
+    import StatusBadge from '@/components/orders/StatusBadge.vue'
     import { ChatBubbleLeftRightIcon } from '@heroicons/vue/20/solid'
     import { computed, onMounted, ref, watch } from 'vue'
 
@@ -188,7 +189,7 @@
         </div>
 
         <div
-            class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 mt-5 pb-10 gap-5"
+            class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 mt-5 pb-10 gap-5 items-start"
             v-if="!isLoading && orders && orders.data.length > 0"
         >
             <div
@@ -204,10 +205,11 @@
                         class="w-full h-auto"
                     />
                 </div>
-                <div class="p-5">
-                    <p class="font-semibold text-gray-700 dark:text-gray-200">
+                <div class="p-5 flex items-center justify-between">
+                    <p class="font-semibold text-gray-700 dark:text-gray-200 text-sm xl:text-base">
                         {{ order.order_number }}
                     </p>
+                    <StatusBadge :status="order.status" />
                 </div>
             </div>
         </div>

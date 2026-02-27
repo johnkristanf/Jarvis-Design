@@ -156,30 +156,29 @@
         <table class="product-table">
             <thead>
                 <tr>
-                    <th width="50%">Product</th>
+                    <th width="65%">Product</th>
                     <th width="15%" style="text-align: center;">Qty</th>
-                    <th width="20%" style="text-align: right;">Price</th>
-                    <th width="15%" style="text-align: right;">Total</th>
+                    <!-- Removing individual price as it might be complex or unavailable per item in some schemas, we just show Grand Total below -->
                 </tr>
             </thead>
             <tbody>
+                @foreach($orders->items as $item)
                 <tr>
                     <td>
-                        <div class="product-name">{{ $orders->product->name ?? 'Custom Item' }}</div>
-                        <div class="product-detail">Color: {{ ucfirst($orders->color) }}</div>
-                        @if($orders->sizes && $orders->sizes->count() > 0)
+                        <div class="product-name">{{ $item->product->name ?? 'Custom Item' }}</div>
+                        <div class="product-detail">Color: {{ ucfirst($item->color) }}</div>
+                        @if($item->sizes && $item->sizes->count() > 0)
                             <div class="product-detail">
                                 Sizes: 
-                                @foreach($orders->sizes as $size)
+                                @foreach($item->sizes as $size)
                                     {{ $size->name }} ({{ $size->pivot->quantity }}), 
                                 @endforeach
                             </div>
                         @endif
                     </td>
-                    <td style="text-align: center;">{{ $orders->total_quantity }}</td>
-                    <td style="text-align: right;">&#8369;{{ number_format($orders->product_unit_price, 2) }}</td>
-                    <td style="text-align: right;"><strong>&#8369;{{ number_format($orders->total_price, 2) }}</strong></td>
+                    <td style="text-align: center;">{{ $item->total_quantity }}</td>
                 </tr>
+                @endforeach
             </tbody>
         </table>
 

@@ -55,12 +55,8 @@ class PaymentController extends Controller
             'payment_method_code' => 'nullable|string|exists:payment_methods,code',
         ]);
 
-        Log::info(json_encode($validated, JSON_PRETTY_PRINT));
-
         $paymentMethodCode = $validated['payment_method_code'] ?? 'gcash';
         $isCash = $paymentMethodCode === 'cash';
-
-        Log::info(json_encode($paymentMethodCode, JSON_PRETTY_PRINT));
 
         // 2️⃣ Conditional Validation
         if ($isCash) {
@@ -68,14 +64,16 @@ class PaymentController extends Controller
                 return response()->json(['message' => 'Unauthorized. Only admins can record cash payments.'], 403);
             }
             
-            $validated = $request->validate([
+            $cashValidated = $request->validate([
                 'amount' => 'required|numeric|min:1',
             ]);
+            $validated = array_merge($validated, $cashValidated);
         } else {
             // Online payments (GCash, Maya, etc.) require an attachment
-            $request->validate([
+            $onlineValidated = $request->validate([
                 'payment_attachment' => 'required|file|mimes:jpg,jpeg,png|max:2048',
             ]);
+            $validated = array_merge($validated, $onlineValidated);
         }
 
         $order = Orders::findOrFail($validated['order_id']);
@@ -124,21 +122,36 @@ class PaymentController extends Controller
         );
 
         $orderPayment->load(['users']);
-        
+        $order->load(['items.product']);
+        $productNames = [];
+        $colors = [];
+        foreach ($order->items as $item) {
+            if ($item->product) {
+                $productNames[] = $item->product->name;
+            }
+            if ($item->color) {
+                $colors[] = ucfirst($item->color);
+            }
+        }
+        $uniqueProducts = implode(', ', array_unique($productNames)) ?: 'N/A';
+        $uniqueColors = implode(', ', array_unique($colors));
+        $productDisplay = $uniqueColors ? "{$uniqueProducts} ({$uniqueColors})" : $uniqueProducts;
+
+        $displayAmount = $amount > 0 ? $amount : $order->total_price;
+
         // Notify
         $message = sprintf(
             "💰 Payment Received (%s)!\n\n" .
                 "Order No: %s\n" .
                 "Customer: %s\n" .
-                "Product: %s (%s)\n" .
+                "Product: %s\n" .
                 "Amount: ₱%s\n",
 
             strtoupper($paymentMethodCode),
             $order->order_number,
             $orderPayment->users->name ?? 'Guest',
-            $order->product->name ?? 'N/A',
-            ucfirst($order->color),
-            number_format($amount > 0 ? $amount : 0, 2)
+            $productDisplay,
+            number_format($displayAmount, 2)
         );
 
         $this->notificationService->notifyAdmin(AdminNotification::ORDER_NOTIFICATION_TYPE, $message);
@@ -354,117 +367,6 @@ class PaymentController extends Controller
         ]);
     }
     
-
-
-    // public function copyPlaceOrder(StoreOrderRequest $request)
-    // {
-    //     $validated = $request->validated();
-    //     $order = DB::transaction(function () use ($validated, $request) {
-    //         // Step 1: Create order first, without the design URL yet
-    //         $order = Orders::create([
-    //             'order_number' => $this->generateOrderNumber(),
-    //             'color' => $validated['color'],
-    //             'product_unit_price' => $validated['product_unit_price'],
-    //             'product_id' => $validated['product_id'],
-    //             'phone_number' => $validated['phone_number'],
-    //             'address' => $validated['address'],
-    //             'design_type' => $validated['design_type'],
-    //             'order_option' => $validated['order_option'],
-    //             'total_quantity' => $validated['total_quantity'],
-    //             'total_price' => $validated['total_price'],
-    //             'solo_quantity' => $validated['solo_quantity'] ?? null,
-    //             'business_design_url' => $validated['business_design_url'] ?? null,
-    //             'user_id' => Auth::user()->id,
-    //         ]);
-
-    //         // Step 2: Handle own-design file upload (after Order is created)
-    //         if ($request->hasFile('own_design_file')) {
-    //             $attachmentURL = $this->uploadToS3(
-    //                 root: 'orders',
-    //                 sub: $order->id,
-    //                 file: $request->file('own_design_file')
-    //             );
-
-    //             // Step 3: Update the order with the uploaded file's URL
-    //             $order->update([
-    //                 'own_design_url' => $attachmentURL,
-    //             ]);
-    //         }
-
-    //         // Step 4: Handle sizes (many-to-many pivot with quantity)
-    //         if (! empty($validated['sizes'])) {
-    //             foreach ($validated['sizes'] as $sizeId => $qty) {
-    //                 if ($qty > 0) {
-    //                     $order->sizes()->attach($sizeId, ['quantity' => $qty]);
-    //                 }
-    //             }
-    //         }
-
-    //         // Step 5: Deduct total quantity ordered in materials table
-    //         if (isset($validated['fabric_type_id']) && $validated['fabric_type_id']) {
-
-    //             $fabric = Materials::findOrFail($validated['fabric_type_id']);
-
-    //             $totalOrderedQuantity = (int) $validated['total_quantity'];
-    //             $fabricUsedPerUnit = (float) $fabric->products()->pluck('fabric_quantity')->first();
-
-    //             $totalQuantityDeduction = $totalOrderedQuantity * $fabricUsedPerUnit;
-
-    //             if ($fabric->quantity >= $totalQuantityDeduction) {
-    //                 $fabric->decrement('quantity', $totalQuantityDeduction);
-    //             } else {
-    //                 // Handle insufficient stock (throw exception or return error)
-    //                 throw new Exception('Not enough material in stock.');
-    //             }
-
-    //             // LOG ORDER
-    //             OrderLogs::create([
-    //                 'user_id' => Auth::user()->id,
-    //                 'order_id' => $order->id,
-    //                 'material_name' => $fabric->name,
-    //                 'unit' => $fabric->unit,
-    //                 'total_quantity_used' => $totalQuantityDeduction,
-    //             ]);
-    //         }
-
-    //         return $order;
-    //     });
-
-    //     // BACKGROUND QUEUE JOBS
-
-    //     // Process payment
-    //     if (isset($validated['payment_attachment'])) {
-    //         $this->paymentService->processPayment($order->id, $request->file('payment_attachment'));
-    //     }
-
-    //     // User order notification
-    //     $this->notificationService->notifyUserOrder($order, Auth::user()->id, Orders::PENDING);
-
-    //     // Notify admin
-    //     $message = sprintf(
-    //         "🆕 New Order Placed!\n\n" .
-    //             "Order No: %s\n" .
-    //             "Customer: %s\n" .
-    //             "Product: %s (%s)\n" .
-    //             "Quantity: %d pcs\n" .
-    //             "Total Price: ₱%s\n",
-
-    //         $order->order_number,
-    //         Auth::user()->name ?? 'Guest',
-    //         $order->product->name ?? 'N/A',
-    //         ucfirst($order->color),
-    //         $order->total_quantity,
-    //         number_format($order->total_price, 2),
-    //     );
-
-    //     $this->notificationService->notifyAdmin(AdminNotification::ORDER_NOTIFICATION_TYPE, $message);
-
-    //     // Email user order
-    //     $this->paymentService->sendOrderConfirmationEmail($order);
-
-    //     return response()->json(['message' => 'Order placed successfully', 'order_id' => $order->id]);
-    // }
-
     public function getOrderLogs()
     {
         $orderLogs = OrderLogs::select('*') // or explicitly: select('id', 'order_id', 'message', etc.)

@@ -83,11 +83,8 @@ class PaymentService
         $order->status = $status;
         $order->save();
 
-        Notifications::create([
-            'order_id' => $order->id,
-            'status' => $status,
-            'user_id' => $order->user_id,
-        ]);
+        $notificationService = new \App\Service\NotificationService();
+        $notificationService->notifyUserOrder($order, $order->user_id, $status);
 
         return $order->id;
     }

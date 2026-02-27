@@ -451,6 +451,7 @@
                                                 <div class="flex items-center gap-2">
                                                     <PaymentStatusBadge :status="payment.status" />
                                                     <PaymentAttachmentPopOver
+                                                        v-if="payment.payment_attachments?.temp_url"
                                                         :paymentAttachmentURL="
                                                             payment.payment_attachments.temp_url
                                                         "

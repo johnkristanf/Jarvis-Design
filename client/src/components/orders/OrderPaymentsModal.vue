@@ -485,14 +485,14 @@
                                         <div class="flex items-center gap-2">
                                             <PaymentStatusBadge :status="payment.status" />
                                             <PaymentAttachmentPopOver
-                                                v-if="payment.payment_attachments"
+                                                v-if="payment.payment_attachments?.temp_url"
                                                 :paymentAttachmentURL="
-                                                    payment.payment_attachments?.temp_url
+                                                    payment.payment_attachments.temp_url
                                                 "
                                             />
                                             <button
                                                 v-if="
-                                                    props.isAdmin && payment.status !== 'declined'
+                                                    props.isAdmin && payment.status === 'in_review'
                                                 "
                                                 @click="openDeclineModal(payment.id)"
                                                 class="text-xs bg-red-800 text-white px-3 py-1.5 rounded-lg font-medium hover:opacity-75 hover:cursor-pointer transition-colors"

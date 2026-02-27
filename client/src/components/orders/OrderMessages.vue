@@ -9,33 +9,33 @@
 <template>
     <span v-if="status === OrderStatus.PENDING">
         <span>
-            {{ product_name }}
+            Your order
         </span>
         is pending and will be reviewed soon.
     </span>
 
     <span v-else-if="status === OrderStatus.IN_PROGRESS">
-        {{ product_name }} is currently being crafted and prepared. We’ll notify you once it’s ready
+        Your order is currently being crafted and prepared. We’ll notify you once it’s ready
         for delivery or pickup.
     </span>
 
     <span v-else-if="status === OrderStatus.FOR_DELIVERY">
-        {{ product_name }} is now out for delivery. Please prepare to receive it.
+        Your order is now out for delivery. Please prepare to receive it.
     </span>
 
     <span v-else-if="status === OrderStatus.FOR_PICKUP">
-        {{ product_name }} is ready for pick-up. Please visit the store to collect it at your
+        Your order is ready for pick-up. Please visit the store to collect it at your
         scheduled time.
     </span>
 
     <span v-else-if="status === OrderStatus.COMPLETED">
-        {{ product_name }} has been successfully delivered. Thank you for shopping with us!
+        Your order has been successfully delivered. Thank you for shopping with us!
     </span>
     <span v-else-if="status === OrderStatus.CANCELLED">
-        {{ product_name }} has been cancelled. If this was unexpected, please contact support.
+        Your order has been cancelled. If this was unexpected, please contact support.
     </span>
 
     <span v-else-if="status === OrderStatus.PAYMENT_UPDATED">
-        Payment details for {{ product_name }} have been updated. Please check the payment history.
+        Payment details for your order have been updated. Please check the payment history.
     </span>
 </template>

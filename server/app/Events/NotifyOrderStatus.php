@@ -50,6 +50,7 @@ class NotifyOrderStatus implements ShouldBroadcast, ShouldQueue
 
     public function broadcastWith(): array
     {
+        $this->orders->loadMissing('items.product');
         return [
             'notification' => [
                 'id'         => $this->notifcation->id,
@@ -57,6 +58,7 @@ class NotifyOrderStatus implements ShouldBroadcast, ShouldQueue
                 'status'     => $this->orders->status,
                 'is_read'    => $this->notifcation->is_read ?? false,
                 'created_at' => $this->notifcation->created_at?->toISOString(),
+                'orders'     => $this->orders->toArray(),
             ],
         ];
     }
