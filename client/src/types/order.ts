@@ -160,12 +160,8 @@ export interface Product {
 export interface LatestOrders {
     id: number
     order_number: string
-    own_design_url: string | null
-    business_design_url: string | null
-    product_id: number
-    product: Product
     status: string
-    temp_url?: string // optional because sometimes presigned URLs are not always included
+    items: OrderItem[]
 }
 
 export type CardAnalytics = {
