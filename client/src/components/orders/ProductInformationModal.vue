@@ -8,7 +8,6 @@
         DialogTitle,
     } from '@headlessui/vue'
     import { EyeIcon } from '@heroicons/vue/20/solid'
-    import ProductAttributesModal from '../designs/ProductAttributesModal.vue'
 
     const props = defineProps({
         items: {
