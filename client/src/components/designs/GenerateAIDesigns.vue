@@ -3,7 +3,7 @@
     import { saveAiDesign } from '@/api/post/design'
     import { useMutation } from '@tanstack/vue-query'
     import Loader from '../Loader.vue'
-    import { ref } from 'vue'
+    import { ref, computed } from 'vue'
     import type { DesignGenerate } from '@/types/design'
     import {
         ArrowDownTrayIcon,
@@ -81,9 +81,15 @@
         { name: 'sketch' },
     ])
 
-    const prompt = ref(`Mock up: Volleyball Jersey
-Design: Curve Uniques Lines
-Color: Black and White`)
+    const mockupValue = ref('Volleyball Jersey')
+    const designValue = ref('Curve Uniques Lines')
+    const colorValue = ref('Black and White')
+
+    const prompt = computed(
+        () => `Mock up: ${mockupValue.value}
+Design: ${designValue.value}
+Color: ${colorValue.value}`,
+    )
     const style_preference = ref(null)
 
     const onImageGenerate = () => {
@@ -250,13 +256,53 @@ Color: Black and White`)
                     </h1>
                 </div>
 
-                <textarea
-                    type="text"
-                    id="prompt"
-                    v-model="prompt"
-                    placeholder="Enter your prompt here"
-                    class="font-medium block w-full rounded-md bg-white dark:bg-gray-800 px-3 text-base text-black dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none border border-gray-300 dark:border-gray-700 transition-colors duration-200"
-                ></textarea>
+                <div
+                    class="flex flex-col gap-0 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 overflow-hidden transition-all duration-200"
+                >
+                    <div
+                        class="flex items-center px-3 py-2 border-b border-gray-100 dark:border-gray-700/50"
+                    >
+                        <label
+                            class="text-sm font-semibold text-gray-400 dark:text-gray-500 mr-2 shrink-0"
+                        >
+                            Mock up:
+                        </label>
+                        <input
+                            v-model="mockupValue"
+                            type="text"
+                            class="w-full bg-transparent text-base text-black dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none py-1"
+                            placeholder="Type of Shirt"
+                        />
+                    </div>
+
+                    <div class="flex px-3 py-2 border-b border-gray-100 dark:border-gray-700/50">
+                        <label
+                            class="text-sm font-semibold text-gray-400 dark:text-gray-500 mr-4 mt-1.5 shrink-0"
+                        >
+                            Design:
+                        </label>
+                        <textarea
+                            v-model="designValue"
+                            rows="2"
+                            class="w-full bg-transparent text-base text-black dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none py-1 resize-none"
+                            placeholder="Type of Design"
+                        ></textarea>
+                    </div>
+
+                    <div class="flex items-center px-3 py-2">
+                        <label
+                            class="text-sm font-semibold text-gray-400 dark:text-gray-500 mr-6 shrink-0"
+                        >
+                            Color:
+                        </label>
+                        <input
+                            v-model="colorValue"
+                            type="text"
+                            class="w-full bg-transparent text-base text-black dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none py-1"
+                            placeholder="Type of Color"
+                        />
+                    </div>
+                </div>
 
                 <div class="flex flex-col gap-2">
                     <h1 class="text-gray-900 dark:text-gray-100 transition-colors duration-200">

@@ -71,16 +71,24 @@
                     // Call handleStatusChange to update the status in the DB
                     alreadyUpdatedOrders.add(order.id)
                     handleStatusChange(order.id, OrderStatus.IN_PROGRESS, () => {})
-                    
+
                     if (order.user?.id) {
-                        const itemsList = order.items && order.items.length > 0 
-                            ? order.items.map(item => item.product?.name || 'Product').join(', ')
-                            : 'your items'
-                            
+                        const itemsList =
+                            order.items && order.items.length > 0
+                                ? order.items
+                                      .map((item) => item.product?.name || 'Product')
+                                      .join(', ')
+                                : 'your items'
+
                         const formData = new FormData()
-                        formData.append('content', `🎉 Hello ${order.user.name || 'Customer'}!\n\n\nGood news! Your order **#${order.order_number}** for **${itemsList}** has reached the 50% payment threshold (₱${currentTotalPaid.toLocaleString()}). ✅\n\n\nWe will now begin processing your order. Thank you for your business! 👕✨`)
+                        formData.append(
+                            'content',
+                            `🎉 Hello ${order.user.name || 'Customer'}!\n\n\nGood news! Your order **#${order.order_number}** for **${itemsList}** has reached the 50% payment threshold (₱${currentTotalPaid.toLocaleString()}). ✅\n\n\nWe will now begin processing your order. Thank you for your business! 👕✨\n\n[ADMIN_ORDER_LINK:${order.order_number}]`,
+                        )
                         formData.append('user_id', order.user.id.toString())
-                        sendChatMessageApi(formData).catch((err: any) => console.error('Failed to send automated message:', err))
+                        sendChatMessageApi(formData).catch((err: any) =>
+                            console.error('Failed to send automated message:', err),
+                        )
                     }
                 }
             })
@@ -90,7 +98,11 @@
     })
 
     import { computed } from 'vue'
+    import { useRoute } from 'vue-router'
     import CancelOrderConfirmationDialog from '../CancelOrderConfirmationDialog.vue'
+
+    const route = useRoute()
+    const highlightedOrder = computed(() => route.query.highlight as string)
 
     // Computed property: returns true if any order contains a payment with status 'fully_paid'
     const hasAnyFullyPaid = computed(() => {
@@ -303,6 +315,16 @@
             container.addEventListener('scroll', onTableScroll, { passive: true })
         }
 
+        // Auto-scroll to highlighted order if it exists
+        if (highlightedOrder.value) {
+            setTimeout(() => {
+                const highlightedEl = document.getElementById(`order-row-${highlightedOrder.value}`)
+                if (highlightedEl && container) {
+                    highlightedEl.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                }
+            }, 500)
+        }
+
         const echo = initializeEcho()
 
         echo.private(`payments.update`)
@@ -413,7 +435,13 @@
                 <tr
                     v-for="order in orders.data"
                     :key="order.id"
-                    class="bg-white border-b class:bg-gray-800 class:border-gray-700 border-gray-200 hover:bg-gray-50 class:hover:bg-gray-600"
+                    :id="`order-row-${order.order_number}`"
+                    :class="[
+                        'border-b class:border-gray-700 transition-colors duration-300',
+                        highlightedOrder === order.order_number
+                            ? 'bg-gray-300 class:bg-orange-900/40 border-orange-200 hover:bg-orange-100 class:hover:bg-orange-900/60'
+                            : 'bg-white class:bg-gray-800 border-gray-200 hover:bg-gray-50 class:hover:bg-gray-600',
+                    ]"
                 >
                     <td class="px-3 py-4 font-semibold text-gray-900 class:text-white">
                         {{ order.order_number }}
