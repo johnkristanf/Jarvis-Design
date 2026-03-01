@@ -26,6 +26,7 @@
     import ProductInformationModal from './ProductInformationModal.vue'
     import { initializeEcho } from '@/services/echo'
     import { sendChatMessageApi } from '@/api/post/message'
+    import DeliveryReceiptModal from './DeliveryReceiptModal.vue'
 
     const { isAdmin } = useAuthorization()
     const isStatusUpdating = ref<boolean>(false)
@@ -373,6 +374,21 @@
         dateChangeActionData.value = null
     }
 
+    // DELIVERY RECEIPT MODAL
+    const showDeliveryReceiptModal = ref<boolean>(false)
+    const selectedReceiptOrder = ref<Orders | null>(null)
+
+    const handleShowDeliveryReceipt = (order: Orders, close: () => void) => {
+        close()
+        selectedReceiptOrder.value = order
+        showDeliveryReceiptModal.value = true
+    }
+
+    const handleCloseDeliveryReceiptModal = () => {
+        showDeliveryReceiptModal.value = false
+        selectedReceiptOrder.value = null
+    }
+
     // Cancel Order Confirmation
     const showCancelConfirmModal = ref(false)
     const cancelOrderData = ref<{ orderId: number; close: () => void } | null>(null)
@@ -583,6 +599,20 @@
                                                         "
                                                     />
                                                 </div>
+
+                                                <!-- Show Delivery Receipt Button -->
+                                                <fwb-button
+                                                    v-if="order.delivery_date"
+                                                    @click="handleShowDeliveryReceipt(order, close)"
+                                                    color="light"
+                                                    class="w-full hover:opacity-75 hover:cursor-pointer"
+                                                >
+                                                    {{
+                                                        order.order_option === OrderOptions.DELIVERY
+                                                            ? 'Show Delivery Receipt'
+                                                            : 'Show Pick-up Receipt'
+                                                    }}
+                                                </fwb-button>
 
                                                 <!-- Status Update Button -->
                                                 <div class="w-full">
@@ -801,6 +831,14 @@
         :isAdmin="isAdmin"
         @close="handleCloseOrderPaymentsModal"
         @status-change="(orderId, status) => handleStatusChange(orderId, status, () => {})"
+    />
+
+    <!-- DELIVERY RECEIPT MODAL -->
+    <DeliveryReceiptModal
+        v-if="selectedReceiptOrder"
+        :order="selectedReceiptOrder"
+        :isOpen="showDeliveryReceiptModal"
+        @close="handleCloseDeliveryReceiptModal"
     />
 
     <!-- SET DELIVERY DATE CONFIRMATION MODAL -->
