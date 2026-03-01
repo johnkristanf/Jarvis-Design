@@ -10,7 +10,9 @@
         BookmarkIcon,
         CheckIcon,
         InformationCircleIcon,
+        SparklesIcon,
     } from '@heroicons/vue/20/solid'
+    import { Drawer } from 'primevue'
     import { useToast } from 'primevue/usetoast'
     import { deductPromptLimit } from '@/api/put/user'
     import { useFetchAuthenticatedUser } from '@/composables/useFetchAuthenticatedUser'
@@ -22,6 +24,7 @@
     console.log('aiAPIURL: ', aiAPIURL)
 
     const isLoadingMutation = ref(false)
+    const showDrawer = ref(false)
     const loaderMsg = ref<string>('')
     const imageUrls = ref([])
 
@@ -43,10 +46,13 @@
                 // Reset save states for new images
                 savedStates.value = {}
 
+                // Open the drawer to show results
+                showDrawer.value = true
+
                 toast.add({
                     severity: 'success',
                     summary: 'AI Design Generated Successfully',
-                    detail: 'Scroll down to look up for the designs',
+                    detail: 'Your designs are ready in the panel on the right.',
                     life: 3000,
                 })
 
@@ -212,49 +218,65 @@ Color: ${colorValue.value}`,
             </h2>
         </div>
 
-        <form class="flex flex-col gap-7 w-full mb-8">
+        <form class="flex flex-col gap-6 w-full mb-8">
             <div class="flex flex-col gap-2 w-full">
-                <div class="flex justify-between items-center gap-2">
-                    <div class="flex items-end justify-between w-full">
-                        <h1 class="text-gray-900 dark:text-gray-100 transition-colors duration-200">
-                            Enter your Prompt:
+                <!-- Metadata and Actions Stack (Right Aligned) -->
+                <div class="flex justify-end w-full">
+                    <div class="flex flex-col items-end gap-1.5 min-w-[30%]">
+                        <!-- Daily Prompt Limit -->
+                        <h1
+                            class="text-gray-500 dark:text-gray-400 text-sm transition-colors duration-200"
+                        >
+                            Daily Prompt Limit: {{ authStore.currentUser?.prompt_limit }}
                         </h1>
-                        <div class="flex flex-col items-center gap-2 w-[20%]">
+
+                        <!-- Prompt Credit -->
+                        <div class="flex items-center gap-1.5">
+                            <div class="relative group">
+                                <InformationCircleIcon
+                                    class="size-5 text-gray-500 dark:text-gray-400 cursor-pointer transition-colors duration-200"
+                                />
+                                <div
+                                    class="absolute right-6 top-1/2 z-20 w-60 -translate-y-1/2 rounded bg-gray-900 dark:bg-gray-700 px-3 py-2 text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+                                    style="white-space: normal"
+                                >
+                                    For every generation, it's equivalent to 5 credits, which will
+                                    add up to your overall payment on your next order.
+                                </div>
+                            </div>
                             <h1
                                 class="text-gray-500 dark:text-gray-400 text-sm transition-colors duration-200"
                             >
-                                Daily Prompt Limit:
-                                {{ authStore.currentUser?.prompt_limit }}
+                                Prompt credit: ₱ {{ authStore.currentUser?.prompt_credit }}
                             </h1>
-                            <div class="flex items-center gap-1">
-                                <div class="relative group">
-                                    <InformationCircleIcon
-                                        class="size-5 text-gray-900 dark:text-gray-100 cursor-pointer transition-colors duration-200"
-                                    />
-                                    <div
-                                        class="absolute right-6 top-1/2 z-20 w-60 -translate-y-1/2 rounded bg-gray-900 dark:bg-gray-700 px-3 py-2 text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
-                                        style="white-space: normal"
-                                    >
-                                        For every generation, it's equivalent to 5 credits, which
-                                        will add up to your overall payment on your next order.
-                                    </div>
-                                </div>
-                                <h1
-                                    class="text-gray-500 dark:text-gray-400 text-sm mr-13 transition-colors duration-200"
-                                >
-                                    Prompt credit: ₱ {{ authStore.currentUser?.prompt_credit }}
-                                </h1>
-                            </div>
                         </div>
+
+                        <!-- Mockup Hint -->
+                        <h1
+                            class="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wider font-semibold"
+                        >
+                            Mock-up: Shirt | Design: Pattern | Color: Any
+                        </h1>
+
+                        <!-- View Generated Designs button -->
+                        <button
+                            v-if="imageUrls && imageUrls.length > 0"
+                            type="button"
+                            @click="showDrawer = true"
+                            class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md bg-indigo-600 dark:bg-indigo-500 text-white hover:cursor-pointer hover:opacity-75 transition-colors duration-200"
+                        >
+                            <SparklesIcon class="w-3.5 h-3.5" />
+                            View Generated Designs
+                        </button>
                     </div>
                 </div>
 
-                <div class="flex justify-end w-full">
-                    <h1 class="text-xs text-gray-500 dark:text-gray-400 mb-1">
-                        Mock-up: Input type of Shirt, Design: Input type of Design, Color: Input
-                        type of color
-                    </h1>
-                </div>
+                <!-- Label closer to input -->
+                <h1
+                    class="text-gray-900 dark:text-gray-100 font-bold text-lg transition-colors duration-200"
+                >
+                    Enter your Prompt:
+                </h1>
 
                 <div
                     class="flex flex-col gap-0 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 overflow-hidden transition-all duration-200"
@@ -338,84 +360,96 @@ Color: ${colorValue.value}`,
                 </button>
             </div>
         </form>
+    </div>
 
-        <!-- LIST OF AI GENERATED DESIGNS -->
-        <div class="mt-5">
-            <div v-if="imageUrls && imageUrls.length > 0">
-                <h1 class="mb-3 text-gray-900 dark:text-gray-100 transition-colors duration-200">
-                    Generated AI Images:
-                </h1>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div
-                        v-for="(imageUrl, index) in imageUrls"
-                        :key="'generated-' + index"
-                        class="group relative overflow-hidden rounded-md"
-                    >
-                        <!-- Action buttons row -->
-                        <div class="absolute top-2 right-2 z-10 flex items-center gap-1">
-                            <!-- Save Button -->
-                            <button
-                                @click="saveDesign(imageUrl, index)"
-                                :disabled="
-                                    savedStates[index] === 'saving' ||
-                                    savedStates[index] === 'saved'
-                                "
-                                :title="
-                                    savedStates[index] === 'saved' ? 'Design saved!' : 'Save design'
-                                "
-                                class="p-1 rounded-full shadow-md transition cursor-pointer"
-                                :class="[
-                                    savedStates[index] === 'saved'
-                                        ? 'bg-green-500 text-white'
-                                        : 'bg-white/80 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-700',
-                                    savedStates[index] === 'saving' ? 'opacity-60 cursor-wait' : '',
-                                ]"
-                                type="button"
-                            >
-                                <CheckIcon
-                                    v-if="savedStates[index] === 'saved'"
-                                    class="w-5 h-5 text-white"
-                                />
-                                <BookmarkIcon
-                                    v-else
-                                    class="w-5 h-5 text-gray-700 dark:text-gray-100 hover:text-black dark:hover:text-gray-200 transition-colors duration-200"
-                                />
-                            </button>
+    <!-- GENERATED DESIGNS DRAWER -->
+    <div v-if="showDrawer" class="absolute card flex justify-center">
+        <Drawer
+            v-model:visible="showDrawer"
+            position="right"
+            class="!w-full md:!w-[36rem] lg:!w-[44rem] bg-white dark:bg-gray-900"
+        >
+            <template #header>
+                <div class="flex items-center gap-2">
+                    <SparklesIcon class="w-5 h-5 text-indigo-500" />
+                    <span class="font-bold text-lg text-gray-900 dark:text-gray-100">
+                        Generated AI Designs
+                    </span>
+                    <span class="ml-2 text-sm text-gray-500 dark:text-gray-400">
+                        ({{ imageUrls.length }} result{{ imageUrls.length !== 1 ? 's' : '' }})
+                    </span>
+                </div>
+            </template>
 
-                            <!-- Download Button -->
-                            <button
-                                @click="downloadImage(imageUrl, index)"
-                                class="p-1 bg-white/80 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-700 rounded-full shadow-md transition cursor-pointer"
-                                type="button"
-                            >
-                                <ArrowDownTrayIcon
-                                    class="w-5 h-5 text-gray-700 dark:text-gray-100 hover:text-black dark:hover:text-gray-200 transition-colors duration-200"
-                                />
-                            </button>
-                        </div>
-
-                        <!-- Image -->
-                        <img
-                            :src="`${aiAPIURL}/generated/image/${imageUrl}`"
-                            class="aspect-square w-full rounded-md bg-gray-200 dark:bg-gray-700 object-cover group-hover:opacity-75 transition"
-                        />
-
-                        <!-- Caption -->
-                        <h3
-                            class="mt-2 text-sm text-center text-gray-700 dark:text-gray-100 font-medium transition-colors duration-200"
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 p-2">
+                <div
+                    v-for="(imageUrl, index) in imageUrls"
+                    :key="'generated-' + index"
+                    class="group relative overflow-hidden rounded-md"
+                >
+                    <!-- Action buttons row -->
+                    <div class="absolute top-2 right-2 z-10 flex items-center gap-1">
+                        <!-- Save Button -->
+                        <button
+                            @click="saveDesign(imageUrl, index)"
+                            :disabled="
+                                savedStates[index] === 'saving' || savedStates[index] === 'saved'
+                            "
+                            :title="
+                                savedStates[index] === 'saved' ? 'Design saved!' : 'Save design'
+                            "
+                            class="p-1 rounded-full shadow-md transition cursor-pointer"
+                            :class="[
+                                savedStates[index] === 'saved'
+                                    ? 'bg-green-500 text-white'
+                                    : 'bg-white/80 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-700',
+                                savedStates[index] === 'saving' ? 'opacity-60 cursor-wait' : '',
+                            ]"
+                            type="button"
                         >
-                            Generated Design {{ index + 1 }}
-                            <span
+                            <CheckIcon
                                 v-if="savedStates[index] === 'saved'"
-                                class="ml-1 text-xs text-green-600 dark:text-green-400 font-semibold"
-                            >
-                                ✓ Saved
-                            </span>
-                        </h3>
+                                class="w-5 h-5 text-white"
+                            />
+                            <BookmarkIcon
+                                v-else
+                                class="w-5 h-5 text-gray-700 dark:text-gray-100 hover:text-black dark:hover:text-gray-200 transition-colors duration-200"
+                            />
+                        </button>
+
+                        <!-- Download Button -->
+                        <button
+                            @click="downloadImage(imageUrl, index)"
+                            class="p-1 bg-white/80 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-700 rounded-full shadow-md transition cursor-pointer"
+                            type="button"
+                        >
+                            <ArrowDownTrayIcon
+                                class="w-5 h-5 text-gray-700 dark:text-gray-100 hover:text-black dark:hover:text-gray-200 transition-colors duration-200"
+                            />
+                        </button>
                     </div>
+
+                    <!-- Image -->
+                    <img
+                        :src="`${aiAPIURL}/generated/image/${imageUrl}`"
+                        class="aspect-square w-full rounded-md bg-gray-200 dark:bg-gray-700 object-cover group-hover:opacity-75 transition"
+                    />
+
+                    <!-- Caption -->
+                    <h3
+                        class="mt-2 text-sm text-center text-gray-700 dark:text-gray-100 font-medium transition-colors duration-200"
+                    >
+                        Generated Design {{ index + 1 }}
+                        <span
+                            v-if="savedStates[index] === 'saved'"
+                            class="ml-1 text-xs text-green-600 dark:text-green-400 font-semibold"
+                        >
+                            ✓ Saved
+                        </span>
+                    </h3>
                 </div>
             </div>
-        </div>
+        </Drawer>
     </div>
 
     <Loader v-if="isLoadingMutation" :msg="loaderMsg" />
