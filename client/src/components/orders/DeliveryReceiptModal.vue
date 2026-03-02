@@ -106,7 +106,9 @@
         class="fixed inset-0 z-[999999] flex items-center justify-center bg-gray-900/70"
     >
         <DialogPanel class="w-full max-w-4xl mx-4 flex flex-col max-h-[90vh]">
-            <div class="bg-white overflow-hidden rounded-2xl shadow-2xl flex flex-col max-h-[90vh]">
+            <div
+                class="bg-white dark:bg-gray-900 overflow-hidden rounded-2xl shadow-2xl flex flex-col max-h-[90vh]"
+            >
                 <!-- ── HEADER ── -->
                 <div
                     class="bg-gray-900 text-white px-6 py-4 flex items-center justify-between flex-shrink-0"
@@ -161,7 +163,7 @@
                 </div>
 
                 <!-- ── SCROLLABLE RECEIPT BODY ── -->
-                <div class="flex-1 overflow-y-auto p-6 sm:p-8 bg-white">
+                <div class="flex-1 overflow-y-auto p-6 sm:p-8 bg-white dark:bg-gray-900">
                     <div id="delivery-receipt-print-area" class="receipt-wrapper max-w-none">
                         <!-- RECEIPT HEADER -->
                         <div
@@ -178,7 +180,7 @@
 
                         <!-- ORDER INFORMATION -->
                         <p
-                            class="section-title text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-3 pb-1 border-b border-gray-100"
+                            class="section-title text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-3 pb-1 border-b border-gray-100 dark:border-gray-700"
                         >
                             Order Information
                         </p>
@@ -187,41 +189,45 @@
                         >
                             <div class="info-item">
                                 <label
-                                    class="text-[10px] text-gray-400 uppercase tracking-wide block mb-0.5"
+                                    class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide block mb-0.5"
                                 >
                                     Order Number
                                 </label>
-                                <span class="font-semibold text-gray-800 break-all">
+                                <span
+                                    class="font-semibold text-gray-800 dark:text-gray-200 break-all"
+                                >
                                     #{{ order.order_number }}
                                 </span>
                             </div>
                             <div class="info-item">
                                 <label
-                                    class="text-[10px] text-gray-400 uppercase tracking-wide block mb-0.5"
+                                    class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide block mb-0.5"
                                 >
                                     Order Date
                                 </label>
-                                <span class="font-semibold text-gray-800">
+                                <span class="font-semibold text-gray-800 dark:text-gray-200">
                                     {{ formattedOrderDate }}
                                 </span>
                             </div>
                             <div class="info-item">
                                 <label
-                                    class="text-[10px] text-gray-400 uppercase tracking-wide block mb-0.5"
+                                    class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide block mb-0.5"
                                 >
                                     {{ isDelivery ? 'Delivery Date' : 'Pick-up Date' }}
                                 </label>
-                                <span class="font-semibold text-gray-800">
+                                <span class="font-semibold text-gray-800 dark:text-gray-200">
                                     {{ formattedDeliveryDate }}
                                 </span>
                             </div>
                             <div class="info-item">
                                 <label
-                                    class="text-[10px] text-gray-400 uppercase tracking-wide block mb-0.5"
+                                    class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide block mb-0.5"
                                 >
                                     Option
                                 </label>
-                                <span class="font-semibold text-gray-800 uppercase">
+                                <span
+                                    class="font-semibold text-gray-800 dark:text-gray-200 uppercase"
+                                >
                                     {{ order.order_option }}
                                 </span>
                             </div>
@@ -241,7 +247,7 @@
 
                         <!-- CUSTOMER INFORMATION -->
                         <p
-                            class="section-title text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-3 pb-1 border-b border-gray-100"
+                            class="section-title text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-3 pb-1 border-b border-gray-100 dark:border-gray-700"
                         >
                             Customer Information
                         </p>
@@ -254,37 +260,39 @@
                                 >
                                     Name
                                 </label>
-                                <span class="font-semibold text-gray-800">
+                                <span class="font-semibold text-gray-800 dark:text-gray-200">
                                     {{ order.user?.name ?? '—' }}
                                 </span>
                             </div>
                             <div class="info-item">
                                 <label
-                                    class="text-[10px] text-gray-400 uppercase tracking-wide block mb-0.5"
+                                    class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide block mb-0.5"
                                 >
                                     Email
                                 </label>
-                                <span class="font-semibold text-gray-800 break-all">
+                                <span
+                                    class="font-semibold text-gray-800 dark:text-gray-200 break-all"
+                                >
                                     {{ order.user?.email ?? '—' }}
                                 </span>
                             </div>
                             <div class="info-item">
                                 <label
-                                    class="text-[10px] text-gray-400 uppercase tracking-wide block mb-0.5"
+                                    class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide block mb-0.5"
                                 >
                                     Phone Number
                                 </label>
-                                <span class="font-semibold text-gray-800">
+                                <span class="font-semibold text-gray-800 dark:text-gray-200">
                                     {{ order.phone_number ?? '—' }}
                                 </span>
                             </div>
                             <div class="info-full col-span-2 sm:col-span-3">
                                 <label
-                                    class="text-[10px] text-gray-400 uppercase tracking-wide block mb-0.5"
+                                    class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide block mb-0.5"
                                 >
                                     Address
                                 </label>
-                                <span class="font-semibold text-gray-800">
+                                <span class="font-semibold text-gray-800 dark:text-gray-200">
                                     {{ order.address ?? '—' }}
                                 </span>
                             </div>
@@ -292,7 +300,7 @@
 
                         <!-- ORDER ITEMS -->
                         <p
-                            class="section-title text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-3 pb-1 border-b border-gray-100"
+                            class="section-title text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-3 pb-1 border-b border-gray-100 dark:border-gray-700"
                         >
                             Order Items
                         </p>
@@ -320,13 +328,17 @@
                                 <tr
                                     v-for="item in order.items"
                                     :key="item.id"
-                                    class="border-b border-gray-100"
+                                    class="border-b border-gray-100 dark:border-gray-700"
                                 >
                                     <td class="px-3 py-3 align-top">
-                                        <div class="product-name font-semibold text-gray-800">
+                                        <div
+                                            class="product-name font-semibold text-gray-800 dark:text-gray-200"
+                                        >
                                             {{ item.product?.name ?? 'Custom Item' }}
                                         </div>
-                                        <div class="product-detail text-xs text-gray-500 mt-1">
+                                        <div
+                                            class="product-detail text-xs text-gray-500 dark:text-gray-400 mt-1"
+                                        >
                                             Color:
                                             {{
                                                 item.color
@@ -346,10 +358,14 @@
                                             </span>
                                         </div>
                                     </td>
-                                    <td class="px-3 py-3 text-center text-gray-700 font-medium">
+                                    <td
+                                        class="px-3 py-3 text-center text-gray-700 dark:text-gray-300 font-medium"
+                                    >
                                         {{ item.total_quantity }}
                                     </td>
-                                    <td class="px-3 py-3 text-right text-gray-700 font-semibold">
+                                    <td
+                                        class="px-3 py-3 text-right text-gray-700 dark:text-gray-300 font-semibold"
+                                    >
                                         {{ formatCurrency(item.total_price) }}
                                     </td>
                                 </tr>
@@ -358,18 +374,22 @@
 
                         <!-- TOTALS -->
                         <div
-                            class="totals-block flex flex-col items-end gap-1.5 pt-4 border-t-2 border-gray-100"
+                            class="totals-block flex flex-col items-end gap-1.5 pt-4 border-t-2 border-gray-100 dark:border-gray-700"
                         >
                             <div class="totals-row flex gap-4 text-sm">
-                                <span class="total-label text-gray-500">Total Paid:</span>
+                                <span class="total-label text-gray-500 dark:text-gray-400">
+                                    Total Paid:
+                                </span>
                                 <span
-                                    class="total-value font-semibold text-gray-800 min-w-[100px] text-right"
+                                    class="total-value font-semibold text-gray-800 dark:text-gray-200 min-w-[100px] text-right"
                                 >
                                     {{ formatCurrency(order.total_paid) }}
                                 </span>
                             </div>
                             <div class="totals-row flex gap-4 text-sm">
-                                <span class="total-label text-gray-500">Balance:</span>
+                                <span class="total-label text-gray-500 dark:text-gray-400">
+                                    Balance:
+                                </span>
                                 <span
                                     class="total-value font-semibold min-w-[100px] text-right"
                                     :class="order.balance > 0 ? 'text-red-600' : 'text-green-600'"
@@ -378,7 +398,9 @@
                                 </span>
                             </div>
                             <div class="totals-row flex gap-4 mt-1">
-                                <span class="font-semibold text-gray-700">Grand Total:</span>
+                                <span class="font-semibold text-gray-700 dark:text-gray-300">
+                                    Grand Total:
+                                </span>
                                 <span
                                     class="grand-total text-xl font-bold text-[#7d6724] min-w-[100px] text-right"
                                 >
@@ -391,23 +413,31 @@
                         <div
                             class="sig-section grid grid-cols-2 gap-12 mt-10 pt-4 border-t border-gray-200"
                         >
-                            <div class="sig-box text-center text-xs text-gray-500">
+                            <div
+                                class="sig-box text-center text-xs text-gray-500 dark:text-gray-400"
+                            >
                                 <div
-                                    class="sig-line border-t border-gray-700 pt-1.5 mt-9 text-gray-600 font-medium"
+                                    class="sig-line border-t border-gray-700 dark:border-gray-500 pt-1.5 mt-9 text-gray-600 dark:text-gray-300 font-medium"
                                 >
                                     Prepared by
                                 </div>
-                                <p class="sig-sub text-[10px] text-gray-400 mt-0.5">
+                                <p
+                                    class="sig-sub text-[10px] text-gray-400 dark:text-gray-500 mt-0.5"
+                                >
                                     Authorized Signature
                                 </p>
                             </div>
-                            <div class="sig-box text-center text-xs text-gray-500">
+                            <div
+                                class="sig-box text-center text-xs text-gray-500 dark:text-gray-400"
+                            >
                                 <div
-                                    class="sig-line border-t border-gray-700 pt-1.5 mt-9 text-gray-600 font-medium"
+                                    class="sig-line border-t border-gray-700 dark:border-gray-500 pt-1.5 mt-9 text-gray-600 dark:text-gray-300 font-medium"
                                 >
                                     Received by
                                 </div>
-                                <p class="sig-sub text-[10px] text-gray-400 mt-0.5">
+                                <p
+                                    class="sig-sub text-[10px] text-gray-400 dark:text-gray-500 mt-0.5"
+                                >
                                     Customer Signature &amp; Date
                                 </p>
                             </div>
@@ -415,7 +445,7 @@
 
                         <!-- FOOTER -->
                         <div
-                            class="receipt-footer text-center mt-7 pt-4 border-t border-gray-100 text-[11px] text-gray-400"
+                            class="receipt-footer text-center mt-7 pt-4 border-t border-gray-100 dark:border-gray-700 text-[11px] text-gray-400 dark:text-gray-500"
                         >
                             <p>Thank you for choosing Jarvis Designs!</p>
                             <p class="mt-0.5">
@@ -428,12 +458,12 @@
 
                 <!-- ── FOOTER ACTIONS ── -->
                 <div
-                    class="border-t border-gray-200 bg-gray-50 px-6 py-4 flex-shrink-0 flex justify-end"
+                    class="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-6 py-4 flex-shrink-0 flex justify-end"
                 >
                     <button
                         type="button"
                         @click="emit('close')"
-                        class="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 cursor-pointer"
+                        class="inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 cursor-pointer"
                     >
                         Close
                     </button>

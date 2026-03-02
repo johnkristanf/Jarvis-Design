@@ -58,9 +58,9 @@
 
 <template>
     <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
-        <table class="w-full text-sm text-left rtl:text-right text-gray-500 class:text-gray-400">
+        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
             <thead
-                class="text-xs text-white uppercase bg-gray-900 class:bg-gray-700 class:text-gray-400"
+                class="text-xs text-white uppercase bg-gray-900 dark:bg-gray-700 dark:text-gray-400"
             >
                 <tr>
                     <th scope="col" class="px-8 py-3">Category</th>
@@ -73,15 +73,15 @@
                 <tr
                     v-for="product in products.data"
                     :key="product.id"
-                    class="bg-white border-b class:bg-gray-800 class:border-gray-700"
+                    class="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
                 >
                     <!-- Product Category -->
-                    <td class="px-6 py-4 font-medium text-gray-900 class:text-white">
+                    <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">
                         {{ product.design_category.name }}
                     </td>
 
                     <!-- Product Name -->
-                    <td class="px-6 py-4 font-medium text-gray-900 class:text-white">
+                    <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">
                         {{ product.name }}
                     </td>
 

@@ -105,13 +105,10 @@
     const route = useRoute()
     const highlightedOrder = computed(() => route.query.highlight as string)
 
-    // Computed property: returns true if any order contains a payment with status 'fully_paid'
-    const hasAnyFullyPaid = computed(() => {
-        if (!orders.value?.data) return false
-        return orders.value.data.some((order) =>
-            order.order_payments?.some((payment) => payment.status === 'fully_paid'),
-        )
-    })
+    // Helper: returns true if the specific order has at least one fully_paid payment
+    const orderHasFullyPaid = (order: Orders): boolean => {
+        return order.order_payments?.some((payment) => payment.status === 'fully_paid') ?? false
+    }
 
     watch(
         () => error,
@@ -415,9 +412,9 @@
 
 <template>
     <div class="order-table relative h-full overflow-y-auto shadow-md sm:rounded-lg">
-        <table class="w-full text-sm text-left rtl:text-right text-gray-500 class:text-gray-400">
+        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
             <thead
-                class="text-xs text-white uppercase bg-gray-900 class:bg-gray-700 class:text-gray-400"
+                class="text-xs text-white uppercase bg-gray-900 dark:bg-gray-700 dark:text-gray-400"
             >
                 <tr>
                     <!-- <th scope="col" class="px-16 py-3">
@@ -453,17 +450,17 @@
                     :key="order.id"
                     :id="`order-row-${order.order_number}`"
                     :class="[
-                        'border-b class:border-gray-700 transition-colors duration-300',
+                        'border-b dark:border-gray-700 transition-colors duration-300',
                         highlightedOrder === order.order_number
-                            ? 'bg-gray-300 class:bg-orange-900/40 border-orange-200 hover:bg-orange-100 class:hover:bg-orange-900/60'
-                            : 'bg-white class:bg-gray-800 border-gray-200 hover:bg-gray-50 class:hover:bg-gray-600',
+                            ? 'bg-gray-300 dark:bg-orange-900/40 border-orange-200 hover:bg-orange-100 dark:hover:bg-orange-900/60'
+                            : 'bg-white dark:bg-gray-800 border-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600',
                     ]"
                 >
-                    <td class="px-3 py-4 font-semibold text-gray-900 class:text-white">
+                    <td class="px-3 py-4 font-semibold text-gray-900 dark:text-white">
                         {{ order.order_number }}
                     </td>
 
-                    <td class="px-3 py-4 font-semibold text-gray-900 class:text-white">
+                    <td class="px-3 py-4 font-semibold text-gray-900 dark:text-white">
                         <CustomerInfoModal
                             :customer-name="order.user?.name"
                             :email="order.user?.email"
@@ -472,11 +469,11 @@
                         />
                     </td>
 
-                    <td class="px-3 py-4 font-semibold text-gray-900 class:text-white">
+                    <td class="px-3 py-4 font-semibold text-gray-900 dark:text-white">
                         <ProductInformationModal :items="order.items" />
                     </td>
 
-                    <td class="px-3 py-4 font-semibold text-gray-900 class:text-white">
+                    <td class="px-3 py-4 font-semibold text-gray-900 dark:text-white">
                         {{ order.order_option.toUpperCase() }}
                     </td>
 
@@ -484,14 +481,14 @@
                         <StatusBadge :status="order.status" />
                     </td>
 
-                    <td class="px-3 py-4 font-semibold text-gray-900 class:text-white">
+                    <td class="px-3 py-4 font-semibold text-gray-900 dark:text-white">
                         {{ order.delivery_date ? formatDate(order.delivery_date) : 'N/A' }}
                     </td>
 
                     <!-- UPDATE STATUS ACTION BUTTON -->
                     <td
                         v-if="isAdmin"
-                        class="px-3 py-4 font-semibold text-gray-900 class:text-white"
+                        class="px-3 py-4 font-semibold text-gray-900 dark:text-white"
                     >
                         <div
                             v-if="
@@ -523,7 +520,7 @@
                                     <teleport to="body">
                                         <PopoverPanel
                                             v-if="open"
-                                            class="absolute z-[999] w-64 rounded-lg bg-white shadow-lg ring-1 ring-black/5 p-3"
+                                            class="absolute z-[999] w-64 rounded-lg bg-white dark:bg-gray-800 dark:border dark:border-gray-700 shadow-lg ring-1 ring-black/5 p-3"
                                             :style="{
                                                 top: `${popoverPosition.top}px`,
                                                 left: `${popoverPosition.left}px`,
@@ -533,7 +530,7 @@
                                             <!-- Actions -->
                                             <div class="flex flex-col gap-4">
                                                 <!-- Payment Screenshot -->
-                                                <fwb-button
+                                                <button
                                                     v-if="
                                                         order.status !== OrderStatus.COMPLETED &&
                                                         order.status !== OrderStatus.CANCELLED
@@ -541,32 +538,32 @@
                                                     @click="
                                                         handleShowOrderPaymentsModal(order, close)
                                                     "
-                                                    color="light"
+                                                    class="w-full text-sm font-medium px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
                                                 >
                                                     Payments
-                                                </fwb-button>
+                                                </button>
 
                                                 <!-- Chat Button -->
-                                                <fwb-button
+                                                <button
                                                     v-if="
                                                         order.status !== OrderStatus.COMPLETED &&
                                                         order.status !== OrderStatus.CANCELLED
                                                     "
-                                                    color="light"
+                                                    class="w-full text-sm font-medium px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
                                                 >
                                                     <router-link
-                                                        class="w-full"
+                                                        class="w-full block"
                                                         :to="`/admin/message/${order.user?.id}`"
                                                     >
                                                         Chat to Customer
                                                     </router-link>
-                                                </fwb-button>
+                                                </button>
 
                                                 <!-- Delivery or Pickup Date -->
                                                 <div
                                                     v-if="
                                                         order.status == OrderStatus.IN_PROGRESS &&
-                                                        hasAnyFullyPaid &&
+                                                        orderHasFullyPaid(order) &&
                                                         !order.delivery_date
                                                     "
                                                 >
@@ -601,18 +598,17 @@
                                                 </div>
 
                                                 <!-- Show Delivery Receipt Button -->
-                                                <fwb-button
+                                                <button
                                                     v-if="order.delivery_date"
                                                     @click="handleShowDeliveryReceipt(order, close)"
-                                                    color="light"
-                                                    class="w-full hover:opacity-75 hover:cursor-pointer"
+                                                    class="w-full text-sm font-medium px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-600 hover:opacity-75 hover:cursor-pointer transition-colors"
                                                 >
                                                     {{
                                                         order.order_option === OrderOptions.DELIVERY
                                                             ? 'Show Delivery Receipt'
                                                             : 'Show Pick-up Receipt'
                                                     }}
-                                                </fwb-button>
+                                                </button>
 
                                                 <!-- Status Update Button -->
                                                 <div class="w-full">
@@ -654,10 +650,10 @@
                                                             leave-to-class="translate-y-1 opacity-0"
                                                         >
                                                             <PopoverPanel
-                                                                class="absolute z-[9999] mt-2 w-full rounded-lg bg-white shadow-lg ring-1 ring-black/5"
+                                                                class="absolute z-[9999] mt-2 w-full rounded-lg bg-white dark:bg-gray-800 dark:border dark:border-gray-700 shadow-lg ring-1 ring-black/5"
                                                             >
                                                                 <div
-                                                                    class="flex flex-col gap-2 bg-white p-3"
+                                                                    class="flex flex-col gap-2 bg-white dark:bg-gray-800 p-3"
                                                                 >
                                                                     <h1
                                                                         v-for="item in orderStatus.filter(
@@ -699,7 +695,7 @@
                                                                         ]"
                                                                     >
                                                                         <p
-                                                                            class="text-sm font-medium"
+                                                                            class="text-sm font-medium dark:text-white"
                                                                         >
                                                                             {{
                                                                                 item.name.toUpperCase()
@@ -774,11 +770,15 @@
             @click.self="showDesignPreviewDialog = false"
         >
             <div
-                class="relative max-w-3xl w-full mx-4 bg-white rounded-2xl shadow-2xl overflow-hidden"
+                class="relative max-w-3xl w-full mx-4 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden"
             >
                 <!-- Header -->
-                <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-                    <h2 class="text-base font-semibold text-gray-900">Design Preview</h2>
+                <div
+                    class="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-700"
+                >
+                    <h2 class="text-base font-semibold text-gray-900 dark:text-white">
+                        Design Preview
+                    </h2>
                     <button
                         @click="showDesignPreviewDialog = false"
                         class="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-1.5 transition-colors duration-150 cursor-pointer"
@@ -799,7 +799,9 @@
                     </button>
                 </div>
                 <!-- Image -->
-                <div class="flex items-center justify-center bg-gray-50 p-8 min-h-[75vh]">
+                <div
+                    class="flex items-center justify-center bg-gray-50 dark:bg-gray-800 p-8 min-h-[75vh]"
+                >
                     <img
                         :src="selectedDesignImageUrl"
                         alt="Design Preview"
@@ -846,9 +848,11 @@
         v-if="showConfirmModal"
         class="fixed inset-0 flex items-center justify-center bg-black/50 z-[9999999]"
     >
-        <div class="bg-white p-6 rounded-xl shadow-xl w-[90%] max-w-md">
-            <h2 class="text-md font-semibold text-gray-900">Confirm Schedule</h2>
-            <p class="text-md mt-2 text-gray-700">
+        <div
+            class="bg-white dark:bg-gray-900 dark:border dark:border-gray-700 p-6 rounded-xl shadow-xl w-[90%] max-w-md"
+        >
+            <h2 class="text-md font-semibold text-gray-900 dark:text-white">Confirm Schedule</h2>
+            <p class="text-md mt-2 text-gray-700 dark:text-gray-300">
                 Are you sure you want to set this
                 <span class="font-semibold">
                     {{
@@ -864,7 +868,7 @@
 
             <div class="mt-4 flex justify-end gap-2">
                 <button
-                    class="text-sm px-4 py-2 rounded-lg bg-gray-200 hover:opacity-75 hover:cursor-pointer"
+                    class="text-sm px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 dark:text-white hover:opacity-75 hover:cursor-pointer"
                     @click="showConfirmModal = false"
                 >
                     Cancel

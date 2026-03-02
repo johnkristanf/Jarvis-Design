@@ -74,7 +74,7 @@
                         leave-to="opacity-0 scale-95"
                     >
                         <DialogPanel
-                            class="w-full max-w-4xl transform overflow-hidden rounded-2xl bg-white text-left align-middle shadow-xl transition-all"
+                            class="w-full max-w-4xl transform overflow-hidden rounded-2xl bg-white dark:bg-gray-900 text-left align-middle shadow-xl transition-all"
                         >
                             <!-- Header -->
                             <div class="bg-gray-900 px-6 py-4 flex justify-between items-center">
@@ -105,22 +105,26 @@
                             </div>
 
                             <!-- Content Area -->
-                            <div class="p-6 max-h-[70vh] overflow-y-auto bg-gray-50 space-y-6">
+                            <div
+                                class="p-6 max-h-[70vh] overflow-y-auto bg-gray-50 dark:bg-gray-800 space-y-6"
+                            >
                                 <div
                                     v-if="!items || items.length === 0"
-                                    class="text-center text-gray-500 py-4"
+                                    class="text-center text-gray-500 dark:text-gray-400 py-4"
                                 >
                                     No items found.
                                 </div>
                                 <div
                                     v-for="(item, index) in items"
                                     :key="item.id || index"
-                                    class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden"
+                                    class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden"
                                 >
                                     <div class="p-5 flex flex-col md:flex-row gap-6">
                                         <!-- Design Thumbnail -->
                                         <div class="shrink-0">
-                                            <div class="h-32 w-32 md:h-40 md:w-40 bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
+                                            <div
+                                                class="h-32 w-32 md:h-40 md:w-40 bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700"
+                                            >
                                                 <img
                                                     v-if="item.temp_url"
                                                     :src="item.temp_url"
@@ -128,7 +132,10 @@
                                                     class="h-full w-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
                                                     @click="handleShowDesignPreview(item.temp_url)"
                                                 />
-                                                <div v-else class="h-full w-full flex items-center justify-center text-gray-400 text-sm">
+                                                <div
+                                                    v-else
+                                                    class="h-full w-full flex items-center justify-center text-gray-400 dark:text-gray-500 text-sm"
+                                                >
                                                     No Design
                                                 </div>
                                             </div>
@@ -137,21 +144,39 @@
                                         <!-- Item Details -->
                                         <div class="flex-grow space-y-3">
                                             <!-- Title & Quantity -->
-                                            <div class="flex justify-between items-start border-b border-gray-100 pb-3">
+                                            <div
+                                                class="flex justify-between items-start border-b border-gray-100 dark:border-gray-700 pb-3"
+                                            >
                                                 <div>
-                                                    <h4 class="text-lg font-bold text-gray-900">
-                                                        {{ item.product?.name || 'Unknown Product' }}
+                                                    <h4
+                                                        class="text-lg font-bold text-gray-900 dark:text-white"
+                                                    >
+                                                        {{
+                                                            item.product?.name || 'Unknown Product'
+                                                        }}
                                                     </h4>
                                                 </div>
                                                 <div class="text-right">
-                                                    <div class="inline-flex items-center px-3 py-1 rounded-full bg-blue-50 text-blue-700 font-semibold border border-blue-100">
+                                                    <div
+                                                        class="inline-flex items-center px-3 py-1 rounded-full bg-blue-50 text-blue-700 font-semibold border border-blue-100"
+                                                    >
                                                         x{{ item.total_quantity || 1 }}
                                                     </div>
                                                     <div
-                                                        v-if="Math.floor((item.total_quantity || 0) / 15) > 0"
+                                                        v-if="
+                                                            Math.floor(
+                                                                (item.total_quantity || 0) / 15,
+                                                            ) > 0
+                                                        "
                                                         class="mt-1 text-xs font-bold text-green-600"
                                                     >
-                                                        (+ {{ Math.floor((item.total_quantity || 0) / 15) }} free)
+                                                        (+
+                                                        {{
+                                                            Math.floor(
+                                                                (item.total_quantity || 0) / 15,
+                                                            )
+                                                        }}
+                                                        free)
                                                     </div>
                                                 </div>
                                             </div>
@@ -160,29 +185,62 @@
                                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
                                                 <!-- Color -->
                                                 <div>
-                                                    <span class="text-xs text-gray-500 uppercase font-semibold tracking-wider">Color</span>
-                                                    <p class="font-medium text-gray-800">{{ item.color || 'N/A' }}</p>
+                                                    <span
+                                                        class="text-xs text-gray-500 dark:text-gray-400 uppercase font-semibold tracking-wider"
+                                                    >
+                                                        Color
+                                                    </span>
+                                                    <p
+                                                        class="font-medium text-gray-800 dark:text-gray-200"
+                                                    >
+                                                        {{ item.color || 'N/A' }}
+                                                    </p>
                                                 </div>
 
                                                 <!-- Breakdown (Sizes or Solo Quantity) -->
                                                 <div>
-                                                    <span class="text-xs text-gray-500 uppercase font-semibold tracking-wider">Breakdown</span>
-                                                    <div v-if="item.sizes && item.sizes.length > 0" class="mt-1 flex flex-wrap gap-1.5">
+                                                    <span
+                                                        class="text-xs text-gray-500 dark:text-gray-400 uppercase font-semibold tracking-wider"
+                                                    >
+                                                        Breakdown
+                                                    </span>
+                                                    <div
+                                                        v-if="item.sizes && item.sizes.length > 0"
+                                                        class="mt-1 flex flex-wrap gap-1.5"
+                                                    >
                                                         <span
                                                             v-for="size in item.sizes"
                                                             :key="size.id"
-                                                            class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200"
+                                                            class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-600"
                                                         >
                                                             {{ size.name }}
-                                                            <span v-if="size.pivot && size.pivot.quantity" class="ml-1 text-gray-500 font-normal">
+                                                            <span
+                                                                v-if="
+                                                                    size.pivot &&
+                                                                    size.pivot.quantity
+                                                                "
+                                                                class="ml-1 text-gray-500 font-normal"
+                                                            >
                                                                 ({{ size.pivot.quantity }})
                                                             </span>
                                                         </span>
                                                     </div>
-                                                    <div v-else-if="item.solo_quantity !== null" class="mt-1">
-                                                        <span class="font-medium text-gray-800">{{ item.solo_quantity }} items</span>
+                                                    <div
+                                                        v-else-if="item.solo_quantity !== null"
+                                                        class="mt-1"
+                                                    >
+                                                        <span
+                                                            class="font-medium text-gray-800 dark:text-gray-200"
+                                                        >
+                                                            {{ item.solo_quantity }} items
+                                                        </span>
                                                     </div>
-                                                    <div v-else class="mt-1 text-sm text-gray-400 italic">None specified</div>
+                                                    <div
+                                                        v-else
+                                                        class="mt-1 text-sm text-gray-400 dark:text-gray-500 italic"
+                                                    >
+                                                        None specified
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -191,10 +249,10 @@
                             </div>
 
                             <!-- Footer -->
-                            <div class="bg-gray-100 px-6 py-4 flex justify-end">
+                            <div class="bg-gray-100 dark:bg-gray-800 px-6 py-4 flex justify-end">
                                 <button
                                     type="button"
-                                    class="inline-flex justify-center rounded-md border border-gray-300 bg-white px-5 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition"
+                                    class="inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-5 py-2 text-sm font-medium text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition"
                                     @click="closeModal"
                                 >
                                     Close
@@ -229,7 +287,11 @@
                         stroke="currentColor"
                         stroke-width="2"
                     >
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M6 18L18 6M6 6l12 12"
+                        />
                     </svg>
                 </button>
                 <img

@@ -156,9 +156,13 @@
 
 <template>
     <div class="fixed inset-0 bg-black/30 flex justify-center items-center z-50">
-        <div class="bg-white p-6 w-full h-[450px] overflow-y-auto max-w-lg rounded shadow">
+        <div
+            class="bg-white dark:bg-gray-900 dark:text-white p-6 w-full h-[450px] overflow-y-auto max-w-lg rounded shadow dark:border dark:border-gray-700"
+        >
             <h2 class="text-xl font-semibold mb-2">Add Product</h2>
-            <p class="text-sm text-gray-600 mb-6">Enter the product details below.</p>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">
+                Enter the product details below.
+            </p>
 
             <form @submit.prevent="onSubmit" class="space-y-4">
                 <!-- PRODUCT CATEGORY -->
@@ -166,7 +170,7 @@
                     <label class="block text-sm mb-3">Category</label>
                     <select
                         v-model="category"
-                        class="font-medium w-full border px-3 py-2 rounded mt-1"
+                        class="font-medium w-full border border-gray-300 dark:border-gray-600 px-3 py-2 rounded mt-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                     >
                         <option v-for="cat in designCategories" :key="cat.id" :value="cat.id">
                             {{ cat.name }}
@@ -181,7 +185,7 @@
                     <input
                         v-model="productName"
                         type="text"
-                        class="font-medium w-full border p-2 rounded"
+                        class="font-medium w-full border border-gray-300 dark:border-gray-600 p-2 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                     />
                     <p class="text-sm text-red-500 mt-1">{{ productNameError }}</p>
                 </div>
@@ -191,7 +195,7 @@
                     <label class="block text-sm mb-3">Fabric Type</label>
                     <select
                         v-model="fabricType"
-                        class="font-medium w-full border px-3 py-2 rounded mt-1"
+                        class="font-medium w-full border border-gray-300 dark:border-gray-600 px-3 py-2 rounded mt-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                     >
                         <option :value="null" disabled>Select fabric type</option>
                         <option v-for="fab in fabricTypes" :key="fab.id" :value="fab.id">
@@ -224,7 +228,7 @@
                     <input
                         v-model="price"
                         type="number"
-                        class="font-medium w-full border p-2 rounded"
+                        class="font-medium w-full border border-gray-300 dark:border-gray-600 p-2 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                     />
                     <p class="text-sm text-red-500 mt-1">{{ priceError }}</p>
                 </div>
@@ -232,7 +236,7 @@
                 <div class="font-medium flex justify-end space-x-2 pt-4">
                     <button
                         type="button"
-                        class="bg-gray-400 px-4 py-2 rounded text-white hover:opacity-75 hover:cursor-pointer"
+                        class="bg-gray-400 dark:bg-gray-700 px-4 py-2 rounded text-white hover:opacity-75 hover:cursor-pointer"
                         @click="$emit('close')"
                     >
                         Cancel

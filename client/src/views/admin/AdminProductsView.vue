@@ -22,9 +22,13 @@
 </script>
 
 <template>
-    <div class="w-full p-4 rounded-md bg-gray-100 border-1 border-gray-400 mb-12">
+    <div
+        class="w-full p-4 rounded-md bg-gray-100 dark:bg-gray-900 border-1 border-gray-400 dark:border-gray-700 dark:text-white mb-12"
+    >
         <h1 class="text-2xl">Business Products</h1>
-        <p class="text-sm text-gray-400 mt-1">Displays business products offered</p>
+        <p class="text-sm text-gray-400 dark:text-gray-400 mt-1">
+            Displays business products offered
+        </p>
 
         <div class="flex justify-end my-4">
             <button

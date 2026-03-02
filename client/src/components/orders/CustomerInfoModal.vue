@@ -76,7 +76,7 @@
                         leave-to="opacity-0 scale-95"
                     >
                         <DialogPanel
-                            class="w-full max-w-md transform overflow-hidden rounded-2xl bg-white text-left align-middle shadow-xl transition-all"
+                            class="w-full max-w-md transform overflow-hidden rounded-2xl bg-white dark:bg-gray-900 text-left align-middle shadow-xl transition-all"
                         >
                             <!-- Header -->
                             <div class="bg-gray-900 px-6 py-4">
@@ -89,13 +89,15 @@
                             <div class="px-6 py-4 space-y-4">
                                 <!-- Name -->
                                 <div
-                                    class="flex items-center justify-between py-3 border-b border-gray-200 gap-4"
+                                    class="flex items-center justify-between py-3 border-b border-gray-200 dark:border-gray-700 gap-4"
                                 >
-                                    <span class="text-sm font-medium text-gray-900 w-1/3">
+                                    <span
+                                        class="text-sm font-medium text-gray-900 dark:text-white w-1/3"
+                                    >
                                         Name
                                     </span>
                                     <span
-                                        class="text-sm text-gray-600 text-right w-2/3 truncate"
+                                        class="text-sm text-gray-600 dark:text-gray-300 text-right w-2/3 truncate"
                                         :title="customerName"
                                     >
                                         {{ customerName || 'N/A' }}
@@ -104,13 +106,15 @@
 
                                 <!-- Email -->
                                 <div
-                                    class="flex items-center justify-between py-3 border-b border-gray-200 gap-4"
+                                    class="flex items-center justify-between py-3 border-b border-gray-200 dark:border-gray-700 gap-4"
                                 >
-                                    <span class="text-sm font-medium text-gray-900 w-1/3">
+                                    <span
+                                        class="text-sm font-medium text-gray-900 dark:text-white w-1/3"
+                                    >
                                         Email
                                     </span>
                                     <span
-                                        class="text-sm text-gray-600 text-right w-2/3 truncate"
+                                        class="text-sm text-gray-600 dark:text-gray-300 text-right w-2/3 truncate"
                                         :title="email"
                                     >
                                         {{ email || 'N/A' }}
@@ -119,13 +123,15 @@
 
                                 <!-- Phone Number -->
                                 <div
-                                    class="flex items-center justify-between py-3 border-b border-gray-200 gap-4"
+                                    class="flex items-center justify-between py-3 border-b border-gray-200 dark:border-gray-700 gap-4"
                                 >
-                                    <span class="text-sm font-medium text-gray-900 w-1/3">
+                                    <span
+                                        class="text-sm font-medium text-gray-900 dark:text-white w-1/3"
+                                    >
                                         Phone No.
                                     </span>
                                     <span
-                                        class="text-sm text-gray-600 text-right w-2/3 truncate"
+                                        class="text-sm text-gray-600 dark:text-gray-300 text-right w-2/3 truncate"
                                         :title="phoneNumber"
                                     >
                                         {{ phoneNumber || 'N/A' }}
@@ -133,19 +139,27 @@
                                 </div>
 
                                 <!-- Address -->
-                                <div class="flex flex-col py-3 border-b border-gray-200 gap-2">
-                                    <span class="text-sm font-medium text-gray-900">Address</span>
-                                    <span class="text-sm text-gray-600 leading-relaxed">
+                                <div
+                                    class="flex flex-col py-3 border-b border-gray-200 dark:border-gray-700 gap-2"
+                                >
+                                    <span class="text-sm font-medium text-gray-900 dark:text-white">
+                                        Address
+                                    </span>
+                                    <span
+                                        class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed"
+                                    >
                                         {{ address || 'N/A' }}
                                     </span>
                                 </div>
                             </div>
 
                             <!-- Footer -->
-                            <div class="bg-gray-50 px-6 py-4 flex justify-end gap-3">
+                            <div
+                                class="bg-gray-50 dark:bg-gray-800 px-6 py-4 flex justify-end gap-3"
+                            >
                                 <button
                                     type="button"
-                                    class="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2"
+                                    class="inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2"
                                     @click="closeModal"
                                 >
                                     Close

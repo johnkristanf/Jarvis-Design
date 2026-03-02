@@ -99,16 +99,16 @@
         class="fixed inset-0 z-[999] flex items-center justify-center bg-black/50"
     >
         <DialogPanel
-            class="bg-white h-[400px] overflow-y-auto shadow-xl w-full max-w-4xl p-6 space-y-6"
+            class="bg-white dark:bg-gray-900 border dark:border-gray-700 h-[400px] overflow-y-auto shadow-xl w-full max-w-4xl p-6 space-y-6"
         >
             <div class="space-y-1">
-                <h2 class="text-xl font-semibold text-gray-800">Upload Design</h2>
-                <p class="text-sm text-gray-500">
+                <h2 class="text-xl font-semibold text-gray-800 dark:text-white">Upload Design</h2>
+                <p class="text-sm text-gray-500 dark:text-gray-400">
                     Category:
                     <strong>{{ props.selectedProductCategory }}</strong>
                 </p>
 
-                <p class="text-sm text-gray-500">
+                <p class="text-sm text-gray-500 dark:text-gray-400">
                     Product:
                     <strong>{{ props.selectedProductName }}</strong>
                 </p>
@@ -119,30 +119,32 @@
                 class="space-y-3 mt-10"
             >
                 <!-- DESIGN IMAGE UPLOAD -->
-                <h2 class="font-semibold text-gray-800">Choose the Design to Upload:</h2>
+                <h2 class="font-semibold text-gray-800 dark:text-white">
+                    Choose the Design to Upload:
+                </h2>
 
                 <input
                     ref="fileInput"
                     type="file"
                     accept="image/*"
                     multiple
-                    class="w-full"
+                    class="w-full dark:text-white"
                     @change="handleFileChange"
                 />
 
                 <!-- PREVIEW SELECTED FILE -->
                 <div v-if="previewUrl" class="mt-8">
-                    <p class="text-xs text-gray-500 mb-1">Preview:</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Preview:</p>
                     <img
                         :src="previewUrl"
                         alt="Preview"
-                        class="w-full max-h-64 object-contain rounded-md p-3 border-2 border-dashed border-gray-300"
+                        class="w-full max-h-64 object-contain rounded-md p-3 border-2 border-dashed border-gray-300 dark:border-gray-600"
                     />
                 </div>
             </div>
 
             <div class="flex flex-col">
-                <h2 class="font-semibold text-gray-800 mb-2">Uploaded Design:</h2>
+                <h2 class="font-semibold text-gray-800 dark:text-white mb-2">Uploaded Design:</h2>
 
                 <div v-if="props.designImages && props.designImages.length > 0">
                     <div
@@ -153,7 +155,7 @@
                         <img
                             :src="image.temp_url"
                             :alt="`Design ${index + 1}`"
-                            class="w-full max-h-64 object-contain rounded-md border border-gray-300 p-3"
+                            class="w-full max-h-64 object-contain rounded-md border border-gray-300 dark:border-gray-700 p-3"
                         />
 
                         <!-- Floating Delete Button -->
@@ -175,13 +177,15 @@
                     </div>
                 </div>
 
-                <p v-else class="text-sm text-gray-500 mt-2">No uploaded designs yet.</p>
+                <p v-else class="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                    No uploaded designs yet.
+                </p>
             </div>
 
             <div class="flex justify-end gap-3 pt-4">
                 <button
                     @click="handleCloseModal"
-                    class="px-4 py-2 text-sm font-medium bg-gray-500 text-white hover:opacity-75 hover:cursor-pointer"
+                    class="px-4 py-2 text-sm font-medium bg-gray-500 dark:bg-gray-700 text-white hover:opacity-75 hover:cursor-pointer"
                 >
                     Close
                 </button>

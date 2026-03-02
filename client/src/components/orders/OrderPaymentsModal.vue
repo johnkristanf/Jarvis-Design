@@ -1,4 +1,4 @@
- <!-- eslint-disable @typescript-eslint/no-explicit-any -->
+<!-- eslint-disable @typescript-eslint/no-explicit-any -->
 <script lang="ts" setup>
     import { apiService } from '@/api/axios'
     import { formatDateWithTime } from '@/helper/order'
@@ -308,7 +308,6 @@
 
     // Payment composable
     const { hasFullyPaid } = usePayments(computed(() => payments.value || []))
-
 </script>
 
 <template>
@@ -318,7 +317,9 @@
         class="fixed inset-0 z-[999] flex items-center justify-center bg-gray-900/70"
     >
         <DialogPanel class="w-full max-w-4xl mx-4">
-            <div class="bg-white max-h-[90vh] flex flex-col overflow-hidden rounded-2xl shadow-2xl">
+            <div
+                class="bg-white dark:bg-gray-900 max-h-[90vh] flex flex-col overflow-hidden rounded-2xl shadow-2xl"
+            >
                 <!-- Header -->
                 <div class="bg-gray-900 text-white px-6 py-4 flex items-center justify-between">
                     <div>
@@ -357,11 +358,18 @@
                 </div>
 
                 <!-- Cash Payment Form -->
-                <div v-if="showCashPaymentForm" class="bg-gray-50 border-b border-gray-200 p-6">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Record Cash Payment</h3>
+                <div
+                    v-if="showCashPaymentForm"
+                    class="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-6"
+                >
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
+                        Record Cash Payment
+                    </h3>
                     <div class="flex gap-4 items-end">
                         <div class="flex-1">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                            <label
+                                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                            >
                                 Amount Received (₱)
                             </label>
                             <input
@@ -370,7 +378,7 @@
                                 min="1"
                                 step="0.01"
                                 placeholder="Enter amount"
-                                class="w-full rounded-lg border-gray-300 shadow-sm focus:border-gray-900 focus:ring-gray-900"
+                                class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 shadow-sm focus:border-gray-900 focus:ring-gray-900"
                                 @keypress.enter="submitCashPayment"
                             />
                         </div>
@@ -393,9 +401,9 @@
                         <div v-if="isLoading" class="flex items-center justify-center py-12 flex-1">
                             <div class="text-center">
                                 <div
-                                    class="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"
+                                    class="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 dark:border-white mx-auto mb-4"
                                 ></div>
-                                <p class="text-gray-600">Loading payments...</p>
+                                <p class="text-gray-600 dark:text-gray-400">Loading payments...</p>
                             </div>
                         </div>
 
@@ -416,10 +424,10 @@
                                     />
                                 </svg>
                             </div>
-                            <h3 class="text-lg font-medium text-gray-900 mb-2">
+                            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
                                 Failed to load payments
                             </h3>
-                            <p class="text-gray-600">
+                            <p class="text-gray-600 dark:text-gray-400">
                                 There was an error loading the payment data.
                             </p>
                         </div>
@@ -434,7 +442,7 @@
                                 <div
                                     v-for="payment in payments"
                                     :key="payment.id"
-                                    class="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-md transition-shadow duration-200 relative"
+                                    class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 hover:shadow-md transition-shadow duration-200 relative"
                                 >
                                     <!-- Payment Header -->
                                     <div class="flex items-center justify-between my-6">
@@ -457,7 +465,9 @@
                                                 </svg>
                                             </div>
                                             <div>
-                                                <h4 class="font-semibold text-gray-900">
+                                                <h4
+                                                    class="font-semibold text-gray-900 dark:text-white"
+                                                >
                                                     {{ payment.payment_number }}
                                                 </h4>
                                             </div>
@@ -487,15 +497,17 @@
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                         <div>
                                             <label
-                                                class="block text-sm font-medium text-gray-700 mb-1"
+                                                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
                                             >
                                                 Amount Applied
                                             </label>
                                             <div
                                                 v-if="!isEditing(payment.id)"
-                                                class="flex items-center justify-between bg-gray-50 rounded-lg p-3"
+                                                class="flex items-center justify-between bg-gray-50 dark:bg-gray-700 rounded-lg p-3"
                                             >
-                                                <span class="text-xl font-bold text-gray-900">
+                                                <span
+                                                    class="text-xl font-bold text-gray-900 dark:text-white"
+                                                >
                                                     ₱ {{ payment.amount_applied }}
                                                 </span>
 
@@ -548,7 +560,7 @@
                                                         type="number"
                                                         step="0.01"
                                                         min="0"
-                                                        class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                                                        class="w-full pl-8 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                                                         @keydown.enter="savePayment(payment.id)"
                                                         @keydown.escape="cancelEditing(payment.id)"
                                                     />
@@ -617,15 +629,15 @@
 
                                         <div>
                                             <label
-                                                class="block text-sm font-medium text-gray-700 mb-1"
+                                                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
                                             >
                                                 Payment Method
                                             </label>
                                             <div
                                                 v-if="!isEditingPaymentMethod(payment.id)"
-                                                class="flex items-center justify-between bg-gray-50 rounded-lg p-3"
+                                                class="flex items-center justify-between bg-gray-50 dark:bg-gray-700 rounded-lg p-3"
                                             >
-                                                <span class="text-gray-900">
+                                                <span class="text-gray-900 dark:text-white">
                                                     {{ payment.payment_methods.name }}
                                                 </span>
                                                 <fwb-tooltip>
@@ -746,7 +758,7 @@
 
                                     <!-- Timestamps -->
                                     <div
-                                        class="flex items-center justify-between text-sm text-gray-500 pt-4 border-t border-gray-200"
+                                        class="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 pt-4 border-t border-gray-200 dark:border-gray-700"
                                     >
                                         <span>
                                             Paid At: {{ formatDateWithTime(payment.created_at) }}
@@ -777,10 +789,10 @@
                                         />
                                     </svg>
                                 </div>
-                                <h3 class="text-lg font-medium text-gray-900 mb-2">
+                                <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
                                     No payments found
                                 </h3>
-                                <p class="text-gray-600">
+                                <p class="text-gray-600 dark:text-gray-400">
                                     There are no payments associated with this order.
                                 </p>
                             </div>
@@ -790,23 +802,29 @@
                     <!-- Payment Total Summary - Fixed Footer -->
                     <div
                         v-if="payments && payments.length > 0"
-                        class="border-t border-gray-200 bg-gray-50 px-6 py-4 flex-shrink-0"
+                        class="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-6 py-4 flex-shrink-0"
                     >
                         <div class="grid grid-cols-3 gap-4">
                             <div>
-                                <p class="text-sm text-gray-600 mb-1">Total Price</p>
-                                <p class="text-xl font-bold text-gray-900">
+                                <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                                    Total Price
+                                </p>
+                                <p class="text-xl font-bold text-gray-900 dark:text-white">
                                     ₱{{ orders.total_price.toLocaleString() }}
                                 </p>
                             </div>
                             <div>
-                                <p class="text-sm text-gray-600 mb-1">Total Paid Amount</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                                    Total Paid Amount
+                                </p>
                                 <p class="text-xl font-bold text-green-600">
                                     ₱{{ currentTotalPaid.toLocaleString() }}
                                 </p>
                             </div>
                             <div>
-                                <p class="text-sm text-gray-600 mb-1">Remaining Balance</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                                    Remaining Balance
+                                </p>
                                 <p class="text-xl font-bold text-amber-600">
                                     ₱{{ currentBalance.toLocaleString() }}
                                 </p>
@@ -822,23 +840,27 @@
             @close="showDeclineModal = false"
             class="fixed inset-0 z-[1000] flex items-center justify-center bg-gray-900/70"
         >
-            <DialogPanel class="w-full max-w-md mx-4 bg-white rounded-xl shadow-2xl p-6">
-                <h3 class="text-lg font-bold text-gray-900 mb-4">Decline Payment</h3>
+            <DialogPanel
+                class="w-full max-w-md mx-4 bg-white dark:bg-gray-900 dark:border dark:border-gray-700 rounded-xl shadow-2xl p-6"
+            >
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">
+                    Decline Payment
+                </h3>
                 <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Remarks / Reason for Decline
                     </label>
                     <textarea
                         v-model="declineRemarks"
                         rows="4"
-                        class="w-full rounded-lg border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
+                        class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 shadow-sm focus:border-red-500 focus:ring-red-500"
                         placeholder="Enter reason for declining this payment..."
                     ></textarea>
                 </div>
                 <div class="flex justify-end gap-3">
                     <button
                         @click="showDeclineModal = false"
-                        class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                        class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-white bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
                         :disabled="declinePaymentMutation.isPending.value"
                     >
                         Cancel

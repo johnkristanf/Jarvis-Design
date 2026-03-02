@@ -112,9 +112,13 @@
         class="fixed inset-0 z-[999] flex items-center justify-center bg-gray-900/70 bg-opacity-50"
     >
         <DialogPanel>
-            <div class="w-140 bg-white h-100 overflow-y-auto p-8">
+            <div
+                class="w-140 bg-white dark:bg-gray-900 dark:border dark:border-gray-700 h-100 overflow-y-auto p-8"
+            >
                 <div class="flex items-center gap-2">
-                    <h1 class="text-lg font-medium leading-6 text-gray-900">Attach Materials</h1>
+                    <h1 class="text-lg font-medium leading-6 text-gray-900 dark:text-white">
+                        Attach Materials
+                    </h1>
 
                     <span
                         v-tooltip.bottom="{
@@ -134,7 +138,7 @@
                                 text: '!bg-primary !text-hite !font-medium',
                             },
                         }"
-                        class="cursor-pointer text-gray-500 hover:text-primary transition-colors"
+                        class="cursor-pointer text-gray-500 dark:text-gray-400 hover:text-primary transition-colors"
                     >
                         <InformationCircleIcon class="w-5 h-5" />
                     </span>
@@ -150,14 +154,16 @@
                         :key="category"
                         class="mb-6"
                     >
-                        <h3 class="mb-2 font-semibold text-gray-900">{{ category }}</h3>
+                        <h3 class="mb-2 font-semibold text-gray-900 dark:text-white">
+                            {{ category }}
+                        </h3>
                         <ul
-                            class="w-full text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-lg"
+                            class="w-full text-sm font-medium text-gray-900 dark:text-white bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg"
                         >
                             <li
                                 v-for="material in materials"
                                 :key="material.id"
-                                class="w-full border-b border-gray-200"
+                                class="w-full border-b border-gray-200 dark:border-gray-700"
                             >
                                 <div class="flex items-center ps-3">
                                     <input
@@ -165,11 +171,11 @@
                                         :id="'material-' + material.id"
                                         :value="material.id"
                                         v-model="selectedMaterials"
-                                        class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500"
+                                        class="w-4 h-4 text-blue-600 bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-sm focus:ring-blue-500"
                                     />
                                     <label
                                         :for="'material-' + material.id"
-                                        class="w-full py-3 ms-2 text-sm font-medium text-gray-900"
+                                        class="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-white"
                                     >
                                         {{ material.name }}
                                     </label>
@@ -179,14 +185,14 @@
                                     v-if="selectedMaterials.includes(material.id)"
                                     class="ps-10 pb-3"
                                 >
-                                    <label class="text-sm text-gray-600">
+                                    <label class="text-sm text-gray-600 dark:text-gray-400">
                                         Quantity used ({{ material.unit }}):
                                     </label>
                                     <input
                                         type="number"
                                         min="1"
                                         v-model.number="materialsUsedQuantities[material.id]"
-                                        class="w-24 ml-2 border border-gray-300 rounded px-2 py-1 text-sm"
+                                        class="w-24 ml-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded px-2 py-1 text-sm"
                                     />
                                 </div>
                             </li>
@@ -195,7 +201,12 @@
                 </div>
 
                 <!-- MATERIALS UNAVAILABLE CATCHER -->
-                <div v-if="groupedMaterials && Object.keys(groupedMaterials).length === 0" class="text-center my-12">No Materials Available</div>
+                <div
+                    v-if="groupedMaterials && Object.keys(groupedMaterials).length === 0"
+                    class="text-center my-12 dark:text-white"
+                >
+                    No Materials Available
+                </div>
 
                 <!-- MODAL FOOTER BUTTONS FOR SUBMISSION AND CANCEL -->
                 <div
@@ -205,7 +216,7 @@
                     <button
                         type="button"
                         @click="handleCloseModal"
-                        class="text-white font-medium px-4 py-2 bg-gray-500 rounded hover:opacity-75 hover:cursor-pointer"
+                        class="text-white font-medium px-4 py-2 bg-gray-500 dark:bg-gray-700 rounded hover:opacity-75 hover:cursor-pointer"
                     >
                         Cancel
                     </button>

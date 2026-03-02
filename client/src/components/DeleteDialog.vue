@@ -17,7 +17,7 @@
         endpoint_url: string
         query_key: string
         success_message: string
-        refresh_url?: string 
+        refresh_url?: string
     }>()
 
     const isOpen = ref(false)
@@ -66,7 +66,6 @@
     function handleDelete() {
         deleteMutation.mutate(props.selectedID)
     }
-
 </script>
 
 <template>
@@ -77,8 +76,19 @@
                 class="flex items-center gap-1 px-2 py-1 bg-red-600 text-white rounded text-xs hover:cursor-pointer hover:opacity-75 transition"
                 title="Delete"
             >
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-3 w-3"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M6 18L18 6M6 6l12 12"
+                    />
                 </svg>
                 <span>Delete</span>
             </button>
@@ -113,17 +123,17 @@
                         leave-to="opacity-0 scale-95"
                     >
                         <DialogPanel
-                            class="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all"
+                            class="w-full max-w-md transform overflow-hidden rounded-2xl bg-white dark:bg-gray-900 border dark:border-gray-700 p-6 text-left align-middle shadow-xl transition-all"
                         >
                             <DialogTitle
                                 as="h3"
-                                class="text-lg font-medium leading-6 text-gray-900"
+                                class="text-lg font-medium leading-6 text-gray-900 dark:text-white"
                             >
                                 Confirm Deletion
                             </DialogTitle>
 
                             <div class="mt-2">
-                                <p class="text-sm text-gray-600">
+                                <p class="text-sm text-gray-600 dark:text-gray-400">
                                     Are you sure you want to delete this record?
                                 </p>
                             </div>
@@ -132,7 +142,7 @@
                                 <!-- Cancel Button -->
                                 <button
                                     type="button"
-                                    class="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
+                                    class="rounded-md border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800"
                                     @click="closeModal"
                                 >
                                     Cancel

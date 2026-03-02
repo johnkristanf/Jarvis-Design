@@ -239,7 +239,9 @@
 <template>
     <!-- THIS WILL DISPLAY GRIDS FOR EACH GRAPHS AND CHARTS FOR DASHBOARD SPECIFIC LAYOUT -->
 
-    <div class="w-full p-4 rounded-md bg-gray-100 border-1 border-gray-400">
+    <div
+        class="w-full p-4 rounded-md bg-gray-100 dark:bg-gray-900 border-1 border-gray-400 dark:border-gray-700 dark:text-white"
+    >
         <h1 class="text-2xl">Reports</h1>
         <p class="text-sm text-gray-400 mt-1 mb-7">
             Overview reports for every transactions, providing an insightful data.
@@ -250,7 +252,7 @@
                 <div class="flex flex-col">
                     <label
                         for="startDate"
-                        class="mb-2 text-xs text-gray-500 font-semibold tracking-wide"
+                        class="mb-2 text-xs text-gray-500 dark:text-gray-400 font-semibold tracking-wide"
                     >
                         From
                     </label>
@@ -260,13 +262,16 @@
                             type="date"
                             v-model="dateFilter.start"
                             @change="onDateChange"
-                            class="block w-38 px-4 py-2 border border-gray-200 rounded-lg shadow-sm bg-gray-50 focus:(ring-2 ring-indigo-200 border-indigo-400) text-base text-gray-700 transition-all duration-150 outline-none"
+                            class="block w-38 px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm bg-gray-50 dark:bg-gray-800 focus:(ring-2 ring-indigo-200 border-indigo-400) dark:focus:ring-indigo-500 dark:focus:border-indigo-500 text-base text-gray-700 dark:text-white transition-all duration-150 outline-none"
                         />
                     </div>
                 </div>
                 <span class="mx-2 mt-6 text-gray-400 text-2xl font-light">–</span>
                 <div class="flex flex-col">
-                    <label for="endDate" class="mb-2 text-xs text-gray-500 font-semibold tracking-wide">
+                    <label
+                        for="endDate"
+                        class="mb-2 text-xs text-gray-500 dark:text-gray-400 font-semibold tracking-wide"
+                    >
                         To
                     </label>
                     <div class="relative">
@@ -275,7 +280,7 @@
                             type="date"
                             v-model="dateFilter.end"
                             @change="onDateChange"
-                            class="block w-38 px-4 py-2 border border-gray-200 rounded-lg shadow-sm bg-gray-50 focus:(ring-2 ring-indigo-200 border-indigo-400) text-base text-gray-700 transition-all duration-150 outline-none"
+                            class="block w-38 px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm bg-gray-50 dark:bg-gray-800 focus:(ring-2 ring-indigo-200 border-indigo-400) dark:focus:ring-indigo-500 dark:focus:border-indigo-500 text-base text-gray-700 dark:text-white transition-all duration-150 outline-none"
                         />
                     </div>
                 </div>
@@ -283,39 +288,89 @@
 
             <div class="flex items-end gap-2 export-dropdown-container relative z-20">
                 <div class="flex flex-col relative w-48">
-                    <label class="mb-2 text-xs text-gray-500 font-semibold tracking-wide">
+                    <label
+                        class="mb-2 text-xs text-gray-500 dark:text-gray-400 font-semibold tracking-wide"
+                    >
                         Period Report
                     </label>
                     <button
                         @click="toggleDropdown"
-                        class="flex items-center justify-between w-full px-4 py-2 text-left bg-gray-50 border border-gray-200 rounded-lg shadow-sm focus:(ring-2 ring-indigo-200 border-indigo-400) text-base text-gray-700 transition-all duration-150 outline-none"
+                        class="flex items-center justify-between w-full px-4 py-2 text-left bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm focus:(ring-2 ring-indigo-200 border-indigo-400) dark:focus:ring-indigo-500 dark:focus:border-indigo-500 text-base text-gray-700 dark:text-white transition-all duration-150 outline-none"
                     >
                         <span>{{ selectedExportTypesText }}</span>
-                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        <svg
+                            class="w-4 h-4 ml-2"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M19 9l-7 7-7-7"
+                            ></path>
+                        </svg>
                     </button>
-                    
-                    <div v-show="isDropdownOpen" class="absolute left-0 w-full mt-1 top-full bg-white border border-gray-200 rounded-lg shadow-lg">
-                        <ul class="p-3 space-y-3 text-sm text-gray-700">
+
+                    <div
+                        v-show="isDropdownOpen"
+                        class="absolute left-0 w-full mt-1 top-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg"
+                    >
+                        <ul class="p-3 space-y-3 text-sm text-gray-700 dark:text-gray-300">
                             <li>
                                 <div class="flex items-center">
-                                    <input id="checkbox-item-monthly" type="checkbox" value="monthly_sales" v-model="selectedExportTypes" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2 hover:cursor-pointer">
-                                    <label for="checkbox-item-monthly" class="ml-2 text-sm font-medium text-gray-900 hover:cursor-pointer w-full">Summary Of Total Orders</label>
+                                    <input
+                                        id="checkbox-item-monthly"
+                                        type="checkbox"
+                                        value="monthly_sales"
+                                        v-model="selectedExportTypes"
+                                        class="w-4 h-4 text-blue-600 bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 focus:ring-2 hover:cursor-pointer"
+                                    />
+                                    <label
+                                        for="checkbox-item-monthly"
+                                        class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300 hover:cursor-pointer w-full"
+                                    >
+                                        Summary Of Total Orders
+                                    </label>
                                 </div>
                             </li>
                             <li>
                                 <div class="flex items-center">
-                                    <input id="checkbox-item-category" type="checkbox" value="category_sales" v-model="selectedExportTypes" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2 hover:cursor-pointer">
-                                    <label for="checkbox-item-category" class="ml-2 text-sm font-medium text-gray-900 hover:cursor-pointer w-full">Sales Per Product Category</label>
+                                    <input
+                                        id="checkbox-item-category"
+                                        type="checkbox"
+                                        value="category_sales"
+                                        v-model="selectedExportTypes"
+                                        class="w-4 h-4 text-blue-600 bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 focus:ring-2 hover:cursor-pointer"
+                                    />
+                                    <label
+                                        for="checkbox-item-category"
+                                        class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300 hover:cursor-pointer w-full"
+                                    >
+                                        Sales Per Product Category
+                                    </label>
                                 </div>
                             </li>
-                            
+
                             <li>
                                 <div class="flex items-center">
-                                    <input id="checkbox-item-fabric" type="checkbox" value="fabric_used" v-model="selectedExportTypes" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2 hover:cursor-pointer">
-                                    <label for="checkbox-item-fabric" class="ml-2 text-sm font-medium text-gray-900 hover:cursor-pointer w-full">Total Fabric Used</label>
+                                    <input
+                                        id="checkbox-item-fabric"
+                                        type="checkbox"
+                                        value="fabric_used"
+                                        v-model="selectedExportTypes"
+                                        class="w-4 h-4 text-blue-600 bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 focus:ring-2 hover:cursor-pointer"
+                                    />
+                                    <label
+                                        for="checkbox-item-fabric"
+                                        class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300 hover:cursor-pointer w-full"
+                                    >
+                                        Total Fabric Used
+                                    </label>
                                 </div>
                             </li>
-                           
                         </ul>
                     </div>
                 </div>
@@ -324,7 +379,9 @@
                     :disabled="isExporting || selectedExportTypes.length === 0"
                     :class="[
                         'px-5 py-2 text-base font-medium text-white rounded-lg transition-opacity',
-                        (isExporting || selectedExportTypes.length === 0) ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:cursor-pointer hover:opacity-90'
+                        isExporting || selectedExportTypes.length === 0
+                            ? 'bg-gray-400 cursor-not-allowed'
+                            : 'bg-blue-600 hover:cursor-pointer hover:opacity-90',
                     ]"
                 >
                     <span v-if="isExporting">Exporting...</span>
@@ -333,11 +390,10 @@
             </div>
         </div>
 
-       
         <!-- CARD ANALYTICS STATS END -->
 
         <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-            <div class="h-[300px] rounded-md p-3 bg-gray-200">
+            <div class="h-[300px] rounded-md p-3 bg-gray-200 dark:bg-gray-800">
                 <div class="w-full h-full">
                     <Line
                         v-if="monthlySalesReport"
@@ -348,7 +404,7 @@
                 </div>
             </div>
 
-            <div class="h-[300px] rounded-md p-3  bg-gray-200">
+            <div class="h-[300px] rounded-md p-3 bg-gray-200 dark:bg-gray-800">
                 <div class="w-full h-full">
                     <Bar
                         v-if="salePerProductCategory"
@@ -357,10 +413,9 @@
                         :data="salePerProductCategory"
                     />
                 </div>
-
             </div>
 
-            <div class="h-[300px] rounded-md p-3 lg:col-span-2 bg-gray-200 mt-5">
+            <div class="h-[300px] rounded-md p-3 lg:col-span-2 bg-gray-200 dark:bg-gray-800 mt-5">
                 <div class="w-full h-full">
                     <Bar
                         v-if="fabricUsed"
@@ -370,7 +425,6 @@
                     />
                 </div>
             </div>
-
         </div>
     </div>
 </template>
