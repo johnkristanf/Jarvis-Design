@@ -14,8 +14,8 @@
 
 <template>
     <div class="overflow-x-auto sm:rounded-lg">
-        <table class="min-w-full border border-gray-300 rounded-md text-sm">
-            <thead class="bg-gray-900 text-white">
+        <table class="min-w-full border border-gray-300 dark:border-gray-700 rounded-md text-sm">
+            <thead class="bg-gray-900 dark:bg-gray-800 text-white">
                 <tr>
                     <th class="px-4 py-2 text-left">User Name</th>
                     <th class="px-4 py-2 text-left">Material Name</th>
@@ -29,7 +29,7 @@
                 <tr
                     v-for="(log, index) in orderLogs"
                     :key="index"
-                    class="border-t border-gray-200 hover:bg-gray-50"
+                    class="border-t border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
                 >
                     <td class="px-4 py-2">{{ log.users?.name }}</td>
                     <td class="px-4 py-2">{{ log.material_name }}</td>

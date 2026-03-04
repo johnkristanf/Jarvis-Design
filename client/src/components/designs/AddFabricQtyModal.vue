@@ -117,16 +117,16 @@
                         leave-to="opacity-0 scale-95"
                     >
                         <DialogPanel
-                            class="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all"
+                            class="w-full max-w-md transform overflow-hidden rounded-2xl bg-white dark:bg-gray-900 dark:text-white border dark:border-gray-700 p-6 text-left align-middle shadow-xl transition-all"
                         >
                             <DialogTitle
                                 as="h3"
-                                class="text-lg font-semibold leading-6 text-gray-900"
+                                class="text-lg font-semibold leading-6 text-gray-900 dark:text-white"
                             >
                                 {{ fabricName }}
                             </DialogTitle>
                             <div class="mt-2">
-                                <p class="text-sm text-gray-500">
+                                <p class="text-sm text-gray-500 dark:text-gray-300">
                                     Add fabric quantities and delivery date for the new stock.
                                 </p>
                             </div>
@@ -135,7 +135,7 @@
                                 <div class="mt-4">
                                     <label
                                         for="delivery_date"
-                                        class="block text-sm font-medium text-gray-700 mb-1"
+                                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
                                     >
                                         Delivery Date
                                     </label>
@@ -143,14 +143,14 @@
                                         id="delivery_date"
                                         v-model="form.delivery_date"
                                         type="date"
-                                        class="w-full rounded-md font-medium border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2"
+                                        class="w-full rounded-md font-medium border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2"
                                         required
                                     />
                                 </div>
                                 <div class="mt-4">
                                     <label
                                         for="quantity"
-                                        class="block text-sm font-medium text-gray-700 mb-1"
+                                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
                                     >
                                         Quantity
                                     </label>
@@ -159,7 +159,7 @@
                                         v-model.number="form.quantity"
                                         type="number"
                                         min="1"
-                                        class="w-full rounded-md font-medium border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2"
+                                        class="w-full rounded-md font-medium border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2"
                                         required
                                     />
                                 </div>
@@ -167,7 +167,7 @@
                                     <button
                                         type="button"
                                         @click="closeModal"
-                                        class="inline-flex justify-center rounded-md border border-gray-300 px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
+                                        class="inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 px-4 py-2 bg-white dark:bg-gray-800 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
                                     >
                                         Cancel
                                     </button>

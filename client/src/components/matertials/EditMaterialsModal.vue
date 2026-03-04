@@ -2,7 +2,7 @@
     import Toast from 'primevue/toast'
 
     import { Dialog, DialogPanel, DialogTitle, DialogDescription } from '@headlessui/vue'
-    import { defineProps, defineEmits, watch, onMounted, onUpdated, nextTick } from 'vue'
+    import { watch, onMounted, onUpdated, nextTick } from 'vue'
     import { useForm, useField } from 'vee-validate'
     import * as yup from 'yup'
     import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
@@ -131,9 +131,11 @@
         @close="() => emit('close')"
         class="fixed inset-0 z-[99999] flex items-center justify-center bg-gray-900/80"
     >
-        <DialogPanel class="w-full max-w-xl bg-white h-[70%] p-6 overflow-y-auto">
+        <DialogPanel
+            class="w-full max-w-xl bg-white dark:bg-gray-900 dark:text-white border dark:border-gray-700 h-[70%] p-6 overflow-y-auto"
+        >
             <DialogTitle class="text-lg font-bold">Edit Material</DialogTitle>
-            <DialogDescription class="text-sm text-gray-600 mb-4">
+            <DialogDescription class="text-sm text-gray-600 dark:text-gray-300 mb-4">
                 Enter the material details below.
             </DialogDescription>
 
@@ -158,7 +160,7 @@
                     <input
                         v-model="material_name"
                         type="text"
-                        class="font-medium w-full px-3 py-2 rounded mt-1 border"
+                        class="font-medium w-full px-3 py-2 rounded mt-1 border dark:bg-gray-800 dark:border-gray-700 dark:text-white"
                     />
                     <span class="text-sm text-red-600 mt-1 block">{{ nameError }}</span>
                 </div>
@@ -193,7 +195,7 @@
                     <input
                         v-model="unit"
                         type="text"
-                        class="font-medium w-full px-3 py-2 rounded mt-1 border"
+                        class="font-medium w-full px-3 py-2 rounded mt-1 border dark:bg-gray-800 dark:border-gray-700 dark:text-white"
                     />
                     <span class="text-sm text-red-600 mt-1 block">{{ unitError }}</span>
                 </div>
@@ -228,7 +230,7 @@
                     <input
                         v-model="quantity"
                         type="number"
-                        class="font-medium w-full px-3 py-2 rounded mt-1 border"
+                        class="font-medium w-full px-3 py-2 rounded mt-1 border dark:bg-gray-800 dark:border-gray-700 dark:text-white"
                     />
                     <span class="text-sm text-red-600 mt-1 block">{{ quantityError }}</span>
                 </div>
@@ -239,7 +241,7 @@
                     <input
                         v-model="reorder_level"
                         type="number"
-                        class="font-medium w-full px-3 py-2 rounded mt-1 border"
+                        class="font-medium w-full px-3 py-2 rounded mt-1 border dark:bg-gray-800 dark:border-gray-700 dark:text-white"
                     />
                     <span class="text-sm text-red-600 mt-1 block">{{ reorderError }}</span>
                 </div>

@@ -110,9 +110,11 @@
         @close="() => emit('close')"
         class="fixed inset-0 z-[99999] flex items-center justify-center bg-gray-900/80"
     >
-        <DialogPanel class="w-full max-w-xl bg-white h-[70%] p-6 overflow-y-auto">
+        <DialogPanel
+            class="w-full max-w-xl bg-white dark:bg-gray-900 dark:text-white border dark:border-gray-700 h-[70%] p-6 overflow-y-auto"
+        >
             <DialogTitle class="text-lg font-bold">New Fabric</DialogTitle>
-            <DialogDescription class="text-sm text-gray-600 mb-4">
+            <DialogDescription class="text-sm text-gray-600 dark:text-gray-300 mb-4">
                 Enter the fabric details below.
             </DialogDescription>
 
@@ -123,7 +125,7 @@
                     <input
                         v-model="material_name"
                         type="text"
-                        class="font-medium w-full px-3 py-2 rounded mt-1 border"
+                        class="font-medium w-full px-3 py-2 rounded mt-1 border dark:bg-gray-800 dark:border-gray-700 dark:text-white"
                         placeholder="(Semi-Cooltech, Microstepline, etc...)"
                     />
                     <span class="text-sm text-red-600 mt-1 block">{{ nameError }}</span>
@@ -136,7 +138,10 @@
                         <label class="block text-sm">Unit</label>
                     </div>
 
-                    <select v-model="unit" class="font-medium w-full px-3 py-2 rounded mt-1 border">
+                    <select
+                        v-model="unit"
+                        class="font-medium w-full px-3 py-2 rounded mt-1 border dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+                    >
                         <option value="" disabled>Select unit</option>
                         <option value="rolls">rolls</option>
                     </select>
@@ -153,7 +158,7 @@
                     <input
                         v-model="quantity"
                         type="number"
-                        class="font-medium w-full px-3 py-2 rounded mt-1 border"
+                        class="font-medium w-full px-3 py-2 rounded mt-1 border dark:bg-gray-800 dark:border-gray-700 dark:text-white"
                     />
                     <span class="text-sm text-red-600 mt-1 block">{{ quantityError }}</span>
                 </div>
@@ -164,7 +169,7 @@
                     <input
                         v-model="reorder_level"
                         type="number"
-                        class="font-medium w-full px-3 py-2 rounded mt-1 border"
+                        class="font-medium w-full px-3 py-2 rounded mt-1 border dark:bg-gray-800 dark:border-gray-700 dark:text-white"
                     />
                     <span class="text-sm text-red-600 mt-1 block">{{ reorderError }}</span>
                 </div>

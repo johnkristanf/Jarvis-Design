@@ -311,7 +311,7 @@
                         leave-to="opacity-0 scale-95"
                     >
                         <DialogPanel
-                            class="w-[1000px] max-h-[calc(100vh-16rem)] md:max-h-[calc(100vh-12rem)] transform overflow-y-auto bg-white dark:bg-gray-900 p-6 text-left align-middle shadow-xl transition-all"
+                            class="w-full max-w-[1000px] max-h-[calc(100vh-16rem)] md:max-h-[calc(100vh-12rem)] transform overflow-y-auto rounded-2xl bg-white dark:bg-gray-900 p-4 md:p-6 text-left align-middle shadow-xl transition-all"
                         >
                             <DialogTitle
                                 as="h1"
@@ -325,14 +325,18 @@
                                 <div
                                     class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700"
                                 >
-                                    <div class="flex justify-between items-center mb-3">
+                                    <div
+                                        class="flex flex-col sm:flex-row justify-between sm:items-center gap-2 mb-3"
+                                    >
                                         <h2
                                             class="text-lg font-semibold text-gray-800 dark:text-gray-100"
                                         >
                                             Selected Products
                                         </h2>
-                                        <div class="text-right">
-                                            <div class="flex items-baseline gap-2 justify-end">
+                                        <div class="text-left sm:text-right">
+                                            <div
+                                                class="flex items-baseline gap-2 justify-start sm:justify-end"
+                                            >
                                                 <span
                                                     class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider"
                                                 >
@@ -364,10 +368,10 @@
                                             :key="product.id + '-' + index"
                                             class="bg-white dark:bg-gray-900 rounded-md p-3 border border-gray-200 dark:border-gray-700"
                                         >
-                                            <div class="flex justify-between items-start">
-                                                <div class="flex-1">
+                                            <div class="flex justify-between items-start gap-2">
+                                                <div class="flex-1 min-w-0">
                                                     <p
-                                                        class="font-medium text-gray-900 dark:text-gray-100"
+                                                        class="font-medium text-gray-900 dark:text-gray-100 truncate"
                                                     >
                                                         {{ product.name }}
                                                     </p>
@@ -377,10 +381,12 @@
                                                         Unit Price:
                                                         <strong>₱{{ product.unit_price }}</strong>
                                                     </p>
-                                                    <div class="flex items-center gap-2">
+                                                    <div
+                                                        class="flex flex-wrap items-center gap-2 mt-2"
+                                                    >
                                                         <div
                                                             v-if="product.color"
-                                                            class="flex items-center mt-1"
+                                                            class="flex items-center"
                                                         >
                                                             <span
                                                                 class="inline-block px-2 py-0.5 rounded text-xs font-semibold"
@@ -419,16 +425,28 @@
                                                                 {{ product.desired_quantity }}
                                                             </strong>
                                                             <strong
-                                                                v-if="Math.floor((product.desired_quantity || 0) / 15) > 0"
+                                                                v-if="
+                                                                    Math.floor(
+                                                                        (product.desired_quantity ||
+                                                                            0) / 15,
+                                                                    ) > 0
+                                                                "
                                                                 class="ml-2 text-green-600 dark:text-green-400"
                                                             >
-                                                                (+ {{ Math.floor((product.desired_quantity || 0) / 15) }} free)
+                                                                (+
+                                                                {{
+                                                                    Math.floor(
+                                                                        (product.desired_quantity ||
+                                                                            0) / 15,
+                                                                    )
+                                                                }}
+                                                                free)
                                                             </strong>
                                                         </p>
                                                     </div>
                                                 </div>
 
-                                                <div class="text-right">
+                                                <div class="text-right shrink-0 ml-2">
                                                     <p
                                                         class="font-semibold text-gray-900 dark:text-gray-100"
                                                     >
@@ -471,23 +489,31 @@
                                 <div
                                     class="mb-4 bg-gray-100 dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700"
                                 >
-                                    <div class="mb-2">
+                                    <div
+                                        class="mb-2 flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-2"
+                                    >
                                         <span
-                                            class="font-semibold text-gray-700 dark:text-gray-200 text-sm"
+                                            class="font-semibold text-gray-700 dark:text-gray-200 text-sm shrink-0"
                                         >
                                             Phone Number:
                                         </span>
-                                        <span class="ml-2 text-gray-800 dark:text-gray-100 text-sm">
+                                        <span
+                                            class="text-gray-800 dark:text-gray-100 text-sm break-words"
+                                        >
                                             {{ formData.phone_number }}
                                         </span>
                                     </div>
-                                    <div>
+                                    <div
+                                        class="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-2"
+                                    >
                                         <span
-                                            class="font-semibold text-gray-700 dark:text-gray-200 text-sm"
+                                            class="font-semibold text-gray-700 dark:text-gray-200 text-sm shrink-0"
                                         >
                                             Full Address:
                                         </span>
-                                        <span class="ml-2 text-gray-800 dark:text-gray-100 text-sm">
+                                        <span
+                                            class="text-gray-800 dark:text-gray-100 text-sm break-words"
+                                        >
                                             {{ formData.address }}
                                         </span>
                                     </div>

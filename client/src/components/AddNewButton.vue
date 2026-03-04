@@ -6,8 +6,8 @@
         widthClass?: string
     }>()
 
-    const emit = defineEmits(['action']);
-    const handleAction = () => emit('action');
+    const emit = defineEmits(['action'])
+    const handleAction = () => emit('action')
 </script>
 
 <template>

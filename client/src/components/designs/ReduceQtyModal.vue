@@ -95,7 +95,7 @@
                     d="M6 12h12"
                 />
             </svg>
-            <span class="text-xs">Reduce </span>
+            <span class="text-xs">Reduce</span>
         </button>
     </div>
     <TransitionRoot appear :show="isOpen" as="template">
@@ -124,16 +124,16 @@
                         leave-to="opacity-0 scale-95"
                     >
                         <DialogPanel
-                            class="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all"
+                            class="w-full max-w-md transform overflow-hidden rounded-2xl bg-white dark:bg-gray-900 dark:text-white border dark:border-gray-700 p-6 text-left align-middle shadow-xl transition-all"
                         >
                             <DialogTitle
                                 as="h3"
-                                class="text-lg leading-6 text-gray-900 font-semibold"
+                                class="text-lg leading-6 text-gray-900 dark:text-white font-semibold"
                             >
                                 {{ fabricName }}
                             </DialogTitle>
                             <div class="mt-2">
-                                <p class="text-sm text-gray-500">
+                                <p class="text-sm text-gray-500 dark:text-gray-300">
                                     Enter units to reduce and optional reason.
                                 </p>
                             </div>
@@ -142,7 +142,7 @@
                                 <div class="mt-4">
                                     <label
                                         for="quantity"
-                                        class="block text-sm font-medium text-gray-700"
+                                        class="block text-sm font-medium text-gray-700 dark:text-gray-300"
                                     >
                                         Quantity
                                     </label>
@@ -153,7 +153,7 @@
                                         min="1"
                                         :max="currentQty"
                                         required
-                                        class="mt-1 font-medium block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                        class="mt-1 font-medium block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                                         placeholder="Enter quantity to reduce"
                                     />
                                     <p class="mt-1 text-xs text-gray-400">
@@ -163,7 +163,7 @@
                                 <div class="mt-4">
                                     <label
                                         for="reason"
-                                        class="block text-sm font-medium text-gray-700"
+                                        class="block text-sm font-medium text-gray-700 dark:text-gray-300"
                                     >
                                         Reason (optional)
                                     </label>
@@ -171,7 +171,7 @@
                                         id="reason"
                                         v-model.trim="reduceQtyForm.reason"
                                         type="text"
-                                        class="mt-1 font-medium block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                        class="mt-1 font-medium block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                                         placeholder="Reason for reduction"
                                     />
                                 </div>
@@ -179,7 +179,7 @@
                                     <button
                                         type="button"
                                         @click="closeModal"
-                                        class="inline-flex justify-center rounded-md border border-gray-300 px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
+                                        class="inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 px-4 py-2 bg-white dark:bg-gray-800 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
                                     >
                                         Cancel
                                     </button>

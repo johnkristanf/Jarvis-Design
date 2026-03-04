@@ -2,8 +2,10 @@
     <div class="relative overflow-hidden bg-white dark:bg-gray-900 transition-colors duration-200">
         <div class="sm:pt-24 sm:pb-40 lg:pt-48 lg:pb-[15rem]">
             <div class="relative mx-auto max-w-7xl px-4 sm:static sm:px-6 lg:px-8">
-                <div class="sm:max-w-lg">
-                    <h1 class="text-6xl font-bold tracking-tight text-gray-900 dark:text-gray-100 sm:text-4xl">
+                <div class="sm:max-w-lg text-center lg:text-left">
+                    <h1
+                        class="text-6xl font-bold tracking-tight text-gray-900 dark:text-gray-100 sm:text-4xl"
+                    >
                         JARVIS DESIGNS
                     </h1>
                     <h2 class="text-xl opacity-75 text-gray-800 dark:text-gray-200">

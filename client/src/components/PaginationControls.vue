@@ -1,6 +1,5 @@
 <script setup lang="ts">
     import { defineProps, defineEmits } from 'vue'
-
     const props = defineProps({
         currentPage: { type: Number, required: true },
         lastPage: { type: Number, required: true },
@@ -9,13 +8,12 @@
     const emit = defineEmits(['changePage'])
 
     const changePage = (page: number) => {
-        console.log("changePage number: ", page);
-        
+        console.log('changePage number: ', page)
+
         if (page >= 1 && page <= props.lastPage) {
             emit('changePage', page)
         }
     }
-
 </script>
 
 <template>

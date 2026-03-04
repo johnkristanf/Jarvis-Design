@@ -437,6 +437,8 @@
                     <!-- <th scope="col" class="px-6 py-3">Total Price</th> -->
                     <th scope="col" class="px-3 py-3">Option</th>
 
+                    <th scope="col" class="px-3 py-3">Payment</th>
+
                     <th scope="col" class="px-3 py-3">Status</th>
 
                     <th scope="col" class="px-3 py-3">Delivery / Pick-Up Date</th>
@@ -475,6 +477,23 @@
 
                     <td class="px-3 py-4 font-semibold text-gray-900 dark:text-white">
                         {{ order.order_option.toUpperCase() }}
+                    </td>
+
+                    <td class="px-3 py-4 font-semibold text-gray-900 dark:text-white">
+                        <span
+                            :class="[
+                                'px-2 py-1 rounded text-xs font-medium whitespace-nowrap',
+                                order.total_paid >= order.total_price
+                                    ? 'bg-green-100 text-green-800'
+                                    : 'bg-yellow-100 text-yellow-800',
+                            ]"
+                        >
+                            {{
+                                order.total_paid >= order.total_price
+                                    ? 'FULLY PAID'
+                                    : 'PARTIALLY PAID'
+                            }}
+                        </span>
                     </td>
 
                     <td class="px-3 py-4">

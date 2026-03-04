@@ -85,11 +85,11 @@
                         leave-to="opacity-0 scale-95"
                     >
                         <DialogPanel
-                            class="w-[1000px] max-w-3xl transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all"
+                            class="w-[1000px] max-w-3xl transform overflow-hidden rounded-2xl bg-white dark:bg-gray-900 dark:text-white border dark:border-gray-700 p-6 text-left align-middle shadow-xl transition-all"
                         >
                             <DialogTitle
                                 as="h3"
-                                class="text-lg font-semibold leading-6 text-gray-900"
+                                class="text-lg font-semibold leading-6 text-gray-900 dark:text-white"
                             >
                                 <div class="flex justify-between">
                                     <p>{{ fabricName }}</p>
@@ -97,7 +97,7 @@
                                 </div>
                             </DialogTitle>
                             <div class="mt-2">
-                                <p class="text-sm text-gray-500">
+                                <p class="text-sm text-gray-500 dark:text-gray-300">
                                     View the complete logs of all fabric stock additions and
                                     reductions.
                                 </p>
@@ -109,7 +109,7 @@
 
                             <!-- FABRIC ADJUST LOG TABLE -->
                             <h1 class="mb-2 mt-5">Fabric Adjust Logs</h1>
-                            <FabricAdjustTable :fabricId="props.fabricId"/>
+                            <FabricAdjustTable :fabricId="props.fabricId" />
                         </DialogPanel>
                     </TransitionChild>
                 </div>

@@ -67,7 +67,9 @@
             queryClient.invalidateQueries({ queryKey: ['all_customers'] })
             // This line below is the key, as it causes the ADMIN conversation panel to update when a customer sends a message
             if (authStore.currentUser?.id) {
-                queryClient.invalidateQueries({ queryKey: ['admin_conversation', authStore.currentUser.id] })
+                queryClient.invalidateQueries({
+                    queryKey: ['admin_conversation', authStore.currentUser.id],
+                })
             }
         },
         onError: (error) => {
@@ -199,7 +201,7 @@
             </TransitionChild>
             <div class="fixed inset-0 flex items-center justify-center p-4">
                 <DialogPanel
-                    class="!w-full md:!w-1/2 lg:!w-1/2 h-[85vh] mb-12 bg-gray-100 border border-gray-400 rounded-md flex"
+                    class="!w-full md:!w-1/2 lg:!w-1/2 h-[85vh] mb-12 bg-gray-100 dark:bg-gray-900 border border-gray-400 dark:border-gray-700 rounded-md flex"
                 >
                     <!-- Chat messages -->
                     <div class="relative flex-1">
@@ -231,7 +233,7 @@
                         </div>
 
                         <div
-                            class="flex-1 font-medium h-[75%] pt-5 px-5 overflow-y-auto space-y-4 pb-8"
+                            class="flex-1 font-medium h-[75%] pt-5 px-5 overflow-y-auto space-y-4 pb-8 dark:bg-gray-900"
                         >
                             <!-- Loop messages -->
                             <template v-if="conversationQuery.data.value?.messages?.length">
@@ -243,12 +245,14 @@
                             </template>
 
                             <!-- Empty state -->
-                            <div v-else class="text-center text-gray-400">No messages yet.</div>
+                            <div v-else class="text-center text-gray-400 dark:text-gray-500">
+                                No messages yet.
+                            </div>
                         </div>
 
                         <!-- Message input -->
                         <div
-                            class="absolute bottom-0 left-0 w-full flex items-center gap-2 p-4 bg-gray-50 border-t border-gray-300"
+                            class="absolute bottom-0 left-0 w-full flex items-center gap-2 p-4 bg-gray-50 dark:bg-gray-800 border-t border-gray-300 dark:border-gray-700"
                         >
                             <!-- File preview before sending -->
                             <div v-if="attachment" class="flex items-center gap-2">
@@ -288,7 +292,7 @@
                                 v-model="messageContent"
                                 @keyup.enter="handleSendMessage"
                                 placeholder="Type your message..."
-                                class="flex-1 font-medium px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                class="flex-1 font-medium px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400"
                             />
 
                             <button
