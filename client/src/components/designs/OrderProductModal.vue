@@ -303,6 +303,7 @@
                     class="flex flex-col lg:flex-row items-start lg:items-center justify-center p-4 text-center gap-4 lg:gap-8 min-h-screen"
                 >
                     <TransitionChild
+                        as="template"
                         enter="duration-300 ease-out"
                         enter-from="opacity-0 scale-95"
                         enter-to="opacity-100 scale-100"
