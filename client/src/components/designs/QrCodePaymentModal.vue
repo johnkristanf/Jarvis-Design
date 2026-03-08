@@ -10,6 +10,7 @@
     import { ref, reactive, onMounted, computed, nextTick } from 'vue'
     import { useToast } from 'primevue/usetoast'
     import type { ProductIndexPayment } from '@/types/product'
+    import { useFetchAuthenticatedUser } from '@/composables/useFetchAuthenticatedUser'
 
     const props = defineProps<{
         selectedProductsData: ProductDetails[] | null
@@ -24,6 +25,7 @@
     const handleCloseModal = () => emit('close')
     const handleTriggerPlaceOrder = () => emit('place_order')
     const toast = useToast()
+    const { authStore } = useFetchAuthenticatedUser()
 
     // 1 Order = 1 Payment File
     const paymentFile = ref<File | null>(null)
@@ -83,10 +85,15 @@
     }
 
     const grandTotal = computed(() => {
-        if (!props.selectedProductsData) return 0
-        return props.selectedProductsData.reduce((acc, product) => {
-            return acc + getProductTotal(product)
-        }, 0)
+        let total = 0
+        if (props.selectedProductsData) {
+            total = props.selectedProductsData.reduce((acc, product) => {
+                return acc + getProductTotal(product)
+            }, 0)
+        }
+
+        const promptCredit = authStore.currentUser?.prompt_credit || 0
+        return total + promptCredit
     })
 </script>
 
@@ -131,9 +138,23 @@
                                 >
                                     Overall Total Price
                                 </p>
-                                <p class="text-2xl sm:text-3xl font-bold text-blue-500">
-                                    ₱{{ grandTotal }}
-                                </p>
+                                <div class="flex items-baseline justify-end gap-2">
+                                    <p class="text-2xl sm:text-3xl font-bold text-blue-500">
+                                        ₱{{
+                                            grandTotal - (authStore.currentUser?.prompt_credit || 0)
+                                        }}
+                                    </p>
+                                </div>
+                                <div
+                                    v-if="
+                                        authStore.currentUser &&
+                                        typeof authStore.currentUser.prompt_credit === 'number' &&
+                                        authStore.currentUser.prompt_credit > 0
+                                    "
+                                    class="text-[10px] text-red-500 dark:text-red-400 font-semibold"
+                                >
+                                    +{{ authStore.currentUser.prompt_credit }} (credits)
+                                </div>
                             </div>
 
                             <DialogTitle

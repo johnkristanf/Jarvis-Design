@@ -319,7 +319,7 @@
                                 class="text-2xl text-gray-900 dark:text-gray-100 mb-6"
                             >
                                 Product Order Details
-                            </DialogTitle>
+                                </DialogTitle>
 
                             <div class="space-y-7">
                                 <!-- Products List Section -->

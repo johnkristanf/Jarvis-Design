@@ -485,13 +485,17 @@
                                 'px-2 py-1 rounded text-xs font-medium whitespace-nowrap',
                                 order.total_paid >= order.total_price
                                     ? 'bg-green-100 text-green-800'
-                                    : 'bg-yellow-100 text-yellow-800',
+                                    : order.total_paid > 0
+                                      ? 'bg-yellow-100 text-yellow-800'
+                                      : 'bg-gray-100 text-gray-800',
                             ]"
                         >
                             {{
                                 order.total_paid >= order.total_price
                                     ? 'FULLY PAID'
-                                    : 'PARTIALLY PAID'
+                                    : order.total_paid > 0
+                                      ? 'PARTIALLY PAID'
+                                      : 'PENDING'
                             }}
                         </span>
                     </td>

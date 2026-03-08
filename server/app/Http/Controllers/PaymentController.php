@@ -227,6 +227,11 @@ Log::info(json_encode($validated, JSON_PRETTY_PRINT));
                 $overallTotalPrice += $product['total_price'];
             }
 
+            $user = User::findOrFail(Auth::id());
+            $promptCredit = $user->prompt_credit;
+
+            $overallTotalPrice += $promptCredit;
+
             // 2. Create the single Order record
             $orderNumber = $this->generateOrderNumber();
             $order = Orders::create([
@@ -237,6 +242,7 @@ Log::info(json_encode($validated, JSON_PRETTY_PRINT));
                 'order_option' => $validated['order_option'],
                 'total_price' => $overallTotalPrice,
                 'user_id' => Auth::id(),
+                'prompt_credit' => $promptCredit,
             ]);
 
             // 3. Process the single payment for the entire order
