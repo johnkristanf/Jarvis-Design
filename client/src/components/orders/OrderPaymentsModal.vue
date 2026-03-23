@@ -11,6 +11,7 @@
     import PaymentStatusBadge from './PaymentStatusBadge.vue'
     import { useToast } from 'primevue/usetoast'
     import { usePayments } from '@/composables/usePayments'
+    import EditBalanceForm from './EditBalanceForm.vue'
     import { FwbTooltip } from 'flowbite-vue'
     import { OrderStatus, type Orders } from '@/types/order'
 
@@ -33,6 +34,9 @@
     // CASH PAYMENT STATES
     const showCashPaymentForm = ref(false)
     const cashAmount = ref<number | null>(null)
+
+    // EDIT BALANCE STATES
+    const showEditBalanceForm = ref(false)
 
     // ADD CASH PAYMENT MUTATION
     const addCashPaymentMutation = useMutation({
@@ -90,8 +94,13 @@
     })
 
     const currentBalance = computed(() => {
-        const balance = props.orders.total_price - currentTotalPaid.value
+        const discountAmount = props.orders.discount ? Number(props.orders.discount.amount) : 0
+        const balance = props.orders.total_price - currentTotalPaid.value - discountAmount
         return Math.max(0, balance)
+    })
+
+    const isHalfPaid = computed(() => {
+        return currentTotalPaid.value >= props.orders.total_price / 2
     })
 
     // FETCH ALL PAYMENTS BY ORDER ID
@@ -329,12 +338,29 @@
                     <div class="flex items-center gap-3">
                         <button
                             v-if="props.isAdmin"
-                            @click="showCashPaymentForm = !showCashPaymentForm"
+                            @click="
+                                () => {
+                                    showCashPaymentForm = !showCashPaymentForm
+                                    showEditBalanceForm = false
+                                }
+                            "
                             class="text-sm bg-white text-gray-900 px-3 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors"
                         >
                             {{
                                 showCashPaymentForm ? 'Cancel Cash Payment' : 'Receive Cash Payment'
                             }}
+                        </button>
+                        <button
+                            v-if="props.isAdmin && isHalfPaid"
+                            @click="
+                                () => {
+                                    showEditBalanceForm = !showEditBalanceForm
+                                    showCashPaymentForm = false
+                                }
+                            "
+                            class="text-sm bg-gray-700 text-white border border-gray-600 px-3 py-2 rounded-lg font-medium hover:bg-gray-600 transition-colors"
+                        >
+                            {{ showEditBalanceForm ? 'Cancel Edit Balance' : 'Edit Balance' }}
                         </button>
                         <button
                             @click="handleCloseModal"
@@ -392,6 +418,14 @@
                         </button>
                     </div>
                 </div>
+
+                <!-- Edit Balance Form -->
+                <EditBalanceForm
+                    v-if="showEditBalanceForm"
+                    :order="props.orders"
+                    :current-total-paid="currentTotalPaid"
+                    @close="showEditBalanceForm = false"
+                />
 
                 <!-- Content -->
                 <div class="flex flex-col flex-1 min-h-0">
@@ -686,7 +720,9 @@
                                                         Select Payment Method
                                                     </option>
                                                     <option
-                                                        v-for="method in paymentMethods"
+                                                        v-for="method in paymentMethods?.filter(
+                                                            (m) => m.name.toLowerCase() !== 'cash',
+                                                        )"
                                                         :key="method.id"
                                                         :value="method.id"
                                                     >
@@ -825,9 +861,20 @@
                                 <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">
                                     Remaining Balance
                                 </p>
-                                <p class="text-xl font-bold text-amber-600">
-                                    ₱{{ currentBalance.toLocaleString() }}
-                                </p>
+                                <div class="flex items-center gap-2">
+                                    <p class="text-xl font-bold text-amber-600">
+                                        ₱{{ currentBalance.toLocaleString() }}
+                                    </p>
+                                    <span
+                                        v-if="
+                                            props.orders.discount &&
+                                            Number(props.orders.discount.amount) > 0
+                                        "
+                                        class="text-[10px] bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider border border-emerald-200 dark:border-emerald-800"
+                                    >
+                                        Discounted
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </div>

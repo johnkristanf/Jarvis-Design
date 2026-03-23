@@ -90,6 +90,7 @@ export type Orders = {
     order_payments: Payment[]
     user?: User
     items: OrderItem[]
+    discount?: { amount: number }
 }
 
 export type OrderStatusType = {

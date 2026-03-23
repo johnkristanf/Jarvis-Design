@@ -33,7 +33,7 @@ class StoreOrderRequest extends FormRequest
             'products.*.product_unit_price' => 'required|numeric',
             'products.*.product_color' => 'required|string',
             'products.*.fabric_type_id' => 'nullable|numeric',
-            'payment_attachment' => 'required|file',
+            'payment_attachment' => 'required|file|max:51200',
             'products.*.total_quantity' => 'required|numeric',
             'products.*.total_price' => 'required|numeric',
             'products.*.sizes' => 'nullable|string',

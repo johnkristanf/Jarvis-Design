@@ -52,15 +52,15 @@
         const target = e.target as HTMLInputElement
         if (target && target.files && target.files[0]) {
             const selectedFile = target.files[0]
-            if (!selectedFile.type.startsWith('image/')) {
-                toast.add({
-                    severity: 'warn',
-                    summary: 'Only image files are allowed (jpg, png, etc.)',
-                    life: 1500,
-                })
-                target.value = ''
-                return
-            }
+            // if (!selectedFile.type.startsWith('image/')) {
+            //     toast.add({
+            //         severity: 'warn',
+            //         summary: 'Only image files are allowed (jpg, png, etc.)',
+            //         life: 1500,
+            //     })
+            //     target.value = ''
+            //     return
+            // }
             paymentFile.value = selectedFile
             previewUrl.value = URL.createObjectURL(selectedFile)
             emit('fileSelected', paymentFile.value)

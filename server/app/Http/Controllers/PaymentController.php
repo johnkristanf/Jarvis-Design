@@ -71,7 +71,7 @@ class PaymentController extends Controller
         } else {
             // Online payments (GCash, Maya, etc.) require an attachment
             $onlineValidated = $request->validate([
-                'payment_attachment' => 'required|file|mimes:jpg,jpeg,png|max:2048',
+                'payment_attachment' => 'required|file|mimes:jpg,jpeg,png|max:51200',
             ]);
             $validated = array_merge($validated, $onlineValidated);
         }
@@ -175,6 +175,31 @@ class PaymentController extends Controller
         return response()->json([
             'msg' => 'Order Status Updated Successfully',
             'orderID' => $updatedOrderID,
+        ], 200);
+    }
+
+    public function updateOrderDiscount(Request $request)
+    {
+        if (!Auth::user()->isAdmin()) {
+            return response()->json(['message' => 'Unauthorized. Only admins can update order discounts.'], 403);
+        }
+
+        $validated = $request->validate([
+            'order_id' => 'required|numeric|exists:orders,id',
+            'discount_amount' => 'required|numeric|min:0',
+        ]);
+
+        $order = Orders::findOrFail($validated['order_id']);
+        
+        $discount = \App\Models\Discount::updateOrCreate(
+            ['order_id' => $order->id],
+            ['amount' => $validated['discount_amount']]
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Order discount updated successfully',
+            'discount' => $discount
         ], 200);
     }
 
@@ -512,7 +537,7 @@ Log::info(json_encode($validated, JSON_PRETTY_PRINT));
     public function reuploadPayment($paymentID, Request $request)
     {
         $validated = $request->validate([
-            'payment_attachment' => 'required|file|mimes:jpg,jpeg,png|max:2048',
+            'payment_attachment' => 'required|file|mimes:jpg,jpeg,png|max:51200',
         ]);
 
         $payment = OrderPayment::with('payment_attachments', 'orders')->findOrFail($paymentID);

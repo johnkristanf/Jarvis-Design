@@ -74,6 +74,15 @@
     // Payment composable
     const { hasFullyPaid } = usePayments(computed(() => props.orderDetails.order_payments || []))
 
+    const currentBalance = computed(() => {
+        const totalPaid = Number(props.orderDetails.total_paid || 0)
+        const discountAmount = props.orderDetails.discount
+            ? Number(props.orderDetails.discount.amount)
+            : 0
+        const balance = Number(props.orderDetails.total_price) - totalPaid - discountAmount
+        return Math.max(0, balance)
+    })
+
     console.log('orderDetails:', props.orderDetails)
 </script>
 
@@ -136,7 +145,9 @@
                             </div>
 
                             <!-- Content -->
-                            <div class="p-6 max-h-[calc(100vh-16rem)] md:max-h-[calc(100vh-12rem)] overflow-y-auto dark:bg-gray-900">
+                            <div
+                                class="p-6 max-h-[calc(100vh-16rem)] md:max-h-[calc(100vh-12rem)] overflow-y-auto dark:bg-gray-900"
+                            >
                                 <!-- Order Header Info -->
                                 <div
                                     class="grid grid-cols-2 gap-4 mb-6 pb-6 border-b border-gray-200 dark:border-gray-700"
@@ -293,10 +304,20 @@
                                                         (x{{ item.total_quantity || 1 }})
                                                     </span>
                                                     <span
-                                                        v-if="Math.floor((item.total_quantity || 0) / 15) > 0"
+                                                        v-if="
+                                                            Math.floor(
+                                                                (item.total_quantity || 0) / 15,
+                                                            ) > 0
+                                                        "
                                                         class="ml-2 text-sm font-bold text-green-600 dark:text-green-400"
                                                     >
-                                                        (+ {{ Math.floor((item.total_quantity || 0) / 15) }} free)
+                                                        (+
+                                                        {{
+                                                            Math.floor(
+                                                                (item.total_quantity || 0) / 15,
+                                                            )
+                                                        }}
+                                                        free)
                                                     </span>
                                                 </h4>
                                                 <div class="grid grid-cols-2 gap-4">
@@ -548,11 +569,22 @@
                                         <p class="text-sm text-gray-900 dark:text-gray-100 mb-1">
                                             Remaining Balance
                                         </p>
-                                        <p
-                                            class="text-xl font-bold text-amber-600 dark:text-amber-400"
-                                        >
-                                            ₱{{ props.orderDetails.balance }}
-                                        </p>
+                                        <div class="flex items-center gap-2">
+                                            <p
+                                                class="text-xl font-bold text-amber-600 dark:text-amber-400"
+                                            >
+                                                ₱{{ currentBalance.toLocaleString() }}
+                                            </p>
+                                            <span
+                                                v-if="
+                                                    props.orderDetails.discount &&
+                                                    Number(props.orderDetails.discount.amount) > 0
+                                                "
+                                                class="text-[10px] bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider border border-emerald-200 dark:border-emerald-800"
+                                            >
+                                                Discounted
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

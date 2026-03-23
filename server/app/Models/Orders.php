@@ -41,6 +41,11 @@ class Orders extends Model
         return $this->hasMany(OrderPayment::class, 'order_id');
     }
 
+    public function discount()
+    {
+        return $this->hasOne(Discount::class, 'order_id');
+    }
+
     // Sizes are now on OrderItem, but if needed we can leave it or remove it.
     // We'll remove it as sizes are per-item now.
 
