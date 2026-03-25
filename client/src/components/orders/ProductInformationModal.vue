@@ -242,6 +242,29 @@
                                                         None specified
                                                     </div>
                                                 </div>
+
+                                                <!-- Selected Styles -->
+                                                <div
+                                                    v-if="
+                                                        item.selected_product_styles &&
+                                                        item.selected_product_styles.length > 0
+                                                    "
+                                                >
+                                                    <span
+                                                        class="text-xs text-gray-500 dark:text-gray-400 uppercase font-semibold tracking-wider"
+                                                    >
+                                                        Selected Styles
+                                                    </span>
+                                                    <div class="mt-1 flex flex-wrap gap-1.5">
+                                                        <span
+                                                            v-for="style in item.selected_product_styles"
+                                                            :key="style.id"
+                                                            class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-800"
+                                                        >
+                                                            {{ style.name }}
+                                                        </span>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

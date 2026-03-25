@@ -13,6 +13,7 @@
         type BusinessProductDesign,
         type FabricTypes,
         type Product,
+        type ProductStyle,
     } from '@/types/design'
 
     import type { PropType } from 'vue'
@@ -31,6 +32,7 @@
     import { isValidCssColor } from '@/helper/order'
     import { OrderAction, type ProductDetails } from '@/types/order'
     import OrderProductModal from './OrderProductModal.vue'
+    import DesignStylesDropdown from './DesignStylesDropdown.vue'
     import { useRouter } from 'vue-router'
     import { colorOptions, colorPalette } from '@/utils/color'
     import { getSavedAiDesigns, type SavedAiDesign } from '@/api/get/designs'
@@ -53,6 +55,10 @@
         product: {
             type: Object as PropType<Product>,
             required: true,
+        },
+        productStyles: {
+            type: Array as PropType<ProductStyle[]>,
+            default: () => [],
         },
     })
     onMounted(() => {
@@ -77,6 +83,8 @@
     }
 
     const { sizes, loadingSizes } = useProductAttributes()
+
+    const selectedStyleIds = ref<number[]>([])
 
     const selectedColorOption = ref('')
     const selectedOrderAction = ref<OrderAction>()
@@ -266,11 +274,15 @@
                 formData.append('own_design_url', selectedAiDesignS3Key.value)
             }
 
+            if (selectedStyleIds.value.length > 0) {
+                formData.append('selected_styles', JSON.stringify(selectedStyleIds.value))
+            }
+
             // Peek FormData key-values for debugging
             for (const pair of formData.entries()) {
                 console.log(pair[0] + ': ' + pair[1])
             }
-
+            
             addToCartMutation.mutate(formData)
         },
         ({ errors }) => {
@@ -683,6 +695,13 @@
                                         </div>
                                         <p class="text-sm text-red-500 mt-1">{{ sizeIdError }}</p>
                                     </div>
+
+                                    <!-- Product Styles -->
+                                    <DesignStylesDropdown
+                                        v-model="selectedStyleIds"
+                                        :product-styles="props.productStyles"
+                                        :is-dark="isDark"
+                                    />
 
                                     <!-- Quantity -->
                                     <div>

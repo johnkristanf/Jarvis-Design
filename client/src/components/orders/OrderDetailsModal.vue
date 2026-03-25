@@ -337,6 +337,30 @@
                                                     </div>
                                                 </div>
 
+                                                <!-- Selected Styles -->
+                                                <div
+                                                    v-if="
+                                                        item.selected_product_styles &&
+                                                        item.selected_product_styles.length > 0
+                                                    "
+                                                    class="mt-4"
+                                                >
+                                                    <p
+                                                        class="text-sm text-gray-600 mb-2 dark:text-gray-400"
+                                                    >
+                                                        Selected Styles
+                                                    </p>
+                                                    <div class="flex flex-wrap gap-1">
+                                                        <span
+                                                            v-for="style in item.selected_product_styles"
+                                                            :key="style.id"
+                                                            class="inline-block text-[10px] px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-800"
+                                                        >
+                                                            {{ style.name }}
+                                                        </span>
+                                                    </div>
+                                                </div>
+
                                                 <!-- Sizes -->
                                                 <div
                                                     v-if="item.sizes && item.sizes.length > 0"

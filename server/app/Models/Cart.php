@@ -7,6 +7,20 @@ use Illuminate\Database\Eloquent\Model;
 class Cart extends Model
 {
     protected $guarded = ['id'];
+    protected $casts = [
+        'selected_styles' => 'array',
+    ];
+
+    protected $appends = ['selected_product_styles'];
+
+    public function getSelectedProductStylesAttribute()
+    {
+        if (!$this->selected_styles) {
+            return [];
+        }
+
+        return ProductStyle::findMany($this->selected_styles);
+    }
 
 
     public function user()

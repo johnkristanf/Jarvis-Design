@@ -287,6 +287,7 @@ Log::info(json_encode($validated, JSON_PRETTY_PRINT));
                     'total_price' => $product['total_price'],
                     'solo_quantity' => $validated['solo_quantity'] ?? null,
                     'fabric_type_id' => $product['fabric_type_id'] ?? null,
+                    'selected_styles' => isset($product['selected_styles']) ? json_decode($product['selected_styles'], true) : null,
                 ]);
 
                 // Handle design URLs per item

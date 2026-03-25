@@ -29,6 +29,7 @@ class StoreCartRequest extends FormRequest
             'own_design_file' => ['nullable', 'file'],
             'own_design_url' => ['nullable', 'string'],
             'quantity' => ['required', 'integer', 'min:1'],
+            'selected_styles' => ['nullable', 'string'],
         ];
     }
 }

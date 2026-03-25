@@ -169,6 +169,12 @@
 
             data.append(`products[${idx}][total_price]`, total_price.toString())
             data.append(`products[${idx}][sizes]`, JSON.stringify(product.size))
+            if (product.selected_styles) {
+                data.append(
+                    `products[${idx}][selected_styles]`,
+                    JSON.stringify(product.selected_styles),
+                )
+            }
         })
 
         return data
@@ -319,7 +325,7 @@
                                 class="text-2xl text-gray-900 dark:text-gray-100 mb-6"
                             >
                                 Product Order Details
-                                </DialogTitle>
+                            </DialogTitle>
 
                             <div class="space-y-7">
                                 <!-- Products List Section -->

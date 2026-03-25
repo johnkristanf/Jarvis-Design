@@ -1,3 +1,4 @@
+import type { ProductStyle } from './design'
 import type { Payment } from './payment'
 import type { User } from './user'
 
@@ -73,6 +74,8 @@ export interface OrderItem {
     product?: Product
     sizes: Size[]
     temp_url?: string
+    selected_styles?: number[]
+    selected_product_styles?: ProductStyle[]
 }
 
 export type Orders = {
@@ -206,6 +209,8 @@ export interface ProductDetails {
     desired_quantity?: number
     own_design_url?: string
     own_design_temp_url?: string
+    selected_styles?: number[]
+    selected_product_styles?: ProductStyle[]
 }
 
 export interface UserBasic {
@@ -237,6 +242,8 @@ export interface CartItem {
     user: UserBasic
     own_design_url?: string
     own_design_temp_url?: string
+    selected_styles?: number[]
+    selected_product_styles?: ProductStyle[]
 }
 
 export enum OrderAction {

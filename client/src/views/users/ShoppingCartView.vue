@@ -160,6 +160,12 @@
                 if (item.own_design_temp_url) {
                     baseProduct.own_design_temp_url = item.own_design_temp_url
                 }
+                if (item.selected_styles) {
+                    baseProduct.selected_styles = item.selected_styles
+                }
+                if (item.selected_product_styles) {
+                    baseProduct.selected_product_styles = item.selected_product_styles
+                }
                 return baseProduct
             })
 
@@ -225,14 +231,22 @@
                 </div>
 
                 <!-- Content (Details + Actions) -->
-                <div class="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 w-full min-w-0">
+                <div
+                    class="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 w-full min-w-0"
+                >
                     <!-- Details -->
                     <div class="flex flex-col gap-1 sm:gap-2 items-start text-left min-w-0 flex-1">
-                        <h3 class="font-semibold text-sm sm:text-base text-gray-900 leading-tight dark:text-white truncate w-full">
+                        <h3
+                            class="font-semibold text-sm sm:text-base text-gray-900 leading-tight dark:text-white truncate w-full"
+                        >
                             {{ item.product.name }}
                         </h3>
-                        <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 w-full">
-                            <p class="text-sm sm:text-lg font-bold text-gray-400 dark:text-gray-200">
+                        <div
+                            class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 w-full"
+                        >
+                            <p
+                                class="text-sm sm:text-lg font-bold text-gray-400 dark:text-gray-200"
+                            >
                                 ₱
                                 {{
                                     (() => {
@@ -240,7 +254,9 @@
                                         if (typeof price === 'number') return price
                                         if (typeof price === 'string') {
                                             const parsed = parseFloat(price)
-                                            return !Number.isNaN(parsed) ? parsed.toLocaleString() : '-'
+                                            return !Number.isNaN(parsed)
+                                                ? parsed.toLocaleString()
+                                                : '-'
                                         }
                                         return '-'
                                     })()
@@ -267,7 +283,10 @@
                                     style="appearance: textfield; -moz-appearance: textfield"
                                     @blur="
                                         () => {
-                                            if (!cartQuantities[item.id] || cartQuantities[item.id] < 1)
+                                            if (
+                                                !cartQuantities[item.id] ||
+                                                cartQuantities[item.id] < 1
+                                            )
                                                 cartQuantities[item.id] = 1
                                         }
                                     "
@@ -301,10 +320,30 @@
                                 {{ item.size.name }}
                             </span>
                         </div>
+
+                        <!-- Selected Styles -->
+                        <div
+                            v-if="
+                                item.selected_product_styles &&
+                                item.selected_product_styles.length > 0
+                            "
+                            class="flex flex-wrap gap-1 mt-1"
+                        >
+                            <span
+                                v-for="style in item.selected_product_styles"
+                                :key="style.id"
+                                class="inline-block bg-gray-100 text-gray-600 text-[10px] sm:text-[11px] px-1.5 py-0.5 rounded border border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600"
+                                :title="style.panel ? `Panel: ${style.panel}` : ''"
+                            >
+                                {{ style.name }}
+                            </span>
+                        </div>
                     </div>
 
                     <!-- Quantity Control (Remove Button) -->
-                    <div class="flex items-center sm:self-auto justify-end sm:justify-start w-auto shrink-0 mt-0">
+                    <div
+                        class="flex items-center sm:self-auto justify-end sm:justify-start w-auto shrink-0 mt-0"
+                    >
                         <button
                             class="p-1.5 sm:p-2 w-auto text-[10px] sm:text-xs rounded-md bg-red-500/20 text-red-500 hover:opacity-75 hover:cursor-pointer active:scale-95 transition-all flex items-center justify-center dark:bg-red-900/40 dark:text-red-300"
                             @click="handleDeleteCart(item.id)"

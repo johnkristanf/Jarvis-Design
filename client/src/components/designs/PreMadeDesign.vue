@@ -45,8 +45,11 @@
         showOrderModal.value = true
     }
 
-    const openDesignOptionModal = (selectedProduct: Product) => {
+    const selectedProductStylesRef = ref<any[]>([])
+
+    const openDesignOptionModal = (selectedProduct: Product, category: any) => {
         selectedProductRef.value = selectedProduct
+        selectedProductStylesRef.value = category.product_styles || []
         showDesignOptionModal.value = true
 
         console.log('selectedProductRef.value: ', selectedProductRef.value)
@@ -153,7 +156,7 @@
                             v-for="product in category.products"
                             :key="product.id"
                             class="hover:cursor-pointer hover:opacity-75 bg-white dark:bg-gray-800 transition-colors duration-200 border border-gray-200 dark:border-gray-700"
-                            @click="openDesignOptionModal(product)"
+                            @click="openDesignOptionModal(product, category)"
                         >
                             <div class="flex gap-2 p-2 justify-center">
                                 <!-- FOR LOOP BUSINESS DESIGNS HERE -->
@@ -219,6 +222,7 @@
     <DesignOptionModal
         v-if="showDesignOptionModal && selectedProductRef"
         :product="selectedProductRef"
+        :productStyles="selectedProductStylesRef"
         @close="showDesignOptionModal = false"
     />
 </template>

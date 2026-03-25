@@ -26,4 +26,9 @@ class DesignCategory extends Model
     {
         return $this->hasOne(Products::class, 'category_id');
     }
+
+    public function productStyles(): HasMany
+    {
+        return $this->hasMany(ProductStyle::class);
+    }
 }

@@ -17,6 +17,12 @@ class DesignCategorySeeder extends Seeder
                 'name' => 'Basketball Apparel',
                 'is_fixed_priced' => false,
                 'fixed_price' => null,
+                'styles' => [
+                    ['name' => 'V-Neck', 'panel' => 'front'],
+                    ['name' => 'Roundneck', 'panel' => 'front'],
+                    ['name' => 'NBA Cut', 'panel' => 'back'],
+                    ['name' => 'Regular Cut', 'panel' => 'back'],
+                ],
             ],
             [
                 'name' => 'Volleyball Apparel',
@@ -27,11 +33,25 @@ class DesignCategorySeeder extends Seeder
                 'name' => 'T-shirts',
                 'is_fixed_priced' => false,
                 'fixed_price' => null,
+                'styles' => [
+                    ['name' => 'Round Neck'],
+                    ['name' => 'V-Neck'],
+                    ['name' => 'Tshirt - Hooddie'],
+                    ['name' => 'Longsleeve Neck'],
+                ],
             ],
             [
                 'name' => 'Polo Shirts',
                 'is_fixed_priced' => false,
                 'fixed_price' => null,
+                'styles' => [
+                    ['name' => 'Regular Collar', 'attributes' => 'ZIPPER / BUTTONS'],
+                    ['name' => 'Collar - Vneck', 'attributes' => 'ZIPPER / BUTTONS'],
+                    ['name' => 'Chinese Collar', 'attributes' => 'ZIPPER / BUTTONS'],
+                    ['name' => 'Turtle Neck', 'attributes' => 'ZIPPER / BUTTONS'],
+                    ['name' => 'Regular Arm Sleeve'],
+                    ['name' => 'Longer Arm Length', 'attributes' => 'ADD 0.75 INCHES'],
+                ],
             ],
             [
                 'name' => 'Varsity Jackets',
@@ -42,6 +62,14 @@ class DesignCategorySeeder extends Seeder
                 'name' => 'Longsleeve Shirt',
                 'is_fixed_priced' => false,
                 'fixed_price' => null,
+                'styles' => [
+                    ['name' => 'Regular Collar', 'attributes' => 'ZIPPER / BUTTONS'],
+                    ['name' => 'Collar - Vneck', 'attributes' => 'ZIPPER / BUTTONS'],
+                    ['name' => 'Chinese Collar', 'attributes' => 'ZIPPER / BUTTONS'],
+                    ['name' => 'Turtle Neck', 'attributes' => 'ZIPPER / BUTTONS'],
+                    ['name' => 'Without Arm Cuffs'],
+                    ['name' => 'With Arm Cuffs'],
+                ],
             ],
             [
                 'name' => 'Mugs',
@@ -76,10 +104,22 @@ class DesignCategorySeeder extends Seeder
         ];
 
         foreach ($categories as $category) {
-            DesignCategory::firstOrCreate(
+            $styles = $category['styles'] ?? [];
+            unset($category['styles']);
+
+            $createdCategory = DesignCategory::firstOrCreate(
                 ['name' => $category['name']],
                 $category
             );
+
+            foreach ($styles as $style) {
+                $style['panel'] = $style['panel'] ?? null;
+                $style['attributes'] = $style['attributes'] ?? null;
+                $createdCategory->productStyles()->firstOrCreate(
+                    ['name' => $style['name'], 'panel' => $style['panel']],
+                    $style
+                );
+            }
         }
     }
 }

@@ -37,12 +37,20 @@ export interface Product {
     updated_at: string
 }
 
+export interface ProductStyle {
+    id: number
+    name: string
+    panel: string | null
+    attributes: string | null
+}
+
 export interface DesignCategory {
     id: number
     name: string
     is_fixed_priced: boolean
     fixed_price: string | null
     products: Product[]
+    product_styles?: ProductStyle[]
 }
 
 export type GroupedDesignsResponse = DesignCategory[]

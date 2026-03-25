@@ -91,6 +91,7 @@ class DesignsController extends Controller
         $categoriesArray = $categories ? explode(',', $categories) : [];
 
         $result = DesignCategory::with([
+                'productStyles',
                 'products' => function ($query) {
                     $query->with([
                         'fabric_type:id,name',
