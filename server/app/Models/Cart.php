@@ -9,6 +9,7 @@ class Cart extends Model
     protected $guarded = ['id'];
     protected $casts = [
         'selected_styles' => 'array',
+        'customizations' => 'array',
     ];
 
     protected $appends = ['selected_product_styles'];

@@ -38,4 +38,9 @@ class OrderItem extends Model
             ->withPivot('quantity')
             ->withTimestamps();
     }
+
+    public function customization()
+    {
+        return $this->hasOne(OrderItemCustomization::class, 'order_item_id');
+    }
 }

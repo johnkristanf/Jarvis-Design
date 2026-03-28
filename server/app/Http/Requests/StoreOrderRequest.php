@@ -39,6 +39,7 @@ class StoreOrderRequest extends FormRequest
             'products.*.sizes' => 'nullable|string',
             'products.*.own_design_url' => 'nullable|string',
             'products.*.selected_styles' => 'nullable|string',
+            'products.*.customizations' => 'nullable|string',
         ];
     }
 }

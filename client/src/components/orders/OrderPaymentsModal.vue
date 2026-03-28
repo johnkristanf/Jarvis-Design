@@ -93,14 +93,25 @@
         return payments.value.reduce((sum, payment) => sum + Number(payment.amount_applied), 0)
     })
 
+    const totalPocketCosts = computed(() => {
+        return (props.orders.items || []).reduce((sum, item) => {
+            const cost = item.customization?.pocket_costs
+            return sum + (cost ? Number(cost) : 0)
+        }, 0)
+    })
+
     const currentBalance = computed(() => {
         const discountAmount = props.orders.discount ? Number(props.orders.discount.amount) : 0
-        const balance = props.orders.total_price - currentTotalPaid.value - discountAmount
+        const balance =
+            props.orders.total_price +
+            totalPocketCosts.value -
+            currentTotalPaid.value -
+            discountAmount
         return Math.max(0, balance)
     })
 
     const isHalfPaid = computed(() => {
-        return currentTotalPaid.value >= props.orders.total_price / 2
+        return currentTotalPaid.value >= (props.orders.total_price + totalPocketCosts.value) / 2
     })
 
     // FETCH ALL PAYMENTS BY ORDER ID
@@ -847,6 +858,12 @@
                                 </p>
                                 <p class="text-xl font-bold text-gray-900 dark:text-white">
                                     ₱{{ orders.total_price.toLocaleString() }}
+                                </p>
+                                <p
+                                    v-if="totalPocketCosts > 0"
+                                    class="text-xs text-yellow-600 dark:text-yellow-400 font-semibold mt-0.5"
+                                >
+                                    + ₱{{ totalPocketCosts.toFixed(2) }} (pocket costs)
                                 </p>
                             </div>
                             <div>

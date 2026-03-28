@@ -138,6 +138,17 @@
             }, 0)
     })
 
+    // Total pocket costs from selected items with pocket customizations
+    const totalPocketCosts = computed(() => {
+        if (!cartItems?.value) return 0
+        return cartItems.value
+            .filter((item) => selectedCartIds.value.includes(item.id))
+            .reduce((sum, item) => {
+                const pocketCost = item.customizations?.pocket_costs
+                return sum + (pocketCost ? Number(pocketCost) : 0)
+            }, 0)
+    })
+
     // Handler for overall checkout (for selected items in cart)
     const handleFullCheckout = () => {
         const selectedItems = cartItems.value?.filter((item) =>
@@ -165,6 +176,9 @@
                 }
                 if (item.selected_product_styles) {
                     baseProduct.selected_product_styles = item.selected_product_styles
+                }
+                if (item.customizations) {
+                    baseProduct.customizations = item.customizations
                 }
                 return baseProduct
             })
@@ -338,6 +352,40 @@
                                 {{ style.name }}
                             </span>
                         </div>
+
+                        <!-- Customizations -->
+                        <div
+                            v-if="item.customizations"
+                            class="flex flex-col gap-0.5 mt-1.5 w-full text-[11px] sm:text-xs text-gray-600 dark:text-gray-400"
+                        >
+                            <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+                                <span v-if="item.customizations.jersey_name">
+                                    Name:
+                                    <strong class="text-gray-900 dark:text-gray-200">
+                                        {{ item.customizations.jersey_name }}
+                                    </strong>
+                                </span>
+                                <span v-if="item.customizations.jersey_number">
+                                    Number:
+                                    <strong class="text-gray-900 dark:text-gray-200">
+                                        {{ item.customizations.jersey_number }}
+                                    </strong>
+                                </span>
+                                <span v-if="item.customizations.pocket_count">
+                                    Pockets:
+                                    <strong class="text-gray-900 dark:text-gray-200">
+                                        {{ item.customizations.pocket_count }}
+                                    </strong>
+                                </span>
+                            </div>
+                            <div
+                                v-if="item.customizations.additional_instruction"
+                                class="italic mt-0.5 text-[10px] sm:text-[11px]"
+                            >
+                                <strong>Additional Instructions:</strong>
+                                {{ item.customizations.additional_instruction }}
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Quantity Control (Remove Button) -->
@@ -370,6 +418,13 @@
                             class="flex items-center gap-2 font-bold text-2xl text-blue-300 tracking-wide dark:text-blue-400"
                         >
                             ₱ {{ totalPrice.toLocaleString() }}
+
+                            <span
+                                v-if="totalPocketCosts > 0"
+                                class="text-base text-yellow-400 dark:text-yellow-300 font-semibold"
+                            >
+                                + ₱{{ totalPocketCosts }} (pocket costs)
+                            </span>
 
                             <span
                                 v-if="

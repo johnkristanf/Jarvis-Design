@@ -49,6 +49,7 @@
 
     const openDesignOptionModal = (selectedProduct: Product, category: any) => {
         selectedProductRef.value = selectedProduct
+        selectedCategoryRef.value = category?.name || ''
         selectedProductStylesRef.value = category.product_styles || []
         showDesignOptionModal.value = true
 
@@ -133,7 +134,7 @@
             <div v-for="category in designs" :key="category.id" class="shrink-0">
                 <h1
                     @click="toggleCategory(category.id)"
-                    class="text-xs font-bold text-gray-500 dark:text-gray-100 hover:opacity-75 hover:cursor-pointer"
+                    class="text-[13px] font-bold text-gray-500 dark:text-gray-100 hover:opacity-75 hover:cursor-pointer"
                     :class="{
                         'text-blue-600 dark:text-blue-400': expandedCategory === category.id,
                     }"
@@ -222,6 +223,7 @@
     <DesignOptionModal
         v-if="showDesignOptionModal && selectedProductRef"
         :product="selectedProductRef"
+        :categoryName="selectedCategoryRef"
         :productStyles="selectedProductStylesRef"
         @close="showDesignOptionModal = false"
     />

@@ -32,6 +32,7 @@ class PaymentService
                 'user:id,name,email,phone_number,address',
                 'items.sizes',
                 'items.product:id,name',
+                'items.customization',
                 'discount',
                 'order_payments' => function ($q) {
                     $q->select([

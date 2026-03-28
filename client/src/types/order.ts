@@ -39,6 +39,7 @@ export type QrCodePaymentData = {
     total_quantity: number
     total_price: number
     order_id?: number
+    pocket_costs?: number
 }
 
 export interface SizePivot {
@@ -76,6 +77,16 @@ export interface OrderItem {
     temp_url?: string
     selected_styles?: number[]
     selected_product_styles?: ProductStyle[]
+    customizations?: any
+    customization?: {
+        id: number
+        order_item_id: number
+        jersey_name?: string
+        jersey_number?: string
+        pocket_count?: number
+        pocket_costs?: number | string
+        additional_instruction?: string
+    }
 }
 
 export type Orders = {
@@ -211,6 +222,7 @@ export interface ProductDetails {
     own_design_temp_url?: string
     selected_styles?: number[]
     selected_product_styles?: ProductStyle[]
+    customizations?: any
 }
 
 export interface UserBasic {
@@ -244,6 +256,7 @@ export interface CartItem {
     own_design_temp_url?: string
     selected_styles?: number[]
     selected_product_styles?: ProductStyle[]
+    customizations?: any
 }
 
 export enum OrderAction {

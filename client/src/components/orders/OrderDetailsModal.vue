@@ -12,7 +12,7 @@
     import PaymentAttachmentPopOver from './PaymentAttachmentPopOver.vue'
     import PaymentStatusBadge from './PaymentStatusBadge.vue'
     import PaymentAmountApplied from './PaymentAmountApplied.vue'
-    import { computed, ref } from 'vue'
+    import { computed, nextTick, ref, watch } from 'vue'
     import AddNewButton from '../AddNewButton.vue'
     import AddNewPaymentModal from './AddNewPaymentModal.vue'
     import ReuploadPaymentModal from './ReuploadPaymentModal.vue'
@@ -21,6 +21,7 @@
     const props = defineProps<{
         orderDetails: Orders
         isOpen: boolean
+        scrollToPayments?: boolean
     }>()
 
     const showAddNewPaymentModal = ref<boolean>(false)
@@ -39,6 +40,15 @@
             total_quantity: totalQty,
             total_price: props.orderDetails.total_price,
             order_id: props.orderDetails.id,
+            pocket_costs:
+                (props.orderDetails.items || []).reduce((sum, item) => {
+                    return (
+                        sum +
+                        (item.customization?.pocket_costs
+                            ? Number(item.customization.pocket_costs)
+                            : 0)
+                    )
+                }, 0) || undefined,
         }
     }
 
@@ -58,6 +68,15 @@
             total_quantity: totalQty,
             total_price: props.orderDetails.total_price,
             order_id: props.orderDetails.id,
+            pocket_costs:
+                (props.orderDetails.items || []).reduce((sum, item) => {
+                    return (
+                        sum +
+                        (item.customization?.pocket_costs
+                            ? Number(item.customization.pocket_costs)
+                            : 0)
+                    )
+                }, 0) || undefined,
         }
         showReuploadPaymentModal.value = true
     }
@@ -74,16 +93,48 @@
     // Payment composable
     const { hasFullyPaid } = usePayments(computed(() => props.orderDetails.order_payments || []))
 
+    const totalPocketCosts = computed(() => {
+        return (props.orderDetails.items || []).reduce((sum, item) => {
+            const cost = item.customization?.pocket_costs
+            return sum + (cost ? Number(cost) : 0)
+        }, 0)
+    })
+
     const currentBalance = computed(() => {
         const totalPaid = Number(props.orderDetails.total_paid || 0)
         const discountAmount = props.orderDetails.discount
             ? Number(props.orderDetails.discount.amount)
             : 0
-        const balance = Number(props.orderDetails.total_price) - totalPaid - discountAmount
+        const balance =
+            Number(props.orderDetails.total_price) +
+            totalPocketCosts.value -
+            totalPaid -
+            discountAmount
         return Math.max(0, balance)
     })
 
     console.log('orderDetails:', props.orderDetails)
+
+    // Scroll to payment history section when opened from a payment notification
+    watch(
+        () => props.isOpen,
+        async (isOpen) => {
+            if (isOpen && props.scrollToPayments) {
+                await nextTick()
+                // Small delay to allow modal transition to complete
+                setTimeout(() => {
+                    const target = document.getElementById('payment-history-section')
+                    if (!target) return
+                    // The scrollable container is the modal content div (overflow-y-auto parent)
+                    const scrollContainer = target.closest('.overflow-y-auto') as HTMLElement | null
+                    if (scrollContainer) {
+                        scrollContainer.scrollTo({ top: target.offsetTop, behavior: 'smooth' })
+                    }
+                }, 350)
+            }
+        },
+        { immediate: true },
+    )
 </script>
 
 <template>
@@ -361,6 +412,88 @@
                                                     </div>
                                                 </div>
 
+                                                <!-- Customizations -->
+                                                <div
+                                                    v-if="item.customization"
+                                                    class="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800"
+                                                >
+                                                    <p
+                                                        class="text-sm font-semibold text-yellow-800 dark:text-yellow-300 mb-2"
+                                                    >
+                                                        Customizations
+                                                    </p>
+                                                    <div
+                                                        class="flex flex-wrap gap-x-4 gap-y-1 text-sm"
+                                                    >
+                                                        <span
+                                                            v-if="item.customization.jersey_name"
+                                                            class="text-gray-700 dark:text-gray-300"
+                                                        >
+                                                            Name:
+                                                            <strong
+                                                                class="text-gray-900 dark:text-white"
+                                                            >
+                                                                {{ item.customization.jersey_name }}
+                                                            </strong>
+                                                        </span>
+                                                        <span
+                                                            v-if="item.customization.jersey_number"
+                                                            class="text-gray-700 dark:text-gray-300"
+                                                        >
+                                                            Number:
+                                                            <strong
+                                                                class="text-gray-900 dark:text-white"
+                                                            >
+                                                                {{
+                                                                    item.customization.jersey_number
+                                                                }}
+                                                            </strong>
+                                                        </span>
+                                                        <span
+                                                            v-if="item.customization.pocket_count"
+                                                            class="text-gray-700 dark:text-gray-300"
+                                                        >
+                                                            Pockets:
+                                                            <strong
+                                                                class="text-gray-900 dark:text-white"
+                                                            >
+                                                                {{
+                                                                    item.customization.pocket_count
+                                                                }}
+                                                            </strong>
+                                                        </span>
+                                                        <span
+                                                            v-if="
+                                                                item.customization.pocket_costs &&
+                                                                Number(
+                                                                    item.customization.pocket_costs,
+                                                                ) > 0
+                                                            "
+                                                            class="text-yellow-700 dark:text-yellow-300 font-semibold"
+                                                        >
+                                                            + ₱{{
+                                                                Number(
+                                                                    item.customization.pocket_costs,
+                                                                ).toFixed(2)
+                                                            }}
+                                                            (pocket costs)
+                                                        </span>
+                                                    </div>
+                                                    <p
+                                                        v-if="
+                                                            item.customization
+                                                                .additional_instruction
+                                                        "
+                                                        class="text-xs italic text-gray-600 dark:text-gray-400 mt-1"
+                                                    >
+                                                        <strong>Instructions:</strong>
+                                                        {{
+                                                            item.customization
+                                                                .additional_instruction
+                                                        }}
+                                                    </p>
+                                                </div>
+
                                                 <!-- Sizes -->
                                                 <div
                                                     v-if="item.sizes && item.sizes.length > 0"
@@ -418,6 +551,7 @@
                                         orderDetails.order_payments &&
                                         orderDetails.order_payments.length > 0
                                     "
+                                    id="payment-history-section"
                                     class="mb-20"
                                 >
                                     <div class="flex items-center justify-between mb-3">
@@ -577,6 +711,12 @@
                                         </p>
                                         <p class="text-xl font-bold text-gray-900 dark:text-white">
                                             ₱{{ props.orderDetails.total_price.toLocaleString() }}
+                                        </p>
+                                        <p
+                                            v-if="totalPocketCosts > 0"
+                                            class="text-xs text-yellow-600 dark:text-yellow-400 font-semibold mt-0.5"
+                                        >
+                                            + ₱{{ totalPocketCosts.toFixed(2) }} (pocket costs)
                                         </p>
                                     </div>
                                     <div>

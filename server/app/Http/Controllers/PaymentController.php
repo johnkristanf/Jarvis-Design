@@ -290,6 +290,20 @@ Log::info(json_encode($validated, JSON_PRETTY_PRINT));
                     'selected_styles' => isset($product['selected_styles']) ? json_decode($product['selected_styles'], true) : null,
                 ]);
 
+                if (isset($product['customizations']) && !empty($product['customizations'])) {
+                    $customFields = json_decode($product['customizations'], true);
+                    if ($customFields) {
+                        \App\Models\OrderItemCustomization::create([
+                            'order_item_id' => $orderItem->id,
+                            'jersey_number' => $customFields['jersey_number'] ?? null,
+                            'jersey_name' => $customFields['jersey_name'] ?? null,
+                            'pocket_count' => $customFields['pocket_count'] ?? null,
+                            'pocket_costs' => $customFields['pocket_costs'] ?? null,
+                            'additional_instruction' => $customFields['additional_instruction'] ?? null,
+                        ]);
+                    }
+                }
+
                 // Handle design URLs per item
                 if (array_key_exists('own_design_url', $product) && !empty($product['own_design_url'])) {
                     $orderItem->own_design_url = $product['own_design_url'];
@@ -476,8 +490,15 @@ Log::info(json_encode($validated, JSON_PRETTY_PRINT));
             $projectedTotal = $currentTotalAmount - $payment->amount_applied + $validated['amount_applied'];
             $orderTotalPrice = $payment->orders->total_price;
 
+            // Add any pocket costs from order item customizations
+            $pocketCostsTotal = \App\Models\OrderItemCustomization::whereHas('orderItem', function ($q) use ($payment) {
+                $q->where('order_id', $payment->order_id);
+            })->sum('pocket_costs');
+
+            $effectiveTotalPrice = $orderTotalPrice + $pocketCostsTotal;
+
             // Determine status
-            if ($projectedTotal >= $orderTotalPrice) {
+            if ($projectedTotal >= $effectiveTotalPrice) {
                 $newStatus = OrderPayment::FULLY_PAID;
             } elseif ($projectedTotal > 0) {
                 $newStatus = OrderPayment::PARTIALLY_PAID;

@@ -60,9 +60,14 @@
             type: Array as PropType<ProductStyle[]>,
             default: () => [],
         },
+        categoryName: {
+            type: String,
+            default: '',
+        },
     })
     onMounted(() => {
         console.log('props.product: ', props.product)
+        console.log('props.categoryName: ', props.categoryName)
         fetchSavedAiDesigns()
     })
 
@@ -101,6 +106,26 @@
     const savedAiDesigns = ref<SavedAiDesign[]>([])
     const selectedAiDesignS3Key = ref<string | null>(null)
     const isLoadingAiDesigns = ref(false)
+
+    // Customization refs
+    const jerseyNumber = ref<string>('')
+    const jerseyName = ref<string>('')
+    const includePocketToggle = ref<boolean>(false)
+    const pocketCount = ref<number>(1)
+    const additionalInstruction = ref<string>('')
+
+    const POCKET_UNIT_COST = 50
+    const pocketCost = computed(() => {
+        if (includePocketToggle.value && pocketCount.value > 0) {
+            return pocketCount.value * POCKET_UNIT_COST
+        }
+        return 0
+    })
+
+    const isApparelCategory = computed(() => {
+        const cat = props.categoryName ? props.categoryName.toLowerCase() : ''
+        return cat.includes('basketball') || cat.includes('volleyball')
+    })
 
     const fetchSavedAiDesigns = async () => {
         isLoadingAiDesigns.value = true
@@ -278,11 +303,24 @@
                 formData.append('selected_styles', JSON.stringify(selectedStyleIds.value))
             }
 
+            if (isApparelCategory.value) {
+                const customizations: any = {
+                    jersey_number: jerseyNumber.value,
+                    jersey_name: jerseyName.value,
+                    additional_instruction: additionalInstruction.value,
+                }
+                if (props.product.is_pocket_included && includePocketToggle.value) {
+                    customizations.pocket_count = pocketCount.value
+                    customizations.pocket_costs = pocketCost.value
+                }
+                formData.append('customizations', JSON.stringify(customizations))
+            }
+
             // Peek FormData key-values for debugging
             for (const pair of formData.entries()) {
                 console.log(pair[0] + ': ' + pair[1])
             }
-            
+
             addToCartMutation.mutate(formData)
         },
         ({ errors }) => {
@@ -694,6 +732,139 @@
                                             </template>
                                         </div>
                                         <p class="text-sm text-red-500 mt-1">{{ sizeIdError }}</p>
+                                    </div>
+
+                                    <!-- Customizations for Apparel -->
+                                    <div
+                                        v-if="isApparelCategory"
+                                        class="space-y-4 pt-2 pb-2 border-y border-gray-200 dark:border-zinc-700"
+                                    >
+                                        <p
+                                            class="text-sm"
+                                            :class="isDark ? 'text-gray-200' : 'text-gray-800'"
+                                        >
+                                            Apparel Customizations (Optional)
+                                        </p>
+
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div>
+                                                <label
+                                                    :class="[
+                                                        'block text-sm mb-1',
+                                                        isDark ? 'text-gray-400' : 'text-gray-600',
+                                                    ]"
+                                                >
+                                                    Jersey Number:
+                                                </label>
+                                                <input
+                                                    v-model="jerseyNumber"
+                                                    type="text"
+                                                    placeholder="e.g. 23"
+                                                    :class="[
+                                                        'w-full font-medium px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500',
+                                                        isDark
+                                                            ? 'bg-zinc-900 border-zinc-600 text-gray-100 placeholder:text-gray-500'
+                                                            : 'border-gray-300',
+                                                    ]"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label
+                                                    :class="[
+                                                        'block text-sm mb-1',
+                                                        isDark ? 'text-gray-400' : 'text-gray-600',
+                                                    ]"
+                                                >
+                                                    Jersey Name:
+                                                </label>
+                                                <input
+                                                    v-model="jerseyName"
+                                                    type="text"
+                                                    placeholder="e.g. JORDAN"
+                                                    :class="[
+                                                        'w-full font-medium  px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500',
+                                                        isDark
+                                                            ? 'bg-zinc-900 border-zinc-600 text-gray-100 placeholder:text-gray-500'
+                                                            : 'border-gray-300',
+                                                    ]"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label
+                                                :class="[
+                                                    'block text-sm mb-1',
+                                                    isDark ? 'text-gray-400' : 'text-gray-600',
+                                                ]"
+                                            >
+                                                Additional Instructions:
+                                            </label>
+                                            <textarea
+                                                v-model="additionalInstruction"
+                                                rows="2"
+                                                placeholder="Any specific instructions for production..."
+                                                :class="[
+                                                    'w-full font-medium px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 text-sm',
+                                                    isDark
+                                                        ? 'bg-zinc-900 border-zinc-600 text-gray-100 placeholder:text-gray-500'
+                                                        : 'border-gray-300',
+                                                ]"
+                                            ></textarea>
+                                        </div>
+
+                                        <div
+                                            v-if="props.product.is_pocket_included"
+                                            class="flex flex-col gap-2"
+                                        >
+                                            <label class="flex items-center gap-2 cursor-pointer">
+                                                <input
+                                                    type="checkbox"
+                                                    v-model="includePocketToggle"
+                                                    class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                                                />
+                                                <span
+                                                    :class="[
+                                                        'text-sm',
+                                                        isDark ? 'text-gray-300' : 'text-gray-700',
+                                                    ]"
+                                                >
+                                                    Include pockets for shorts?
+                                                </span>
+                                            </label>
+
+                                            <div v-if="includePocketToggle" class="pl-6">
+                                                <label
+                                                    :class="[
+                                                        'block text-sm mb-1',
+                                                        isDark ? 'text-gray-400' : 'text-gray-600',
+                                                    ]"
+                                                >
+                                                    Number of pockets:
+                                                </label>
+                                                <input
+                                                    v-model.number="pocketCount"
+                                                    type="number"
+                                                    min="1"
+                                                    :class="[
+                                                        'w-20 font-medium px-3 py-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500',
+                                                        isDark
+                                                            ? 'bg-zinc-900 border-zinc-600 text-gray-100'
+                                                            : 'border-gray-300',
+                                                    ]"
+                                                />
+                                                <p
+                                                    class="text-xs mt-1"
+                                                    :class="
+                                                        isDark
+                                                            ? 'text-yellow-400'
+                                                            : 'text-yellow-600'
+                                                    "
+                                                >
+                                                    Additional cost: ₱50 per pocket
+                                                </p>
+                                            </div>
+                                        </div>
                                     </div>
 
                                     <!-- Product Styles -->

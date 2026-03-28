@@ -391,6 +391,7 @@ class DesignsController extends Controller
             'unit_price' => 'required|numeric|min:0',
             'fabric_type_id' => 'numeric|min:0',
             'fabric_quantity' => 'numeric|min:0',
+            'is_pocket_included' => 'nullable|boolean',
         ]);
 
         Log::info('Product Info: ', [
@@ -403,6 +404,7 @@ class DesignsController extends Controller
             'category_id' => $validatedData['category_id'],
             'fabric_type_id' => $validatedData['fabric_type_id'] ?? null,
             'fabric_quantity' => $validatedData['fabric_quantity'] ?? null,
+            'is_pocket_included' => $request->has('is_pocket_included') ? filter_var($request->is_pocket_included, FILTER_VALIDATE_BOOLEAN) : false,
         ]);
 
         return response()->json([

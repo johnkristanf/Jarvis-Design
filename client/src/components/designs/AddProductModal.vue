@@ -27,6 +27,7 @@
         price: yup.number().required('Price is required').min(0, 'Invalid price'),
         fabricType: yup.number().nullable(),
         fabricQuantity: yup.number().nullable(),
+        isPocketIncluded: yup.boolean().default(false),
     })
 
     const { handleSubmit, resetForm } = useForm({ validationSchema: schema })
@@ -40,6 +41,9 @@
     )
     const { value: fabricQuantity, errorMessage: fabricQuantityError } =
         useField<number>('fabricQuantity')
+    const { value: isPocketIncluded } = useField<boolean>('isPocketIncluded', undefined, {
+        initialValue: false,
+    })
 
     // ADD NEW PRODUCT MUTATION
     const mutation = useMutation({
@@ -108,6 +112,7 @@
 
         formData.append('product_name', values.productName)
         formData.append('unit_price', values.price.toString())
+        formData.append('is_pocket_included', values.isPocketIncluded ? '1' : '0')
 
         mutation.mutate(formData)
     })
@@ -218,6 +223,37 @@
                     />
                     <p class="text-sm text-red-500 mt-1">{{ fabricQuantityError }}</p>
                 </div> -->
+
+                <!-- INCLUDE POCKET OPTION -->
+                <div>
+                    <label class="block text-sm mb-3">Include pocket option</label>
+                    <div class="flex items-center space-x-2">
+                        <button
+                            type="button"
+                            @click="isPocketIncluded = true"
+                            :class="
+                                isPocketIncluded
+                                    ? 'bg-gray-900 text-white dark:bg-white dark:text-gray-900 border-transparent'
+                                    : 'bg-white text-gray-700 border-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+                            "
+                            class="px-4 py-2 border rounded font-medium text-sm transition-colors"
+                        >
+                            Yes
+                        </button>
+                        <button
+                            type="button"
+                            @click="isPocketIncluded = false"
+                            :class="
+                                !isPocketIncluded
+                                    ? 'bg-gray-900 text-white dark:bg-white dark:text-gray-900 border-transparent'
+                                    : 'bg-white text-gray-700 border-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+                            "
+                            class="px-4 py-2 border rounded font-medium text-sm transition-colors"
+                        >
+                            No
+                        </button>
+                    </div>
+                </div>
 
                 <!-- PRODUCT UNIT PRICE -->
                 <div>

@@ -24,7 +24,9 @@
     import OrderMessages from './orders/OrderMessages.vue'
     import OrderDate from './orders/OrderDate.vue'
     import type { Notifications } from '@/types/order'
+    import { OrderStatus } from '@/types/order'
     import { initializeEcho } from '@/services/echo'
+    import { pendingOrderNav } from '@/composables/useOrderNavigation'
 
     const route = useRoute()
     const router = useRouter()
@@ -103,6 +105,19 @@
     const handleReadNotification = (notification_id: number) => {
         const notificationData = { notification_id, is_admin: false }
         notificationReadMutate(notificationData)
+    }
+
+    const handleNotificationClick = (notif: Notifications) => {
+        if (!notif.is_read) {
+            handleReadNotification(notif.id)
+        }
+        visibleRight.value = false
+        pendingOrderNav.value = {
+            orderId: notif.orders.id,
+            scrollTo:
+                (notif.status as string) === OrderStatus.PAYMENT_UPDATED ? 'payments' : undefined,
+        }
+        router.push({ path: '/orders' })
     }
 
     // Mark all notification as read mutation
@@ -276,15 +291,10 @@
                                             <div
                                                 v-for="notif in notificationsQuery.data.value"
                                                 v-bind:key="notif.id"
-                                                @click="
-                                                    !notif.is_read &&
-                                                    handleReadNotification(notif.id)
-                                                "
+                                                @click="handleNotificationClick(notif)"
                                                 :class="[
-                                                    'flex gap-3 py-6 px-3 relative border-b border-gray-800 transition-colors',
-                                                    !notif.is_read
-                                                        ? 'bg-gray-800 hover:cursor-pointer hover:opacity-75'
-                                                        : 'bg-white',
+                                                    'flex gap-3 py-6 px-3 relative border-b border-gray-800 transition-colors hover:cursor-pointer hover:opacity-75',
+                                                    !notif.is_read ? 'bg-gray-800' : 'bg-white',
                                                 ]"
                                             >
                                                 <!-- Notification Icon -->

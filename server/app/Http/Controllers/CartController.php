@@ -79,6 +79,7 @@ class CartController extends Controller
             'size_id' => $validated['size_id'] ?? null,
             'quantity' => $validated['quantity'],
             'selected_styles' => isset($validated['selected_styles']) ? json_decode($validated['selected_styles'], true) : null,
+            'customizations' => isset($validated['customizations']) ? json_decode($validated['customizations'], true) : null,
         ]);
 
         // Check if own_design_file was uploaded and store its URL (optional)

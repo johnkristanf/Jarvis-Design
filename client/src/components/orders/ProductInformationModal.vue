@@ -266,6 +266,78 @@
                                                     </div>
                                                 </div>
                                             </div>
+
+                                            <!-- Customizations -->
+                                            <div
+                                                v-if="item.customization"
+                                                class="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800"
+                                            >
+                                                <span
+                                                    class="text-xs text-yellow-700 dark:text-yellow-300 uppercase font-semibold tracking-wider"
+                                                >
+                                                    Customizations
+                                                </span>
+                                                <div
+                                                    class="mt-1.5 flex flex-wrap gap-x-5 gap-y-1 text-sm"
+                                                >
+                                                    <span
+                                                        v-if="item.customization.jersey_name"
+                                                        class="text-gray-700 dark:text-gray-300"
+                                                    >
+                                                        Name:
+                                                        <strong
+                                                            class="text-gray-900 dark:text-white"
+                                                        >
+                                                            {{ item.customization.jersey_name }}
+                                                        </strong>
+                                                    </span>
+                                                    <span
+                                                        v-if="item.customization.jersey_number"
+                                                        class="text-gray-700 dark:text-gray-300"
+                                                    >
+                                                        Number:
+                                                        <strong
+                                                            class="text-gray-900 dark:text-white"
+                                                        >
+                                                            {{ item.customization.jersey_number }}
+                                                        </strong>
+                                                    </span>
+                                                    <span
+                                                        v-if="item.customization.pocket_count"
+                                                        class="text-gray-700 dark:text-gray-300"
+                                                    >
+                                                        Pockets:
+                                                        <strong
+                                                            class="text-gray-900 dark:text-white"
+                                                        >
+                                                            {{ item.customization.pocket_count }}
+                                                        </strong>
+                                                    </span>
+                                                    <span
+                                                        v-if="
+                                                            item.customization.pocket_costs &&
+                                                            Number(
+                                                                item.customization.pocket_costs,
+                                                            ) > 0
+                                                        "
+                                                        class="text-yellow-700 dark:text-yellow-400 font-semibold"
+                                                    >
+                                                        + ₱{{
+                                                            Number(
+                                                                item.customization.pocket_costs,
+                                                            ).toFixed(2)
+                                                        }}
+                                                        (pocket costs)
+                                                    </span>
+                                                </div>
+                                                <p
+                                                    v-if="item.customization.additional_instruction"
+                                                    class="text-xs italic text-gray-600 dark:text-gray-400 mt-1.5"
+                                                >
+                                                    <strong>Instructions:</strong>
+                                                    {{ item.customization.additional_instruction }}
+                                                </p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

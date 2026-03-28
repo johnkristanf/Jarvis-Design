@@ -131,6 +131,14 @@
         }, 0)
     })
 
+    // Calculate total pocket costs across all checked out products
+    const totalPocketCostsAllProducts = computed(() => {
+        return checkedOutProductsArray.value.reduce((sum, product) => {
+            const pocketCost = product.customizations?.pocket_costs
+            return sum + (pocketCost ? Number(pocketCost) : 0)
+        }, 0)
+    })
+
     // SERIALIZING DATA TO THE FORMDATA
     const prepareFormData = () => {
         const data = new FormData()
@@ -173,6 +181,12 @@
                 data.append(
                     `products[${idx}][selected_styles]`,
                     JSON.stringify(product.selected_styles),
+                )
+            }
+            if (product.customizations) {
+                data.append(
+                    `products[${idx}][customizations]`,
+                    JSON.stringify(product.customizations),
                 )
             }
         })
@@ -354,6 +368,13 @@
                                                 >
                                                     ₱{{ totalPriceAllProducts.toFixed(2) }}
                                                 </span>
+                                                <span
+                                                    v-if="totalPocketCostsAllProducts > 0"
+                                                    class="text-sm text-yellow-500 dark:text-yellow-400 font-semibold"
+                                                >
+                                                    + ₱{{ totalPocketCostsAllProducts.toFixed(2) }}
+                                                    (pocket costs)
+                                                </span>
                                             </div>
                                             <div
                                                 v-if="
@@ -453,7 +474,7 @@
                                                     </div>
                                                 </div>
 
-                                                <div class="text-right shrink-0 ml-2">
+                                                <div class="flex gap-2 text-right shrink-0 ml-2">
                                                     <p
                                                         class="font-semibold text-gray-900 dark:text-gray-100"
                                                     >
@@ -463,6 +484,24 @@
                                                                 (product.desired_quantity || 0)
                                                             ).toFixed(2)
                                                         }}
+                                                    </p>
+
+                                                    <!-- Pocket cost indicator per product -->
+                                                    <p
+                                                        v-if="
+                                                            product.customizations?.pocket_costs &&
+                                                            Number(
+                                                                product.customizations.pocket_costs,
+                                                            ) > 0
+                                                        "
+                                                        class="text-xs text-yellow-600 dark:text-yellow-400 font-semibold mt-1"
+                                                    >
+                                                        + ₱{{
+                                                            Number(
+                                                                product.customizations.pocket_costs,
+                                                            ).toFixed(2)
+                                                        }}
+                                                        (pocket costs)
                                                     </p>
                                                 </div>
                                             </div>

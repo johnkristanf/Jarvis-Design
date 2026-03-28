@@ -15,10 +15,12 @@
     import { initializeEcho } from '@/services/echo'
     import { useFetchAuthenticatedUser } from '@/composables/useFetchAuthenticatedUser'
     import { getConversation, markConversationAsRead } from '@/api/get/message'
+    import { pendingOrderNav } from '@/composables/useOrderNavigation'
 
     const isOpenChatBox = ref<boolean>(false)
     const isOrderDetailsOpen = ref<boolean>(false)
     const selectedOrderId = ref<number | null>(null)
+    const scrollToPayments = ref<boolean>(false)
     const searchTerm = ref<string>('')
     const toast = useToast()
     const queryClient = useQueryClient()
@@ -58,8 +60,27 @@
 
     const openOrderDetails = (order: Orders) => {
         selectedOrderId.value = order.id
+        scrollToPayments.value = false
         isOrderDetailsOpen.value = true
     }
+    // Auto-open order modal when navigated from a notification
+    watch(
+        [() => orders.value?.data, pendingOrderNav],
+        ([ordersData, navData]: [Orders[] | undefined, any]) => {
+            if (!navData || !ordersData) return
+
+            const target = ordersData.find((o: Orders) => o.id === navData.orderId)
+            if (target) {
+                selectedOrderId.value = target.id
+                scrollToPayments.value = navData.scrollTo === 'payments'
+                isOrderDetailsOpen.value = true
+
+                // Clear state so closing and re-opening the modal works normally later
+                pendingOrderNav.value = null
+            }
+        },
+        { immediate: true },
+    )
 
     const orderDetails = computed(() => {
         if (!selectedOrderId.value || !orders.value?.data) return null
@@ -225,6 +246,7 @@
             v-if="orderDetails"
             :isOpen="isOrderDetailsOpen"
             :orderDetails="orderDetails"
+            :scrollToPayments="scrollToPayments"
             @close="isOrderDetailsOpen = false"
         />
         <Loader v-if="isLoading" msg="Loading Orders..." />

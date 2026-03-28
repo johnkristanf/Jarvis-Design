@@ -33,6 +33,7 @@ export interface Product {
     category_id: number
     fabric_type: FabricTypes
     designs: BusinessProductDesign[]
+    is_pocket_included?: boolean
     created_at: string
     updated_at: string
 }

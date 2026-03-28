@@ -95,6 +95,14 @@
         const promptCredit = authStore.currentUser?.prompt_credit || 0
         return total + promptCredit
     })
+
+    const totalPocketCosts = computed(() => {
+        if (!props.selectedProductsData) return 0
+        return props.selectedProductsData.reduce((sum, product) => {
+            const cost = product.customizations?.pocket_costs
+            return sum + (cost ? Number(cost) : 0)
+        }, 0)
+    })
 </script>
 
 <template>
@@ -138,12 +146,18 @@
                                 >
                                     Overall Total Price
                                 </p>
-                                <div class="flex items-baseline justify-end gap-2">
+                                <div class="flex items-baseline justify-end gap-2 flex-wrap">
                                     <p class="text-2xl sm:text-3xl font-bold text-blue-500">
                                         ₱{{
                                             grandTotal - (authStore.currentUser?.prompt_credit || 0)
                                         }}
                                     </p>
+                                    <span
+                                        v-if="totalPocketCosts > 0"
+                                        class="text-sm text-yellow-500 dark:text-yellow-400 font-semibold"
+                                    >
+                                        + ₱{{ totalPocketCosts.toFixed(2) }} (pocket costs)
+                                    </span>
                                 </div>
                                 <div
                                     v-if="
@@ -182,6 +196,25 @@
                                         Total Price: ₱{{
                                             getProductTotal(props.selectedProductsData[0])
                                         }}
+                                        <span
+                                            v-if="
+                                                props.selectedProductsData[0].customizations
+                                                    ?.pocket_costs &&
+                                                Number(
+                                                    props.selectedProductsData[0].customizations
+                                                        .pocket_costs,
+                                                ) > 0
+                                            "
+                                            class="text-xs text-yellow-500 dark:text-yellow-400 font-semibold ml-1"
+                                        >
+                                            + ₱{{
+                                                Number(
+                                                    props.selectedProductsData[0].customizations
+                                                        .pocket_costs,
+                                                ).toFixed(2)
+                                            }}
+                                            (pocket costs)
+                                        </span>
                                     </p>
                                 </template>
                                 <template
@@ -210,6 +243,22 @@
                                                 - Qty: {{ product.desired_quantity ?? 1 }}, ₱{{
                                                     getProductTotal(product)
                                                 }}
+                                                <span
+                                                    v-if="
+                                                        product.customizations?.pocket_costs &&
+                                                        Number(
+                                                            product.customizations.pocket_costs,
+                                                        ) > 0
+                                                    "
+                                                    class="text-yellow-500 dark:text-yellow-400 font-semibold"
+                                                >
+                                                    + ₱{{
+                                                        Number(
+                                                            product.customizations.pocket_costs,
+                                                        ).toFixed(2)
+                                                    }}
+                                                    (pocket costs)
+                                                </span>
                                             </li>
                                         </ul>
                                     </div>

@@ -145,6 +145,15 @@
                                 </p>
                                 <p class="text-sm text-gray-500">
                                     Total Price: ₱{{ paymentData?.total_price }}
+                                    <span
+                                        v-if="
+                                            paymentData?.pocket_costs &&
+                                            paymentData.pocket_costs > 0
+                                        "
+                                        class="text-yellow-600 font-semibold"
+                                    >
+                                        + ₱{{ paymentData.pocket_costs.toFixed(2) }} (pocket costs)
+                                    </span>
                                 </p>
                             </div>
 
