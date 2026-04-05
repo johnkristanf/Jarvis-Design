@@ -39,8 +39,8 @@ class OrderItem extends Model
             ->withTimestamps();
     }
 
-    public function customization()
+    public function customizations()
     {
-        return $this->hasOne(OrderItemCustomization::class, 'order_item_id');
+        return $this->hasMany(OrderItemCustomization::class, 'order_item_id');
     }
 }

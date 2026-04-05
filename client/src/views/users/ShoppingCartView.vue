@@ -144,8 +144,11 @@
         return cartItems.value
             .filter((item) => selectedCartIds.value.includes(item.id))
             .reduce((sum, item) => {
-                const pocketCost = item.customizations?.pocket_costs
-                return sum + (pocketCost ? Number(pocketCost) : 0)
+                const itemCost = (item.customizations || []).reduce(
+                    (cSum: number, c: any) => cSum + (c.pocket_costs ? Number(c.pocket_costs) : 0),
+                    0,
+                )
+                return sum + itemCost
             }, 0)
     })
 
@@ -354,38 +357,49 @@
                         </div>
 
                         <!-- Customizations -->
-                        <div
-                            v-if="item.customizations"
-                            class="flex flex-col gap-0.5 mt-1.5 w-full text-[11px] sm:text-xs text-gray-600 dark:text-gray-400"
-                        >
-                            <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
-                                <span v-if="item.customizations.jersey_name">
-                                    Name:
-                                    <strong class="text-gray-900 dark:text-gray-200">
-                                        {{ item.customizations.jersey_name }}
-                                    </strong>
-                                </span>
-                                <span v-if="item.customizations.jersey_number">
-                                    Number:
-                                    <strong class="text-gray-900 dark:text-gray-200">
-                                        {{ item.customizations.jersey_number }}
-                                    </strong>
-                                </span>
-                                <span v-if="item.customizations.pocket_count">
-                                    Pockets:
-                                    <strong class="text-gray-900 dark:text-gray-200">
-                                        {{ item.customizations.pocket_count }}
-                                    </strong>
-                                </span>
+                        <template v-if="item.customizations && item.customizations.length > 0">
+                            <div class="flex flex-wrap gap-3 mt-1.5 w-full">
+                                <div
+                                    v-for="(customization, index) in item.customizations"
+                                    :key="customization.id || index"
+                                    class="flex flex-col gap-0.5 text-[11px] sm:text-xs text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 p-2 rounded-md bg-gray-50 dark:bg-gray-800/50 min-w-[200px] flex-auto"
+                                >
+                                    <span
+                                        class="font-semibold text-[10px] text-gray-800 dark:text-gray-200"
+                                        v-if="item.customizations.length > 1"
+                                    >
+                                        Customization #{{ Number(index) + 1 }}
+                                    </span>
+                                    <div class="flex flex-wrap items-center gap-x-3 gap-y-1 mt-0.5">
+                                        <span v-if="customization.jersey_name">
+                                            Name:
+                                            <strong class="text-gray-900 dark:text-gray-200">
+                                                {{ customization.jersey_name }}
+                                            </strong>
+                                        </span>
+                                        <span v-if="customization.jersey_number">
+                                            Number:
+                                            <strong class="text-gray-900 dark:text-gray-200">
+                                                {{ customization.jersey_number }}
+                                            </strong>
+                                        </span>
+                                        <span v-if="customization.pocket_count">
+                                            Pockets:
+                                            <strong class="text-gray-900 dark:text-gray-200">
+                                                {{ customization.pocket_count }}
+                                            </strong>
+                                        </span>
+                                    </div>
+                                    <div
+                                        v-if="customization.additional_instruction"
+                                        class="italic mt-0.5 text-[10px] sm:text-[11px]"
+                                    >
+                                        <strong>Additional Instructions:</strong>
+                                        {{ customization.additional_instruction }}
+                                    </div>
+                                </div>
                             </div>
-                            <div
-                                v-if="item.customizations.additional_instruction"
-                                class="italic mt-0.5 text-[10px] sm:text-[11px]"
-                            >
-                                <strong>Additional Instructions:</strong>
-                                {{ item.customizations.additional_instruction }}
-                            </div>
-                        </div>
+                        </template>
                     </div>
 
                     <!-- Quantity Control (Remove Button) -->

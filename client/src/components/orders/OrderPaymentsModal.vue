@@ -95,8 +95,11 @@
 
     const totalPocketCosts = computed(() => {
         return (props.orders.items || []).reduce((sum, item) => {
-            const cost = item.customization?.pocket_costs
-            return sum + (cost ? Number(cost) : 0)
+            const itemCost = (item.customizations || []).reduce(
+                (cSum: number, c: any) => cSum + (c.pocket_costs ? Number(c.pocket_costs) : 0),
+                0,
+            )
+            return sum + itemCost
         }, 0)
     })
 

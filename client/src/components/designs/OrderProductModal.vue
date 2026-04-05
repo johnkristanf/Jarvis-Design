@@ -134,8 +134,11 @@
     // Calculate total pocket costs across all checked out products
     const totalPocketCostsAllProducts = computed(() => {
         return checkedOutProductsArray.value.reduce((sum, product) => {
-            const pocketCost = product.customizations?.pocket_costs
-            return sum + (pocketCost ? Number(pocketCost) : 0)
+            const itemCost = (product.customizations || []).reduce(
+                (cSum: number, c: any) => cSum + (c.pocket_costs ? Number(c.pocket_costs) : 0),
+                0,
+            )
+            return sum + itemCost
         }, 0)
     })
 
@@ -489,17 +492,28 @@
                                                     <!-- Pocket cost indicator per product -->
                                                     <p
                                                         v-if="
-                                                            product.customizations?.pocket_costs &&
-                                                            Number(
-                                                                product.customizations.pocket_costs,
+                                                            (product.customizations || []).reduce(
+                                                                (cSum: number, c: any) =>
+                                                                    cSum +
+                                                                    (c.pocket_costs
+                                                                        ? Number(c.pocket_costs)
+                                                                        : 0),
+                                                                0,
                                                             ) > 0
                                                         "
                                                         class="text-xs text-yellow-600 dark:text-yellow-400 font-semibold mt-1"
                                                     >
                                                         + ₱{{
-                                                            Number(
-                                                                product.customizations.pocket_costs,
-                                                            ).toFixed(2)
+                                                            (product.customizations || [])
+                                                                .reduce(
+                                                                    (cSum: number, c: any) =>
+                                                                        cSum +
+                                                                        (c.pocket_costs
+                                                                            ? Number(c.pocket_costs)
+                                                                            : 0),
+                                                                    0,
+                                                                )
+                                                                .toFixed(2)
                                                         }}
                                                         (pocket costs)
                                                     </p>

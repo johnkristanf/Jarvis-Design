@@ -108,19 +108,44 @@
     const isLoadingAiDesigns = ref(false)
 
     // Customization refs
-    const jerseyNumber = ref<string>('')
-    const jerseyName = ref<string>('')
-    const includePocketToggle = ref<boolean>(false)
-    const pocketCount = ref<number>(1)
-    const additionalInstruction = ref<string>('')
+    type ApparelCustomization = {
+        id: number
+        jerseyNumber: string
+        jerseyName: string
+        additionalInstruction: string
+        includePocketToggle: boolean
+        pocketCount: number
+    }
 
     const POCKET_UNIT_COST = 50
-    const pocketCost = computed(() => {
-        if (includePocketToggle.value && pocketCount.value > 0) {
-            return pocketCount.value * POCKET_UNIT_COST
+
+    const customizations = ref<ApparelCustomization[]>([
+        {
+            id: Date.now(),
+            jerseyNumber: '',
+            jerseyName: '',
+            additionalInstruction: '',
+            includePocketToggle: false,
+            pocketCount: 1,
+        },
+    ])
+
+    const addCustomization = () => {
+        customizations.value.push({
+            id: Date.now(),
+            jerseyNumber: '',
+            jerseyName: '',
+            additionalInstruction: '',
+            includePocketToggle: false,
+            pocketCount: 1,
+        })
+    }
+
+    const removeCustomization = (id: number) => {
+        if (customizations.value.length > 1) {
+            customizations.value = customizations.value.filter((c) => c.id !== id)
         }
-        return 0
-    })
+    }
 
     const isApparelCategory = computed(() => {
         const cat = props.categoryName ? props.categoryName.toLowerCase() : ''
@@ -304,16 +329,19 @@
             }
 
             if (isApparelCategory.value) {
-                const customizations: any = {
-                    jersey_number: jerseyNumber.value,
-                    jersey_name: jerseyName.value,
-                    additional_instruction: additionalInstruction.value,
-                }
-                if (props.product.is_pocket_included && includePocketToggle.value) {
-                    customizations.pocket_count = pocketCount.value
-                    customizations.pocket_costs = pocketCost.value
-                }
-                formData.append('customizations', JSON.stringify(customizations))
+                const customizationsPayload = customizations.value.map((c) => {
+                    const customObj: any = {
+                        jersey_number: c.jerseyNumber,
+                        jersey_name: c.jerseyName,
+                        additional_instruction: c.additionalInstruction,
+                    }
+                    if (props.product.is_pocket_included && c.includePocketToggle) {
+                        customObj.pocket_count = c.pocketCount
+                        customObj.pocket_costs = c.pocketCount * POCKET_UNIT_COST
+                    }
+                    return customObj
+                })
+                formData.append('customizations', JSON.stringify(customizationsPayload))
             }
 
             // Peek FormData key-values for debugging
@@ -737,132 +765,210 @@
                                     <!-- Customizations for Apparel -->
                                     <div
                                         v-if="isApparelCategory"
-                                        class="space-y-4 pt-2 pb-2 border-y border-gray-200 dark:border-zinc-700"
+                                        class="pt-2 pb-2 border-y border-gray-200 dark:border-zinc-700"
                                     >
-                                        <p
-                                            class="text-sm"
-                                            :class="isDark ? 'text-gray-200' : 'text-gray-800'"
-                                        >
-                                            Apparel Customizations (Optional)
-                                        </p>
-
-                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                            <div>
-                                                <label
-                                                    :class="[
-                                                        'block text-sm mb-1',
-                                                        isDark ? 'text-gray-400' : 'text-gray-600',
-                                                    ]"
-                                                >
-                                                    Jersey Number:
-                                                </label>
-                                                <input
-                                                    v-model="jerseyNumber"
-                                                    type="text"
-                                                    placeholder="e.g. 23"
-                                                    :class="[
-                                                        'w-full font-medium px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500',
-                                                        isDark
-                                                            ? 'bg-zinc-900 border-zinc-600 text-gray-100 placeholder:text-gray-500'
-                                                            : 'border-gray-300',
-                                                    ]"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label
-                                                    :class="[
-                                                        'block text-sm mb-1',
-                                                        isDark ? 'text-gray-400' : 'text-gray-600',
-                                                    ]"
-                                                >
-                                                    Jersey Name:
-                                                </label>
-                                                <input
-                                                    v-model="jerseyName"
-                                                    type="text"
-                                                    placeholder="e.g. JORDAN"
-                                                    :class="[
-                                                        'w-full font-medium  px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500',
-                                                        isDark
-                                                            ? 'bg-zinc-900 border-zinc-600 text-gray-100 placeholder:text-gray-500'
-                                                            : 'border-gray-300',
-                                                    ]"
-                                                />
-                                            </div>
-                                        </div>
-
-                                        <div>
-                                            <label
-                                                :class="[
-                                                    'block text-sm mb-1',
-                                                    isDark ? 'text-gray-400' : 'text-gray-600',
-                                                ]"
+                                        <div class="flex justify-between items-center gap-2 mb-4">
+                                            <p
+                                                class="text-sm font-semibold"
+                                                :class="isDark ? 'text-gray-200' : 'text-gray-800'"
                                             >
-                                                Additional Instructions:
-                                            </label>
-                                            <textarea
-                                                v-model="additionalInstruction"
-                                                rows="2"
-                                                placeholder="Any specific instructions for production..."
-                                                :class="[
-                                                    'w-full font-medium px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 text-sm',
-                                                    isDark
-                                                        ? 'bg-zinc-900 border-zinc-600 text-gray-100 placeholder:text-gray-500'
-                                                        : 'border-gray-300',
-                                                ]"
-                                            ></textarea>
+                                                Apparel Customizations (Optional)
+                                            </p>
+                                            <button
+                                                type="button"
+                                                @click="addCustomization"
+                                                class="flex items-center justify-center w-5 h-5 rounded-full bg-blue-600 hover:bg-blue-700 text-white transition-colors"
+                                                title="Add another customization"
+                                            >
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    class="h-4 w-4"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    stroke="currentColor"
+                                                    stroke-width="2"
+                                                >
+                                                    <path
+                                                        stroke-linecap="round"
+                                                        stroke-linejoin="round"
+                                                        d="M12 4v16m8-8H4"
+                                                    />
+                                                </svg>
+                                            </button>
                                         </div>
 
                                         <div
-                                            v-if="props.product.is_pocket_included"
-                                            class="flex flex-col gap-2"
+                                            class="flex w-full gap-4 overflow-x-auto pb-4 custom-scrollbar snap-x"
                                         >
-                                            <label class="flex items-center gap-2 cursor-pointer">
-                                                <input
-                                                    type="checkbox"
-                                                    v-model="includePocketToggle"
-                                                    class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
-                                                />
-                                                <span
-                                                    :class="[
-                                                        'text-sm',
-                                                        isDark ? 'text-gray-300' : 'text-gray-700',
-                                                    ]"
+                                            <div
+                                                v-for="(c, index) in customizations"
+                                                :key="c.id"
+                                                class="flex flex-col gap-4 p-4 border rounded-md relative shrink-0 snap-center transition-all duration-300"
+                                                :class="[
+                                                    isDark
+                                                        ? 'bg-zinc-800/50 border-zinc-700'
+                                                        : 'bg-gray-50 border-gray-200',
+                                                    customizations.length === 1
+                                                        ? 'w-full'
+                                                        : 'w-[280px] sm:w-[320px]',
+                                                ]"
+                                            >
+                                                <!-- Trash Icon for removing -->
+                                                <button
+                                                    v-if="customizations.length > 1"
+                                                    @click="removeCustomization(c.id)"
+                                                    type="button"
+                                                    class="absolute top-2 right-2 text-red-500 hover:text-red-700 p-1 bg-transparent hover:bg-red-50 dark:hover:bg-red-900/30 rounded-md transition-colors"
+                                                    title="Remove customization"
                                                 >
-                                                    Include pockets for shorts?
-                                                </span>
-                                            </label>
+                                                    <svg
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        class="h-4 w-4"
+                                                        fill="none"
+                                                        viewBox="0 0 24 24"
+                                                        stroke="currentColor"
+                                                        stroke-width="2"
+                                                    >
+                                                        <path
+                                                            stroke-linecap="round"
+                                                            stroke-linejoin="round"
+                                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                                        />
+                                                    </svg>
+                                                </button>
 
-                                            <div v-if="includePocketToggle" class="pl-6">
-                                                <label
-                                                    :class="[
-                                                        'block text-sm mb-1',
-                                                        isDark ? 'text-gray-400' : 'text-gray-600',
-                                                    ]"
+                                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                    <div>
+                                                        <label
+                                                            :class="[
+                                                                'block text-sm mb-1',
+                                                                isDark
+                                                                    ? 'text-gray-400'
+                                                                    : 'text-gray-600',
+                                                            ]"
+                                                        >
+                                                            Jersey Number:
+                                                        </label>
+                                                        <input
+                                                            v-model="c.jerseyNumber"
+                                                            type="text"
+                                                            placeholder="e.g. 23"
+                                                            :class="[
+                                                                'w-full font-medium px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500',
+                                                                isDark
+                                                                    ? 'bg-zinc-900 border-zinc-600 text-gray-100 placeholder:text-gray-500'
+                                                                    : 'bg-white border-gray-300',
+                                                            ]"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label
+                                                            :class="[
+                                                                'block text-sm mb-1',
+                                                                isDark
+                                                                    ? 'text-gray-400'
+                                                                    : 'text-gray-600',
+                                                            ]"
+                                                        >
+                                                            Jersey Name:
+                                                        </label>
+                                                        <input
+                                                            v-model="c.jerseyName"
+                                                            type="text"
+                                                            placeholder="e.g. JORDAN"
+                                                            :class="[
+                                                                'w-full font-medium px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500',
+                                                                isDark
+                                                                    ? 'bg-zinc-900 border-zinc-600 text-gray-100 placeholder:text-gray-500'
+                                                                    : 'bg-white border-gray-300',
+                                                            ]"
+                                                        />
+                                                    </div>
+                                                </div>
+
+                                                <div>
+                                                    <label
+                                                        :class="[
+                                                            'block text-sm mb-1',
+                                                            isDark
+                                                                ? 'text-gray-400'
+                                                                : 'text-gray-600',
+                                                        ]"
+                                                    >
+                                                        Additional Instructions:
+                                                    </label>
+                                                    <textarea
+                                                        v-model="c.additionalInstruction"
+                                                        rows="2"
+                                                        placeholder="Any specific instructions for production..."
+                                                        :class="[
+                                                            'w-full font-medium px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 text-sm',
+                                                            isDark
+                                                                ? 'bg-zinc-900 border-zinc-600 text-gray-100 placeholder:text-gray-500'
+                                                                : 'bg-white border-gray-300',
+                                                        ]"
+                                                    ></textarea>
+                                                </div>
+
+                                                <div
+                                                    v-if="props.product.is_pocket_included"
+                                                    class="flex flex-col gap-2"
                                                 >
-                                                    Number of pockets:
-                                                </label>
-                                                <input
-                                                    v-model.number="pocketCount"
-                                                    type="number"
-                                                    min="1"
-                                                    :class="[
-                                                        'w-20 font-medium px-3 py-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500',
-                                                        isDark
-                                                            ? 'bg-zinc-900 border-zinc-600 text-gray-100'
-                                                            : 'border-gray-300',
-                                                    ]"
-                                                />
-                                                <p
-                                                    class="text-xs mt-1"
-                                                    :class="
-                                                        isDark
-                                                            ? 'text-yellow-400'
-                                                            : 'text-yellow-600'
-                                                    "
-                                                >
-                                                    Additional cost: ₱50 per pocket
-                                                </p>
+                                                    <label
+                                                        class="flex items-center gap-2 cursor-pointer w-max"
+                                                    >
+                                                        <input
+                                                            type="checkbox"
+                                                            v-model="c.includePocketToggle"
+                                                            class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                                                        />
+                                                        <span
+                                                            :class="[
+                                                                'text-sm',
+                                                                isDark
+                                                                    ? 'text-gray-300'
+                                                                    : 'text-gray-700',
+                                                            ]"
+                                                        >
+                                                            Include pockets for shorts?
+                                                        </span>
+                                                    </label>
+
+                                                    <div v-if="c.includePocketToggle" class="pl-6">
+                                                        <label
+                                                            :class="[
+                                                                'block text-sm mb-1',
+                                                                isDark
+                                                                    ? 'text-gray-400'
+                                                                    : 'text-gray-600',
+                                                            ]"
+                                                        >
+                                                            Number of pockets:
+                                                        </label>
+                                                        <input
+                                                            v-model.number="c.pocketCount"
+                                                            type="number"
+                                                            min="1"
+                                                            :class="[
+                                                                'w-20 font-medium px-3 py-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500',
+                                                                isDark
+                                                                    ? 'bg-zinc-900 border-zinc-600 text-gray-100'
+                                                                    : 'bg-white border-gray-300',
+                                                            ]"
+                                                        />
+                                                        <p
+                                                            class="text-xs mt-1"
+                                                            :class="
+                                                                isDark
+                                                                    ? 'text-yellow-400'
+                                                                    : 'text-yellow-600'
+                                                            "
+                                                        >
+                                                            Additional cost: ₱{{ POCKET_UNIT_COST }}
+                                                            per pocket
+                                                        </p>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

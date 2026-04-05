@@ -291,16 +291,23 @@ Log::info(json_encode($validated, JSON_PRETTY_PRINT));
                 ]);
 
                 if (isset($product['customizations']) && !empty($product['customizations'])) {
-                    $customFields = json_decode($product['customizations'], true);
-                    if ($customFields) {
-                        \App\Models\OrderItemCustomization::create([
-                            'order_item_id' => $orderItem->id,
-                            'jersey_number' => $customFields['jersey_number'] ?? null,
-                            'jersey_name' => $customFields['jersey_name'] ?? null,
-                            'pocket_count' => $customFields['pocket_count'] ?? null,
-                            'pocket_costs' => $customFields['pocket_costs'] ?? null,
-                            'additional_instruction' => $customFields['additional_instruction'] ?? null,
-                        ]);
+                    $customItems = json_decode($product['customizations'], true);
+                    if ($customItems) {
+                        // Support both backward-compatible single object or array of objects
+                        if (!isset($customItems[0]) && !empty($customItems)) {
+                            $customItems = [$customItems];
+                        }
+                        
+                        foreach ($customItems as $customFields) {
+                            \App\Models\OrderItemCustomization::create([
+                                'order_item_id' => $orderItem->id,
+                                'jersey_number' => $customFields['jersey_number'] ?? null,
+                                'jersey_name' => $customFields['jersey_name'] ?? null,
+                                'pocket_count' => $customFields['pocket_count'] ?? null,
+                                'pocket_costs' => $customFields['pocket_costs'] ?? null,
+                                'additional_instruction' => $customFields['additional_instruction'] ?? null,
+                            ]);
+                        }
                     }
                 }
 
