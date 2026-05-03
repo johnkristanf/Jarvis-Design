@@ -156,7 +156,7 @@
                 responseType: 'blob',
             })
 
-            downloadBlobFile(response, 'monthly_sales_report.pdf')
+            downloadBlobFile(response, 'summary_total_orders_placed_report.pdf')
         } catch (error) {
             console.error('Download Report Error: ', error)
         }
@@ -171,7 +171,7 @@
                 responseType: 'blob',
             })
 
-            downloadBlobFile(response, 'category_sales_report.pdf')
+            downloadBlobFile(response, 'sales_per_category_report.pdf')
         } catch (error) {
             console.error('Download Report Error: ', error)
         }
