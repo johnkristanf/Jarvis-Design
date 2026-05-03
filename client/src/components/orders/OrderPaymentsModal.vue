@@ -851,7 +851,6 @@
 
                     <!-- Payment Total Summary - Fixed Footer -->
                     <div
-                        v-if="payments && payments.length > 0"
                         class="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-6 py-4 flex-shrink-0"
                     >
                         <div class="grid grid-cols-3 gap-4">

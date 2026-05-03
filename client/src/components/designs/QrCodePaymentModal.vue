@@ -6,6 +6,7 @@
         Dialog,
         DialogPanel,
         DialogTitle,
+        Switch,
     } from '@headlessui/vue'
     import { ref, reactive, onMounted, computed, nextTick } from 'vue'
     import { useToast } from 'primevue/usetoast'
@@ -23,9 +24,11 @@
     // -- Emits updated to match single file structure --
     const emit = defineEmits(['close', 'place_order', 'fileSelected'])
     const handleCloseModal = () => emit('close')
-    const handleTriggerPlaceOrder = () => emit('place_order')
+    const handleTriggerPlaceOrder = () => emit('place_order', isCashPayment.value)
     const toast = useToast()
     const { authStore } = useFetchAuthenticatedUser()
+
+    const isCashPayment = ref(false)
 
     // 1 Order = 1 Payment File
     const paymentFile = ref<File | null>(null)
@@ -310,10 +313,28 @@
                                 <div
                                     class="border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-4 sm:p-6 flex flex-col gap-4 sm:gap-5 bg-gray-50 dark:bg-gray-900"
                                 >
-                                    <!-- QR Codes - responsive grid -->
-                                    <div
-                                        class="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 lg:gap-12 mb-0"
-                                    >
+                                    <!-- Cash Payment Toggle Header -->
+                                    <div class="flex justify-end w-full mb-[-8px]">
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer" @click="isCashPayment = !isCashPayment">Pay with Cash</span>
+                                            <Switch
+                                                v-model="isCashPayment"
+                                                :class="isCashPayment ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-600'"
+                                                class="relative inline-flex h-5 w-9 sm:h-6 sm:w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                                            >
+                                                <span
+                                                    :class="isCashPayment ? 'translate-x-4 sm:translate-x-6' : 'translate-x-1'"
+                                                    class="inline-block h-3 w-3 sm:h-4 sm:w-4 transform rounded-full bg-white transition-transform"
+                                                />
+                                            </Switch>
+                                        </div>
+                                    </div>
+
+                                    <div :class="['flex flex-col gap-4 sm:gap-5 transition-opacity duration-300', isCashPayment ? 'opacity-40 pointer-events-none' : 'opacity-100']">
+                                        <!-- QR Codes - responsive grid -->
+                                        <div
+                                            class="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 lg:gap-12 mb-0"
+                                        >
                                         <div class="flex flex-col items-center justify-center">
                                             <img
                                                 src="/jarvis-gcash-qr.webp"
@@ -447,6 +468,7 @@
                                             </div>
                                         </div>
                                     </div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -466,11 +488,11 @@
                                 </button>
                                 <button
                                     type="button"
-                                    :disabled="!isAllPaymentsAttached"
+                                    :disabled="!isAllPaymentsAttached && !isCashPayment"
                                     @click="handleTriggerPlaceOrder"
                                     :class="[
                                         'inline-flex justify-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:focus-visible:ring-blue-400 focus-visible:ring-offset-2',
-                                        !isAllPaymentsAttached
+                                        (!isAllPaymentsAttached && !isCashPayment)
                                             ? 'bg-gray-400 dark:bg-gray-700 cursor-not-allowed'
                                             : 'bg-gray-900 dark:bg-blue-900 hover:opacity-75 active:opacity-60',
                                     ]"
