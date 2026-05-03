@@ -241,9 +241,6 @@ class PaymentController extends Controller
     {
         $validated = $request->validated();
 
-Log::info(json_encode($validated, JSON_PRETTY_PRINT));
-
-    
         $order = DB::transaction(function () use ($validated, $request) {
             
             // 1. Calculate the overall total price for the entire order
