@@ -114,7 +114,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // REPORT GENERATION
     Route::get('/get/reports/monthly-sales', [DashboardController::class, 'exportMonthlySales']);
-    Route::get('/get/reports/category-sales', [DashboardController::class, 'downloadCategorySales']);
+    Route::get('/get/reports/monthly-sales-report', [DashboardController::class, 'downloadMonthlySalesReport']);
     Route::get('/get/reports/fabric-used', [DashboardController::class, 'downloadFabricUsed']);
 
 

@@ -81,18 +81,6 @@
         return `${selectedExportTypes.value.length} selected`
     })
 
-    // SALES PER CATEGORY BAR CHART DATA
-    const { data: salePerProductCategory } = useQuery({
-        queryKey: ['sales-per-category', dateFilter.start, dateFilter.end],
-        queryFn: async () => {
-            const params = { start_date: dateFilter.start, end_date: dateFilter.end }
-            const respData = await apiService.get<SalesReport>('/api/get/sales/category', {
-                params,
-            })
-            return respData
-        },
-        enabled: !!dateFilter.start && !!dateFilter.end,
-    })
 
     // FABRIC USED BAR CHART DATA
     const { data: fabricUsed } = useQuery({
@@ -138,6 +126,29 @@
         maintainAspectRatio: false,
     }
 
+    // Label overrides so the two charts don't share the same legend text
+    const monthlySalesLineData = computed(() => {
+        if (!monthlySalesReport.value) return undefined
+        return {
+            ...monthlySalesReport.value,
+            datasets: monthlySalesReport.value.datasets.map((ds: any) => ({
+                ...ds,
+                label: 'Summary of Total Orders Placed',
+            })),
+        }
+    })
+
+    const monthlySalesBarData = computed(() => {
+        if (!monthlySalesReport.value) return undefined
+        return {
+            ...monthlySalesReport.value,
+            datasets: monthlySalesReport.value.datasets.map((ds: any) => ({
+                ...ds,
+                label: 'Monthly Sales',
+            })),
+        }
+    })
+
     // LATEST ORDERS
     const { data: latestOrders } = useQuery({
         queryKey: ['latest-orders'],
@@ -162,16 +173,16 @@
         }
     }
 
-    // DOWNLOAD REPORT PER CATEGORY
-    const downloadReportPerCategory = async () => {
+    // DOWNLOAD MONTHLY SALES REPORT
+    const downloadMonthlySalesReport = async () => {
         try {
             const params = { start_date: dateFilter.start, end_date: dateFilter.end }
-            const response = await apiService.get<Blob>('/api/get/reports/category-sales', {
+            const response = await apiService.get<Blob>('/api/get/reports/monthly-sales-report', {
                 params,
                 responseType: 'blob',
             })
 
-            downloadBlobFile(response, 'sales_per_category_report.pdf')
+            downloadBlobFile(response, 'monthly_sales_report.pdf')
         } catch (error) {
             console.error('Download Report Error: ', error)
         }
@@ -204,7 +215,7 @@
                 await downloadReportPerFabricUsed()
             }
             if (selectedExportTypes.value.includes('category_sales')) {
-                await downloadReportPerCategory()
+                await downloadMonthlySalesReport()
             }
         } finally {
             isExporting.value = false
@@ -228,7 +239,6 @@
 
     function onDateChange() {
         // Invalidate all relevant dashboard queries to force reload on date change
-        queryClient.invalidateQueries({ queryKey: ['sales-per-category'] })
         queryClient.invalidateQueries({ queryKey: ['fabric-used'] })
         queryClient.invalidateQueries({ queryKey: ['sales-report'] })
         queryClient.invalidateQueries({ queryKey: ['latest-orders'] })
@@ -332,7 +342,7 @@
                                         for="checkbox-item-monthly"
                                         class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300 hover:cursor-pointer w-full"
                                     >
-                                        Summary Of Total Orders
+                                        Summary of Total Orders Placed
                                     </label>
                                 </div>
                             </li>
@@ -349,7 +359,7 @@
                                         for="checkbox-item-category"
                                         class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300 hover:cursor-pointer w-full"
                                     >
-                                        Sales Per Product Category
+                                        Monthly Sales Report
                                     </label>
                                 </div>
                             </li>
@@ -392,30 +402,30 @@
 
         <!-- CARD ANALYTICS STATS END -->
 
-        <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-            <div class="h-[300px] rounded-md p-3 bg-gray-200 dark:bg-gray-800">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+            <div class="h-[350px] rounded-md p-3 bg-gray-200 dark:bg-gray-800">
                 <div class="w-full h-full">
                     <Line
-                        v-if="monthlySalesReport"
-                        id="monthly-sales"
+                        v-if="monthlySalesLineData"
+                        id="monthly-sales-line"
                         :options="lineChartOptions"
-                        :data="monthlySalesReport"
+                        :data="monthlySalesLineData"
                     />
                 </div>
             </div>
 
-            <div class="h-[300px] rounded-md p-3 bg-gray-200 dark:bg-gray-800">
+            <div class="h-[350px] rounded-md p-3 bg-gray-200 dark:bg-gray-800">
                 <div class="w-full h-full">
                     <Bar
-                        v-if="salePerProductCategory"
-                        id="sales-per-category"
+                        v-if="monthlySalesBarData"
+                        id="monthly-sales-bar"
                         :options="chartOptions"
-                        :data="salePerProductCategory"
+                        :data="monthlySalesBarData"
                     />
                 </div>
             </div>
 
-            <div class="h-[300px] rounded-md p-3 lg:col-span-2 bg-gray-200 dark:bg-gray-800 mt-5">
+            <div class="h-[350px] rounded-md p-3 lg:col-span-2 bg-gray-200 dark:bg-gray-800">
                 <div class="w-full h-full">
                     <Bar
                         v-if="fabricUsed"

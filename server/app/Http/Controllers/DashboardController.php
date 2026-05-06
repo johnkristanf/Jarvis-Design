@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Exports\CategorySalesPdfExport;
+
 use App\Exports\FabricUsedPdfExport;
 use App\Exports\MonthlySalesPdfExport;
 use App\Service\DashboardService;
@@ -32,6 +32,7 @@ class DashboardController extends Controller
 
         return $this->dashboardService->getMonthlySalesReport($formattedStartDate, $formattedEndDate);
     }
+
 
     public function salesPerProductCategory()
     {
@@ -89,25 +90,9 @@ class DashboardController extends Controller
 
             return response()->json(['error' => 'Failed to generate PDF report: '.$e->getMessage()], 500);
         }
-
-        // try {
-        //     // Generate PDF report
-        //     $pdfExport = new MonthlySalesPdfExport($formattedStartDate, $formattedEndDate);
-        //     $pdf = $pdfExport->generate();
-
-        //     return response()->streamDownload(function () use ($pdf) {
-        //         echo $pdf->output();
-        //     }, 'monthly_sales_report.pdf', [
-        //         'Content-Type' => 'application/pdf',
-        //     ]);
-        // } catch (\Exception $e) {
-        //     Log::error('PDF Generation Error: ', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
-
-        //     return response()->json(['error' => 'Failed to generate PDF report: '.$e->getMessage()], 500);
-        // }
     }
 
-    public function downloadCategorySales()
+    public function downloadMonthlySalesReport()
     {
         $startDate = request()->query('start_date');
         $endDate = request()->query('end_date');
@@ -121,12 +106,12 @@ class DashboardController extends Controller
 
         try {
             // Generate PDF report
-            $pdfExport = new CategorySalesPdfExport($formattedStartDate, $formattedEndDate);
+            $pdfExport = new MonthlySalesPdfExport($formattedStartDate, $formattedEndDate);
             $pdf = $pdfExport->generate();
 
             return response()->streamDownload(function () use ($pdf) {
                 echo $pdf->output();
-            }, 'category_sales_report.pdf', [
+            }, 'monthly_sales_report.pdf', [
                 'Content-Type' => 'application/pdf',
             ]);
         } catch (\Exception $e) {

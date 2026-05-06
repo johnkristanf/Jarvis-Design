@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <!-- Important: Set charset to utf-8 for correct symbol support -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sales Report</title>
+    <title>Summary of Total Orders Placed</title>
     <style>
         * {
             margin: 0;
@@ -239,7 +239,7 @@
             <h1>
                 Jarvis <span class="jarvis-designs">Designs</span>
             </h1>
-            <p>Sales Report</p>
+            <p>Summary of Total Orders Placed</p>
         </div>
     </div>
 
