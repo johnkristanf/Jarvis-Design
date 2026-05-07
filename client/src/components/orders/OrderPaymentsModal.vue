@@ -129,9 +129,6 @@
             return respData
         },
     })
-    // ... (rest of the script)
-
-    // ... (inside template)
 
     const { data: paymentMethods } = useQuery({
         queryKey: ['payment_methods'],

@@ -56,61 +56,6 @@
     const isCategoryReportDownloading = ref(false)
     const isFabricUsedReportDownloading = ref(false)
 
-    // SALES PER CATEGORY BAR CHART DATA
-    const { data: salePerProductCategory } = useQuery({
-        queryKey: ['sales-per-category', dateFilter.start, dateFilter.end],
-        queryFn: async () => {
-            const params = { start_date: dateFilter.start, end_date: dateFilter.end }
-            const respData = await apiService.get<SalesReport>('/api/get/sales/category', {
-                params,
-            })
-            return respData
-        },
-        enabled: !!dateFilter.start && !!dateFilter.end,
-    })
-
-    // FABRIC USED BAR CHART DATA
-    const { data: fabricUsed } = useQuery({
-        queryKey: ['fabric-used', dateFilter.start, dateFilter.end],
-        queryFn: async () => {
-            const params = { start_date: dateFilter.start, end_date: dateFilter.end }
-            const respData = await apiService.get<SalesReport>('/api/get/fabric/used', { params })
-            console.log('fabricUsed: ', respData)
-            return respData
-        },
-        enabled: !!dateFilter.start && !!dateFilter.end,
-    })
-
-    const chartOptions: ChartOptions<'bar'> = {
-        responsive: true,
-        plugins: {
-            legend: {
-                display: true,
-                position: 'top',
-            },
-        },
-        scales: {
-            y: {
-                beginAtZero: true,
-            },
-        },
-    }
-
-    // SALES REPORT LINE CHART DATA
-    const { data: monthlySalesReport } = useQuery({
-        queryKey: ['sales-report', dateFilter.start, dateFilter.end],
-        queryFn: async () => {
-            const params = { start_date: dateFilter.start, end_date: dateFilter.end }
-            const respData = await apiService.get<SalesReport>('/api/get/sales/report', { params })
-            return respData
-        },
-        enabled: !!dateFilter.start && !!dateFilter.end,
-    })
-
-    const lineChartOptions: ChartOptions<'line'> = {
-        responsive: true,
-        maintainAspectRatio: false,
-    }
 
     // LATEST ORDERS
     const { data: latestOrders } = useQuery({
@@ -120,60 +65,6 @@
             return respData
         },
     })
-
-    // DOWNLOAD MONTHLY REPORT
-    const exportMonthlyReport = async () => {
-        isMonthlyReportDownloading.value = true
-        try {
-            const params = { start_date: dateFilter.start, end_date: dateFilter.end }
-            const response = await apiService.get<Blob>('/api/get/reports/monthly-sales', {
-                params,
-                responseType: 'blob',
-            })
-
-            downloadBlobFile(response, 'monthly_sales_report.pdf')
-        } catch (error) {
-            console.error('Download Report Error: ', error)
-        } finally {
-            isMonthlyReportDownloading.value = false
-        }
-    }
-
-    // DOWNLOAD REPORT PER CATEGORY
-    const downloadReportPerCategory = async () => {
-        isCategoryReportDownloading.value = true
-        try {
-            const params = { start_date: dateFilter.start, end_date: dateFilter.end }
-            const response = await apiService.get<Blob>('/api/get/reports/category-sales', {
-                params,
-                responseType: 'blob',
-            })
-
-            downloadBlobFile(response, 'category_sales_report.pdf')
-        } catch (error) {
-            console.error('Download Report Error: ', error)
-        } finally {
-            isCategoryReportDownloading.value = false
-        }
-    }
-
-    // DOWNLOAD REPORT PER FABRIC USED
-    const downloadReportPerFabricUsed = async () => {
-        isFabricUsedReportDownloading.value = true
-        try {
-            const params = { start_date: dateFilter.start, end_date: dateFilter.end }
-            const response = await apiService.get<Blob>('/api/get/reports/fabric-used', {
-                params,
-                responseType: 'blob',
-            })
-
-            downloadBlobFile(response, 'fabric_used_report.pdf')
-        } catch (error) {
-            console.error('Download Report Error: ', error)
-        } finally {
-            isFabricUsedReportDownloading.value = false
-        }
-    }
 
     const { data: cardAnalytics } = useQuery({
         queryKey: ['card-analytics', dateFilter.start, dateFilter.end],
@@ -190,10 +81,6 @@
     const queryClient = useQueryClient()
 
     function onDateChange() {
-        // Invalidate all relevant dashboard queries to force reload on date change
-        queryClient.invalidateQueries({ queryKey: ['sales-per-category'] })
-        queryClient.invalidateQueries({ queryKey: ['fabric-used'] })
-        queryClient.invalidateQueries({ queryKey: ['sales-report'] })
         queryClient.invalidateQueries({ queryKey: ['latest-orders'] })
         queryClient.invalidateQueries({ queryKey: ['card-analytics'] })
     }
@@ -307,81 +194,7 @@
         <!-- CARD ANALYTICS STATS END -->
 
         <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-            <!-- REPORT ANALYTICS -->
-            <!-- <div class="h-[300px] rounded-md p-3 bg-gray-200">
-                <div class="flex justify-end">
-                    <button
-                        @click="exportMonthlyReport"
-                        :disabled="isMonthlyReportDownloading"
-                        :class="[
-                            'p-2 text-xs text-white rounded-md hover:cursor-pointer hover:opacity-75',
-                            isMonthlyReportDownloading ? 'bg-gray-400' : 'bg-blue-600'
-                        ]"
-                    >
-                        <span v-if="isMonthlyReportDownloading">Exporting...</span>
-                        <span v-else>Export</span>
-                    </button>
-                </div>
-
-                <Line
-                    v-if="monthlySalesReport"
-                    id="monthly-sales"
-                    :options="lineChartOptions"
-                    :data="monthlySalesReport"
-                />
-            </div>
-
-            <div class="h-[300px] rounded-md p-3 bg-gray-200">
-                <div class="flex justify-end">
-                    <button
-                        @click="downloadReportPerCategory"
-                        :disabled="isCategoryReportDownloading"
-                        :class="[
-                            'p-2 text-xs text-white rounded-md hover:cursor-pointer hover:opacity-75',
-                            isCategoryReportDownloading ? 'bg-gray-400' : 'bg-blue-600'
-                        ]"
-                    >
-                        <span v-if="isCategoryReportDownloading">Exporting...</span>
-                        <span v-else>Export</span>
-                    </button>
-                </div>
-
-                <Bar
-                    v-if="salePerProductCategory"
-                    id="sales-per-category"
-                    :options="chartOptions"
-                    :data="salePerProductCategory"
-                />
-            </div>
-
-            <div class="h-[300px] rounded-md p-3 lg:col-span-2 bg-gray-200 mt-5">
-                <div class="flex justify-end">
-                    <button
-                        @click="downloadReportPerFabricUsed"
-                        :disabled="isFabricUsedReportDownloading"
-                        :class="[
-                            'p-2 text-xs text-white rounded-md hover:cursor-pointer hover:opacity-75',
-                            isFabricUsedReportDownloading ? 'bg-gray-400' : 'bg-blue-600'
-                        ]"
-                    >
-                        <span v-if="isFabricUsedReportDownloading">Exporting...</span>
-                        <span v-else>Export</span>
-                    </button>
-                </div>
-
-                <div class="w-full h-full">
-                    <Bar
-                        v-if="fabricUsed"
-                        id="fabric-used"
-                        :options="{
-                            ...chartOptions,
-                            maintainAspectRatio: false,
-                        }"
-                        :data="fabricUsed"
-                    />
-                </div>
-            </div> -->
-
+          
             <div class="h-[300px] rounded-md p-3 lg:col-span-2">
                 <p class="text-gray-700 dark:text-gray-300">Latest Orders</p>
 
