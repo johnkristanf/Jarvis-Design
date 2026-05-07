@@ -16,40 +16,21 @@ class DashboardService
 
     public function getMonthlySalesReport($startDate, $endDate, $isChartFiltered = true)
     {
-
-        // Find all orders within the date range
-        $orderIds = DB::table('orders')
-            ->whereBetween('created_at', [
-                $startDate->format('Y-m-d 00:00:00'),
-                $endDate->format('Y-m-d 23:59:59'),
-            ])
-            ->whereIn('status', [Orders::COMPLETED, Orders::CANCELLED])
-            ->pluck('id')
-            ->toArray();
-
-        // For those orders, determine if any payment (regardless of whether it's the latest) is FULLY_PAID
-        $fullyPaidOrderIds = DB::table('order_payments')
-            ->whereIn('order_id', $orderIds)
-            ->where('status', OrderPayment::FULLY_PAID)
-            ->distinct()
-            ->pluck('order_id')
-            ->toArray();
-
-
-        $query = DB::table('order_payments')
+        // Accrual basis: recognize revenue when the order is COMPLETED (earned),
+        // grouped by the month the order was completed, summing orders.total_price.
+        $query = DB::table('orders')
             ->select(
-                DB::raw("TO_CHAR(updated_at, 'Month') as month_name"),
-                DB::raw('EXTRACT(MONTH FROM updated_at) as month_number'),
-                DB::raw('SUM(amount_applied) as total_sales')
+                DB::raw("TO_CHAR(created_at, 'Month') as month_name"),
+                DB::raw('EXTRACT(MONTH FROM created_at) as month_number'),
+                DB::raw('SUM(total_price) as total_sales')
             )
-            ->whereIn('order_id', $fullyPaidOrderIds);
+            ->where('status', Orders::COMPLETED);
 
-        // Remove status = fully_paid so we sum all historical payments for those orders
-
-        // Apply date range filter if both startDate and endDate are provided
         if ($startDate && $endDate) {
-            // Expecting $startDate and $endDate to be \DateTime or string compatible for whereBetween
-            $query->whereBetween(DB::raw('DATE(updated_at)'), [$startDate, $endDate]);
+            $query->whereBetween(DB::raw('DATE(created_at)'), [
+                $startDate->format('Y-m-d'),
+                $endDate->format('Y-m-d'),
+            ]);
         }
 
         $monthlySales = $query
@@ -61,7 +42,7 @@ class DashboardService
         if ($isChartFiltered) {
             return $this->filterSalesReportForChart(
                 sales: $monthlySales,
-                label: 'Summary of Total Orders Placed',
+                label: 'Monthly Sales Report',
                 category: 'month_name',
                 keyValue: 'total_sales',
                 bgColor: '#4338CA'
@@ -183,31 +164,15 @@ class DashboardService
 
     public function getTotalSalesWithRange($startDate, $endDate)
     {
-        // Find all orders within the date range
-        $orderIds = DB::table('orders')
-            ->whereBetween('created_at', [
-                $startDate->format('Y-m-d 00:00:00'),
-                $endDate->format('Y-m-d 23:59:59'),
+        $totalSales = DB::table('orders')
+            ->where('status', Orders::COMPLETED)
+            ->whereBetween(DB::raw('DATE(created_at)'), [
+                $startDate->format('Y-m-d'),
+                $endDate->format('Y-m-d'),
             ])
-            ->whereIn('status', [Orders::COMPLETED, Orders::CANCELLED])
+            ->sum('total_price');
 
-            ->pluck('id')
-            ->toArray();
-
-        // For those orders, determine if any payment (regardless of whether it's the latest) is FULLY_PAID
-        $fullyPaidOrderIds = DB::table('order_payments')
-            ->whereIn('order_id', $orderIds)
-            ->where('status', OrderPayment::FULLY_PAID)
-            ->distinct()
-            ->pluck('order_id')
-            ->toArray();
-
-        // Sum all amount_applied for all payments of those fully paid orders
-        $sales = DB::table('order_payments')
-            ->whereIn('order_id', $fullyPaidOrderIds)
-            ->sum('amount_applied');
-
-        return $sales;
+        return $totalSales;
     }
 
     public function getTotalCustomersWithRange($startDate, $endDate)
