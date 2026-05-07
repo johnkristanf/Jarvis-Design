@@ -7,6 +7,8 @@ use App\Http\Requests\StoreOrderRequest;
 use App\Models\AdminNotification;
 use App\Models\Cart;
 use App\Models\Materials;
+use App\Models\OrderItem;
+use App\Models\OrderItemCustomization;
 use App\Models\OrderLogs;
 use App\Models\OrderPayment;
 use App\Models\Orders;
@@ -94,21 +96,24 @@ class PaymentController extends Controller
         // 5️⃣ Determine Status & Amount
         $amount = $isCash ? $validated['amount'] : 0;
         
-        // For cash, we can auto-verify (PARTIALLY_PAID) or set to IN_REVIEW. 
-        // Since admin enters it, let's assume it's verified immediately as PARTIALLY_PAID (or FULLY_PAID if covers all).
-        // For simplicity, let's set it to PARTIALLY_PAID initially if cash, or IN_REVIEW for online.
-        
         $status = OrderPayment::IN_REVIEW;
         if ($isCash) {
             $status = OrderPayment::PARTIALLY_PAID;
-            
+
             // Calculate total paid so far
             $totalPaid = OrderPayment::where('order_id', $order->id)->sum('amount_applied');
-            
-            // Check if fully paid (existing + current)
-             if (($totalPaid + $amount) >= $order->total_price) {
-                 $status = OrderPayment::FULLY_PAID;
-             }
+
+            // Add any pocket costs from order item customizations
+            $pocketCostsTotal = OrderItemCustomization::whereHas('orderItem', function ($q) use ($order) {
+                $q->where('order_id', $order->id);
+            })->sum('pocket_costs');
+
+            $effectiveTotalPrice = $order->total_price + $pocketCostsTotal;
+
+            // Check if fully paid (existing + current) against the effective total
+            if (($totalPaid + $amount) >= $effectiveTotalPrice) {
+                $status = OrderPayment::FULLY_PAID;
+            }
         }
 
         // 6️⃣ Create Payment Record
@@ -275,7 +280,7 @@ class PaymentController extends Controller
             // 4. Create OrderItems for each product
             foreach ($validated['products'] as $index => $product) {
                 
-                $orderItem = \App\Models\OrderItem::create([
+                $orderItem = OrderItem::create([
                     'order_id' => $order->id,
                     'product_id' => $product['product_id'],
                     'color' => $product['product_color'],
@@ -296,7 +301,7 @@ class PaymentController extends Controller
                         }
                         
                         foreach ($customItems as $customFields) {
-                            \App\Models\OrderItemCustomization::create([
+                            OrderItemCustomization::create([
                                 'order_item_id' => $orderItem->id,
                                 'jersey_number' => $customFields['jersey_number'] ?? null,
                                 'jersey_name' => $customFields['jersey_name'] ?? null,
@@ -454,7 +459,6 @@ class PaymentController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        Log::info("payments: ", [$payments]);
         return response()->json($payments);
     }
 
@@ -495,7 +499,7 @@ class PaymentController extends Controller
             $orderTotalPrice = $payment->orders->total_price;
 
             // Add any pocket costs from order item customizations
-            $pocketCostsTotal = \App\Models\OrderItemCustomization::whereHas('orderItem', function ($q) use ($payment) {
+            $pocketCostsTotal = OrderItemCustomization::whereHas('orderItem', function ($q) use ($payment) {
                 $q->where('order_id', $payment->order_id);
             })->sum('pocket_costs');
 
