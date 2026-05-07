@@ -11,22 +11,12 @@
         Legend,
     } from 'chart.js'
 
-    import {
-        FwbTable,
-        FwbTableBody,
-        FwbTableCell,
-        FwbTableHead,
-        FwbTableHeadCell,
-        FwbTableRow,
-    } from 'flowbite-vue'
-
     import { Bar, Line } from 'vue-chartjs'
     import type { ChartOptions } from 'chart.js'
     import { useQuery, useQueryClient } from '@tanstack/vue-query'
     import { apiService } from '@/api/axios'
     import type { SalesReport } from '@/types/dashboard'
-    import type { CardAnalytics, LatestOrders } from '@/types/order'
-    import StatusBadge from '@/components/orders/StatusBadge.vue'
+    import type { CardAnalytics } from '@/types/order'
     import { downloadBlobFile } from '@/helper/report'
     import { reactive, ref, computed, onMounted, onUnmounted } from 'vue'
 
@@ -53,7 +43,7 @@
 
     // --- REF STATES FOR EXPORTS ---
     const isExporting = ref(false)
-    const selectedExportTypes = ref<string[]>(['monthly_sales', 'fabric_used', 'category_sales'])
+    const selectedExportTypes = ref<string[]>(['summary_total_orders', 'fabric_used', 'monthly_sales'])
 
     const isDropdownOpen = ref(false)
 
@@ -126,8 +116,8 @@
         maintainAspectRatio: false,
     }
 
-    // Label overrides so the two charts don't share the same legend text
-    const monthlySalesLineData = computed(() => {
+    // Override the label of monthly sales report
+    const summaryTotalOrderPlaced = computed(() => {
         if (!monthlySalesReport.value) return undefined
         return {
             ...monthlySalesReport.value,
@@ -138,28 +128,8 @@
         }
     })
 
-    const monthlySalesBarData = computed(() => {
-        if (!monthlySalesReport.value) return undefined
-        return {
-            ...monthlySalesReport.value,
-            datasets: monthlySalesReport.value.datasets.map((ds: any) => ({
-                ...ds,
-                label: 'Monthly Sales',
-            })),
-        }
-    })
-
-    // LATEST ORDERS
-    const { data: latestOrders } = useQuery({
-        queryKey: ['latest-orders'],
-        queryFn: async () => {
-            const respData = await apiService.get<LatestOrders[]>('/api/get/latest/orders')
-            return respData
-        },
-    })
-
     // DOWNLOAD MONTHLY REPORT
-    const exportMonthlyReport = async () => {
+    const exportSummaryTotalOrders = async () => {
         try {
             const params = { start_date: dateFilter.start, end_date: dateFilter.end }
             const response = await apiService.get<Blob>('/api/get/reports/monthly-sales', {
@@ -208,13 +178,13 @@
 
         isExporting.value = true
         try {
-            if (selectedExportTypes.value.includes('monthly_sales')) {
-                await exportMonthlyReport()
+            if (selectedExportTypes.value.includes('summary_total_orders')) {
+                await exportSummaryTotalOrders()
             }
             if (selectedExportTypes.value.includes('fabric_used')) {
                 await downloadReportPerFabricUsed()
             }
-            if (selectedExportTypes.value.includes('category_sales')) {
+            if (selectedExportTypes.value.includes('monthly_sales')) {
                 await downloadMonthlySalesReport()
             }
         } finally {
@@ -223,26 +193,11 @@
         }
     }
 
-    const { data: cardAnalytics } = useQuery({
-        queryKey: ['card-analytics', dateFilter.start, dateFilter.end],
-        queryFn: async () => {
-            const params = { start_date: dateFilter.start, end_date: dateFilter.end }
-            const respData = await apiService.get<CardAnalytics>('/api/get/card-analytics', {
-                params,
-            })
-            return respData
-        },
-        enabled: !!dateFilter.start && !!dateFilter.end,
-    })
-
     const queryClient = useQueryClient()
 
     function onDateChange() {
-        // Invalidate all relevant dashboard queries to force reload on date change
         queryClient.invalidateQueries({ queryKey: ['fabric-used'] })
         queryClient.invalidateQueries({ queryKey: ['sales-report'] })
-        queryClient.invalidateQueries({ queryKey: ['latest-orders'] })
-        queryClient.invalidateQueries({ queryKey: ['card-analytics'] })
     }
 </script>
 
@@ -334,7 +289,7 @@
                                     <input
                                         id="checkbox-item-monthly"
                                         type="checkbox"
-                                        value="monthly_sales"
+                                        value="summary_total_orders"
                                         v-model="selectedExportTypes"
                                         class="w-4 h-4 text-blue-600 bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 focus:ring-2 hover:cursor-pointer"
                                     />
@@ -351,7 +306,7 @@
                                     <input
                                         id="checkbox-item-category"
                                         type="checkbox"
-                                        value="category_sales"
+                                        value="monthly_sales"
                                         v-model="selectedExportTypes"
                                         class="w-4 h-4 text-blue-600 bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 focus:ring-2 hover:cursor-pointer"
                                     />
@@ -406,10 +361,10 @@
             <div class="h-[350px] rounded-md p-3 bg-gray-200 dark:bg-gray-800">
                 <div class="w-full h-full">
                     <Line
-                        v-if="monthlySalesLineData"
+                        v-if="summaryTotalOrderPlaced"
                         id="monthly-sales-line"
                         :options="lineChartOptions"
-                        :data="monthlySalesLineData"
+                        :data="summaryTotalOrderPlaced"
                     />
                 </div>
             </div>
@@ -417,10 +372,10 @@
             <div class="h-[350px] rounded-md p-3 bg-gray-200 dark:bg-gray-800">
                 <div class="w-full h-full">
                     <Bar
-                        v-if="monthlySalesBarData"
+                        v-if="monthlySalesReport"
                         id="monthly-sales-bar"
                         :options="chartOptions"
-                        :data="monthlySalesBarData"
+                        :data="monthlySalesReport"
                     />
                 </div>
             </div>
