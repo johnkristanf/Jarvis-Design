@@ -6,6 +6,7 @@ export const useAuthStore = defineStore('auth', {
     state: () => ({
         isAuthenticated: false,
         isLoggingOut: false,
+        isInitialized: false,
         user: undefined as AuthenticatedUserData | undefined,
     }),
 
@@ -23,13 +24,17 @@ export const useAuthStore = defineStore('auth', {
             this.isAuthenticated = value
         },
 
+        setIsInitialized(value: boolean) {
+            this.isInitialized = value
+        },
+
         async logout() {
             this.isLoggingOut = true
 
             try {
                 await logoutUser()
-                this.isAuthenticated = false
-                this.user = undefined
+                this.setAuthenticated(false)
+                this.setUser(undefined)
             } catch (error) {
                 console.error('Logout failed:', error)
             } finally {

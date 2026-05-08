@@ -11,10 +11,14 @@
     // Heroicons
     import { EyeIcon, EyeSlashIcon } from '@heroicons/vue/24/solid'
     import { useToast } from 'primevue'
+    import { useAuthStore } from '@/stores/user'
+    import { useRouter } from 'vue-router'
 
     const isLoadingMutation = ref(false)
     const showPassword = ref(false) // 👁️ Password visibility toggle
     const toast = useToast()
+    const authStore = useAuthStore()
+    const router = useRouter()
 
     const validationSchema = yup.object({
         username: yup.string().required('Username is required'),
@@ -32,7 +36,6 @@
         mutationFn: login,
         onSuccess: (response) => {
             isLoadingMutation.value = false
-            console.log('response login: ', response)
 
             const authenticatedUser: AuthenticatedUserData = {
                 id: response.id,
@@ -43,9 +46,12 @@
                 role: response.role,
             }
 
-            if (authenticatedUser.role.name === UserRole.USER) window.location.href = '/'
-            if (authenticatedUser.role.name === UserRole.ADMIN)
-                window.location.href = '/admin/dashboard'
+
+            authStore.setAuthenticated(true);
+            authStore.setUser(authenticatedUser);
+
+            if (authenticatedUser.role.name === UserRole.USER) router.push('/')
+            if (authenticatedUser.role.name === UserRole.ADMIN) router.push('/admin/dashboard')
         },
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

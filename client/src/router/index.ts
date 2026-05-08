@@ -8,6 +8,9 @@ import ResetPasswordView from '@/views/users/ResetPasswordView.vue'
 import NotFoundView from '@/views/NotFoundView.vue'
 import RegisterView from '@/views/users/RegisterView.vue'
 import { createRouter, createWebHistory } from 'vue-router'
+import { useAuthStore } from '@/stores/user'
+import { fetchUserData } from '@/api/get/user-data'
+import { UserRole } from '@/types/user'
 import AdminProductsView from '@/views/admin/AdminProductsView.vue'
 import AdminDashboardView from '@/views/admin/AdminDashboardView.vue'
 import OrdersView from '@/views/users/OrdersView.vue'
@@ -48,17 +51,14 @@ const router = createRouter({
                 {
                     path: 'orders',
                     component: OrdersView,
+                    meta: { requiresAuth: true, requiresUser: true },
                 },
 
                 {
                     path: 'orders/cart',
                     component: ShoppingCartView,
+                    meta: { requiresAuth: true, requiresUser: true },
                 },
-
-                // {
-                //     path: 'message',
-                //     component: MessageView,
-                // },
 
                 {
                     path: 'faq',
@@ -68,21 +68,25 @@ const router = createRouter({
                 {
                     path: 'auth/login',
                     component: LoginView,
+                    meta: { requiresGuest: true },
                 },
 
                 {
                     path: 'auth/register',
                     component: RegisterView,
+                    meta: { requiresGuest: true },
                 },
 
                 {
                     path: 'auth/forgot-password',
                     component: ForgotPasswordView,
+                    meta: { requiresGuest: true },
                 },
 
                 {
                     path: 'auth/reset-password',
                     component: ResetPasswordView,
+                    meta: { requiresGuest: true },
                 },
 
                 {
@@ -98,15 +102,16 @@ const router = createRouter({
                 {
                     path: 'profile',
                     component: AccountProfile,
+                    meta: { requiresAuth: true, requiresUser: true },
                 },
             ],
         },
 
         // ADMIN ROUTE
-
         {
             path: '/admin',
             component: AdminLayout,
+            meta: { requiresAuth: true, requiresAdmin: true },
             children: [
                 {
                     path: 'dashboard',
@@ -147,6 +152,46 @@ const router = createRouter({
 
         { path: '/:pathMatch(.*)*', name: 'NotFound', component: NotFoundView },
     ],
+})
+
+router.beforeEach(async (to, from, next) => {
+    const authStore = useAuthStore()
+
+    // Eagerly fetch user on first load if we don't know the auth state
+    if (!authStore.isInitialized) {
+        try {
+            const data = await fetchUserData()
+            authStore.setAuthenticated(true)
+            authStore.setUser(data)
+        } catch (error) {
+            authStore.setAuthenticated(false)
+            authStore.setUser(undefined)
+        } finally {
+            authStore.setIsInitialized(true)
+        }
+    }
+
+    // Navigation Guards
+    if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+        return next('/auth/login')
+    }
+
+    if (to.meta.requiresAdmin && authStore.currentUser?.role?.name !== UserRole.ADMIN) {
+        return next('/')
+    }
+
+    if (to.meta.requiresUser && authStore.currentUser?.role?.name === UserRole.ADMIN) {
+        return next('/admin/dashboard')
+    }
+
+    if (to.meta.requiresGuest && authStore.isAuthenticated) {
+        if (authStore.currentUser?.role?.name === UserRole.ADMIN) {
+            return next('/admin/dashboard')
+        }
+        return next('/')
+    }
+
+    next()
 })
 
 export default router
