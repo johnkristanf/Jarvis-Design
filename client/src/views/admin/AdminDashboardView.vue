@@ -20,14 +20,10 @@
         FwbTableRow,
     } from 'flowbite-vue'
 
-    import { Bar, Line } from 'vue-chartjs'
-    import type { ChartOptions } from 'chart.js'
     import { useQuery, useQueryClient } from '@tanstack/vue-query'
     import { apiService } from '@/api/axios'
-    import type { SalesReport } from '@/types/dashboard'
     import type { CardAnalytics, LatestOrders } from '@/types/order'
     import StatusBadge from '@/components/orders/StatusBadge.vue'
-    import { downloadBlobFile } from '@/helper/report'
     import { reactive, ref } from 'vue'
 
     ChartJS.register(
@@ -50,12 +46,6 @@
         start: defaultStart,
         end: defaultEnd,
     })
-
-    // --- REF STATES FOR DOWNLOAD REQUEST TYPES ---
-    const isMonthlyReportDownloading = ref(false)
-    const isCategoryReportDownloading = ref(false)
-    const isFabricUsedReportDownloading = ref(false)
-
 
     // LATEST ORDERS
     const { data: latestOrders } = useQuery({
