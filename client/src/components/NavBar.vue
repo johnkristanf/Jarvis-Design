@@ -53,7 +53,18 @@
         },
     ]
 
-    const userNavigation = [
+    const authNavigation = [
+        {
+            name: 'Login',
+            to: '/auth/login',
+        },
+        {
+            name: 'Register',
+            to: '/auth/register',
+        },
+    ]
+
+    const dropdownNavLinks = [
         {
             name: 'Your Profile',
             onclick: () => router.push('/profile'),
@@ -64,17 +75,6 @@
                 await authStore.logout()
                 window.location.href = '/'
             },
-        },
-    ]
-
-    const authNavigation = [
-        {
-            name: 'Login',
-            to: '/auth/login',
-        },
-        {
-            name: 'Register',
-            to: '/auth/register',
         },
     ]
 
@@ -444,7 +444,7 @@
                                             </div>
 
                                             <MenuItem
-                                                v-for="item in userNavigation"
+                                                v-for="item in dropdownNavLinks"
                                                 :key="item.name"
                                                 v-slot="{ active }"
                                             >
@@ -535,7 +535,7 @@
 
                         <div class="mt-3 space-y-1 px-2">
                             <DisclosureButton
-                                v-for="item in userNavigation"
+                                v-for="item in dropdownNavLinks"
                                 :key="item.name"
                                 as="a"
                                 @click="
