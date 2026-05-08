@@ -1,35 +1,47 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { fetchUserData } from '@/api/get/user-data'
 import { useAuthStore } from '@/stores/user'
-import { onMounted, ref } from 'vue'
+import { useQuery } from '@tanstack/vue-query'
+import { watch } from 'vue'
 
 export const useFetchAuthenticatedUser = () => {
-    const isLoading = ref()
     const authStore = useAuthStore()
 
-    const userDataFetch = async () => {
-        isLoading.value = true
-
-        try {
-            const fetchedUserData = await fetchUserData()
-            console.log("fetchedUserData: ", fetchedUserData);
-            
-            authStore.setUser(fetchedUserData)
-            authStore.setAuthenticated(true)
-        } catch (error: any) {
-            console.error('Error fetching user data: ', error)
-        } finally {
-            isLoading.value = false
-        }
-    }
-
-    onMounted(() => {
-        userDataFetch()
+    const { isLoading, data, error, refetch } = useQuery({
+        queryKey: ['authenticatedUser'],
+        queryFn: fetchUserData,
+        retry: false, // Don't keep retrying if they are just a guest
     })
+
+    watch(
+        data,
+        (newData) => {
+            if (newData) {
+                authStore.setUser(newData)
+                authStore.setAuthenticated(true)
+            }
+        },
+        { immediate: true }
+    )
+
+    watch(
+        error,
+        (newError: any) => {
+            if (newError) {
+                console.error('Error fetching user data: ', newError)
+
+                if (newError.statusCode === 401) {
+                    authStore.setAuthenticated(false);
+                    authStore.setUser(undefined);
+                }
+            }
+        },
+        { immediate: true }
+    )
 
     return {
         authStore,
         isLoading,
-        refetchUser: userDataFetch,
+        refetchUser: refetch,
     }
 }
