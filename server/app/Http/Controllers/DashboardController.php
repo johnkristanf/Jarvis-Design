@@ -3,19 +3,20 @@
 namespace App\Http\Controllers;
 
 
-use App\Exports\FabricUsedPdfExport;
-use App\Exports\MonthlySalesPdfExport;
 use App\Service\DashboardService;
+use App\Service\ReportService;
 use DateTime;
 use Illuminate\Support\Facades\Log;
 
 class DashboardController extends Controller
 {
     protected $dashboardService;
+    protected $reportService;
 
-    public function __construct(DashboardService $dashboardService)
+    public function __construct(DashboardService $dashboardService, ReportService $reportService)
     {
         $this->dashboardService = $dashboardService;
+        $this->reportService = $reportService;
     }
 
     public function monthlySalesReport()
@@ -65,7 +66,7 @@ class DashboardController extends Controller
         return $this->dashboardService->getFabricUsed($formattedStartDate, $formattedEndDate);
     }
 
-    public function exportMonthlySales()
+    public function exportSummaryTotalOrders()
     {
         $startDate = request()->query('start_date');
         $endDate = request()->query('end_date');
@@ -78,11 +79,11 @@ class DashboardController extends Controller
         $formattedEndDate = new DateTime($endDate);
 
         try {
-            $pdf = $this->dashboardService->getPerOrderSalesPDFReport($formattedStartDate, $formattedEndDate);
+            $pdf = $this->reportService->generateSummaryTotalOrdersReport($formattedStartDate, $formattedEndDate);
 
             return response()->streamDownload(function () use ($pdf) {
                 echo $pdf->output();
-            }, 'monthly_sales_report.pdf', [
+            }, 'summary_total_orders_placed_report.pdf', [
                 'Content-Type' => 'application/pdf',
             ]);
         } catch (\Exception $e) {
@@ -92,7 +93,7 @@ class DashboardController extends Controller
         }
     }
 
-    public function downloadMonthlySalesReport()
+    public function exportMonthlySalesReport()
     {
         $startDate = request()->query('start_date');
         $endDate = request()->query('end_date');
@@ -106,8 +107,7 @@ class DashboardController extends Controller
 
         try {
             // Generate PDF report
-            $pdfExport = new MonthlySalesPdfExport($formattedStartDate, $formattedEndDate);
-            $pdf = $pdfExport->generate();
+            $pdf = $this->reportService->generateMonthlySalesReport($formattedStartDate, $formattedEndDate);
 
             return response()->streamDownload(function () use ($pdf) {
                 echo $pdf->output();
@@ -121,7 +121,7 @@ class DashboardController extends Controller
         }
     }
 
-    public function downloadFabricUsed()
+    public function exportFabricUsed()
     {
         $startDate = request()->query('start_date');
         $endDate = request()->query('end_date');
@@ -135,12 +135,39 @@ class DashboardController extends Controller
 
         try {
             // Generate PDF report
-            $pdfExport = new FabricUsedPdfExport($formattedStartDate, $formattedEndDate);
-            $pdf = $pdfExport->generate();
+            $pdf = $this->reportService->generateFabricUsedReport($formattedStartDate, $formattedEndDate);
 
             return response()->streamDownload(function () use ($pdf) {
                 echo $pdf->output();
             }, 'fabric_used_report.pdf', [
+                'Content-Type' => 'application/pdf',
+            ]);
+        } catch (\Exception $e) {
+            Log::error('PDF Generation Error: ', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+
+            return response()->json(['error' => 'Failed to generate PDF report: '.$e->getMessage()], 500);
+        }
+    }
+
+    public function exportCategorySales()
+    {
+        $startDate = request()->query('start_date');
+        $endDate = request()->query('end_date');
+
+        if (! $startDate || ! $endDate) {
+            return response()->json(['error' => 'Start date and end date are required.'], 400);
+        }
+
+        $formattedStartDate = new DateTime($startDate);
+        $formattedEndDate = new DateTime($endDate);
+
+        try {
+            // Generate PDF report
+            $pdf = $this->reportService->generateCategorySalesReport($formattedStartDate, $formattedEndDate);
+
+            return response()->streamDownload(function () use ($pdf) {
+                echo $pdf->output();
+            }, 'category_sales_report.pdf', [
                 'Content-Type' => 'application/pdf',
             ]);
         } catch (\Exception $e) {

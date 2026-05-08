@@ -52,25 +52,6 @@ class DashboardService
         return $monthlySales;
     }
 
-    public function getPerOrderSalesPDFReport($startDate, $endDate)
-    {
-        $orders = Orders::with(['items.product', 'items.sizes'])
-            ->withSum('order_payments as total_payment', 'amount_applied')
-            ->whereBetween('created_at', [
-                $startDate->format('Y-m-d 00:00:00'),
-                $endDate->format('Y-m-d 23:59:59'),
-            ])
-            ->whereIn('status', [Orders::COMPLETED, Orders::CANCELLED])
-            ->get();
-
-        $pdf = Pdf::loadView('pdf.per-order-monthly-sales', [
-            'orders' => $orders,
-            'startDate' => $startDate,
-            'endDate' => $endDate
-        ]);
-
-        return $pdf;
-    }
 
     public function getSalesPerProductCategory($startDate, $endDate, $isChartFiltered = true)
     {
@@ -80,8 +61,7 @@ class DashboardService
                 $startDate->format('Y-m-d 00:00:00'),
                 $endDate->format('Y-m-d 23:59:59'),
             ])
-            ->whereIn('status', [Orders::COMPLETED, Orders::CANCELLED])
-
+            ->whereIn('status', [Orders::COMPLETED])
             ->pluck('id')
             ->toArray();
 

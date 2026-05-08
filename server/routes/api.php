@@ -113,9 +113,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/get/card-analytics', [DashboardController::class, 'cardAnalytics']);
 
     // REPORT GENERATION
-    Route::get('/get/reports/monthly-sales', [DashboardController::class, 'exportMonthlySales']);
-    Route::get('/get/reports/monthly-sales-report', [DashboardController::class, 'downloadMonthlySalesReport']);
-    Route::get('/get/reports/fabric-used', [DashboardController::class, 'downloadFabricUsed']);
+    Route::get('/get/reports/summary-total-orders', [DashboardController::class, 'exportSummaryTotalOrders']);
+    Route::get('/get/reports/monthly-sales', [DashboardController::class, 'exportMonthlySalesReport']);
+    Route::get('/get/reports/fabric-used', [DashboardController::class, 'exportFabricUsed']);
+    Route::get('/get/reports/category-sales', [DashboardController::class, 'exportCategorySales']);
 
 
     // PROTECTED PAYMENT ROUTES

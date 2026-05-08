@@ -43,7 +43,7 @@
 
     // --- REF STATES FOR EXPORTS ---
     const isExporting = ref(false)
-    const selectedExportTypes = ref<string[]>(['summary_total_orders', 'fabric_used', 'monthly_sales'])
+    const selectedExportTypes = ref<string[]>(['summary_total_orders', 'fabric_used', 'monthly_sales', 'category_sales'])
 
     const isDropdownOpen = ref(false)
 
@@ -66,11 +66,21 @@
     })
 
     const selectedExportTypesText = computed(() => {
-        if (selectedExportTypes.value.length === 3) return 'All Reports'
+        if (selectedExportTypes.value.length === 4) return 'All Reports'
         if (selectedExportTypes.value.length === 0) return 'Select Reports'
         return `${selectedExportTypes.value.length} selected`
     })
 
+    // SALES PER PRODUCT CATEGORY BAR CHART DATA
+    const { data: salesPerCategory } = useQuery({
+        queryKey: ['sales-per-category', dateFilter.start, dateFilter.end],
+        queryFn: async () => {
+            const params = { start_date: dateFilter.start, end_date: dateFilter.end }
+            const respData = await apiService.get<SalesReport>('/api/get/sales/category', { params })
+            return respData
+        },
+        enabled: !!dateFilter.start && !!dateFilter.end,
+    })
 
     // FABRIC USED BAR CHART DATA
     const { data: fabricUsed } = useQuery({
@@ -132,7 +142,7 @@
     const exportSummaryTotalOrders = async () => {
         try {
             const params = { start_date: dateFilter.start, end_date: dateFilter.end }
-            const response = await apiService.get<Blob>('/api/get/reports/monthly-sales', {
+            const response = await apiService.get<Blob>('/api/get/reports/summary-total-orders', {
                 params,
                 responseType: 'blob',
             })
@@ -143,11 +153,11 @@
         }
     }
 
-    // DOWNLOAD MONTHLY SALES REPORT
-    const downloadMonthlySalesReport = async () => {
+    // EXPORT MONTHLY SALES REPORT
+    const exportMonthlySalesReport = async () => {
         try {
             const params = { start_date: dateFilter.start, end_date: dateFilter.end }
-            const response = await apiService.get<Blob>('/api/get/reports/monthly-sales-report', {
+            const response = await apiService.get<Blob>('/api/get/reports/monthly-sales', {
                 params,
                 responseType: 'blob',
             })
@@ -158,8 +168,8 @@
         }
     }
 
-    // DOWNLOAD REPORT PER FABRIC USED
-    const downloadReportPerFabricUsed = async () => {
+    // EXPORT REPORT PER FABRIC USED
+    const exportReportPerFabricUsed = async () => {
         try {
             const params = { start_date: dateFilter.start, end_date: dateFilter.end }
             const response = await apiService.get<Blob>('/api/get/reports/fabric-used', {
@@ -168,6 +178,21 @@
             })
 
             downloadBlobFile(response, 'fabric_used_report.pdf')
+        } catch (error) {
+            console.error('Download Report Error: ', error)
+        }
+    }
+
+    // EXPORT CATEGORY SALES REPORT
+    const exportCategorySales = async () => {
+        try {
+            const params = { start_date: dateFilter.start, end_date: dateFilter.end }
+            const response = await apiService.get<Blob>('/api/get/reports/category-sales', {
+                params,
+                responseType: 'blob',
+            })
+
+            downloadBlobFile(response, 'category_sales_report.pdf')
         } catch (error) {
             console.error('Download Report Error: ', error)
         }
@@ -182,10 +207,13 @@
                 await exportSummaryTotalOrders()
             }
             if (selectedExportTypes.value.includes('fabric_used')) {
-                await downloadReportPerFabricUsed()
+                await exportReportPerFabricUsed()
             }
             if (selectedExportTypes.value.includes('monthly_sales')) {
-                await downloadMonthlySalesReport()
+                await exportMonthlySalesReport()
+            }
+            if (selectedExportTypes.value.includes('category_sales')) {
+                await exportCategorySales()
             }
         } finally {
             isExporting.value = false
@@ -193,11 +221,13 @@
         }
     }
 
+
     const queryClient = useQueryClient()
 
     function onDateChange() {
         queryClient.invalidateQueries({ queryKey: ['fabric-used'] })
         queryClient.invalidateQueries({ queryKey: ['sales-report'] })
+        queryClient.invalidateQueries({ queryKey: ['sales-per-category'] })
     }
 </script>
 
@@ -336,6 +366,23 @@
                                     </label>
                                 </div>
                             </li>
+                            <li>
+                                <div class="flex items-center">
+                                    <input
+                                        id="checkbox-item-category-sales"
+                                        type="checkbox"
+                                        value="category_sales"
+                                        v-model="selectedExportTypes"
+                                        class="w-4 h-4 text-blue-600 bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 focus:ring-2 hover:cursor-pointer"
+                                    />
+                                    <label
+                                        for="checkbox-item-category-sales"
+                                        class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300 hover:cursor-pointer w-full"
+                                    >
+                                        Sales Per Product Category
+                                    </label>
+                                </div>
+                            </li>
                         </ul>
                     </div>
                 </div>
@@ -380,7 +427,18 @@
                 </div>
             </div>
 
-            <div class="h-[350px] rounded-md p-3 lg:col-span-2 bg-gray-200 dark:bg-gray-800">
+            <div class="h-[350px] rounded-md p-3 bg-gray-200 dark:bg-gray-800">
+                <div class="w-full h-full">
+                    <Bar
+                        v-if="salesPerCategory"
+                        id="sales-per-category"
+                        :options="chartOptions"
+                        :data="salesPerCategory"
+                    />
+                </div>
+            </div>
+
+            <div class="h-[350px] rounded-md p-3 bg-gray-200 dark:bg-gray-800">
                 <div class="w-full h-full">
                     <Bar
                         v-if="fabricUsed"
