@@ -1,5 +1,6 @@
 <!-- eslint-disable @typescript-eslint/no-explicit-any -->
 <script lang="ts" setup>
+    import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
     import { useFetchAuthenticatedUser } from '@/composables/useFetchAuthenticatedUser'
     import { computed, onMounted, ref } from 'vue'
     import { RouterLink, useRouter } from 'vue-router'
@@ -12,7 +13,6 @@
     import { updateNotificationAsRead, updateNotificationAsReadAll } from '@/api/put/notifications'
     import { initializeEcho } from '@/services/echo'
 
-    const isLoggingOut = ref<boolean>(false)
     const showNotificationDrawer = ref<boolean>(false)
 
     const router = useRouter()
@@ -85,19 +85,19 @@
         },
     ])
 
-    const handleSignOut = async () => {
-        isLoggingOut.value = true
-        const respData = await apiService.post<{ success: boolean }>('logout', {})
-
-        if (respData.success) {
-            isLoggingOut.value = false
-            window.location.href = '/'
-        }
-    }
-
-    const handleRedirectProfile = () => {
-        router.push('/admin/profile')
-    }
+    const dropdownNavLinks = [
+        {
+            name: 'Profile',
+            onclick: () => router.push('/admin/profile'),
+        },
+        {
+            name: 'Sign Out',
+            onclick: async () => {
+                await authStore.logout()
+                window.location.href = '/'
+            },
+        },
+    ]
 
     const { data: notifications } = useQuery({
         queryKey: ['admin_notifications'],
@@ -333,63 +333,68 @@
                         </div>
 
                         <!-- User Profile -->
-                        <div>
-                            <button
-                                type="button"
-                                class="flex text-sm bg-gray-800 rounded-full focus:ring-1 focus:ring-gray-300 class:focus:ring-gray-600 hover:cursor-pointer"
-                                aria-expanded="false"
-                                data-dropdown-toggle="dropdown-user"
-                            >
-                                <span class="sr-only">Open user menu</span>
-                                <div
-                                    v-if="authStore.user?.name"
-                                    class="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center"
+                        <Menu as="div" class="relative">
+                            <div>
+                                <MenuButton
+                                    class="flex text-sm bg-gray-800 rounded-full focus:ring-1 focus:ring-gray-300 class:focus:ring-gray-600 hover:cursor-pointer"
                                 >
-                                    <span class="text-2xl font-bold text-white">
-                                        {{ authStore.user?.name?.charAt(0)?.toUpperCase() }}
-                                    </span>
-                                </div>
-                            </button>
-                        </div>
-
-                        <!-- DROPDOWN NAVBAR USER-->
-                        <div
-                            class="bg-white z-50 hidden my-4 text-base list-none divide-y divide-gray-100 shadow-sm class:bg-gray-700 class:divide-gray-600"
-                            id="dropdown-user"
-                        >
-                            <div class="px-4 py-3" role="none">
-                                <p class="text-sm text-gray-900 class:text-black" role="none">
-                                    {{ authStore.user?.name }}
-                                </p>
-                                <p
-                                    class="text-sm font-medium text-gray-900 truncate class:text-gray-300"
-                                    role="none"
-                                >
-                                    {{ authStore.user?.username }}
-                                </p>
+                                    <span class="sr-only">Open user menu</span>
+                                    <div
+                                        v-if="authStore.user?.name"
+                                        class="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center"
+                                    >
+                                        <span class="text-2xl font-bold text-white">
+                                            {{ authStore.user?.name?.charAt(0)?.toUpperCase() }}
+                                        </span>
+                                    </div>
+                                </MenuButton>
                             </div>
-                            <ul class="py-1" role="none">
-                                <li>
-                                    <button
-                                        @click="handleRedirectProfile"
-                                        class="w-full block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 class:text-gray-300 class:hover:bg-gray-600 class:hover:text-black"
-                                        role="menuitem"
-                                    >
-                                        Profile
-                                    </button>
-                                </li>
 
-                                <li>
-                                    <button
-                                        @click="handleSignOut"
-                                        class="w-full block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 class:text-gray-300 class:hover:bg-gray-600 class:hover:text-black"
-                                        role="menuitem"
-                                    >
-                                        Sign Out
-                                    </button>
-                                </li>
-                            </ul>
-                        </div>
+                            <transition
+                                enter-active-class="transition ease-out duration-100"
+                                enter-from-class="transform opacity-0 scale-95"
+                                enter-to-class="transform opacity-100 scale-100"
+                                leave-active-class="transition ease-in duration-75"
+                                leave-from-class="transform opacity-100 scale-100"
+                                leave-to-class="transform opacity-0 scale-95"
+                            >
+                                <MenuItems
+                                    class="absolute right-0 z-50 mt-2 w-48 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-hidden class:bg-gray-700"
+                                >
+                                    <div class="px-4 py-3 border-b border-gray-100 class:border-gray-600">
+                                        <p class="text-sm text-gray-900 class:text-black">
+                                            {{ authStore.user?.name }}
+                                        </p>
+                                        <p
+                                            class="text-sm font-medium text-gray-900 truncate class:text-gray-300"
+                                        >
+                                            {{ authStore.user?.username }}
+                                        </p>
+                                    </div>
+                                    <div class="py-1">
+                                        <MenuItem
+                                            v-for="item in dropdownNavLinks"
+                                            :key="item.name"
+                                            v-slot="{ active }"
+                                        >
+                                            <button
+                                                @click="
+                                                    () => {
+                                                        item.onclick?.()
+                                                    }
+                                                "
+                                                :class="[
+                                                    active ? 'bg-gray-100 class:bg-gray-600' : '',
+                                                    'w-full text-left block px-4 py-2 text-sm text-gray-700 class:text-gray-300'
+                                                ]"
+                                            >
+                                                {{ item.name }}
+                                            </button>
+                                        </MenuItem>
+                                    </div>
+                                </MenuItems>
+                            </transition>
+                        </Menu>
                     </div>
                 </div>
             </div>
@@ -398,7 +403,7 @@
 
     <aside
         id="logo-sidebar"
-        class="fixed top-0 left-0 mt-14 z-40 w-64 h-screen transition-transform -translate-x-full  sm:translate-x-0 class:bg-gray-800 class:border-gray-700"
+        class="fixed top-0 left-0 mt-14 z-40 w-64 h-screen transition-transform -translate-x-full sm:translate-x-0 class:bg-gray-800 class:border-gray-700"
         aria-label="Sidebar"
     >
         <div class="h-full overflow-y-auto bg-gray-900 w-[75%] class:bg-gray-800 pt-2">
@@ -428,9 +433,7 @@
         </div>
     </aside>
 
-    <Loader v-if="isLoggingOut" msg="Logging Out..." />
-
-    <!-- <Loader v-if="isMarkingRead" msg="Marking as Read..." /> -->
+    <Loader v-if="authStore.isLoggingOut" msg="Logging Out..." />
 
     <Loader v-if="isMarkingAllRead" msg="Marking All as Read..." />
 </template>
