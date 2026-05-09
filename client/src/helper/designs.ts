@@ -43,18 +43,13 @@ export const formateNotificationTimeAgo = (date: string | Date) => {
     return dayjs(date).fromNow()
 }
 
-export const truncateNonDecimal = (value: number) => {
+export const truncateNonDecimal = (value: number | string) => {
     const num = Number(value)
 
     if (Number.isNaN(num)) return value
 
-    // If value is 1 or greater → no decimals
-    if (Math.abs(num) >= 1) {
-        return Math.trunc(num)
-    }
-
-    // If pure decimal → show decimals (trim trailing zeros)
-    return num.toString().replace(/\.?0+$/, '')
+    // Convert to number and back to string to remove trailing zeros and show decimals only if necessary
+    return parseFloat(num.toFixed(6)).toString()
 }
 
 export const getCartItemImageSrc = (item: CartItem) => {

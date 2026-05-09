@@ -4,6 +4,7 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DesignsController;
+use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\MaterialsController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PaymentController;
@@ -20,6 +21,7 @@ Route::get('/get/all/colors', [DesignsController::class, 'getAllColors']);
 Route::get('/get/all/sizes', [DesignsController::class, 'getAllSizes']);
 Route::get('/get/design/categories', [DesignsController::class, 'getDesignCategories']);
 Route::get('/get/fabric/types', [DesignsController::class, 'getFabricTypes']);
+Route::get('/get/feedbacks', [FeedbackController::class, 'index']);
 
 // BUSINESS PRODUCT DESIGNS
 Route::get('/get/bussiness_designs/{product_id}', [DesignsController::class, 'getProductBusinessDesign']);
@@ -132,4 +134,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::post('/add/cart', [CartController::class, 'store']);
     Route::delete('/delete/cart/{cartId}', [CartController::class, 'destroy']);
+
+    // FEEDBACK ROUTE
+    Route::post('/feedback', [FeedbackController::class, 'store']);
 });

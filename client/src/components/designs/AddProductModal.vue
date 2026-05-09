@@ -8,13 +8,19 @@
     import Toast from 'primevue/toast'
 
     import Loader from '../Loader.vue'
+    import FormInput from '../FormInput.vue'
+    import FormModal from '../FormModal.vue'
     import {
         sublimationProductCategories,
         type DesignCategory,
         type FabricTypes,
     } from '@/types/design'
 
-    const emit = defineEmits(['close'])
+    defineProps<{
+        isOpen: boolean
+    }>()
+
+    const emit = defineEmits(['close', 'update:isOpen'])
     const selectedFabricUnit = ref<string | null>(null)
 
     const toast = useToast()
@@ -160,133 +166,96 @@
 </script>
 
 <template>
-    <div class="fixed inset-0 bg-black/30 flex justify-center items-center z-50">
-        <div
-            class="bg-white dark:bg-gray-900 dark:text-white p-6 w-full h-[450px] overflow-y-auto max-w-lg rounded shadow dark:border dark:border-gray-700"
-        >
-            <h2 class="text-xl font-semibold mb-2">Add Product</h2>
-            <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">
-                Enter the product details below.
-            </p>
+    <FormModal
+        :is-open="isOpen"
+        title="Add Product"
+        mode="add"
+        :is-submitting="mutation.isPending.value"
+        submit-text="Add Product"
+        @close="$emit('close')"
+        @submit="onSubmit"
+    >
+        <p class="text-sm text-gray-600 dark:text-gray-400 -mt-2 mb-2">
+            Enter the product details below.
+        </p>
 
-            <form @submit.prevent="onSubmit" class="space-y-4">
-                <!-- PRODUCT CATEGORY -->
-                <div>
-                    <label class="block text-sm mb-3">Category</label>
-                    <select
-                        v-model="category"
-                        class="font-medium w-full border border-gray-300 dark:border-gray-600 px-3 py-2 rounded mt-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                    >
-                        <option v-for="cat in designCategories" :key="cat.id" :value="cat.id">
-                            {{ cat.name }}
-                        </option>
-                    </select>
-                    <p class="text-sm text-red-500 mt-1">{{ categoryError }}</p>
-                </div>
-
-                <!-- PRODUCT NAME -->
-                <div>
-                    <label class="block text-sm mb-3">Product Name</label>
-                    <input
-                        v-model="productName"
-                        type="text"
-                        class="font-medium w-full border border-gray-300 dark:border-gray-600 p-2 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                    />
-                    <p class="text-sm text-red-500 mt-1">{{ productNameError }}</p>
-                </div>
-
-                <!-- PRODUCT FABRIC TYPE (OPTIONAL) -->
-                <div v-if="isFabricRequired">
-                    <label class="block text-sm mb-3">Fabric Type</label>
-                    <select
-                        v-model="fabricType"
-                        class="font-medium w-full border border-gray-300 dark:border-gray-600 px-3 py-2 rounded mt-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                    >
-                        <option :value="null" disabled>Select fabric type</option>
-                        <option v-for="fab in fabricTypes" :key="fab.id" :value="fab.id">
-                            {{ fab.name }}
-                        </option>
-                    </select>
-                    <p class="text-sm text-red-500 mt-1">{{ fabricTypeError }}</p>
-                </div>
-
-                <!-- PRODUCT FABRIC TYPE (OPTIONAL) -->
-
-                <!-- <div v-if="isFabricRequired">
-                    <label class="block text-sm mb-3">
-                        Unit Fabric Quantity Used ({{ selectedFabricUnit }})
-                    </label>
-                    <input
-                        v-model="fabricQuantity"
-                        type="number"
-                        class="font-medium w-full border p-2 rounded"
-                    />
-                    <p class="text-sm text-red-500 mt-1">{{ fabricQuantityError }}</p>
-                </div> -->
-
-                <!-- INCLUDE POCKET OPTION -->
-                <div>
-                    <label class="block text-sm mb-3">Include pocket option</label>
-                    <div class="flex items-center space-x-2">
-                        <button
-                            type="button"
-                            @click="isPocketIncluded = true"
-                            :class="
-                                isPocketIncluded
-                                    ? 'bg-gray-900 text-white dark:bg-white dark:text-gray-900 border-transparent'
-                                    : 'bg-white text-gray-700 border-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
-                            "
-                            class="px-4 py-2 border rounded font-medium text-sm transition-colors"
-                        >
-                            Yes
-                        </button>
-                        <button
-                            type="button"
-                            @click="isPocketIncluded = false"
-                            :class="
-                                !isPocketIncluded
-                                    ? 'bg-gray-900 text-white dark:bg-white dark:text-gray-900 border-transparent'
-                                    : 'bg-white text-gray-700 border-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
-                            "
-                            class="px-4 py-2 border rounded font-medium text-sm transition-colors"
-                        >
-                            No
-                        </button>
-                    </div>
-                </div>
-
-                <!-- PRODUCT UNIT PRICE -->
-                <div>
-                    <label class="block text-sm mb-3">
-                        Unit Price
-                        <span class="text-red-500">*</span>
-                    </label>
-                    <input
-                        v-model="price"
-                        type="number"
-                        class="font-medium w-full border border-gray-300 dark:border-gray-600 p-2 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                    />
-                    <p class="text-sm text-red-500 mt-1">{{ priceError }}</p>
-                </div>
-
-                <div class="font-medium flex justify-end space-x-2 pt-4">
-                    <button
-                        type="button"
-                        class="bg-gray-400 dark:bg-gray-700 px-4 py-2 rounded text-white hover:opacity-75 hover:cursor-pointer"
-                        @click="$emit('close')"
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        type="submit"
-                        class="bg-gray-900 px-4 py-2 rounded text-white hover:opacity-75 hover:cursor-pointer"
-                    >
-                        Add Product
-                    </button>
-                </div>
-            </form>
+        <!-- PRODUCT CATEGORY -->
+        <div>
+            <label class="block text-sm mb-3">Category</label>
+            <select
+                v-model="category"
+                class="font-medium w-full border border-gray-300 dark:border-gray-600 px-3 py-2 rounded mt-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+            >
+                <option v-for="cat in designCategories" :key="cat.id" :value="cat.id">
+                    {{ cat.name }}
+                </option>
+            </select>
+            <p class="text-sm text-red-500 mt-1">{{ categoryError }}</p>
         </div>
-    </div>
+
+        <!-- PRODUCT NAME -->
+        <FormInput
+            v-model="productName"
+            label="Product Name"
+            placeholder="Enter product name"
+            :error="productNameError"
+        />
+
+        <!-- PRODUCT FABRIC TYPE (OPTIONAL) -->
+        <div v-if="isFabricRequired">
+            <label class="block text-sm mb-3">Fabric Type</label>
+            <select
+                v-model="fabricType"
+                class="font-medium w-full border border-gray-300 dark:border-gray-600 px-3 py-2 rounded mt-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+            >
+                <option :value="null" disabled>Select fabric type</option>
+                <option v-for="fab in fabricTypes" :key="fab.id" :value="fab.id">
+                    {{ fab.name }}
+                </option>
+            </select>
+            <p class="text-sm text-red-500 mt-1">{{ fabricTypeError }}</p>
+        </div>
+
+        <!-- INCLUDE POCKET OPTION -->
+        <div>
+            <label class="block text-sm mb-3">Include pocket option</label>
+            <div class="flex items-center space-x-2">
+                <button
+                    type="button"
+                    @click="isPocketIncluded = true"
+                    :class="
+                        isPocketIncluded
+                            ? 'bg-gray-900 text-white dark:bg-white dark:text-gray-900 border-transparent'
+                            : 'bg-white text-gray-700 border-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+                    "
+                    class="px-4 py-2 border rounded font-medium text-sm transition-colors"
+                >
+                    Yes
+                </button>
+                <button
+                    type="button"
+                    @click="isPocketIncluded = false"
+                    :class="
+                        !isPocketIncluded
+                            ? 'bg-gray-900 text-white dark:bg-white dark:text-gray-900 border-transparent'
+                            : 'bg-white text-gray-700 border-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+                    "
+                    class="px-4 py-2 border rounded font-medium text-sm transition-colors"
+                >
+                    No
+                </button>
+            </div>
+        </div>
+
+        <!-- PRODUCT UNIT PRICE -->
+        <FormInput
+            v-model="price"
+            label="Unit Price"
+            type="number"
+            :required="true"
+            :error="priceError"
+        />
+    </FormModal>
 
     <div v-if="mutation.isPending.value">
         <Loader msg="Adding Product..." />

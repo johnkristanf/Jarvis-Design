@@ -1,16 +1,10 @@
 <script setup>
     import { ref } from 'vue'
-    import {
-        TransitionRoot,
-        TransitionChild,
-        Dialog,
-        DialogPanel,
-        DialogTitle,
-    } from '@headlessui/vue'
-
     import { useMutation, useQueryClient } from '@tanstack/vue-query'
     import { apiService } from '@/api/axios'
     import { useToast } from 'primevue/usetoast'
+    import FormModal from '../FormModal.vue'
+    import FormInput from '../FormInput.vue'
 
     const props = defineProps({
         fabricId: String,
@@ -31,7 +25,6 @@
         quantity: null,
     })
 
-    const isSubmitting = ref(false)
     const queryClient = useQueryClient()
     const toast = useToast()
 
@@ -43,7 +36,7 @@
             )
             return respData
         },
-        onSuccess: (response) => {
+        onSuccess: () => {
             toast.add({
                 severity: 'success',
                 summary: 'Fabric quantity added successfully',
@@ -52,8 +45,11 @@
 
             queryClient.invalidateQueries({ queryKey: ['materials'] })
             closeModal()
+            form.value = {
+                delivery_date: '',
+                quantity: null,
+            }
         },
-
         onError: (error) => {
             console.error('Error adding new material:', error)
         },
@@ -91,100 +87,33 @@
             <span class="text-xs">Add</span>
         </button>
     </div>
-    <TransitionRoot appear :show="isOpen" as="template">
-        <Dialog as="div" @close="closeModal" class="relative z-10">
-            <TransitionChild
-                as="template"
-                enter="duration-300 ease-out"
-                enter-from="opacity-0"
-                enter-to="opacity-100"
-                leave="duration-200 ease-in"
-                leave-from="opacity-100"
-                leave-to="opacity-0"
-            >
-                <div class="fixed inset-0 bg-black/25" />
-            </TransitionChild>
 
-            <div class="fixed inset-0 overflow-y-auto">
-                <div class="flex min-h-full items-center justify-center p-4 text-center">
-                    <TransitionChild
-                        as="template"
-                        enter="duration-300 ease-out"
-                        enter-from="opacity-0 scale-95"
-                        enter-to="opacity-100 scale-100"
-                        leave="duration-200 ease-in"
-                        leave-from="opacity-100 scale-100"
-                        leave-to="opacity-0 scale-95"
-                    >
-                        <DialogPanel
-                            class="w-full max-w-md transform overflow-hidden rounded-2xl bg-white dark:bg-gray-900 dark:text-white border dark:border-gray-700 p-6 text-left align-middle shadow-xl transition-all"
-                        >
-                            <DialogTitle
-                                as="h3"
-                                class="text-lg font-semibold leading-6 text-gray-900 dark:text-white"
-                            >
-                                {{ fabricName }}
-                            </DialogTitle>
-                            <div class="mt-2">
-                                <p class="text-sm text-gray-500 dark:text-gray-300">
-                                    Add fabric quantities and delivery date for the new stock.
-                                </p>
-                            </div>
+    <FormModal
+        :is-open="isOpen"
+        :title="fabricName"
+        mode="add"
+        :is-submitting="mutation.isPending.value"
+        submit-text="Submit"
+        @close="closeModal"
+        @submit="handleSubmit"
+    >
+        <p class="text-sm text-gray-500 dark:text-gray-300 -mt-4 mb-5">
+            Add fabric quantities and delivery date for the new stock.
+        </p>
 
-                            <form @submit.prevent="handleSubmit">
-                                <div class="mt-4">
-                                    <label
-                                        for="delivery_date"
-                                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-                                    >
-                                        Delivery Date
-                                    </label>
-                                    <input
-                                        id="delivery_date"
-                                        v-model="form.delivery_date"
-                                        type="date"
-                                        class="w-full rounded-md font-medium border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2"
-                                        required
-                                    />
-                                </div>
-                                <div class="mt-4">
-                                    <label
-                                        for="quantity"
-                                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-                                    >
-                                        Quantity
-                                    </label>
-                                    <input
-                                        id="quantity"
-                                        v-model.number="form.quantity"
-                                        type="number"
-                                        min="1"
-                                        class="w-full rounded-md font-medium border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2"
-                                        required
-                                    />
-                                </div>
-                                <div class="mt-6 flex justify-end">
-                                    <button
-                                        type="button"
-                                        @click="closeModal"
-                                        class="inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 px-4 py-2 bg-white dark:bg-gray-800 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        type="submit"
-                                        class="inline-flex justify-center rounded-md border border-transparent bg-gray-900 px-4 py-2 text-sm font-medium text-white shadow-sm hover:cursor-pointer hover:opacity-75 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                                        :disabled="mutation.isPending.value"
-                                    >
-                                        <span v-if="mutation.isPending.value">Submitting...</span>
-                                        <span v-else>Submit</span>
-                                    </button>
-                                </div>
-                            </form>
-                        </DialogPanel>
-                    </TransitionChild>
-                </div>
-            </div>
-        </Dialog>
-    </TransitionRoot>
+        <FormInput
+            v-model="form.delivery_date"
+            label="Delivery Date"
+            type="date"
+            required
+        />
+
+        <FormInput
+            v-model.number="form.quantity"
+            label="Quantity"
+            type="number"
+            min="1"
+            required
+        />
+    </FormModal>
 </template>

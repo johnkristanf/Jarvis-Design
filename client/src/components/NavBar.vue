@@ -10,11 +10,18 @@
         MenuItems,
     } from '@headlessui/vue'
     import { BellAlertIcon, CheckIcon, ShoppingCartIcon, UserIcon } from '@heroicons/vue/20/solid'
-    import { BellIcon } from '@heroicons/vue/24/outline'
+    import { BellIcon, ChatBubbleLeftEllipsisIcon } from '@heroicons/vue/24/outline'
+    import FormModal from './FormModal.vue'
+    import FormInput from './FormInput.vue'
     import { useRoute, useRouter } from 'vue-router'
     import Loader from './Loader.vue'
     import { useFetchAuthenticatedUser } from '@/composables/useFetchAuthenticatedUser'
     import { computed, onMounted, ref } from 'vue'
+    import { useForm, useField } from 'vee-validate'
+    import * as yup from 'yup'
+    import { submitFeedbackApi } from '@/api/post/feedback'
+    import type { FeedbackData } from '@/types/feedback'
+    import { useToast } from 'primevue/usetoast'
     import { Drawer } from 'primevue'
     import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
     import { getAllCartCount, getAllOrderNotifications } from '@/api/get/orders'
@@ -27,6 +34,11 @@
     import { OrderStatus } from '@/types/order'
     import { initializeEcho } from '@/services/echo'
     import { pendingOrderNav } from '@/composables/useOrderNavigation'
+    import {
+        navigation,
+        authNavigation,
+        getNavbarDropdownLinks,
+    } from '@/constants/navLinks'
 
     const route = useRoute()
     const router = useRouter()
@@ -34,51 +46,53 @@
 
     const { authStore, isLoading } = useFetchAuthenticatedUser()
 
-    const navigation = [
-        {
-            name: 'Home',
-            to: '/home',
-        },
-        {
-            name: 'Designs',
-            to: '/designs',
-        },
-        {
-            name: 'Orders',
-            to: '/orders',
-        },
-        {
-            name: 'FAQ',
-            to: '/faq',
-        },
-    ]
-
-    const authNavigation = [
-        {
-            name: 'Login',
-            to: '/auth/login',
-        },
-        {
-            name: 'Register',
-            to: '/auth/register',
-        },
-    ]
-
-    const dropdownNavLinks = [
-        {
-            name: 'Your Profile',
-            onclick: () => router.push('/profile'),
-        },
-        {
-            name: 'Sign Out',
-            onclick: async () => {
-                await authStore.logout()
-                window.location.href = '/'
-            },
-        },
-    ]
+    const dropdownNavLinks = getNavbarDropdownLinks(router, authStore)
 
     const visibleRight = ref<boolean>(false)
+
+    // Feedback modal state
+    const isFeedbackModalOpen = ref(false)
+    const toast = useToast()
+
+    // Feedback form validation schema
+    const feedbackSchema = yup.object({
+        subject: yup.string().required('Subject is required'),
+        rating: yup.string().required('Please select a rating'),
+        message: yup.string().required('Message is required').min(10, 'Message must be at least 10 characters'),
+    })
+
+    const { handleSubmit: handleFeedbackFormSubmit, resetForm: resetFeedbackForm } = useForm<FeedbackData>({
+        validationSchema: feedbackSchema,
+    })
+
+    const { value: feedbackSubject, errorMessage: feedbackSubjectError } = useField<string>('subject')
+    const { value: feedbackRating, errorMessage: feedbackRatingError } = useField<string>('rating')
+    const { value: feedbackMessage, errorMessage: feedbackMessageError } = useField<string>('message')
+
+    const { isPending: isFeedbackSubmitting, mutate: submitFeedbackMutation } = useMutation({
+        mutationFn: submitFeedbackApi,
+        onSuccess: () => {
+            toast.add({
+                severity: 'success',
+                summary: 'Feedback Sent!',
+                detail: 'Thank you for your feedback.',
+                life: 3000,
+            })
+            isFeedbackModalOpen.value = false
+            resetFeedbackForm()
+        },
+        onError: () => {
+            toast.add({
+                severity: 'error',
+                summary: 'Failed to send feedback. Please try again.',
+                life: 3000,
+            })
+        },
+    })
+
+    const handleFeedbackSubmit = handleFeedbackFormSubmit((values: FeedbackData) => {
+        submitFeedbackMutation(values)
+    })
 
     const notificationsQuery = useQuery({
         queryKey: ['order_notifications'],
@@ -167,8 +181,8 @@
 </script>
 
 <template>
-    <div class="min-h-full">
-        <Disclosure as="nav" class="bg-gray-900 p-4" v-slot="{ open, close }">
+    <div class="fixed top-0 left-0 right-0 z-50 bg-gray-900/95 backdrop-blur-sm border-b border-gray-800">
+        <Disclosure as="nav" class="p-4" v-slot="{ open, close }">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="flex h-16 items-center">
                     <div class="flex items-center justify-between w-full">
@@ -359,6 +373,27 @@
                                         </div>
                                     </Drawer>
                                 </div>
+
+                                <!-- Feedback icon -->
+                                <button
+                                    v-if="authStore.currentUser"
+                                    @click="isFeedbackModalOpen = true"
+                                    class="relative rounded-full bg-gray-800 p-1.5 mr-2 text-gray-400 hover:text-white hover:cursor-pointer focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800 focus:outline-hidden group"
+                                >
+                                    <!-- Tooltip -->
+                                    <div
+                                        class="absolute top-0 right-full mr-3 px-2 py-1 bg-indigo-600 text-[9px] text-white rounded shadow-sm whitespace-nowrap font-medium invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all duration-300"
+                                    >
+                                        Send Feedback to Jarvis Designs
+                                        <div
+                                            class="absolute top-2 -right-1 w-1.5 h-1.5 bg-indigo-600 rotate-45"
+                                        ></div>
+                                    </div>
+
+                                    <span class="absolute -inset-1.5" />
+                                    <span class="sr-only">Give feedback</span>
+                                    <ChatBubbleLeftEllipsisIcon class="size-5" aria-hidden="true" />
+                                </button>
 
                                 <!-- Shopping cart icon -->
                                 <router-link
@@ -600,4 +635,56 @@
 
     <Loader v-if="isMarkingRead" msg="Marking as Read..." />
     <Loader v-if="isMarkingAllRead" msg="Marking All as Read..." />
+
+    <!-- Feedback Modal -->
+    <FormModal
+        v-model:isOpen="isFeedbackModalOpen"
+        title="Send Feedback to Jarvis Designs"
+        mode="add"
+        submitText="Submit Feedback"
+        :isSubmitting="isFeedbackSubmitting"
+        @submit="handleFeedbackSubmit"
+    >
+        <FormInput
+            v-model="feedbackSubject"
+            label="Subject"
+            type="text"
+            :required="true"
+            placeholder="e.g. Easy to Use, Website Issue, Suggestion..."
+            :error="feedbackSubjectError"
+        />
+
+        <div>
+            <label class="block text-sm mb-2 text-gray-700 dark:text-gray-300">
+                Rating <span class="text-red-500">*</span>
+            </label>
+            <div class="flex gap-2">
+                <button
+                    v-for="star in 5"
+                    :key="star"
+                    type="button"
+                    @click="feedbackRating = String(star)"
+                    class="text-2xl hover:cursor-pointer transition-transform hover:scale-110 focus:outline-none"
+                    :title="`Rate ${star} star${star > 1 ? 's' : ''}`"
+                >
+                    <span :class="Number(feedbackRating) >= star ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'">★</span>
+                </button>
+            </div>
+            <p v-if="feedbackRatingError" class="text-sm text-red-500 mt-1">{{ feedbackRatingError }}</p>
+        </div>
+
+        <div>
+            <label class="block text-sm mb-2 text-gray-700 dark:text-gray-300">
+                Message <span class="text-red-500">*</span>
+            </label>
+            <textarea
+                v-model="feedbackMessage"
+                rows="4"
+                placeholder="Tell us about your experience..."
+                class="font-medium w-full border border-gray-300 dark:border-gray-600 p-2 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors resize-none"
+            ></textarea>
+            <p v-if="feedbackMessageError" class="text-sm text-red-500 mt-1">{{ feedbackMessageError }}</p>
+        </div>
+    </FormModal>
 </template>
+

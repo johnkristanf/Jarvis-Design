@@ -11,7 +11,7 @@
             <NavBar />
         </header>
 
-        <main class="content">
+        <main class="content pt-28">
             <RouterView />
             <Toast />
         </main>

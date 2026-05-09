@@ -46,7 +46,7 @@
     </div>
 
     <AddProductModal
-        v-if="refToggles.show_add_product_modal"
+        :is-open="refToggles.show_add_product_modal"
         @close="refToggles.show_add_product_modal = false"
     />
 </template>

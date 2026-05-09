@@ -1,19 +1,16 @@
 <script setup>
     import { ref } from 'vue'
-    import {
-        TransitionRoot,
-        TransitionChild,
-        Dialog,
-        DialogPanel,
-        DialogTitle,
-    } from '@headlessui/vue'
     import { useToast } from 'primevue/usetoast'
     import { useMutation, useQueryClient } from '@tanstack/vue-query'
     import { apiService } from '@/api/axios'
+    import FormModal from '../FormModal.vue'
+    import FormInput from '../FormInput.vue'
+    import { truncateNonDecimal } from '@/helper/designs'
 
     const props = defineProps({
         fabricId: String,
         fabricName: String,
+        currentQty: [String, Number],
     })
 
     const isOpen = ref(false)
@@ -41,7 +38,7 @@
             )
             return respData
         },
-        onSuccess: (response) => {
+        onSuccess: () => {
             toast.add({
                 severity: 'success',
                 summary: 'Fabric quantity reduced successfully',
@@ -50,8 +47,11 @@
 
             queryClient.invalidateQueries({ queryKey: ['materials'] })
             closeModal()
+            reduceQtyForm.value = {
+                quantity: 0,
+                reason: '',
+            }
         },
-
         onError: (error) => {
             console.error('Error adding new material:', error)
         },
@@ -98,105 +98,38 @@
             <span class="text-xs">Reduce</span>
         </button>
     </div>
-    <TransitionRoot appear :show="isOpen" as="template">
-        <Dialog as="div" @close="closeModal" class="relative z-10">
-            <TransitionChild
-                as="template"
-                enter="duration-300 ease-out"
-                enter-from="opacity-0"
-                enter-to="opacity-100"
-                leave="duration-200 ease-in"
-                leave-from="opacity-100"
-                leave-to="opacity-0"
-            >
-                <div class="fixed inset-0 bg-black/25" />
-            </TransitionChild>
 
-            <div class="fixed inset-0 overflow-y-auto">
-                <div class="flex min-h-full items-center justify-center p-4 text-center">
-                    <TransitionChild
-                        as="template"
-                        enter="duration-300 ease-out"
-                        enter-from="opacity-0 scale-95"
-                        enter-to="opacity-100 scale-100"
-                        leave="duration-200 ease-in"
-                        leave-from="opacity-100 scale-100"
-                        leave-to="opacity-0 scale-95"
-                    >
-                        <DialogPanel
-                            class="w-full max-w-md transform overflow-hidden rounded-2xl bg-white dark:bg-gray-900 dark:text-white border dark:border-gray-700 p-6 text-left align-middle shadow-xl transition-all"
-                        >
-                            <DialogTitle
-                                as="h3"
-                                class="text-lg leading-6 text-gray-900 dark:text-white font-semibold"
-                            >
-                                {{ fabricName }}
-                            </DialogTitle>
-                            <div class="mt-2">
-                                <p class="text-sm text-gray-500 dark:text-gray-300">
-                                    Enter units to reduce and optional reason.
-                                </p>
-                            </div>
+    <FormModal
+        :is-open="isOpen"
+        :title="fabricName"
+        mode="edit"
+        :is-submitting="mutation.isPending.value"
+        submit-text="Submit"
+        @close="closeModal"
+        @submit="handleReduceQuantity"
+    >
+        <p class="text-sm text-gray-500 dark:text-gray-300 -mt-4 mb-5">
+            Enter units to reduce and optional reason.
+        </p>
 
-                            <form @submit.prevent="handleReduceQuantity">
-                                <div class="mt-4">
-                                    <label
-                                        for="quantity"
-                                        class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                                    >
-                                        Quantity
-                                    </label>
-                                    <input
-                                        id="quantity"
-                                        v-model.number="reduceQtyForm.quantity"
-                                        type="number"
-                                        min="1"
-                                        :max="currentQty"
-                                        required
-                                        class="mt-1 font-medium block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                        placeholder="Enter quantity to reduce"
-                                    />
-                                    <p class="mt-1 text-xs text-gray-400">
-                                        Current Stock: {{ currentQty }}
-                                    </p>
-                                </div>
-                                <div class="mt-4">
-                                    <label
-                                        for="reason"
-                                        class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                                    >
-                                        Reason (optional)
-                                    </label>
-                                    <input
-                                        id="reason"
-                                        v-model.trim="reduceQtyForm.reason"
-                                        type="text"
-                                        class="mt-1 font-medium block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                        placeholder="Reason for reduction"
-                                    />
-                                </div>
-                                <div class="mt-6 flex justify-end space-x-2">
-                                    <button
-                                        type="button"
-                                        @click="closeModal"
-                                        class="inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 px-4 py-2 bg-white dark:bg-gray-800 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        type="submit"
-                                        :disabled="mutation.isPending.value"
-                                        class="inline-flex justify-center rounded-md border border-transparent bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:cursor-pointer hover:opacity-75 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 transition"
-                                    >
-                                        <span v-if="mutation.isPending.value">Submitting...</span>
-                                        <span v-else>Submit</span>
-                                    </button>
-                                </div>
-                            </form>
-                        </DialogPanel>
-                    </TransitionChild>
-                </div>
-            </div>
-        </Dialog>
-    </TransitionRoot>
+        <FormInput
+            v-model.number="reduceQtyForm.quantity"
+            label="Quantity"
+            type="number"
+            min="1"
+            :max="currentQty"
+            required
+            placeholder="Enter quantity to reduce"
+        />
+        <p class="mt-1 text-xs text-gray-400 -mt-3 mb-4">
+            Current Stock: {{ truncateNonDecimal(currentQty) }}
+        </p>
+
+        <FormInput
+            v-model.trim="reduceQtyForm.reason"
+            label="Reason (optional)"
+            type="text"
+            placeholder="Reason for reduction"
+        />
+    </FormModal>
 </template>

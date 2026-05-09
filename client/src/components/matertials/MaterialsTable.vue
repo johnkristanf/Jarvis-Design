@@ -191,7 +191,11 @@
                         />
 
                         <AddFabricQtyModal :fabricId="material.id" :fabricName="material.name" />
-                        <ReduceQtyModal :fabricId="material.id" :fabricName="material.name" />
+                        <ReduceQtyModal
+                            :fabricId="material.id"
+                            :fabricName="material.name"
+                            :currentQty="material.quantity"
+                        />
                         <DeleteDialog
                             :selectedID="material.id"
                             endpoint_url="/api/delete/material"
@@ -213,8 +217,7 @@
 
     <!-- ADD MATERIAL MODAL -->
     <AddMaterialsModal
-        v-if="modals.show_add_materials_modal"
-        :open="modals.show_add_materials_modal"
+        :is-open="modals.show_add_materials_modal"
         @close="modals.show_add_materials_modal = false"
     />
 
