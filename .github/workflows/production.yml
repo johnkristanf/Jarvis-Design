@@ -123,50 +123,56 @@ jobs:
           script: |
             set -e
 
-            sudo mkdir -p /var/www/certbot
+            DOMAIN="${{ secrets.API_DOMAIN }}"
+            EMAIL="${{ secrets.CERTBOT_EMAIL }}"
+            CERT_DIR="/etc/letsencrypt/live/$DOMAIN"
+            WEBROOT="/var/www/certbot"
 
-            # Install certbot if not yet existing
+            sudo mkdir -p "$WEBROOT"
+            sudo mkdir -p "$CERT_DIR"
+
+            # Install certbot if not present
             if ! command -v certbot &> /dev/null; then
               sudo apt update && sudo apt install -y snapd
-              
-              # Ensure snap core is up to date
               sudo snap install core
               sudo snap refresh core
-
               sudo snap install --classic certbot
-
-              # Make certbot globally accessible
-              sudo ln -s /snap/bin/certbot /usr/bin/certbot
+              sudo ln -sf /snap/bin/certbot /usr/bin/certbot
             fi
 
             cd ${{ env.EC2_SERVER_DIR }}
 
-            if [ ! -d /etc/letsencrypt/live/${{ secrets.API_DOMAIN }} ]; then
-              # First time setup: Nginx cannot start without certs, so use standalone
-              docker compose stop nginx || true
-              sudo certbot certonly --standalone \
-                --non-interactive \
-                --agree-tos \
-                -m ${{ secrets.CERTBOT_EMAIL }} \
-                -d ${{ secrets.API_DOMAIN }}
-            else
-              # Existing server: ensure nginx is running with the latest config
-              # so the webroot path is accessible for certbot.
-              docker compose up -d nginx
-              
-              sudo certbot certonly --webroot -w /var/www/certbot \
-                --non-interactive \
-                --agree-tos \
-                --keep-until-expiring \
-                -m ${{ secrets.CERTBOT_EMAIL }} \
-                -d ${{ secrets.API_DOMAIN }} \
-                --deploy-hook "docker exec nginx nginx -s reload"
+            # Step 1: If no real cert exists yet, generate a self-signed dummy
+            # so nginx can always start with a valid SSL config
+            if [ ! -f "$CERT_DIR/fullchain.pem" ]; then
+              sudo openssl req -x509 -nodes -newkey rsa:2048 \
+                -keyout "$CERT_DIR/privkey.pem" \
+                -out "$CERT_DIR/fullchain.pem" \
+                -days 1 -subj "/CN=$DOMAIN"
+              echo "Self-signed dummy cert created."
             fi
 
-            # Enable auto-renewal timer
-            sudo systemctl enable snap.certbot.renew.service
-            sudo systemctl enable snap.certbot.renew.timer
-            sudo systemctl start snap.certbot.renew.timer
+            # Step 2: Nginx can now always start — SSL config will load regardless
+            docker compose up -d nginx
+            sleep 3
+
+            # Step 3: Verify nginx is actually running before proceeding
+            if ! docker compose ps nginx | grep -q "Up"; then
+              echo "Nginx failed to start. Dumping logs..."
+              docker compose logs nginx
+              exit 1
+            fi
+
+            # Step 4: Always use webroot — same code path every deploy
+            sudo certbot certonly --webroot -w "$WEBROOT" \
+              --non-interactive \
+              --agree-tos \
+              --keep-until-expiring \
+              -m "$EMAIL" \
+              -d "$DOMAIN" \
+              --deploy-hook "docker exec nginx nginx -s reload"
+
+            echo "Cert issued/renewed successfully."
 
       - name: 🚀 Deploy on EC2 via SSH
         uses: appleboy/ssh-action@v1.0.2
