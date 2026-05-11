@@ -15,18 +15,17 @@ services:
         container_name: nginx
         restart: unless-stopped
         healthcheck:
-          test: ["CMD", "nginx", "-t"]
-          interval: 30s
-          timeout: 10s
-          retries: 3
+            test: ["CMD", "nginx", "-t"]
+            interval: 30s
+            timeout: 10s
+            retries: 3
         ports:
             - "80:80"
             - "443:443"
         volumes:
             - ./default.conf:/etc/nginx/conf.d/default.conf:ro
-            - /etc/letsencrypt/live/api.jarvis-designs.it.com:/etc/letsencrypt/live/api.jarvis-designs.it.com:ro
-            - /etc/letsencrypt/archive/api.jarvis-designs.it.com:/etc/letsencrypt/archive/api.jarvis-designs.it.com:ro
-            - /var/www/certbot:/var/www/certbot:ro
+            - /etc/letsencrypt:/etc/letsencrypt:ro   # full dir, symlinks resolve correctly
+            - /var/www/certbot:/var/www/certbot       # no :ro, certbot must write here
         networks:
             - app-network
 
