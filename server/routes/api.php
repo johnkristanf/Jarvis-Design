@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Route;
 
 // THIS DESIGN IS FOR THE CUSTOMER SIDE
 Route::get('/get/pre_made/designs/{sort?}/{categories?}', [DesignsController::class, 'getPreMadeDesigns']);
+Route::get('/get/best-sellers', [DesignsController::class, 'getBestSellers']);
 
 // PUBLIC PRODUCTS + DESIGNS (for customer-facing pages like Home)
 Route::get('/get/products/with-designs', [DesignsController::class, 'getProductsWithDesigns']);

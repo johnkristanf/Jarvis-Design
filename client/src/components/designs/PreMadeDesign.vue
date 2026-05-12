@@ -49,12 +49,21 @@
 
     const openDesignOptionModal = (selectedProduct: Product, category: any) => {
         selectedProductRef.value = selectedProduct
-        selectedCategoryRef.value = category?.name || ''
-        selectedProductStylesRef.value = category.product_styles || []
+        
+        // Handle pseudo-category for Best Sellers
+        if (category?.id === -1 && selectedProduct.design_category) {
+            selectedCategoryRef.value = selectedProduct.design_category.name || ''
+            // In Laravel, eager loaded camelCase relations can be snake_case in JSON response 
+            // depending on setup, handle both
+            selectedProductStylesRef.value = selectedProduct.design_category.product_styles 
+                || (selectedProduct.design_category as any).productStyles 
+                || []
+        } else {
+            selectedCategoryRef.value = category?.name || ''
+            selectedProductStylesRef.value = category.product_styles || []
+        }
+        
         showDesignOptionModal.value = true
-
-        console.log('selectedProductRef.value: ', selectedProductRef.value)
-        console.log('showDesignOptionModal.value: ', showDesignOptionModal.value)
     }
 
     // HANDLE CATEGORY EXPANSION
@@ -72,23 +81,33 @@
             const respData = await apiService.get<GroupedDesignsResponse>(
                 `/api/get/pre_made/designs/${sortTag}/${categoryIds}`,
             )
+            
+            // Only fetch Best Sellers if no specific category filter is applied
+            // Or always fetch them? Let's always fetch them and prepend to the list.
+            try {
+                const bestSellers = await apiService.get<Product[]>('/api/get/best-sellers')
+                
+                if (bestSellers && bestSellers.length > 0) {
+                    respData.unshift({
+                        id: -1,
+                        name: 'Best Sellers',
+                        is_fixed_priced: false,
+                        fixed_price: null,
+                        products: bestSellers,
+                        product_styles: []
+                    })
+                }
 
-            console.log('DESIGNS NI: ', respData)
+                console.log("respData: ", respData);
+                
+            } catch (err) {
+                console.error('Failed to fetch best sellers', err)
+            }
+
+            console.log('designs: ', respData)
             return respData
         },
     })
-
-    // FETCH UPLOADED BUSINESS DESIGNS
-    const fetchBusinessDesigns = async (product_id: number) => {
-        // isLoadingBusinessDesigns.value = true
-        const designs = await apiService.get<BusinessProductDesign[]>(
-            `/api/get/bussiness_designs/${product_id}`,
-        )
-        console.log('designs: ', designs)
-
-        businessProductDesign.value = designs
-        // isLoadingBusinessDesigns.value = false
-    }
 
     // REFRESH DESIGNS ON FILTER CHANGE
     const queryClient = useQueryClient()

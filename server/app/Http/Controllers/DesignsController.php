@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\DesignCategory;
 use App\Models\Designs;
 use App\Models\Materials;
+use App\Models\Orders;
 use App\Models\Products;
 use App\Models\UploadedDesign;
 use App\OrderType;
@@ -25,18 +26,6 @@ class DesignsController extends Controller
     public function __construct(DesignsService $designsService)
     {
         $this->designsService = $designsService;
-    }
-
-    private function s3TemporaryUrl(string $path, int $minutes = 10): ?string
-    {
-        /** @var FilesystemAdapter $s3 */
-        $s3 = Storage::disk('s3');
-
-        if (!$s3->exists($path)) {
-            return null;
-        }
-
-        return $s3->temporaryUrl($path, now()->addMinutes($minutes));
     }
 
     /**
@@ -95,7 +84,6 @@ class DesignsController extends Controller
                 'products' => function ($query) {
                     $query->with([
                         'fabric_type:id,name',
-                        // Eager load designs and only select fields needed (including image_path/url)
                         'designs'
                     ]);
                 }
@@ -106,21 +94,22 @@ class DesignsController extends Controller
         // Transform the designs' image_path/image_url to temp_url of S3
         $result->each(function ($category) {
             $category->products->each(function ($product) {
-                if (isset($product->designs) && $product->designs->count()) {
-                    $product->designs->transform(function ($design) {
-                        if (!empty($design->image_url)) {
-                            // Set temp_url using S3 temporary URL for `image_path`
-                            $design->temp_url = $this->s3TemporaryUrl($design->image_url, 60);
-                        } else {
-                            $design->temp_url = null;
-                        }
-                        return $design;
-                    });
-                }
+                $this->transformProductDesigns($product);
             });
         });
 
         return response()->json($result, 200);
+    }
+
+    public function getBestSellers()
+    {
+        $products = $this->designsService->getBestSellers();
+
+        $products->each(function ($product) {
+            $this->transformProductDesigns($product);
+        });
+
+        return response()->json($products, 200);
     }
 
     public function getAllDesigns()
@@ -132,7 +121,6 @@ class DesignsController extends Controller
 
     public function getAllProducts(Request $request)
     {
-
         $limit = $request->get('limit', 5);
         $products = Products::select('id', 'name', 'unit_price', 'category_id', 'fabric_quantity')
             ->with([
@@ -207,7 +195,6 @@ class DesignsController extends Controller
     public function uploadDesign(Request $request)
     {
         try {
-
             $request->validate([
                 'multi_file_upload' => 'required|array',
                 'multi_file_upload.*' => 'file|max:10240', // each file max 10MB
@@ -292,15 +279,8 @@ class DesignsController extends Controller
 
     public function getUploadedDesignByID($designID)
     {
-        Log::info('designID: ' . $designID);
-
         $prefix = "uploads/{$designID}";
         $files = Storage::disk('s3')->files($prefix);
-
-        Log::info('files: ', [
-            'files' => $files,
-        ]);
-
         $urls = [];
 
         foreach ($files as $filePath) {
@@ -326,12 +306,6 @@ class DesignsController extends Controller
         $price = $validated['price'];
         $designID = $validated['design_id'];
 
-        Log::info('Design Uploaded Data: ', [
-            'status' => $status,
-            'price' => $price,
-            'designID' => $designID,
-        ]);
-
         $updatedUploadedDesignID = $this->designsService->updateUploadedDesign($designID, $status, $price);
 
         return response()->json([
@@ -340,51 +314,8 @@ class DesignsController extends Controller
         ]);
     }
 
-    // public function addPreMadeDesigns(Request $request)
-    // {
-    //     $category_id = $request->input('category_id');
-    //     $name = $request->input('name');
-    //     $price = $request->input('price');
-    //     $unitMeasure = $request->input('unitMeasure');
-    //     $tag = $request->input('tag');
-    //     $description = $request->input('description');
-
-    //     Log::info("New Data: ", [
-    //         'unitMeasure' => $unitMeasure,
-    //         'tag' => $tag,
-    //         'description' => $description,
-    //     ]);
-
-    //     $file = $request->file('file');
-
-    //     $extractedFileName = $file->getClientOriginalName();
-    //     $file = file_get_contents($file->getPathname());
-
-    //     $uniqueFileName = uniqid() . '_' . basename($extractedFileName);
-    //     $s3Key = "pre_made/" . $uniqueFileName;
-
-    //     // S3 UPLOAD FACADE
-    //     $isUploaded = Storage::disk('s3')->put($s3Key, $file, [
-    //         'visibility' => 'private'
-    //     ]);
-
-    //     if ($isUploaded) {
-    //         $createdDesignId = Designs::create([
-    //             'price' => $price,
-    //             'image_path' => $s3Key,
-    //             'unit_measure' => $unitMeasure,
-    //             'tag' => $tag,
-    //             'description' => $description,
-    //             'category_id' => $category_id,
-    //         ]);
-
-    //         return response()->json(['created_design_id' => $createdDesignId]);
-    //     }
-    // }
-
     public function addProduct(Request $request)
     {
-
         $validatedData = $request->validate([
             'category_id' => 'required|exists:design_categories,id',
             'product_name' => 'required|string|max:255',
@@ -392,10 +323,6 @@ class DesignsController extends Controller
             'fabric_type_id' => 'numeric|min:0',
             'fabric_quantity' => 'numeric|min:0',
             'is_pocket_included' => 'nullable|boolean',
-        ]);
-
-        Log::info('Product Info: ', [
-            'data' => $validatedData,
         ]);
 
         $newProduct = Products::create([
@@ -420,9 +347,7 @@ class DesignsController extends Controller
 
         // Loop through related designs and delete their images from S3
         foreach ($product->designs as $design) {
-            if ($design->image_url && Storage::disk('s3')->exists($design->image_url)) {
-                Storage::disk('s3')->delete($design->image_url);
-            }
+            $this->deleteS3File($design->image_url);
         }
 
         // Optionally, delete the designs from DB (if needed)
@@ -474,7 +399,6 @@ class DesignsController extends Controller
 
     public function deleteProductDesign(string $imageURL)
     {
-        Log::info("imageURL: ", [$imageURL]);
         $decodedPath = urldecode($imageURL);
 
         // Delete the file from your configured S3 disk

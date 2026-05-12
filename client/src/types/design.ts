@@ -36,6 +36,7 @@ export interface Product {
     is_pocket_included?: boolean
     created_at: string
     updated_at: string
+    design_category?: DesignCategory
 }
 
 export interface ProductStyle {

@@ -154,4 +154,46 @@ class DesignsService
             return -1;
         }
     }
+
+    public function getBestSellers()
+    {
+        try {
+            return \App\Models\Products::with([
+                    'designs', 
+                    'fabric_type:id,name',
+                    'design_category.productStyles'
+                ])
+                ->withSum(['orderItems as all_time_sales' => function ($query) {
+                    $query->whereHas('order', function ($q) {
+                        $q->where('status', \App\Models\Orders::COMPLETED);
+                    });
+                }], 'total_quantity')
+                ->withSum(['orderItems as thirty_days_sales' => function ($query) {
+                    $query->whereHas('order', function ($q) {
+                        $q->where('status', \App\Models\Orders::COMPLETED)
+                          ->where('created_at', '>=', now()->subDays(30));
+                    });
+                }], 'total_quantity')
+                ->get()
+                ->map(function ($product) {
+                    $allTime = (float)($product->all_time_sales ?? 0);
+                    $thirtyDays = (float)($product->thirty_days_sales ?? 0);
+                    
+                    $product->best_selling_score = ($allTime * 0.3) + ($thirtyDays * 0.7);
+                    
+                    return $product;
+                })
+                ->filter(function ($product) {
+                    return $product->best_selling_score > 0;
+                })
+                ->sortByDesc('best_selling_score')
+                ->values();
+        } catch (QueryException $e) {
+            Log::error('Error fetching best sellers: '.$e->getMessage()."\n".$e->getTraceAsString());
+            return collect();
+        } catch (Exception $e) {
+            Log::error('An unexpected error occurred while fetching best sellers: '.$e->getMessage()."\n".$e->getTraceAsString());
+            return collect();
+        }
+    }
 }

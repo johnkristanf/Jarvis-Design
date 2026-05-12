@@ -71,4 +71,30 @@ trait HandleAttachments
 
         return $orders;
     }
+
+    public function s3TemporaryUrl(string $path, int $minutes = 10): ?string
+    {
+        /** @var \Illuminate\Filesystem\FilesystemAdapter $s3 */
+        $s3 = Storage::disk('s3');
+
+        if (!$s3->exists($path)) {
+            return null;
+        }
+
+        return $s3->temporaryUrl($path, now()->addMinutes($minutes));
+    }
+
+    public function transformProductDesigns($product)
+    {
+        if (isset($product->designs) && $product->designs->count()) {
+            $product->designs->transform(function ($design) {
+                if (!empty($design->image_url)) {
+                    $design->temp_url = $this->s3TemporaryUrl($design->image_url, 60);
+                } else {
+                    $design->temp_url = null;
+                }
+                return $design;
+            });
+        }
+    }
 }
