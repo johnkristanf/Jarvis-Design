@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 
-use App\Service\DashboardService;
-use App\Service\ReportService;
+use App\Services\DashboardService;
+use App\Services\ReportService;
 use DateTime;
 use Illuminate\Support\Facades\Log;
 

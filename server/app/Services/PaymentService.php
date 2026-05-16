@@ -1,10 +1,9 @@
 <?php
 
-namespace App\Service;
+namespace App\Services;
 
 use App\Jobs\ProcessPayment;
 use App\Jobs\SendOrderConfirmation;
-use App\Models\Notifications;
 use App\Models\OrderPayment;
 use App\Models\Orders;
 use App\Models\PaymentAttachment;
@@ -12,7 +11,6 @@ use App\Traits\HandleAttachments;
 use App\Traits\OrderTrait;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 class PaymentService
 {
@@ -85,7 +83,7 @@ class PaymentService
         $order->status = $status;
         $order->save();
 
-        $notificationService = new \App\Service\NotificationService();
+        $notificationService = new \App\Services\NotificationService();
         $notificationService->notifyUserOrder($order, $order->user_id, $status);
 
         return $order->id;

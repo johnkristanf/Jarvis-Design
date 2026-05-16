@@ -15,15 +15,13 @@ use App\Models\Orders;
 use App\Models\PaymentMethod;
 use App\Models\Products;
 use App\Models\User;
-use App\Service\PaymentService;
-use App\Service\NotificationService;
+use App\Services\PaymentService;
+use App\Services\NotificationService;
 use App\Traits\HandleAttachments;
 use App\Traits\OrderTrait;
-use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 class PaymentController extends Controller
 {

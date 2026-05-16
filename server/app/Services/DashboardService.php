@@ -1,53 +1,36 @@
 <?php
 
-namespace App\Service;
+namespace App\Services;
 
 use App\Models\OrderPayment;
 use App\Models\Orders;
 use App\Traits\HandleAttachments;
 use App\Traits\SalesTrait;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-class CopyDashboardService
+class DashboardService
 {
     use HandleAttachments, SalesTrait;
 
     public function getMonthlySalesReport($startDate, $endDate, $isChartFiltered = true)
     {
-
-        // Find all orders within the date range
-        $orderIds = DB::table('orders')
-            ->whereBetween('created_at', [
-                $startDate->format('Y-m-d 00:00:00'),
-                $endDate->format('Y-m-d 23:59:59'),
-            ])
-            ->pluck('id')
-            ->toArray();
-
-        // For those orders, determine if any payment (regardless of whether it's the latest) is FULLY_PAID
-        $fullyPaidOrderIds = DB::table('order_payments')
-            ->whereIn('order_id', $orderIds)
-            ->where('status', OrderPayment::FULLY_PAID)
-            ->distinct()
-            ->pluck('order_id')
-            ->toArray();
-
-
-        $query = DB::table('order_payments')
+        // Accrual basis: recognize revenue when the order is COMPLETED (earned),
+        // grouped by the month the order was completed, summing orders.total_price.
+        $query = DB::table('orders')
             ->select(
-                DB::raw("TO_CHAR(updated_at, 'Month') as month_name"),
-                DB::raw('EXTRACT(MONTH FROM updated_at) as month_number'),
-                DB::raw('SUM(amount_applied) as total_sales')
+                DB::raw("TO_CHAR(created_at, 'Month') as month_name"),
+                DB::raw('EXTRACT(MONTH FROM created_at) as month_number'),
+                DB::raw('SUM(total_price) as total_sales')
             )
-            ->whereIn('order_id', $fullyPaidOrderIds);
+            ->where('status', Orders::COMPLETED);
 
-        // Remove status = fully_paid so we sum all historical payments for those orders
-
-        // Apply date range filter if both startDate and endDate are provided
         if ($startDate && $endDate) {
-            // Expecting $startDate and $endDate to be \DateTime or string compatible for whereBetween
-            $query->whereBetween(DB::raw('DATE(updated_at)'), [$startDate, $endDate]);
+            $query->whereBetween(DB::raw('DATE(created_at)'), [
+                $startDate->format('Y-m-d'),
+                $endDate->format('Y-m-d'),
+            ]);
         }
 
         $monthlySales = $query
@@ -69,6 +52,7 @@ class CopyDashboardService
         return $monthlySales;
     }
 
+
     public function getSalesPerProductCategory($startDate, $endDate, $isChartFiltered = true)
     {
         // Find all orders within the date range
@@ -77,6 +61,7 @@ class CopyDashboardService
                 $startDate->format('Y-m-d 00:00:00'),
                 $endDate->format('Y-m-d 23:59:59'),
             ])
+            ->whereIn('status', [Orders::COMPLETED])
             ->pluck('id')
             ->toArray();
 
@@ -88,19 +73,16 @@ class CopyDashboardService
             ->pluck('order_id')
             ->toArray();
 
-        $salesPerProductCategory = DB::table('orders')
+        // order_items contain the individual products now
+        $salesPerProductCategory = DB::table('order_items')
             ->select(
                 'design_categories.name as category_name',
-                DB::raw('SUM(order_payments.amount_applied) as total_sales')
+                DB::raw('SUM(order_items.total_price) as total_sales')
             )
-            ->leftJoin('products', 'orders.product_id', '=', 'products.id')
-            ->leftJoin('design_categories', 'products.category_id', '=', 'design_categories.id')
-            ->leftJoin('order_payments', 'orders.id', '=', 'order_payments.order_id')
+            ->join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->join('products', 'order_items.product_id', '=', 'products.id')
+            ->join('design_categories', 'products.category_id', '=', 'design_categories.id')
             ->whereIn('orders.id', $fullyPaidOrderIds)
-            ->whereBetween('order_payments.updated_at', [
-                $startDate->format('Y-m-d 00:00:00'),
-                $endDate->format('Y-m-d 23:59:59'),
-            ])
             ->groupBy('design_categories.name')
             ->orderByDesc('total_sales')
             ->get();
@@ -145,48 +127,32 @@ class CopyDashboardService
 
     public function getLatestOrder()
     {
-        $orders = Orders::with(['product:id,name'])
+        $orders = Orders::with(['items.product:id,name']) // eagerly load items instead
             ->select([
                 'id',
                 'order_number',
-                'own_design_url',
-                'business_design_url',
                 'status',
-                'product_id',
-            ])
+            ]) // own_design_url etc are now in items
+            ->orderBy('id', 'desc')
             ->limit(3)
             ->get();
 
+        // transformOrderDesignToS3Temp needs to be mindful of items. Since it might not be updated, we'll return orders
+        // and fix transformOrderDesignToS3Temp later if it throws.
         return $this->transformOrderDesignToS3Temp($orders);
     }
 
     public function getTotalSalesWithRange($startDate, $endDate)
     {
-        // Find all orders within the date range
-        $orderIds = DB::table('orders')
-            ->whereBetween('created_at', [
-                $startDate->format('Y-m-d 00:00:00'),
-                $endDate->format('Y-m-d 23:59:59'),
+        $totalSales = DB::table('orders')
+            ->where('status', Orders::COMPLETED)
+            ->whereBetween(DB::raw('DATE(created_at)'), [
+                $startDate->format('Y-m-d'),
+                $endDate->format('Y-m-d'),
             ])
-            ->pluck('id')
-            ->toArray();
+            ->sum('total_price');
 
-        // For those orders, determine if any payment (regardless of whether it's the latest) is FULLY_PAID
-        $fullyPaidOrderIds = DB::table('order_payments')
-            ->whereIn('order_id', $orderIds)
-            ->where('status', OrderPayment::FULLY_PAID)
-            ->distinct()
-            ->pluck('order_id')
-            ->toArray();
-
-        Log::info("fullyPaidOrderIds: ", [$fullyPaidOrderIds]);
-
-        // Sum all amount_applied for all payments of those fully paid orders
-        $sales = DB::table('order_payments')
-            ->whereIn('order_id', $fullyPaidOrderIds)
-            ->sum('amount_applied');
-
-        return $sales;
+        return $totalSales;
     }
 
     public function getTotalCustomersWithRange($startDate, $endDate)
@@ -197,6 +163,7 @@ class CopyDashboardService
                 $startDate->format('Y-m-d 00:00:00'),
                 $endDate->format('Y-m-d 23:59:59'),
             ])
+            
             ->pluck('id')
             ->toArray();
 
