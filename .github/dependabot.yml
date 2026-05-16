@@ -1,0 +1,15 @@
+version: 2
+updates:
+  # Laravel (Composer)
+  - package-ecosystem: "composer"
+    directory: "/server"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 5
+
+  # Vue (npm)
+  - package-ecosystem: "npm"
+    directory: "/client"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 5
