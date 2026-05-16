@@ -1,27 +1,21 @@
-name: Jarvis Design CI Pipeline
+name: Dependabot CI
 
 on:
-  push:
-    branches:
-      - dev
   pull_request:
-    branches:
-      - dev
 
 jobs:
-  test:
+  server:
+    if: contains(github.event.pull_request.title, 'composer')
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v3
+      - run: cd server && composer install
+      - run: cd server && php artisan test
 
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: "8.2"
-
-      - name: Install Dependencies
-        run: composer install --prefer-dist --no-progress
-
-      - name: Run Laravel Pint (Formatter)
-        run: ./vendor/bin/pint
+  client:
+    if: contains(github.event.pull_request.title, 'npm')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: cd client && npm install
+      - run: cd client && npm run build
